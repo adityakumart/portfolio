@@ -305,8 +305,8 @@ export interface RRPdfViewerDialogContext {
             <div class="p-2.5 rounded-lg bg-primary/5 border border-primary/20 text-[11px] text-muted-foreground flex items-start gap-2">
               <ng-icon name="lucideShieldCheck" class="text-sm text-primary shrink-0 mt-0.5"></ng-icon>
               <div>
-                <span class="font-semibold text-foreground">Signature Note Added:</span>
-                <span> "(this is an Digitally generated receipt, if required customer signed visit Branch)". Customer signature marked as "Not required".</span>
+                <span class="font-semibold text-foreground">Signature Note:</span>
+                <span> "(if Authorized required, contact branch)" positioned above Authorized Signature & Stamp.</span>
               </div>
             </div>
 
