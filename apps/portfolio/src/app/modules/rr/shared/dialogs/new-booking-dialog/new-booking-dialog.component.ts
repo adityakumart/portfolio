@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
 import { BrnDialogRef, injectBrnDialogContext } from '@spartan-ng/brain/dialog';
@@ -136,6 +136,7 @@ export class RRNewBookingDialogComponent implements OnInit {
   private fb = inject(FormBuilder);
   private invoicePdf = inject(RRInvoicePdfService);
   private dialog = inject(HlmDialogService);
+  private cdr = inject(ChangeDetectorRef);
 
   vehicles = signal<IVehicle[]>([]);
   allBookings = signal<IBooking[]>([]);
@@ -1334,11 +1335,13 @@ export class RRNewBookingDialogComponent implements OnInit {
     } finally {
       this.isUploadingSignedAgreement.set(false);
       target.value = '';
+      this.cdr.markForCheck();
     }
   }
 
   removeSignedAgreement() {
     this.signedAgreementUrl.set(null);
+    this.cdr.markForCheck();
   }
 
   async onInstrumentClusterSelected(event: Event) {
@@ -1359,11 +1362,13 @@ export class RRNewBookingDialogComponent implements OnInit {
     } finally {
       this.isUploadingInstrumentCluster.set(false);
       target.value = '';
+      this.cdr.markForCheck();
     }
   }
 
   removeInstrumentCluster(idx: number) {
     this.instrumentClusterImages.update((curr) => curr.filter((_, i) => i !== idx));
+    this.cdr.markForCheck();
   }
 
   async onVehicleImagesSelected(event: Event) {
@@ -1396,11 +1401,13 @@ export class RRNewBookingDialogComponent implements OnInit {
     } finally {
       this.isUploadingVehicleImages.set(false);
       target.value = '';
+      this.cdr.markForCheck();
     }
   }
 
   removeVehicleImage(idx: number) {
     this.vehicleImages.update((curr) => curr.filter((_, i) => i !== idx));
+    this.cdr.markForCheck();
   }
 
   async onCustomerIdsSelected(event: Event) {
@@ -1433,11 +1440,13 @@ export class RRNewBookingDialogComponent implements OnInit {
     } finally {
       this.isUploadingCustomerIds.set(false);
       target.value = '';
+      this.cdr.markForCheck();
     }
   }
 
   removeCustomerId(idx: number) {
     this.customerIds.update((curr) => curr.filter((_, i) => i !== idx));
+    this.cdr.markForCheck();
   }
 
   async onGuaranteeIdsSelected(event: Event) {
@@ -1470,11 +1479,13 @@ export class RRNewBookingDialogComponent implements OnInit {
     } finally {
       this.isUploadingGuaranteeIds.set(false);
       target.value = '';
+      this.cdr.markForCheck();
     }
   }
 
   removeGuaranteeId(idx: number) {
     this.guaranteePersonIds.update((curr) => curr.filter((_, i) => i !== idx));
+    this.cdr.markForCheck();
   }
 
   async onDepositImagesSelected(event: Event) {
@@ -1507,11 +1518,13 @@ export class RRNewBookingDialogComponent implements OnInit {
     } finally {
       this.isUploadingDepositImages.set(false);
       target.value = '';
+      this.cdr.markForCheck();
     }
   }
 
   removeDepositImage(idx: number) {
     this.securityDepositImages.update((curr) => curr.filter((_, i) => i !== idx));
+    this.cdr.markForCheck();
   }
 
   private async uploadFiles(files: FileList | File[]): Promise<string[]> {
