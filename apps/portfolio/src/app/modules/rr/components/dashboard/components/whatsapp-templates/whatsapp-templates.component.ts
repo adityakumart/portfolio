@@ -25,12 +25,17 @@ import {
   lucideZap,
   lucidePhone,
   lucideCheck,
+  lucideLayoutGrid,
+  lucideKey,
+  lucideWrench,
+  lucideFileText,
 } from '@ng-icons/lucide';
 import { toast } from '@spartan-ng/hel/sonner';
 import {
   IRRWhatsAppConfig,
   IRRWhatsAppTemplateId,
   IRRWhatsAppTemplate,
+  IRRDashboardCardKey,
   DEFAULT_RR_WHATSAPP_CONFIG,
 } from '@portfolio/shared-types';
 import { RRApiService } from '../../../../services/rr-api.service';
@@ -67,6 +72,10 @@ import { RRApiService } from '../../../../services/rr-api.service';
       lucideZap,
       lucidePhone,
       lucideCheck,
+      lucideLayoutGrid,
+      lucideKey,
+      lucideWrench,
+      lucideFileText,
     }),
   ],
   templateUrl: './whatsapp-templates.component.html',
@@ -126,6 +135,35 @@ export class RRWhatsAppTemplatesComponent implements OnInit {
     },
   ];
 
+  readonly dashboardCardOptions: { key: IRRDashboardCardKey; label: string; icon: string }[] = [
+    { key: 'fleet', label: 'Total Fleet', icon: 'lucideCar' },
+    { key: 'available', label: 'Available', icon: 'lucideCheckCircle2' },
+    { key: 'bookings', label: 'Active Bookings', icon: 'lucideKey' },
+    { key: 'reserved', label: 'Reserved Fleet', icon: 'lucideCalendarClock' },
+    { key: 'maintenance', label: 'In Service', icon: 'lucideWrench' },
+    { key: 'contract', label: 'In-Contract', icon: 'lucideFileText' },
+    { key: 'payments', label: 'Pending Payments', icon: 'lucideAlertTriangle' },
+  ];
+
+  toggleDashboardCard(cardKey: IRRDashboardCardKey) {
+    const tpl = this.currentTemplate;
+    if (!tpl) return;
+    if (!tpl.dashboardCards) {
+      tpl.dashboardCards = [];
+    }
+    const idx = tpl.dashboardCards.indexOf(cardKey);
+    if (idx >= 0) {
+      tpl.dashboardCards.splice(idx, 1);
+    } else {
+      tpl.dashboardCards.push(cardKey);
+    }
+  }
+
+  isDashboardCardSelected(cardKey: IRRDashboardCardKey): boolean {
+    const tpl = this.currentTemplate;
+    return Boolean(tpl?.dashboardCards?.includes(cardKey));
+  }
+
   get currentTemplate(): IRRWhatsAppTemplate {
     return (
       this.config.templates[this.selectedTemplateId()] ||
@@ -143,6 +181,13 @@ export class RRWhatsAppTemplatesComponent implements OnInit {
       const data = await this.rrApi.getWhatsAppConfig();
       if (data) {
         this.config = data;
+        if (this.config.templates) {
+          for (const key of Object.keys(this.config.templates) as IRRWhatsAppTemplateId[]) {
+            if (!this.config.templates[key].dashboardCards) {
+              this.config.templates[key].dashboardCards = [];
+            }
+          }
+        }
       }
     } catch (err: unknown) {
       toast.error('Could not load WhatsApp settings: ' + ((err as { error?: { message?: string }; message?: string })?.error?.message || ((err as { message?: string })?.message || String(err))));

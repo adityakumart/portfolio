@@ -157,6 +157,37 @@
               </div>
             </div>
 
+            <!-- Target Dashboard Cards Multi-Select -->
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                  <ng-icon name="lucideLayoutGrid" class="text-xs text-primary"></ng-icon>
+                  <span>Display in Dashboard Cards:</span>
+                </span>
+                <span class="text-[10px] text-muted-foreground font-medium">
+                  {{ (tpl.dashboardCards?.length || 0) }} card(s) selected (default: empty)
+                </span>
+              </div>
+              <div class="flex flex-wrap gap-1.5">
+                @for (card of dashboardCardOptions; track card.key) {
+                  <button
+                    type="button"
+                    (click)="toggleDashboardCard(card.key)"
+                    [class]="isDashboardCardSelected(card.key)
+                      ? 'bg-emerald-600 text-white border-emerald-600 font-bold shadow-xs'
+                      : 'bg-muted/50 text-muted-foreground border-border/70 hover:text-foreground hover:bg-muted'"
+                    class="px-2.5 py-1 rounded-lg border text-xs flex items-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <ng-icon [name]="card.icon" class="text-xs"></ng-icon>
+                    <span>{{ card.label }}</span>
+                    @if (isDashboardCardSelected(card.key)) {
+                      <ng-icon name="lucideCheck" class="text-xs ml-0.5"></ng-icon>
+                    }
+                  </button>
+                }
+              </div>
+            </div>
+
             <!-- Dynamic Placeholders Chips -->
             <div>
               <span class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block mb-1.5">
