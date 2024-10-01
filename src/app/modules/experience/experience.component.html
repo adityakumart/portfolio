@@ -1,0 +1,82 @@
+<div class="p-5">
+    <form [formGroup]="experienceForm">
+        <div class="mat-body my-3">Experience Calculator</div>
+        <!-- <mat-form-field>
+            <mat-label>Enter a date range</mat-label>
+            <mat-date-range-input [rangePicker]="picker">
+                <input matStartDate formControlName="start" placeholder="Start date">
+                <input matEndDate formControlName="end" placeholder="End date">
+            </mat-date-range-input>
+            <mat-hint>MM/DD/YYYY – MM/DD/YYYY</mat-hint>
+            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-date-range-picker #picker></mat-date-range-picker>
+
+            @if (experienceForm.controls.start.hasError('matStartDateInvalid')) {
+            <mat-error>Invalid start date</mat-error>
+            }
+            @if (experienceForm.controls.end.hasError('matEndDateInvalid')) {
+            <mat-error>Invalid end date</mat-error>
+            }
+        </mat-form-field> -->
+
+        <mat-form-field class="mr-4">
+            <mat-label>Select Start Date</mat-label>
+            <input matInput [matDatepicker]="matStartDate" [max]="maxDate" placeholder="Start date" formControlName="start">
+            <mat-datepicker-toggle matSuffix [for]="matStartDate"></mat-datepicker-toggle>
+            <mat-datepicker #matStartDate startView="multi-year"></mat-datepicker>
+            @if (experienceForm.controls.start.hasError('matStartDateInvalid')) {
+            <mat-error>Invalid start date</mat-error>
+            }
+        </mat-form-field>
+
+        <mat-form-field>
+            <mat-label>Select End Date</mat-label>
+            <input matInput [matDatepicker]="matEndDate" [max]="maxDate" placeholder="End date" formControlName="end">
+            <mat-datepicker-toggle matSuffix [for]="matEndDate"></mat-datepicker-toggle>
+            <mat-datepicker #matEndDate startView="multi-year"></mat-datepicker>
+            @if (experienceForm.controls.end.hasError('matEndDateInvalid')) {
+            <mat-error>Invalid end date</mat-error>
+            }
+        </mat-form-field>
+
+    </form>
+
+    <button mat-flat-button (click)="calculateExperience()" class="mr-3">Calculate</button>
+    <button mat-flat-button (click)="reset()">Reset</button>
+
+    <div class="experienceTable">
+        <table mat-table [dataSource]="experiences()" class="">
+
+            <ng-container matColumnDef="index">
+                <th mat-header-cell *matHeaderCellDef> No. </th>
+                <td mat-cell *matCellDef="let element; let i = index"> {{i + 1}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="start">
+                <th mat-header-cell *matHeaderCellDef> Start Date </th>
+                <td mat-cell *matCellDef="let element"> {{element.start | date: 'MM/dd/yyyy'}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="end">
+                <th mat-header-cell *matHeaderCellDef> End Date </th>
+                <td mat-cell *matCellDef="let element"> {{element.end | date: 'MM/dd/yyyy'}} </td>
+            </ng-container>
+
+            <ng-container matColumnDef="experience">
+                <th mat-header-cell *matHeaderCellDef> Experience </th>
+                <td mat-cell *matCellDef="let element"> {{element.years}} Years {{element.months}} Months
+                    {{element.days}} days</td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+
+    </div>
+    <div class="p-5">
+        @if(experiences().length){
+            <div>{{totalExperience().years}} Years {{totalExperience().months}} Months
+                {{totalExperience().days}} days</div>
+        }
+    </div>
+</div>

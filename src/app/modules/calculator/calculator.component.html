@@ -1,0 +1,25 @@
+<form [formGroup]="calculatorForm" class="form-container p-4" (ngSubmit)="onSubmit()">
+    <div class="mat-body my-3">Increase in Percentage</div>
+
+    <div data-layout="row" data-layout-gap="8px">
+        <mat-form-field appearance="outline">
+            <mat-label>Initial Value</mat-label>
+            <input matInput formControlName="initialValue">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>Final Value</mat-label>
+            <input matInput formControlName="finalValue">
+        </mat-form-field>
+    </div>
+
+    <button mat-flat-button type="submit">Calculate</button>
+
+    <!-- @if (calculatedPercentage() !== 0){ -->
+    @if (showCalculated()){
+    <div class="p-5">
+        Percentage Difference : {{calculatedPercentage()}} %
+    </div>
+    }
+
+</form>

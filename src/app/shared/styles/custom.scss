@@ -1,0 +1,30 @@
+@use "css-fx-layout" as fx;
+
+// If you want to include the responsive API selectors
+$includeResponsiveApi: true;
+
+// If you choose to use attribute selectors:
+@include fx.attribute-selectors($includeResponsiveApi);
+@include fx.gap-attribute-selectors(1, 16, 1, px em, $includeResponsiveApi);
+@include fx.gap-attribute-selectors-from-list(32 48, px em, $includeResponsiveApi);
+@include fx.flex-size-attribute-selectors(5, 100, 5, $includeResponsiveApi);
+@include fx.flex-size-attribute-selectors-from-list(33 66, $includeResponsiveApi);
+
+
+
+
+
+
+
+.mat-mdc-snack-bar-container {
+    &.error-snackbar {
+        --mdc-snackbar-container-color: #ba1a1a !important;
+        --mat-mdc-snack-bar-button-color: #fff !important;
+        --mdc-snackbar-supporting-text-color: #fff !important;
+    }
+}
+
+//   .error-snackbar {
+//     background: #ff0000;
+//     color: #fff;
+//   }

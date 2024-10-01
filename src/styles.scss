@@ -1,0 +1,78 @@
+// Custom Theming for Angular Material
+// For more information: https://material.angular.io/guide/theming
+@use '@angular/material' as mat;
+// Plus imports for other components in your app.
+
+// Include the common styles for Angular Material. We include this here so that you only
+// have to load a single css file for Angular Material in your app.
+// Be sure that you only ever include this mixin once!
+@include mat.core();
+
+// Define the theme object.
+$portfolio-theme: mat.define-theme((color: (theme-type: light,
+        primary: mat.$azure-palette,
+        tertiary: mat.$blue-palette,
+        use-system-variables: true,
+      ),
+      typography: (use-system-variables: true,
+        brand-family: "Nunito Sans",
+        plain-family: "Nunito Sans"
+      ),
+      density: (scale: 0,
+      ),
+    ));
+
+
+// Include theme styles for core and each component used in your app.
+// Alternatively, you can import and @include the theme mixins for each component
+// that you are using.
+:root {
+  @include mat.all-component-themes($portfolio-theme);
+  @include mat.typography-hierarchy($portfolio-theme);
+  @include mat.system-level-colors($portfolio-theme);
+  @include mat.system-level-typography($portfolio-theme);
+}
+
+// Comment out the line below if you want to use the pre-defined typography utility classes.
+// For more information: https://material.angular.io/guide/typography#using-typography-styles-in-your-application.
+// @include mat.typography-hierarchy($portfolio-theme);
+
+// Comment out the line below if you want to use the deprecated `color` inputs.
+// @include mat.color-variants-backwards-compatibility($portfolio-theme);
+/* You can add global styles to this file, and also import other style files */
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--portLightGrey);
+  font-family: Verdana, Geneva, Tahoma, sans-serif, sans-serif !important;
+  // font-family: "Nunito Sans", "Helvetica Neue", sans-serif !important;
+}
+
+:root {
+  --portRed: #ef5b5b;
+  --portLightRed: #f95f6f;
+  --portBlue: #5838ff;
+  --portSkyBlue: #529fe1;
+  --portPaleBlue: #f1f8ff;
+  --portDarkBlue: #3d20dd;
+  --portPurple: #7d62ef;
+  --portLightGreen: #2dce98;
+  --portPaleGreen: #30dbb5;
+  --portGreen: #26be77;
+  --portLightOrange: #fda341;
+  --portOrange: #f48665;
+  --portBrown: #7f7f7f;
+  --portDarkGrey: #3e566d;
+  --portGrey: #7e92a4;
+  --portPaleGrey: #f6f8ff;
+  --portLightGrey: #eff3fe;
+  --portWhite: #ffffff;
+  --portBlack: #354053;
+  --c-primary-color: #146ef6;
+  --c-secondary-color: #cacacc;
+}

@@ -1,0 +1,58 @@
+.header {
+    padding: 24px;
+
+    .profile-card {
+        width: 410px;
+        margin: auto;
+        text-align: center;
+    }
+
+    .matCard {
+        width: 280px;
+        // margin-bottom: 24px;
+        // margin-right: 12px;
+    }
+
+    .cardsList {
+        display: flex;
+        flex-flow: wrap;
+        justify-content: center;
+        margin: auto;
+        gap: 16px;
+    }
+
+    @media only screen and (min-width: 300px) {
+        .cardsList {
+            width: 330px;
+        }
+    }
+
+    @media only screen and (min-width: 600px) {
+        .cardsList {
+            width: 600px;
+        }
+    }
+
+
+    @media only screen and (min-width: 900px) {
+        .cardsList {
+            width: 900px;
+        }
+    }
+
+
+    @media only screen and (min-width: 1200px) {
+        .cardsList {
+            width: 1200px;
+        }
+    }
+
+    .skillImage {
+        width: 38px;
+        height: 38px;
+    }
+
+    #skillImageDiv {
+        margin: 12px;
+    }
+}
