@@ -1,17 +1,20 @@
-<div class="m-5 p-5">
-    <button mat-icon-button routerLink="/" aria-label="Home Icon Button" class="mr-5" matTooltip="Home">
-        <mat-icon aria-hidden="false" aria-label="Home Icon">home</mat-icon>
-    </button>
-    <button mat-icon-button routerLink="/experience" aria-label="Home Icon Button" class="mr-5"
-        matTooltip="Experience Calculator">
-        <mat-icon aria-hidden="false" aria-label="Home Icon">work_history</mat-icon>
-    </button>
-    <button mat-icon-button routerLink="/calculator" aria-label="Home Icon Button" class="mr-5"
-        matTooltip="Percentage Increase Calculator">
-        <mat-icon aria-hidden="false" aria-label="Home Icon">calculate</mat-icon>
-    </button>
-</div>
-
-<div class="pl-5">
-    <router-outlet></router-outlet>
-</div>
+<mat-drawer-container class="mainContainer">
+    <mat-drawer mode="side" opened class="pt-3">
+        <button mat-icon-button routerLink="/" aria-label="Home Icon Button" class="mr-5" matTooltip="Home">
+            <mat-icon aria-hidden="false" aria-label="Home Icon">home</mat-icon>
+        </button>
+        <button mat-icon-button routerLink="/experience" aria-label="Home Icon Button" class="mr-5"
+            matTooltip="Experience Calculator">
+            <mat-icon aria-hidden="false" aria-label="Home Icon">work_history</mat-icon>
+        </button>
+        <button mat-icon-button routerLink="/calculator" aria-label="Home Icon Button" class="mr-5"
+            matTooltip="Percentage Increase Calculator">
+            <mat-icon aria-hidden="false" aria-label="Home Icon">calculate</mat-icon>
+        </button>
+    </mat-drawer>
+    <mat-drawer-content class="pt-3">
+        <div class="pl-5">
+            <router-outlet></router-outlet>
+        </div>
+    </mat-drawer-content>
+</mat-drawer-container>

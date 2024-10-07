@@ -1,8 +1,9 @@
+.mainContainer {
+  height: 100vh;
+  background-color: var(--portLightGrey);
 
-.material-symbols-outlined {
-  font-variation-settings:
-  'FILL' 0,
-  'wght' 400,
-  'GRAD' 0,
-  'opsz' 24
+  mat-drawer {
+    width: 85px;
+    padding-left: 18px;
+  }
 }

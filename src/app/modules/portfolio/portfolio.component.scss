@@ -1,11 +1,11 @@
 .header {
     padding: 24px;
 
-    .profile-card {
-        width: 410px;
-        margin: auto;
-        text-align: center;
-    }
+    // .profile-card {
+    // width: 410px;
+    // margin: auto;
+    // text-align: center;
+    // }
 
     .matCard {
         width: 280px;
@@ -55,4 +55,50 @@
     #skillImageDiv {
         margin: 12px;
     }
+
+    // .nameSvg {
+    //     width: 650px;
+    //     height: 75px;
+
+    //     text {
+    //         animation: stroke 5s infinite alternate;
+    //         stroke-width: 2;
+    //         stroke: #365FA0;
+    //         font-size: 60px;
+    //     }
+
+    //     @keyframes stroke {
+    //         0% {
+    //             fill: rgba(72, 138, 204, 0);
+    //             stroke: rgba(54, 95, 160, 1);
+    //             stroke-dashoffset: 25%;
+    //             stroke-dasharray: 0 50%;
+    //             stroke-width: 2;
+    //         }
+
+    //         70% {
+    //             fill: rgba(72, 138, 204, 0);
+    //             stroke: rgba(54, 95, 160, 1);
+    //         }
+
+    //         80% {
+    //             fill: rgba(72, 138, 204, 0);
+    //             stroke: rgba(54, 95, 160, 1);
+    //             stroke-width: 3;
+    //         }
+
+    //         100% {
+    //             fill: rgba(72, 138, 204, 1);
+    //             stroke: rgba(54, 95, 160, 0);
+    //             stroke-dashoffset: -25%;
+    //             stroke-dasharray: 50% 0;
+    //             stroke-width: 1;
+    //         }
+    //     }
+
+    //     .wrapper {
+    //         background-color: #FFFFFF
+    //     }
+
+    // }
 }

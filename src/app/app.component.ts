@@ -5,13 +5,14 @@ import { DOCUMENT } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import {MatSidenavModule} from '@angular/material/sidenav';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
   standalone: true,
-  imports: [RouterModule, MatButtonModule, MatIcon, MatTooltipModule]
+  imports: [RouterModule, MatButtonModule, MatIcon, MatTooltipModule, MatSidenavModule]
 })
 export class AppComponent {
   // title = 'portfolio';

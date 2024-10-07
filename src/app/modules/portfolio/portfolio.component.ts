@@ -12,33 +12,45 @@ export class PortfolioComponent {
             name: "T Aditya Kumar",
             label: "Web Developer",
             image: "",
-            email: "john@gmail.com",
-            phone: "(912) 555-4321",
-            url: "https://johndoe.com",
-            summary: "A summary of John Doe…",
+            email: "aditya.anil950@gmail.com",
+            phone: "9505028181",
+            url: "https://adityakumart.github.io/portfolio/",
+            summary: [
+                "6+ years’ experience in Web-based development.",
+                "Having good experience in Angular, JavaScript, and Typescript.",
+                "Proficient in HTML5, CSS3, JavaScript, ECMA Script 6 (ES6), jQuery, Bootstrap, Angular, React JS.",
+                "Managed multiple projects simultaneously while maintaining strict deadlines.",
+                "Collaborated with cross-functional teams to gather business requirements, design UI workflows, and drive continuous improvement efforts through proactive participation.",
+                "Conducted thorough research and development of third-party tools, exploring its functionalities and integration methods with internal products.",
+                "Designed User-friendly interfaces and Responsive web development. Analyzed, debugged, tracked the bugs and resolved them by providing ",
+                "Developed Custom Chrome Extension to embed Curately web app, where clients can work straight from their web app. It allows users to auto-fill Forms.",
+                "Hands-on experience in the complete life cycle of Software Engineering – Requirements Analysis, Design, Development and Unit Testing. ",
+                "Performed routine updates, upgrades, and overall maintenance of website/application/products.",
+                "Building web applications from scratch and adding functionality using modern libraries and technologies.",
+                "Experience in using version control systems like Git, GitHub",
+                "Actively contributed to product deployment planning, ensuring seamless integration and successful rollout."
+            ],
             location: {
-                address: "2712 Broadway St",
-                postalCode: "CA 94115",
-                city: "San Francisco",
-                countryCode: "US",
-                region: "California"
+                address: "22-3-1/1B",
+                postalCode: "533 255",
+                city: "Ramachandrapuram",
+                countryCode: "India",
+                region: "Andhra Pradesh"
             },
             profiles: [{
-                network: "Twitter",
-                username: "john",
-                url: "https://twitter.com/john"
+                network: "Github",
+                username: "adityakumart",
+                url: "https://github.com/adityakumart"
             }]
         },
         work: [{
-            name: "Company",
-            position: "President",
-            url: "https://company.com",
-            startDate: "2013-01-01",
+            name: "OVA Innovation Labs PVT LTD",
+            position: "Senior Software Engineer",
+            url: "https://ova.work",
+            startDate: "2018-01-02",
             endDate: "2014-01-01",
-            summary: "Description…",
-            highlights: [
-                "Started the company"
-            ]
+            summary: "",
+            highlights: [""]
         }],
         volunteer: [{
             organization: "Organization",

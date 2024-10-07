@@ -1,8 +1,23 @@
 <div class="header">
     <div class="profile-card ">
-        <div class="fs-30 fw-7">Hi, I'm {{resume().basics.name}}</div>
+        <div data-layout="row" data-layout-align="center center">
+            <span class="fs-20">Hi, I'm</span>
+            <span class="ml-4 fs-30 fw-6">{{resume().basics.name}}</span>
+            <!-- <svg class="nameSvg">
+                <text x="50%" y="50%" text-anchor="middle">
+                    {{resume().basics.name}}
+                </text>
+            </svg> -->
+        </div>
         <div class="mat-headline-small">{{resume().basics.label}}</div>
     </div>
+    <!-- <div>
+        <ul>
+            @for (para of resume().basics.summary; track $index) {
+            <li>{{para}}</li>
+            }
+        </ul>
+    </div> -->
 
     <div class="cardsList">
         @for(skill of resume().skills; track skill.name){
