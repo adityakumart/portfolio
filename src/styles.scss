@@ -1,6 +1,8 @@
 // Custom Theming for Angular Material
 // For more information: https://material.angular.io/guide/theming
 @use '@angular/material' as mat;
+@use './m3-theme.scss';
+
 // Plus imports for other components in your app.
 
 // Include the common styles for Angular Material. We include this here so that you only
@@ -8,29 +10,41 @@
 // Be sure that you only ever include this mixin once!
 @include mat.core();
 
+
+
 // Define the theme object.
-$portfolio-theme: mat.define-theme((color: (theme-type: light,
-        primary: mat.$azure-palette,
-        tertiary: mat.$blue-palette,
-        use-system-variables: true,
-      ),
-      typography: (use-system-variables: true,
-        brand-family: "Nunito Sans",
-        plain-family: "Nunito Sans"
-      ),
-      density: (scale: 0,
-      ),
-    ));
+// $portfolio-theme: mat.define-theme((color: (theme-type: light,
+//         primary: mat.$azure-palette,
+//         tertiary: mat.$blue-palette,
+//         use-system-variables: true,
+//       ),
+//       typography: (use-system-variables: true,
+//         brand-family: "Open Sans",
+//         plain-family: "Open Sans"
+//       ),
+//       density: (scale: 0,
+//       ),
+//     ));
 
 
 // Include theme styles for core and each component used in your app.
 // Alternatively, you can import and @include the theme mixins for each component
 // that you are using.
 :root {
-  @include mat.all-component-themes($portfolio-theme);
-  @include mat.typography-hierarchy($portfolio-theme);
-  @include mat.system-level-colors($portfolio-theme);
-  @include mat.system-level-typography($portfolio-theme);
+  // @include mat.core-theme(m3-theme.$light-theme);
+  @include mat.all-component-themes(m3-theme.$light-theme);
+  @include mat.typography-hierarchy(m3-theme.$light-theme);
+  @include mat.system-level-colors(m3-theme.$light-theme);
+  @include mat.system-level-typography(m3-theme.$light-theme);
+
+
+  .dark {
+    // @include mat.all-component-themes(m3-theme.$dark-theme);
+    // @include mat.typography-hierarchy(m3-theme.$dark-theme);
+    @include mat.system-level-colors(m3-theme.$dark-theme);
+    // @include mat.system-level-typography(m3-theme.$dark-theme);
+  }
+
 }
 
 // Comment out the line below if you want to use the pre-defined typography utility classes.
@@ -48,30 +62,31 @@ body {
 
 body {
   margin: 0;
-  font-family: Verdana, Geneva, Tahoma, sans-serif, sans-serif !important;
+  font-family: "Open Sans", "Verdana", "Geneva", "Tahoma", sans-serif !important;
   // font-family: "Nunito Sans", "Helvetica Neue", sans-serif !important;
+  min-width: 350px;
 }
 
-:root {
-  --portRed: #ef5b5b;
-  --portLightRed: #f95f6f;
-  --portBlue: #5838ff;
-  --portSkyBlue: #529fe1;
-  --portPaleBlue: #f1f8ff;
-  --portDarkBlue: #3d20dd;
-  --portPurple: #7d62ef;
-  --portLightGreen: #2dce98;
-  --portPaleGreen: #30dbb5;
-  --portGreen: #26be77;
-  --portLightOrange: #fda341;
-  --portOrange: #f48665;
-  --portBrown: #7f7f7f;
-  --portDarkGrey: #3e566d;
-  --portGrey: #7e92a4;
-  --portPaleGrey: #f6f8ff;
-  --portLightGrey: #eff3fe;
-  --portWhite: #ffffff;
-  --portBlack: #354053;
-  --c-primary-color: #146ef6;
-  --c-secondary-color: #cacacc;
-}
+// :root {
+//   --portRed: #ef5b5b;
+//   --portLightRed: #f95f6f;
+//   --portBlue: #5838ff;
+//   --portSkyBlue: #529fe1;
+//   --portPaleBlue: #f1f8ff;
+//   --portDarkBlue: #3d20dd;
+//   --portPurple: #7d62ef;
+//   --portLightGreen: #2dce98;
+//   --portPaleGreen: #30dbb5;
+//   --portGreen: #26be77;
+//   --portLightOrange: #fda341;
+//   --portOrange: #f48665;
+//   --portBrown: #7f7f7f;
+//   --portDarkGrey: #3e566d;
+//   --portGrey: #7e92a4;
+//   --portPaleGrey: #f6f8ff;
+//   --portLightGrey: #eff3fe;
+//   --portWhite: #ffffff;
+//   --portBlack: #354053;
+//   --c-primary-color: #146ef6;
+//   --c-secondary-color: #cacacc;
+// }
