@@ -1,0 +1,74 @@
+<div>
+
+
+    <form [formGroup]="timeForm">
+        <div data-layout="row wrap" data-layout-align="start start" class="mb-5">
+            <div class="fromToText pt-2">From</div>
+            <div data-layout="row wrap" data-layout-align="start start" data-layout-gap="8px" class="mb-5"
+                style="width: calc(100% - 50px);">
+                <mat-form-field appearance="outline" class="datePickerWidth">
+                    <mat-label>Date</mat-label>
+                    <input matInput [matDatepicker]="matFromDate" placeholder="Start date" formControlName="fromDate">
+                    <mat-datepicker-toggle matSuffix [for]="matFromDate"></mat-datepicker-toggle>
+                    <mat-datepicker #matFromDate startView="year"></mat-datepicker>
+                    @if (timeForm.controls.fromDate.hasError('matDatepickerParse')) {
+                    <mat-error>Invalid From Zone Date</mat-error>
+                    }
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="timePickerWidth">
+                    <mat-label>Time</mat-label>
+                    <input matInput [ngxMatTimepicker]="fromTimePicker" formControlName="fromTime">
+                    <mat-icon matSuffix (click)="fromTimePicker.open()">schedule</mat-icon>
+                </mat-form-field>
+                <ngx-mat-timepicker #fromTimePicker color="primary"></ngx-mat-timepicker>
+                <mat-form-field appearance="outline" class="timeZoneWidth">
+                    <mat-label>Time Zone</mat-label>
+                    <input type="text" aria-label="Time Zone" matInput formControlName="fromTimeZone"
+                        name="fromTimeZone" [matAutocomplete]="fromTimeZoneAutocomplete">
+                    <mat-autocomplete #fromTimeZoneAutocomplete="matAutocomplete">
+                        @for (timeZone of filteredFromTimeZones | async; track timeZone) {
+                        <mat-option [value]="timeZone.abbr + ' - '+ timeZone.text">{{timeZone.abbr}} -
+                            {{timeZone.text}}</mat-option>
+                        }
+                    </mat-autocomplete>
+                </mat-form-field>
+            </div>
+        </div>
+        <div data-layout="row" data-layout-align="center start" class="mb-5">
+            <div class="fromToText pt-2">To </div>
+            <!-- <mat-form-field appearance="outline" class="datePickerWidth">
+                <mat-label>To Time Zone</mat-label>
+                <input matInput [matDatepicker]="matToDate" placeholder="To date" formControlName="toDate">
+                <mat-datepicker-toggle matSuffix [for]="matToDate"></mat-datepicker-toggle>
+                <mat-datepicker #matToDate startView="year"></mat-datepicker>
+                @if (timeForm.controls.toDate.hasError('matDatepickerParse')) {
+                <mat-error>Invalid To Zone Date</mat-error>
+                }
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="timePickerWidth">
+                <mat-label>To Time</mat-label>
+                <input matInput [ngxMatTimepicker]="toTimePicker" formControlName="toTime">
+                <mat-icon matSuffix (click)="toTimePicker.open()">schedule</mat-icon>
+            </mat-form-field>
+            <ngx-mat-timepicker #toTimePicker color="primary"></ngx-mat-timepicker> -->
+            <div data-layout="row wrap" data-layout-align="start start" data-layout-gap="8px" class="mb-5"
+                style="width: calc(100% - 50px);">
+                <mat-form-field appearance="outline" data-flex="50">
+                    <mat-label>Time Zone</mat-label>
+                    <input type="text" aria-label="Time Zone" matInput formControlName="toTimeZone" name="toTimeZone"
+                        [matAutocomplete]="toTimeZoneAutocomplete">
+                    <mat-autocomplete #toTimeZoneAutocomplete="matAutocomplete">
+                        @for (timeZone of filteredToTimeZones | async; track timeZone) {
+                        <mat-option [value]="timeZone.abbr + ' - '+ timeZone.text">{{timeZone.abbr}} -
+                            {{timeZone.text}}</mat-option>
+                        }
+                    </mat-autocomplete>
+                </mat-form-field>
+            </div>
+        </div>
+        <div class="mb-5">
+            <button mat-stroked-button (click)="calculate()">Calculate</button>
+        </div>
+        <div>{{formattedDate()}}</div>
+    </form>
+</div>

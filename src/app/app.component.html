@@ -3,17 +3,21 @@
         <button mat-icon-button routerLink="/" aria-label="Home Icon Button" class="mr-5" matTooltip="Home">
             <mat-icon aria-hidden="false" aria-label="Home Icon">home</mat-icon>
         </button>
-        <button mat-icon-button routerLink="/experience" aria-label="Home Icon Button" class="mr-5"
+        <button mat-icon-button routerLink="/experience" aria-label="Experience Calculator Icon Button" class="mr-5"
             matTooltip="Experience Calculator">
-            <mat-icon aria-hidden="false" aria-label="Home Icon">work_history</mat-icon>
+            <mat-icon aria-hidden="false" aria-label="Experience Calculator Icon">work_history</mat-icon>
         </button>
-        <button mat-icon-button routerLink="/calculator" aria-label="Home Icon Button" class="mr-5"
+        <button mat-icon-button routerLink="/calculator" aria-label="Percentage Increase Calculator Icon Button" class="mr-5"
             matTooltip="Percentage Increase Calculator">
-            <mat-icon aria-hidden="false" aria-label="Home Icon">calculate</mat-icon>
+            <mat-icon aria-hidden="false" aria-label="Percentage Increase Calculator Icon">calculate</mat-icon>
+        </button>
+        <button mat-icon-button routerLink="/timezoneconverter" aria-label="Time Zone Icon Button" class="mr-5"
+            matTooltip="Time Zone Converterr">
+            <mat-icon aria-hidden="false" aria-label="Time Zone Icon">schedule</mat-icon>
         </button>
     </mat-drawer>
     <mat-drawer-content class="pt-3">
-        <div class="pl-5">
+        <div class="px-5">
             <router-outlet></router-outlet>
         </div>
     </mat-drawer-content>

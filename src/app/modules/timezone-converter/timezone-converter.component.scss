@@ -1,0 +1,41 @@
+.fromToText {
+    min-width: 50px;
+}
+
+.datePickerWidth,
+.timePickerWidth {
+    max-width: 140px;
+}
+
+@media only screen and (max-width: 599px) {
+
+    .datePickerWidth,
+    .timePickerWidth,
+    .timeZoneWidth {
+        min-width: 100%;
+    }
+}
+
+@media only screen and (min-width: 600px) and (max-width: 789px) {
+
+    .datePickerWidth,
+    .timePickerWidth {
+        width: 50%;
+    }
+
+    .timeZoneWidth {
+        width: 100%;
+    }
+}
+
+@media only screen and (min-width: 790px) {
+
+    .datePickerWidth,
+    .timePickerWidth {
+        width: 20%;
+    }
+
+    .timeZoneWidth {
+        width: 45%;
+    }
+}
