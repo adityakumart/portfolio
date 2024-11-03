@@ -28,3 +28,20 @@ $includeResponsiveApi: true;
 //     background: #ff0000;
 //     color: #fff;
 //   }
+
+
+.mdc-snackbar.success {
+    --mdc-snackbar-container-color: #51a351 !important;
+}
+
+.mdc-snackbar.error {
+    --mdc-snackbar-container-color: #bd362f !important;
+}
+
+.mdc-snackbar.info {
+    --mdc-snackbar-container-color: #2f96b4 !important;
+}
+
+.mdc-snackbar.warning {
+    --mdc-snackbar-container-color: #f89406 !important;
+}

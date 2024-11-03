@@ -14,6 +14,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 import { AsyncPipe } from '@angular/common';
+import { ToastrService } from 'src/app/shared/services/toaster.service';
 
 
 @Component({
@@ -38,8 +39,10 @@ import { AsyncPipe } from '@angular/common';
 })
 export class TimezoneConverterComponent {
 
+
   filteredFromTimeZones: Observable<TimeZoneInterface[]>;
   filteredToTimeZones: Observable<TimeZoneInterface[]>;
+
 
   formattedDate = signal("");
 
@@ -57,7 +60,7 @@ export class TimezoneConverterComponent {
   timeZones = TimeZonesList;
 
 
-  constructor() {
+  constructor(private toastr: ToastrService) {
     this.filteredFromTimeZones = this.timeForm.controls.fromTimeZone.valueChanges.pipe(
       startWith(''),
       map(zone => (zone ? this._filterFromTimes(zone) : this.timeZones.slice()))
@@ -80,25 +83,47 @@ export class TimezoneConverterComponent {
   }
 
   calculate = () => {
-    console.log(this.timeForm.controls.fromTimeZone);
+
+    this.formattedDate.set('');
     let fromZone = this.timeZones.find((zone) => (zone.abbr + ' - ' + zone.text) === this.timeForm.value.fromTimeZone)?.utc[0];
     let toZone = this.timeZones.find((zone) => (zone.abbr + ' - ' + zone.text) === this.timeForm.value.toTimeZone)?.utc[0];
 
-
-    if (this.timeForm.value.fromDate && this.timeForm.value.fromTime && fromZone && toZone) {
-      let time = DateTime.fromFormat(this.timeForm.value.fromTime, 'h:mm a');
-      let fromDate = DateTime.fromJSDate(this.timeForm.value.fromDate as Date, {
-        zone: fromZone
-      }).set({
-        hour: time.hour,
-        minute: time.minute,
-      });
-
-      this.formattedDate.set(fromDate.setZone(toZone).toFormat("dd-MM-yyyy hh:mm a "));
-      // serverDateTime.setZone(dateTime.toFormat("z").toString()).toFormat(dateFormatToReturn)
+    if (!this.timeForm.value.fromDate) {
+      this.toastr.open('Please enter From Date from dropdown.')
+      return;
+    }
+    if (!this.timeForm.value.fromTime) {
+      this.toastr.open('Please enter From Time from dropdown.')
+      return;
+    }
+    if (!fromZone) {
+      this.toastr.open('Please select From Time Zone from dropdown.')
+      return;
+    }
+    if (!toZone) {
+      this.toastr.open('Please select To Time Zone from dropdown.')
+      return;
     }
 
+    let time = DateTime.fromFormat(this.timeForm.value.fromTime as string, 'h:mm a');
+    let fromDate = DateTime.fromJSDate(this.timeForm.value.fromDate as Date, {
+      zone: fromZone
+    }).set({
+      hour: time.hour,
+      minute: time.minute,
+    });
+    if (!fromDate.isValid) {
+      this.toastr.open('Please enter valid From Date.')
+      return;
+    }
 
+    if (!time.isValid) {
+      this.toastr.open('Please enter valid From Time.')
+      return;
+    }
+
+    this.formattedDate.set(fromDate.setZone(toZone).toFormat("dd-MM-yyyy hh:mm a "));
+    // serverDateTime.setZone(dateTime.toFormat("z").toString()).toFormat(dateFormatToReturn)
 
   }
 
