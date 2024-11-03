@@ -85,9 +85,13 @@ export class TimezoneConverterComponent {
     let toZone = this.timeZones.find((zone) => (zone.abbr + ' - ' + zone.text) === this.timeForm.value.toTimeZone)?.utc[0];
 
 
-    if (fromZone && toZone) {
+    if (this.timeForm.value.fromDate && this.timeForm.value.fromTime && fromZone && toZone) {
+      let time = DateTime.fromFormat(this.timeForm.value.fromTime, 'h:mm a');
       let fromDate = DateTime.fromJSDate(this.timeForm.value.fromDate as Date, {
         zone: fromZone
+      }).set({
+        hour: time.hour,
+        minute: time.minute,
       });
 
       this.formattedDate.set(fromDate.setZone(toZone).toFormat("dd-MM-yyyy hh:mm a "));
