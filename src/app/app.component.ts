@@ -5,7 +5,8 @@ import { DOCUMENT } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import {MatSidenavModule} from '@angular/material/sidenav';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -51,6 +52,13 @@ export class AppComponent {
       this.loadStyle('colors.css');
       this.loadStyle('materialIcons.css');
       this.loadStyle('text.css');
+
+      let bases = this.document.getElementsByTagName('base');
+
+      if (bases.length > 0) {
+        bases[0].setAttribute('href', environment.baseHref);
+
+      }
     }, 0);
 
   }
