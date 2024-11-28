@@ -1,4 +1,5 @@
 @use "sass:math";
+@use "sass:string";
 // Utilities : Paddings, Margins
 $spaces: (
   0,
@@ -64,11 +65,11 @@ $sides: (
   }
 
   @each $side in $sides {
-    .m#{str-slice($side, 0, 1)}-#{$space} {
+    .m#{string.slice($side, 0, 1)}-#{$space} {
       margin-#{$side}: #{$space * 4}px !important;
     }
 
-    .p#{str-slice($side, 0, 1)}-#{$space} {
+    .p#{string.slice($side, 0, 1)}-#{$space} {
       padding-#{$side}: #{$space * 4}px !important;
     }
   }
