@@ -17,7 +17,7 @@ export const AppRoutes: Routes = [{
   loadComponent: () => import('./modules//timezone-converter/timezone-converter.component').then(comp => comp.TimezoneConverterComponent)
 }, {
   path: '',
-  loadChildren: () => import('./modules/portfolio/portfolio.module').then(m => m.PortfolioModule)
+  loadComponent: () => import('./modules/portfolio/portfolio.component').then(m => m.PortfolioComponent)
 }];
 
 @NgModule({
