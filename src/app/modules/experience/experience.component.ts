@@ -16,13 +16,12 @@ interface Dates { start: Date; end: Date };
 type DurationAndDates = Duration & Dates;
 
 @Component({
-  selector: 'app-experience',
-  standalone: true,
-  templateUrl: './experience.component.html',
-  styleUrl: './experience.component.scss',
-  providers: [provideNativeDateAdapter()],
-  imports: [CommonModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatTableModule, MatDatepickerModule, FormsModule, ReactiveFormsModule],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-experience',
+    templateUrl: './experience.component.html',
+    styleUrl: './experience.component.scss',
+    providers: [provideNativeDateAdapter()],
+    imports: [CommonModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatTableModule, MatDatepickerModule, FormsModule, ReactiveFormsModule],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class ExperienceComponent {

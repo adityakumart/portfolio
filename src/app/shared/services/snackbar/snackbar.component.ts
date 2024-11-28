@@ -5,14 +5,13 @@ import { MAT_SNACK_BAR_DATA, MatSnackBarRef } from '@angular/material/snack-bar'
 
 
 @Component({
-  selector: 'app-snackbar',
-  standalone: true,
-  imports: [
-    MatButtonModule,
-    MatIconModule
-  ],
-  templateUrl: './snackbar.component.html',
-  styleUrl: './snackbar.component.scss'
+    selector: 'app-snackbar',
+    imports: [
+        MatButtonModule,
+        MatIconModule
+    ],
+    templateUrl: './snackbar.component.html',
+    styleUrl: './snackbar.component.scss'
 })
 export class SnackbarComponent {
   constructor(

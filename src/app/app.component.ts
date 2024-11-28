@@ -9,11 +9,10 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { environment } from 'src/environments/environment';
 
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss'],
-  standalone: true,
-  imports: [RouterModule, MatButtonModule, MatIcon, MatTooltipModule, MatSidenavModule]
+    selector: 'app-root',
+    templateUrl: './app.component.html',
+    styleUrls: ['./app.component.scss'],
+    imports: [RouterModule, MatButtonModule, MatIcon, MatTooltipModule, MatSidenavModule]
 })
 export class AppComponent {
   // title = 'portfolio';
