@@ -18,24 +18,23 @@ import { ToastrService } from 'src/app/shared/services/toaster.service';
 
 
 @Component({
-  selector: 'app-timezone-converter',
-  standalone: true,
-  imports: [
-    FormsModule,
-    MatDatepickerModule,
-    MatFormFieldModule,
-    ReactiveFormsModule,
-    MatInputModule,
-    MatSelectModule,
-    NgxMatTimepickerModule,
-    MatIcon,
-    MatButtonModule,
-    MatAutocompleteModule,
-    AsyncPipe
-  ],
-  providers: [provideNativeDateAdapter()],
-  templateUrl: './timezone-converter.component.html',
-  styleUrl: './timezone-converter.component.scss'
+    selector: 'app-timezone-converter',
+    imports: [
+        FormsModule,
+        MatDatepickerModule,
+        MatFormFieldModule,
+        ReactiveFormsModule,
+        MatInputModule,
+        MatSelectModule,
+        NgxMatTimepickerModule,
+        MatIcon,
+        MatButtonModule,
+        MatAutocompleteModule,
+        AsyncPipe
+    ],
+    providers: [provideNativeDateAdapter()],
+    templateUrl: './timezone-converter.component.html',
+    styleUrl: './timezone-converter.component.scss'
 })
 export class TimezoneConverterComponent {
 

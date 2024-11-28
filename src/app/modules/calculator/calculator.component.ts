@@ -13,12 +13,10 @@ import {
 } from '@angular/forms';
 
 @Component({
-  selector: 'app-calculator',
-  standalone: true,
-  imports: [ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatIconModule, MatButtonModule],
-  templateUrl: './calculator.component.html',
-  styleUrl: './calculator.component.scss',
-  // changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-calculator',
+    imports: [ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatIconModule, MatButtonModule],
+    templateUrl: './calculator.component.html',
+    styleUrl: './calculator.component.scss'
 })
 export class CalculatorComponent {
   calculatorForm!: FormGroup;
