@@ -1,12 +1,59 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnDestroy, signal, inject } from '@angular/core';
+
+import { PortfolioRoutingModule } from './portfolio-routing.module';
+import { MatCardModule } from '@angular/material/card';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatTooltipModule } from '@angular/material/tooltip';
+
+import { MatGridListModule } from '@angular/material/grid-list';
+
+import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
+import {Subject} from 'rxjs';
+import {takeUntil} from 'rxjs/operators';
+
 
 @Component({
     selector: 'app-portfolio',
     templateUrl: './portfolio.component.html',
     styleUrls: ['./portfolio.component.scss'],
-    standalone: false
+    imports: [
+        PortfolioRoutingModule,
+        MatCardModule,
+        MatChipsModule,
+        MatTooltipModule,
+        MatGridListModule,
+    ]
 })
-export class PortfolioComponent {
+export class PortfolioComponent implements OnDestroy  {
+    destroyed = new Subject<void>();
+    columnsMap = new Map([
+        [Breakpoints.XSmall, 1],
+        [Breakpoints.Small, 2],
+        [Breakpoints.Medium, 3],
+        [Breakpoints.Large, 4],
+        [Breakpoints.XLarge, 5],
+    ]);
+
+    constructor() {
+        inject(BreakpointObserver)
+        .observe([
+            Breakpoints.XSmall,
+            Breakpoints.Small,
+            Breakpoints.Medium,
+            Breakpoints.Large,
+            Breakpoints.XLarge,
+        ])
+        .pipe(takeUntil(this.destroyed))
+        .subscribe(result => {
+            for (const query of Object.keys(result.breakpoints)) {
+                if (result.breakpoints[query]) {
+                    this.gridColumns.set(this.columnsMap.get(query) ?? 1);
+                }
+            }
+        });
+    }
+
+    gridColumns = signal(1);
 
     resume = signal({
         basics: {
@@ -155,5 +202,10 @@ export class PortfolioComponent {
             url: "https://project.com/"
         }]
     })
+
+    ngOnDestroy() {
+        this.destroyed.next();
+        this.destroyed.complete();
+      }
 
 }
