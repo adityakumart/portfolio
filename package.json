@@ -5,7 +5,7 @@
     "ng": "ng",
     "start": "ng serve --hmr -o",
     "build": "ng build --configuration production --aot && gzipper compress ./dist/portfolio",
-    "githubBuild": "ng build && npx angular-cli-ghpages --dir=dist/portfolio",
+    "githubBuild": "ng build --configuration production --aot && npx angular-cli-ghpages --dir=dist/portfolio/browser",
     "build1": "ng build --configuration production --aot --source-map && gzipper compress ./dist/portfolio",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"

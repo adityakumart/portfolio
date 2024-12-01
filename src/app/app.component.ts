@@ -52,12 +52,12 @@ export class AppComponent {
       this.loadStyle('materialIcons.css');
       this.loadStyle('text.css');
 
-      let bases = this.document.getElementsByTagName('base');
+      // let bases = this.document.getElementsByTagName('base');
 
-      if (bases.length > 0) {
-        bases[0].setAttribute('href', environment.baseHref);
+      // if (bases.length > 0) {
+      //   bases[0].setAttribute('href', environment.baseHref);
 
-      }
+      // }
     }, 0);
 
   }
