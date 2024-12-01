@@ -1,12 +1,30 @@
+body {
+  background-color: var(--portLightGrey);
+}
+
 .mainContainer {
   height: 100vh;
   background-color: var(--portLightGrey);
 
-  mat-drawer {
-    width: 85px;
-    padding-left: 18px;
+  // mat-drawer {
+  //   width: 85px;
+  //   padding-left: 18px;
+  // }
+
+  mat-sidenav {
+    width: 50px;
+    // background-color: #eeeeee;
   }
-  mat-drawer-content{
-    margin-left: 70px !important;
+
+  .buttonList {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+
+  mat-sidenav-content {
+    margin-left: 65px !important;
+    background-color: var(--portLightGrey);
   }
 }
