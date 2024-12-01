@@ -9,13 +9,41 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { environment } from 'src/environments/environment';
 
 @Component({
-    selector: 'app-root',
-    templateUrl: './app.component.html',
-    styleUrls: ['./app.component.scss'],
-    imports: [RouterModule, MatButtonModule, MatIcon, MatTooltipModule, MatSidenavModule]
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.scss'],
+  imports: [RouterModule, MatButtonModule, MatIcon, MatTooltipModule, MatSidenavModule]
 })
 export class AppComponent {
   // title = 'portfolio';
+
+  routingList = [
+   {
+      link: "/",
+      label: "Home",
+      icon: "home"
+    },
+    {
+      link: "/experience",
+      label: "Experience Calculator",
+      icon: "work_history"
+    },
+    {
+      link: "/calculator",
+      label: "Percentage Increase Calculator",
+      icon: "calculate"
+    },
+    {
+      link: "/timezoneconverter",
+      label: "Time Zone",
+      icon: "schedule"
+    },
+    {
+      link: "/formbuilder",
+      label: "Dynamic Form",
+      icon: "dynamic_form"
+    }
+  ]
 
 
   constructor(
