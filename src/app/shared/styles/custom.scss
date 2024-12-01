@@ -45,3 +45,8 @@ $includeResponsiveApi: true;
 .mdc-snackbar.warning {
     --mdc-snackbar-container-color: #f89406 !important;
 }
+
+
+.mat-mdc-tooltip .mdc-tooltip__surface {
+    max-width: 350px;
+}

@@ -1,15 +1,17 @@
-<mat-drawer-container class="mainContainer">
-    <mat-drawer mode="side" opened class="pt-3">
+<mat-sidenav-container class="mainContainer" autosize>
+    <mat-sidenav mode="side" opened class="">
+        <div class="buttonList pt-3">
         @for (item of routingList; track $index) {
-        <button mat-icon-button [routerLink]="item.link" [attr.aria-label]="item.label + ' Icon Button'" class="mr-5"
-            [matTooltip]="item.label">
+        <button mat-icon-button [routerLink]="item.link" [attr.aria-label]="item.label + ' Icon Button'" class="mb-5"
+            [matTooltip]="item.label" [matTooltipPosition]="'right'">
             <mat-icon aria-hidden="false" [attr.aria-label]="item.label + ' Icon'" >{{item.icon}}</mat-icon>
         </button>
         }
-    </mat-drawer>
-    <mat-drawer-content class="pt-3">
-        <div class="px-5">
+    </div>
+    </mat-sidenav>
+    <mat-sidenav-content>
+        <div>
             <router-outlet></router-outlet>
         </div>
-    </mat-drawer-content>
-</mat-drawer-container>
+    </mat-sidenav-content>
+</mat-sidenav-container>
