@@ -1,1 +1,160 @@
-<p>create works!</p>
+<div id="formDiv">
+
+    <!--  (cdkDropListDropped)="drop($event)" -->
+    <div cdkDropList class="parent mb-2 p-5 mt-2" (cdkDropListDropped)="drop($event)" #fieldsList>
+
+        <mat-card cdkDragLockAxis="y" cdkDrag class="parentCard px-4 pb-2" cdkDragBoundary=".parent"
+            *ngFor="let inputData of jsonData(); let i = index;" (cdkDragEnded)="dragging = false"
+            (cdkDragStarted)="dragging=true" [ngClass]="{'activeCard' : (inputData.id === selectedFieldId())}">
+            <div class="cardPlaceholder">
+                <mat-icon cdkDragHandle class="parentHandler">drag_indicator</mat-icon>
+            </div>
+            @if (inputData.id === selectedFieldId()) {
+            <div (click)="fieldSelected(inputData.id)">
+                <mat-form-field appearance="fill">
+                    <mat-label>Input</mat-label>
+                    <input matInput placeholder="Input" [value]="'Question ' + inputData.id">
+                </mat-form-field>
+                <div [ngClass]="{'hideElement': dragging}" class="dataDiv">
+                    <div class="pb-2" *ngIf="inputData.inputType === 'text'">
+                        <!-- Input -->
+                        <mat-form-field appearance="fill">
+                            <mat-label>Input</mat-label>
+                            <input matInput placeholder="Input">
+                        </mat-form-field>
+                    </div>
+                    <div class="pb-2" *ngIf="inputData.inputType === 'textarea'">
+                        <mat-form-field appearance="fill">
+                            <mat-label>Textarea</mat-label>
+                            <textarea matInput placeholder=""></textarea>
+                        </mat-form-field>
+                    </div>
+                    <div class="pb-2" *ngIf="inputData.inputType === 'select'">
+                        <!-- Select -->
+                        <mat-form-field appearance="fill">
+                            <mat-label>Select</mat-label>
+                            <mat-select>
+                                <mat-option value="Option 1">Option 1</mat-option>
+                                <mat-option value="Option 2">Option 2</mat-option>
+                                <mat-option value="Option 3">Option 3</mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+                    <div class="pb-2" *ngIf="inputData.inputType === 'radio'">
+                        <mat-radio-group aria-label="Select an option">
+                            <mat-radio-button value="1">Option 1</mat-radio-button>
+                            <mat-radio-button value="2">Option 2</mat-radio-button>
+                        </mat-radio-group>
+                    </div>
+                    <div class="pb-2" *ngIf="inputData.inputType === 'date'">
+                        <!-- Datepicker - Single -->
+                        <mat-form-field appearance="fill" appMonthYear>
+                            <mat-label>Choose a date</mat-label>
+                            <input matInput [matDatepicker]="picker">
+                            <mat-hint>MM/DD/YYYY</mat-hint>
+                            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                            <mat-datepicker #picker startView="multi-year"></mat-datepicker>
+                        </mat-form-field>
+                    </div>
+                    <div class="pb-2" *ngIf="inputData.inputType === 'dateRange'">
+                        <!-- Datepicker- Range -->
+                        <mat-form-field appearance="fill">
+                            <mat-label>Enter a date range</mat-label>
+                            <mat-date-range-input [rangePicker]="rangepicker">
+                                <input matStartDate placeholder="Start date">
+                                <input matEndDate placeholder="End date">
+                            </mat-date-range-input>
+                            <mat-hint>MM/DD/YYYY – MM/DD/YYYY</mat-hint>
+                            <mat-datepicker-toggle matSuffix [for]="rangepicker"></mat-datepicker-toggle>
+                            <mat-date-range-picker #rangepicker></mat-date-range-picker>
+                        </mat-form-field>
+                    </div>
+                    <div class="pb-2" *ngIf="inputData.inputType === 'checkBox'">
+                        <!-- Checkbox -->
+                        <mat-checkbox class="example-margin">Checked</mat-checkbox>
+                    </div>
+                </div>
+            </div>
+            } @else{
+            <div (click)="fieldSelected(inputData.id)">
+                <div class="pb-2">Question {{i + 1}}</div>
+                <div [ngClass]="{'hideElement': dragging}" class="dataDiv">
+                    <div class="pb-2" *ngIf="inputData.inputType === 'text'">
+                        <!-- Input -->
+                        <mat-form-field appearance="fill">
+                            <mat-label>Input</mat-label>
+                            <input matInput placeholder="Input">
+                        </mat-form-field>
+                    </div>
+                    <div class="pb-2" *ngIf="inputData.inputType === 'textarea'">
+                        <mat-form-field appearance="fill">
+                            <mat-label>Textarea</mat-label>
+                            <textarea matInput placeholder=""></textarea>
+                        </mat-form-field>
+                    </div>
+                    <div class="pb-2" *ngIf="inputData.inputType === 'select'">
+                        <!-- Select -->
+                        <mat-form-field appearance="fill">
+                            <mat-label>Select</mat-label>
+                            <mat-select>
+                                <mat-option value="Option 1">Option 1</mat-option>
+                                <mat-option value="Option 2">Option 2</mat-option>
+                                <mat-option value="Option 3">Option 3</mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+                    <div class="pb-2" *ngIf="inputData.inputType === 'radio'">
+                        <mat-radio-group aria-label="Select an option">
+                            <mat-radio-button value="1">Option 1</mat-radio-button>
+                            <mat-radio-button value="2">Option 2</mat-radio-button>
+                        </mat-radio-group>
+                    </div>
+                    <div class="pb-2" *ngIf="inputData.inputType === 'date'">
+                        <!-- Datepicker - Single -->
+                        <mat-form-field appearance="fill" appMonthYear>
+                            <mat-label>Choose a date</mat-label>
+                            <input matInput [matDatepicker]="picker">
+                            <mat-hint>MM/DD/YYYY</mat-hint>
+                            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                            <mat-datepicker #picker startView="multi-year"></mat-datepicker>
+                        </mat-form-field>
+                    </div>
+                    <div class="pb-2" *ngIf="inputData.inputType === 'dateRange'">
+                        <!-- Datepicker- Range -->
+                        <mat-form-field appearance="fill">
+                            <mat-label>Enter a date range</mat-label>
+                            <mat-date-range-input [rangePicker]="rangepicker">
+                                <input matStartDate placeholder="Start date">
+                                <input matEndDate placeholder="End date">
+                            </mat-date-range-input>
+                            <mat-hint>MM/DD/YYYY – MM/DD/YYYY</mat-hint>
+                            <mat-datepicker-toggle matSuffix [for]="rangepicker"></mat-datepicker-toggle>
+                            <mat-date-range-picker #rangepicker></mat-date-range-picker>
+                        </mat-form-field>
+                    </div>
+                    <div class="pb-2" *ngIf="inputData.inputType === 'checkBox'">
+                        <!-- Checkbox -->
+                        <mat-checkbox class="example-margin">Checked</mat-checkbox>
+                    </div>
+                </div>
+            </div>
+            }
+            <div class="custom-placeholder" *cdkDragPlaceholder></div>
+
+        </mat-card>
+
+    </div>
+    <div class="p-2 bg-grey">
+        <button mat-raised-button color="primary" [matMenuTriggerFor]="menu" class="addBtn">
+            <mat-icon>add</mat-icon>
+            Insert new
+        </button>
+        <mat-menu #menu="matMenu">
+            <button mat-menu-item *ngFor="let field of addJsonData()" (click)="addInput(field.inputType)">
+                <mat-icon>{{field.icon}}</mat-icon>
+                {{field.label}}
+            </button>
+        </mat-menu>
+    </div>
+
+</div>
