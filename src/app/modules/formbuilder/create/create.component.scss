@@ -1,0 +1,89 @@
+// #formDiv {
+.parent {
+    height: calc(100vh - 110px);
+    overflow: auto;
+    background-color: var(--portWhite);
+}
+
+.card {
+    margin-bottom: 15px;
+}
+
+.custom-placeholder {
+    margin-bottom: 15px;
+    background: rgb(237, 237, 237);
+    border: dotted 2px #999;
+    min-height: 60px;
+    transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.parentHandler,
+.childHandler {
+    visibility: hidden;
+    transform: rotate(90deg) !important;
+}
+
+// .childCard:hover .childHandler {
+.parentCard:hover .parentHandler {
+    visibility: visible;
+    cursor: move;
+    color: rgb(97, 97, 97);
+}
+
+// .childCard:hover {
+//     background-color: #ebebeb;
+// }
+
+.parentCard:hover,
+.activeCard {
+    background-color: var(--portGrey);
+}
+
+.parentCard {
+    // .childCard {
+    margin-bottom: 10px;
+    transition: box-shadow 200ms cubic-bezier(0, 0, 0.2, 1);
+    box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2),
+        0 2px 2px 0 rgba(0, 0, 0, 0.14),
+        0 1px 5px 0 rgba(0, 0, 0, 0.12);
+}
+
+// .parentCard:active,
+// .childCard:active {
+//   box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
+//               0 8px 10px 1px rgba(0, 0, 0, 0.14),
+//               0 3px 14px 2px rgba(0, 0, 0, 0.12);
+// }
+
+.cardPlaceholder {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.cdk-drag-dragging.parentCard,
+.cdk-drag-preview.parentCard {
+    height: 76px !important;
+}
+
+.cdk-drag-dragging,
+.cdk-drag-preview {
+    .parentHandler {
+        // display: block !important;
+        // transform: rotate(180);
+        visibility: visible !important;
+    }
+
+    .dataDiv {
+        display: none !important;
+    }
+}
+
+.hideElement {
+    display: none;
+}
+
+// .addBtn * {
+//     color: white !important;
+// }
