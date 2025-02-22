@@ -31,7 +31,7 @@
 
         <mat-form-field>
             <mat-label>Select End Date</mat-label>
-            <input matInput [matDatepicker]="matEndDate" [max]="maxDate" placeholder="End date" formControlName="end">
+            <input matInput [matDatepicker]="matEndDate" placeholder="End date" formControlName="end">
             <mat-datepicker-toggle matSuffix [for]="matEndDate"></mat-datepicker-toggle>
             <mat-datepicker #matEndDate startView="multi-year"></mat-datepicker>
             @if (experienceForm.controls.end.hasError('matEndDateInvalid')) {
