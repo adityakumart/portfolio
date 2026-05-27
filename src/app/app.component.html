@@ -1,13 +1,20 @@
+<mat-toolbar>
+    <button mat-icon-button class="example-icon" aria-label="Example icon-button with menu icon" (click)="sidenav.toggle()">
+        <mat-icon>menu</mat-icon>
+    </button>
+    <span class="ml-2">{{name()}}</span>
+    <span class="example-spacer"></span>
+</mat-toolbar>
 <mat-sidenav-container class="mainContainer" autosize>
-    <mat-sidenav mode="side" opened class="">
+    <mat-sidenav mode="side" opened class="mainSideNav" #sidenav>
         <div class="buttonList pt-3">
-        @for (item of routingList; track $index) {
-        <button mat-icon-button [routerLink]="item.link" [attr.aria-label]="item.label + ' Icon Button'" class="mb-5"
-            [matTooltip]="item.label" [matTooltipPosition]="'right'">
-            <mat-icon aria-hidden="false" [attr.aria-label]="item.label + ' Icon'" >{{item.icon}}</mat-icon>
-        </button>
-        }
-    </div>
+            @for (item of routingList; track $index) {
+            <button mat-icon-button [routerLink]="item.link" [attr.aria-label]="item.label + ' Icon Button'"
+                class="mb-5" [matTooltip]="item.label" [matTooltipPosition]="'right'">
+                <mat-icon aria-hidden="false" [attr.aria-label]="item.label + ' Icon'">{{item.icon}}</mat-icon>
+            </button>
+            }
+        </div>
     </mat-sidenav>
     <mat-sidenav-content>
         <div>
