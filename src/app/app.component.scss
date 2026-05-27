@@ -2,7 +2,27 @@ body {
   background-color: var(--portLightGrey);
 }
 
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  /* Fills the entire viewport height */
+  overflow: hidden;
+  /* Prevents unwanted body-level scrolling */
+}
+
+mat-toolbar {
+  flex: 0 0 auto;
+  /* Keeps the toolbar at its natural height and prevents shrinking */
+}
+
+
 .mainContainer {
+  flex: 1 1 auto;
+  /* Allows the sidenav container to dynamically fill exactly the remaining space */
+  /* IMPORTANT: Remove 'height: 100vh;' from this class if you currently have it here! */
+
+
   height: 100vh;
   background-color: var(--portLightGrey);
 
@@ -13,6 +33,7 @@ body {
 
   mat-sidenav {
     width: 50px;
+    border-radius: 0;
     // background-color: #eeeeee;
   }
 
@@ -26,5 +47,6 @@ body {
   mat-sidenav-content {
     margin-left: 65px !important;
     background-color: var(--portLightGrey);
+    height: calc(100vh - 64px);
   }
 }
