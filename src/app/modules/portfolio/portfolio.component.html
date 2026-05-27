@@ -1,15 +1,15 @@
 <div class="header">
-    <div class="profile-card ">
-        <div data-layout="row" data-layout-align="center center">
+    <div class="profile-card mb-3">
+        <div data-layout="row" data-layout-align="start center">
             <span class="fs-20">Hi, I'm</span>
-            <span class="ml-4 fs-30 fw-6">{{resume().basics.name}}</span>
+            <span [class]="'ml-4 fs-30 c-' + classNameForJobTitle()">{{jobtitle()}} ✍️</span>
             <!-- <svg class="nameSvg">
                 <text x="50%" y="50%" text-anchor="middle">
                     {{resume().basics.name}}
                 </text>
             </svg> -->
         </div>
-        <div class="mat-headline-small">{{resume().basics.label}}</div>
+        <!-- <div class="mat-headline-small">{{resume().basics.jobtitle}}</div> -->
     </div>
     <!-- <div>
         <ul>
@@ -19,31 +19,43 @@
         </ul>
     </div> -->
 
-    <mat-grid-list [cols]="gridColumns()" rowHeight="160" gutterSize="0">
-        <!-- class="cardsList" -->
+    <mat-card appearance="outlined" class="matCard">
+
+        <mat-card-header>
+            <mat-card-title>Work Experience</mat-card-title>
+        </mat-card-header>
+        @for (work of resume().work; track $index) {
+        <mat-card-header>
+            <mat-card-subtitle>{{work.name}} - {{work.position}}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content class="workExperience">
+
+        </mat-card-content>
+        }
+    </mat-card>
+
+
+    <div class="skills-grid-container" [style.grid-template-columns]="'repeat(' + gridColumns() + ', 1fr)'">
         @for(skill of resume().skills; track skill.name){
-        <mat-grid-tile class="p-0">
-            <mat-card appearance="outlined" class="matCard">
+        <div class="skill-grid-item">
+            <mat-card appearance="outlined" class="skillCard" style="flex: 1;">
                 <mat-card-header>
                     <mat-card-subtitle>{{skill.name}}</mat-card-subtitle>
                 </mat-card-header>
                 <mat-card-content>
                     <mat-chip-set aria-label="Skills List" id="skillImageDiv">
                         @for(keyword of skill.keywords; track keyword){
-                        <div mat-card-avatar class="example-header-image" class="mt-2 mr-2" [matTooltip]="keyword">
-                            <img src="assets/skills/{{keyword}}.svg" class="skillImage" />
-                            <!-- @if( keyword.icon){
-                        <span class="material-icons">{{keyword.icon}}</span>
-                        } @else {
-                        } -->
-
+                        <div mat-card-avatar class="example-header-image mt-2 mr-2" [matTooltip]="keyword.name">
+                            <img src="assets/skills/{{keyword.name}}.svg"
+                                class="{{keyword.url ? 'cursorp' :''}} skillImage"
+                                (click)="openInNewTab(keyword.url)" />
                         </div>
                         }
                     </mat-chip-set>
                 </mat-card-content>
             </mat-card>
-        </mat-grid-tile>
+        </div>
         }
-    </mat-grid-list>
+    </div>
 
 </div>

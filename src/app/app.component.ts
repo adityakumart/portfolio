@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+ import { Component, Inject, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
 // import { AppRoutes } from './app-routing.module';
 import { DOCUMENT } from '@angular/common';
@@ -6,19 +6,22 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { GlobalData } from 'src/shared/data/GlobalData';
 // import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
-  imports: [RouterModule, MatButtonModule, MatIcon, MatTooltipModule, MatSidenavModule]
+  imports: [RouterModule, MatButtonModule, MatIcon, MatTooltipModule, MatSidenavModule, MatToolbarModule],
+  providers: [GlobalData]
 })
 export class AppComponent {
   // title = 'portfolio';
 
   routingList = [
-   {
+    {
       link: "/",
       label: "Home",
       icon: "home"
@@ -47,10 +50,11 @@ export class AppComponent {
 
 
   constructor(
-    @Inject(DOCUMENT) private document: Document
+    @Inject(DOCUMENT) private document: Document,
+    private globalData: GlobalData
   ) { }
 
-
+  name = signal(this.globalData.resume.basics.name);
 
   loadStyle(styleName: string): void {
     const head = this.document.getElementsByTagName('head')[0];
@@ -87,6 +91,8 @@ export class AppComponent {
 
       // }
     }, 0);
+
+    document.title = this.globalData.resume.basics.name + ' || ' + this.globalData.resume.basics.jobtitle;
 
   }
 }

@@ -1,4 +1,4 @@
-import { Component, OnDestroy, signal, inject } from '@angular/core';
+import { Component, OnDestroy, signal, inject, OnInit, computed } from '@angular/core';
 
 import { PortfolioRoutingModule } from './portfolio-routing.module';
 import { MatCardModule } from '@angular/material/card';
@@ -8,8 +8,11 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatGridListModule } from '@angular/material/grid-list';
 
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import {Subject} from 'rxjs';
-import {takeUntil} from 'rxjs/operators';
+import { interval, merge, of, Subject } from 'rxjs';
+import { concatMap, finalize, map, takeUntil, takeWhile, tap } from 'rxjs/operators';
+
+import { GlobalData } from 'src/shared/data/GlobalData';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 
 @Component({
@@ -22,190 +25,110 @@ import {takeUntil} from 'rxjs/operators';
         MatChipsModule,
         MatTooltipModule,
         MatGridListModule,
-    ]
+        MatExpansionModule
+    ],
+    providers: [GlobalData]
 })
-export class PortfolioComponent implements OnDestroy  {
+export class PortfolioComponent implements OnDestroy, OnInit {
     destroyed = new Subject<void>();
     columnsMap = new Map([
+        // [Breakpoints.XSmall, 1],
+        // [Breakpoints.Small, 2],
+        // [Breakpoints.Medium, 3],
+        // [Breakpoints.Large, 4],
+        // [Breakpoints.XLarge, 5],
         [Breakpoints.XSmall, 1],
         [Breakpoints.Small, 2],
-        [Breakpoints.Medium, 3],
-        [Breakpoints.Large, 4],
-        [Breakpoints.XLarge, 5],
+        [Breakpoints.Medium, 2],
+        [Breakpoints.Large, 2],
+        [Breakpoints.XLarge, 2],
     ]);
 
-    constructor() {
+    constructor(private globalData: GlobalData) {
         inject(BreakpointObserver)
-        .observe([
-            Breakpoints.XSmall,
-            Breakpoints.Small,
-            Breakpoints.Medium,
-            Breakpoints.Large,
-            Breakpoints.XLarge,
-        ])
-        .pipe(takeUntil(this.destroyed))
-        .subscribe(result => {
-            for (const query of Object.keys(result.breakpoints)) {
-                if (result.breakpoints[query]) {
-                    this.gridColumns.set(this.columnsMap.get(query) ?? 1);
+            .observe([
+                Breakpoints.XSmall,
+                Breakpoints.Small,
+                Breakpoints.Medium,
+                Breakpoints.Large,
+                Breakpoints.XLarge,
+            ])
+            .pipe(takeUntil(this.destroyed))
+            .subscribe(result => {
+                for (const query of Object.keys(result.breakpoints)) {
+                    if (result.breakpoints[query]) {
+                        this.gridColumns.set(this.columnsMap.get(query) ?? 1);
+                    }
                 }
-            }
-        });
+            });
+    }
+    ngOnInit(): void {
+        this.typewriterEffect(this.resume().basics.jobtitle)
     }
 
     gridColumns = signal(1);
 
-    resume = signal({
-        basics: {
-            name: "T Aditya Kumar",
-            label: "Web Developer",
-            image: "",
-            email: "aditya.anil950@gmail.com",
-            phone: "9505028181",
-            url: "https://adityakumart.github.io/portfolio/",
-            summary: [
-                "6+ years’ experience in Web-based development.",
-                "Having good experience in Angular, JavaScript, and Typescript.",
-                "Proficient in HTML5, CSS3, JavaScript, ECMA Script 6 (ES6), jQuery, Bootstrap, Angular, React JS.",
-                "Managed multiple projects simultaneously while maintaining strict deadlines.",
-                "Collaborated with cross-functional teams to gather business requirements, design UI workflows, and drive continuous improvement efforts through proactive participation.",
-                "Conducted thorough research and development of third-party tools, exploring its functionalities and integration methods with internal products.",
-                "Designed User-friendly interfaces and Responsive web development. Analyzed, debugged, tracked the bugs and resolved them by providing ",
-                "Developed Custom Chrome Extension to embed Curately web app, where clients can work straight from their web app. It allows users to auto-fill Forms.",
-                "Hands-on experience in the complete life cycle of Software Engineering – Requirements Analysis, Design, Development and Unit Testing. ",
-                "Performed routine updates, upgrades, and overall maintenance of website/application/products.",
-                "Building web applications from scratch and adding functionality using modern libraries and technologies.",
-                "Experience in using version control systems like Git, GitHub",
-                "Actively contributed to product deployment planning, ensuring seamless integration and successful rollout."
-            ],
-            location: {
-                address: "22-3-1/1B",
-                postalCode: "533 255",
-                city: "Ramachandrapuram",
-                countryCode: "India",
-                region: "Andhra Pradesh"
-            },
-            profiles: [{
-                network: "Github",
-                username: "adityakumart",
-                url: "https://github.com/adityakumart"
-            }]
-        },
-        work: [{
-            name: "OVA Innovation Labs PVT LTD",
-            position: "Senior Software Engineer",
-            url: "https://ova.work",
-            startDate: "2018-01-02",
-            endDate: "2014-01-01",
-            summary: "",
-            highlights: [""]
-        }],
-        volunteer: [{
-            organization: "Organization",
-            position: "Volunteer",
-            url: "https://organization.com/",
-            startDate: "2012-01-01",
-            endDate: "2013-01-01",
-            summary: "Description…",
-            highlights: [
-                "Awarded 'Volunteer of the Month'"
-            ]
-        }],
-        education: [{
-            institution: "University",
-            url: "https://institution.com/",
-            area: "Software Development",
-            studyType: "Bachelor",
-            startDate: "2011-01-01",
-            endDate: "2013-01-01",
-            score: "4.0",
-            courses: [
-                "DB1101 - Basic SQL"
-            ]
-        }],
-        awards: [{
-            title: "Award",
-            date: "2014-11-01",
-            awarder: "Company",
-            summary: "There is no spoon."
-        }],
-        certificates: [{
-            name: "Certificate",
-            date: "2021-11-07",
-            issuer: "Company",
-            url: "https://certificate.com"
-        }],
-        publications: [{
-            name: "Publication",
-            publisher: "Company",
-            releaseDate: "2014-10-01",
-            url: "https://publication.com",
-            summary: "Description…"
-        }],
-        skills: [
-            {
-                name: "Language",
-                keywords: ["HTML", "CSS", "JS"]
-            },
-            {
-                name: "Version Control",
-                keywords: ["GIT", "Github"]
-            },
-            {
-                name: "JS UI",
-                keywords: ["jQuery", "Angular", "React", "Browser Extension"]
-            },
-            {
-                name: "OS",
-                keywords: ["Windows", "Linux"]
-            },
-            {
-                name: "Database",
-                keywords: ["MySql", "MongoDB"]
-            },
-            {
-                name: "Productivity Suite",
-                keywords: ["Word", "Excel", "Powerpoint"]
-            },
-            {
-                name: "Framework",
-                keywords: ["Bootstrap"]
-            },
-            {
-                name: "Tools",
-                keywords: ["VS Code"]
-            }
-        ],
-        languages: [{
-            language: "English",
-            fluency: "Native speaker"
-        }],
-        interests: [{
-            name: "Wildlife",
-            keywords: [
-                "Ferrets",
-                "Unicorns"
-            ]
-        }],
-        references: [{
-            name: "Jane Doe",
-            reference: "Reference…"
-        }],
-        projects: [{
-            name: "Project",
-            startDate: "2019-01-01",
-            endDate: "2021-01-01",
-            summary: "Summary...",
-            highlights: [
-                "Won award at AIHacks 2016"
-            ],
-            url: "https://project.com/"
-        }]
+    resume = signal(this.globalData.resume);
+    classNameForJobTitle = computed(() => {
+        switch (true) {
+            case (this.jobtitle().length % 10 === 0):
+                return 'purple';
+            case (this.jobtitle().length % 9 === 0):
+                return 'grey';
+            case (this.jobtitle().length % 8 === 0):
+                return 'darkGrey';
+            case (this.jobtitle().length % 7 === 0):
+                return 'darkBlue';
+            case (this.jobtitle().length % 6 === 0):
+                return 'brown';
+            case (this.jobtitle().length % 5 === 0):
+                return 'orange';
+            case (this.jobtitle().length % 4 === 0):
+                return 'green';
+            case (this.jobtitle().length % 3 === 0):
+                return 'skyblue';
+            case (this.jobtitle().length % 2 === 0):
+                return 'blue';
+            case (this.jobtitle().length % 1 === 0):
+                return 'red'
+            default:
+                return ''
+
+        }
     })
+
+    jobtitle = signal("");
+
+    openInNewTab = (url: string) => {
+        if (url) {
+            window.open(url);
+        }
+    }
 
     ngOnDestroy() {
         this.destroyed.next();
         this.destroyed.complete();
-      }
+    }
+
+    typewriterEffect(text: string) {
+        const textArray = text.split('');
+        const interval$ = interval(100);
+
+        interval$
+            .pipe(
+                takeWhile(index => index < textArray.length),
+                finalize(() => this.resetTypewriter(textArray))
+            )
+            .subscribe((index) => {
+                this.jobtitle.update(char => char + textArray[index]);
+            });
+    }
+
+    resetTypewriter(textArray: string[]) {
+        setTimeout(() => {
+            this.jobtitle.update(() => '');
+            this.typewriterEffect(this.resume().basics.jobtitle);
+        }, 2000); // reset after two seconds
+    }
 
 }
