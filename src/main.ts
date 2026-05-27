@@ -11,7 +11,7 @@ import {
   withPreloading
 } from '@angular/router';
 import { AppRoutes } from './app/app-routing.module';
-import { provideExperimentalZonelessChangeDetection } from '@angular/core';
+import { provideZonelessChangeDetection } from '@angular/core';
 // import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideAnimations } from '@angular/platform-browser/animations';
 
@@ -19,7 +19,7 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 bootstrapApplication(AppComponent,
   {
     providers: [
-      provideExperimentalZonelessChangeDetection(),
+      provideZonelessChangeDetection(),
       provideHttpClient(),
       provideRouter(
         AppRoutes,
