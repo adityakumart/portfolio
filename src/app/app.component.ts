@@ -1,7 +1,7 @@
- import { Component, Inject, signal } from '@angular/core';
+ import { Component, Inject, signal, DOCUMENT } from '@angular/core';
 import { RouterModule } from '@angular/router';
 // import { AppRoutes } from './app-routing.module';
-import { DOCUMENT } from '@angular/common';
+
 import { MatButtonModule } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
