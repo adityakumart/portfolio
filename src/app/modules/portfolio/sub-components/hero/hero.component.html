@@ -1,0 +1,30 @@
+<section class="hero-panel reveal-on-scroll">
+    <div class="hero-copy">
+        <span class="eyebrow">Frontend Developer Portfolio</span>
+        <h1 class="hero-title">Hi, I'm <span class="text-gradient">{{resume().basics.name}}</span></h1>
+        <p class="hero-subtitle">Building polished, performant interfaces for modern product teams using Angular, React, and TypeScript.</p>
+        <div class="hero-badges">
+            <span class="hero-badge">Product Group Lead Frontend</span>
+            <span class="hero-badge">Design systems</span>
+            <span class="hero-badge">AI-accelerated delivery</span>
+        </div>
+        <div class="hero-links">
+            @for (social of resume().basics.socialUrl; track social.name) {
+            <a [href]="social.url" target="_blank" class="social-link">{{social.name}}</a>
+            }
+        </div>
+    </div>
+
+    <div class="hero-visual">
+        <div class="hero-glow-card">
+            <span class="glow-chip">Featured skillset</span>
+            <h2>Design system driven UI paired with modern frontend architecture.</h2>
+            <p>Delivering enterprise-grade digital experiences with a strong focus on usability, performance, and polished visual storytelling.</p>
+        </div>
+        <div class="bubble-grid">
+            <span class="bubble">Performance</span>
+            <span class="bubble">Accessibility</span>
+            <span class="bubble">Component architecture</span>
+        </div>
+    </div>
+</section>

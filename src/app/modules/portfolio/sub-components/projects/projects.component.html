@@ -1,0 +1,18 @@
+<div class="projects-container mt-3">
+    <h4 class="mb-3 project-section-title">Key Projects</h4>
+    @for (project of projects(); track $index) {
+    <div class="project-item mb-3 p-4 rounded-modern reveal-on-scroll">
+        <div class="d-flex justify-content-between flex-wrap align-items-center mb-2">
+            <h5 class="m-0 font-weight-bold text-dark">{{project.name}}</h5>
+            <span class="project-dates text-muted fs-12">{{project.startDate}} - {{project.endDate}}</span>
+        </div>
+        <p class="project-description mt-2 mb-3 fs-14">{{project.description}}</p>
+        
+        <mat-chip-set aria-label="Project Skills">
+            @for (skill of project.skills; track $index) {
+            <mat-chip class="custom-chip">{{skill}}</mat-chip>
+            }
+        </mat-chip-set>
+    </div>
+    }
+</div>
