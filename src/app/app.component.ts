@@ -60,7 +60,7 @@ export class AppComponent {
   readonly isDarkMode = computed(() => this.themeService.theme() === 'dark');
   
   
-  name = signal(this.globalData.resume.basics.name);
+  // name = signal(this.globalData.resume.basics.name);
   toggleTheme(): void {
     this.themeService.toggleTheme();
   }

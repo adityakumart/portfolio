@@ -8,7 +8,7 @@ export class GlobalData {
 
     resume: ResumeObject = {
         basics: {
-            name: "Aditya Kumar Togaru",
+            name: "Aditya Kumar T",
             jobtitle: "Product Group Lead Frontend",
             image: "",
             email: "aditya.togaru@gmail.com",

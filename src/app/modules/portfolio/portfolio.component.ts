@@ -16,6 +16,8 @@ import { SummaryComponent } from './sub-components/summary/summary.component';
 import { ExperienceComponent } from './sub-components/experience/experience.component';
 import { SkillsComponent } from './sub-components/skills/skills.component';
 import { CertificatesComponent } from './sub-components/certificates/certificates.component';
+import { EducationComponent } from './sub-components/education/education.component';
+import { AwardsComponent } from './sub-components/awards/awards.component';
 
 
 @Component({
@@ -32,7 +34,9 @@ import { CertificatesComponent } from './sub-components/certificates/certificate
         SummaryComponent,
         ExperienceComponent,
         SkillsComponent,
-        CertificatesComponent
+        CertificatesComponent,
+        EducationComponent,
+        AwardsComponent
     ],
     providers: [GlobalData]
 })
