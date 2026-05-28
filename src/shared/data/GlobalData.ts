@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { ResumeObject } from '../Interface/Resume';
 
-@Injectable()
-
+@Injectable({
+  providedIn: 'root'
+})
 export class GlobalData {
 
     resume: ResumeObject = {
