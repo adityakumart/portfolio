@@ -1,11 +1,9 @@
-import { Component, OnDestroy, signal, inject, OnInit, computed } from '@angular/core';
+import { Component, OnDestroy, signal, inject, OnInit, computed, AfterViewInit, ElementRef } from '@angular/core';
 
 import { PortfolioRoutingModule } from './portfolio-routing.module';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
-
-import { MatGridListModule } from '@angular/material/grid-list';
 
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { interval, merge, of, Subject } from 'rxjs';
@@ -24,13 +22,13 @@ import { MatExpansionModule } from '@angular/material/expansion';
         MatCardModule,
         MatChipsModule,
         MatTooltipModule,
-        MatGridListModule,
         MatExpansionModule
     ],
     providers: [GlobalData]
 })
-export class PortfolioComponent implements OnDestroy, OnInit {
+export class PortfolioComponent implements OnDestroy, OnInit, AfterViewInit {
     destroyed = new Subject<void>();
+    private el = inject(ElementRef);
     columnsMap = new Map([
         // [Breakpoints.XSmall, 1],
         // [Breakpoints.Small, 2],
@@ -64,6 +62,22 @@ export class PortfolioComponent implements OnDestroy, OnInit {
     }
     ngOnInit(): void {
         this.typewriterEffect(this.resume().basics.jobtitle)
+    }
+
+    ngAfterViewInit() {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target); // Only animate once
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+        setTimeout(() => {
+            const elements = this.el.nativeElement.querySelectorAll('.reveal-on-scroll');
+            elements.forEach((el: Element) => observer.observe(el));
+        }, 100); // Small timeout ensures the @for loops have rendered
     }
 
     gridColumns = signal(1);
