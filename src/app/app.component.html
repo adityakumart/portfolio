@@ -1,8 +1,8 @@
-<mat-toolbar>
+<mat-toolbar class="mainToolbar d-flex align-items-center justify-content-between pl-0">
     <button mat-icon-button class="example-icon" aria-label="Example icon-button with menu icon" (click)="sidenav.toggle()">
         <mat-icon>menu</mat-icon>
     </button>
-    <span class="ml-2">{{name()}}</span>
+    <!-- <span class="ml-2">{{name()}}</span> -->
     <button mat-icon-button (click)="toggleTheme()" [matTooltip]="isDarkMode() ? 'Switch to Light Mode' : 'Switch to Dark Mode'" class="ml-2">
         @if (isDarkMode()) {
             <mat-icon>light_mode</mat-icon>
@@ -10,7 +10,6 @@
             <mat-icon>dark_mode</mat-icon>
         }
     </button>
-    <span class="example-spacer"></span>
 </mat-toolbar>
 <mat-sidenav-container class="mainContainer" autosize>
     <mat-sidenav mode="side" opened class="mainSideNav" #sidenav>
