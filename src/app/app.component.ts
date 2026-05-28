@@ -1,5 +1,7 @@
 import { Component, computed, DOCUMENT, Inject, inject, signal } from '@angular/core';
-import { RouterOutlet, RouterLink } from '@angular/router';
+import { RouterOutlet, RouterLink, Router, NavigationEnd } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { filter, map } from 'rxjs/operators';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -57,9 +59,25 @@ export class AppComponent {
   private document = inject(DOCUMENT);
   private globalData: GlobalData = inject(GlobalData);
   private themeService = inject(ThemeService);
+  private router = inject(Router);
+
   readonly isDarkMode = computed(() => this.themeService.theme() === 'dark');
-  
-  
+
+  readonly activeRouteLabel = toSignal(
+    this.router.events.pipe(
+      filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+      map((event) => {
+        const urlWithoutQueryParams = event.urlAfterRedirects.split('?')[0];
+        const activeRoute = this.routingList.find(route => route.link === urlWithoutQueryParams);
+        if(activeRoute?.label === 'Home') {
+          return '';
+        }
+        return activeRoute?.label || '';
+      })
+    ),
+    { initialValue: '' }
+  );
+
   // name = signal(this.globalData.resume.basics.name);
   toggleTheme(): void {
     this.themeService.toggleTheme();
@@ -101,7 +119,7 @@ export class AppComponent {
       // }
     }, 0);
 
-    
+
     this.document.title = this.globalData.resume.basics.name + ' || ' + this.globalData.resume.basics.jobtitle;
   }
 }
