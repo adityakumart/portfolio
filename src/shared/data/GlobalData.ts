@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { ResumeObject } from '../Interface/Resume';
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root'
 })
 export class GlobalData {
 
@@ -14,10 +14,10 @@ export class GlobalData {
             email: "aditya.togaru@gmail.com",
             phone: "+91 9505028181",
             socialUrl: [
-                {
-                    name: "Github",
-                    url: "https://adityakumart.github.io/portfolio/",
-                },
+                // {
+                //     name: "Github",
+                //     url: "https://adityakumart.github.io/portfolio/",
+                // },
                 {
                     name: "LinkedIn",
                     url: "https://www.linkedin.com/in/aditya-kumar-togaru/"
@@ -251,30 +251,9 @@ export class GlobalData {
             fluency: "Native speaker"
         }
         ],
-        interests: [{
-            name: "Wildlife",
-            keywords: [
-                "Ferrets",
-                "Unicorns"
-            ]
-        }
-        ],
-        references: [{
-            name: "Jane Doe",
-            reference: "Reference…"
-        }
-        ],
-        projects: [{
-            name: "Project",
-            startDate: "2019-01-01",
-            endDate: "2021-01-01",
-            summary: "Summary...",
-            highlights: [
-                "Won award at AIHacks 2016"
-            ],
-            url: "https://project.com/"
-        }
-        ]
+        interests: [],
+        references: [],
+        projects: []
     }
 
 }
