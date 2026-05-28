@@ -15,6 +15,7 @@ import { HeroComponent } from './sub-components/hero/hero.component';
 import { SummaryComponent } from './sub-components/summary/summary.component';
 import { ExperienceComponent } from './sub-components/experience/experience.component';
 import { SkillsComponent } from './sub-components/skills/skills.component';
+import { CertificatesComponent } from './sub-components/certificates/certificates.component';
 
 
 @Component({
@@ -30,7 +31,8 @@ import { SkillsComponent } from './sub-components/skills/skills.component';
         HeroComponent,
         SummaryComponent,
         ExperienceComponent,
-        SkillsComponent
+        SkillsComponent,
+        CertificatesComponent
     ],
     providers: [GlobalData]
 })

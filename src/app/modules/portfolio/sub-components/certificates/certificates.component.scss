@@ -1,0 +1,77 @@
+.certificates-section {
+    padding: 18px 0 8px;
+}
+
+.certificates-grid-container {
+    display: grid;
+    gap: 18px;
+    margin-top: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.certificate-card-with-accent {
+    position: relative;
+    overflow: hidden;
+    background: var(--portWhite);
+    border: 1px solid var(--portLightGrey);
+    box-shadow: 0 24px 50px color-mix(in srgb, var(--portBlack) 10%, transparent);
+}
+
+.certificate-card-with-accent::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 6px;
+    height: 100%;
+    background: linear-gradient(180deg, var(--portSkyBlue), var(--portPurple));
+}
+
+.certificate-card-with-accent mat-card-header {
+    padding-left: 18px;
+}
+
+.certificate-card-with-accent .mat-card-title,
+.certificate-card-with-accent .mat-card-subtitle {
+    color: var(--portBlack) !important;
+}
+
+.certificateCard {
+    min-height: 110px;
+    transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+    padding-left: 14px;
+    border-left: none;
+    background: transparent;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.certificateCard:hover {
+    transform: translateY(-4px);
+    border-color: var(--portSkyBlue);
+    box-shadow: 0 24px 55px color-mix(in srgb, var(--portBlack) 10%, transparent);
+    background: var(--portPaleGrey);
+}
+
+.cert-link {
+    color: var(--portBlack);
+    text-decoration: none;
+    transition: color 0.25s ease;
+}
+
+.cert-link:hover {
+    color: var(--portPurple);
+}
+
+.cert-issuer {
+    color: var(--portSkyBlue);
+    text-transform: capitalize;
+    font-weight: 500;
+}
+
+.cert-date {
+    color: var(--portGrey);
+    font-size: 0.85rem;
+}
