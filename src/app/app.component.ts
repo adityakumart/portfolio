@@ -27,25 +27,25 @@ export class AppComponent {
       icon: "home"
     },
     {
-      link: "/experience",
+      link: "/experience-calculator",
       label: "Experience Calculator",
       icon: "work_history"
     },
     {
-      link: "/calculator",
+      link: "/percentage-calculator",
       label: "Percentage Increase Calculator",
       icon: "calculate"
     },
     {
-      link: "/timezoneconverter",
+      link: "/time-zone-converter",
       label: "Time Zone",
       icon: "schedule"
-    },
-    {
-      link: "/formbuilder",
-      label: "Dynamic Form",
-      icon: "dynamic_form"
     }
+    // {
+    //   link: "/formbuilder",
+    //   label: "Dynamic Form",
+    //   icon: "dynamic_form"
+    // }
   ]
 
 
