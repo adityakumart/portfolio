@@ -1,25 +1,29 @@
- import { Component, Inject, signal, DOCUMENT } from '@angular/core';
-import { RouterModule } from '@angular/router';
-// import { AppRoutes } from './app-routing.module';
-
-import { MatButtonModule } from '@angular/material/button';
-import { MatIcon } from '@angular/material/icon';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatSidenavModule } from '@angular/material/sidenav';
+import { Component, computed, DOCUMENT, Inject, inject, signal } from '@angular/core';
+import { RouterOutlet, RouterLink } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { ThemeService } from './theme.service';
 import { GlobalData } from 'src/shared/data/GlobalData';
-// import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-root',
+  standalone: true,
+  imports: [
+    RouterOutlet,
+    RouterLink,
+    MatToolbarModule,
+    MatIconModule,
+    MatButtonModule,
+    MatSidenavModule,
+    MatTooltipModule
+  ],
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss'],
-  imports: [RouterModule, MatButtonModule, MatIcon, MatTooltipModule, MatSidenavModule, MatToolbarModule],
-  providers: [GlobalData]
+  styleUrl: './app.component.scss'
 })
 export class AppComponent {
-  // title = 'portfolio';
-
   routingList = [
     {
       link: "/",
@@ -46,15 +50,20 @@ export class AppComponent {
     //   label: "Dynamic Form",
     //   icon: "dynamic_form"
     // }
-  ]
+  ];
 
 
-  constructor(
-    @Inject(DOCUMENT) private document: Document,
-    private globalData: GlobalData
-  ) { }
 
+  private document = inject(DOCUMENT);
+  private globalData: GlobalData = inject(GlobalData);
+  private themeService = inject(ThemeService);
+  readonly isDarkMode = computed(() => this.themeService.theme() === 'dark');
+  
+  
   name = signal(this.globalData.resume.basics.name);
+  toggleTheme(): void {
+    this.themeService.toggleTheme();
+  }
 
   loadStyle(styleName: string): void {
     const head = this.document.getElementsByTagName('head')[0];
@@ -92,7 +101,7 @@ export class AppComponent {
       // }
     }, 0);
 
-    document.title = this.globalData.resume.basics.name + ' || ' + this.globalData.resume.basics.jobtitle;
-
+    
+    this.document.title = this.globalData.resume.basics.name + ' || ' + this.globalData.resume.basics.jobtitle;
   }
 }
