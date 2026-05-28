@@ -11,6 +11,10 @@ import { concatMap, finalize, map, takeUntil, takeWhile, tap } from 'rxjs/operat
 
 import { GlobalData } from 'src/shared/data/GlobalData';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { HeroComponent } from './sub-components/hero/hero.component';
+import { SummaryComponent } from './sub-components/summary/summary.component';
+import { ExperienceComponent } from './sub-components/experience/experience.component';
+import { SkillsComponent } from './sub-components/skills/skills.component';
 
 
 @Component({
@@ -22,7 +26,11 @@ import { MatExpansionModule } from '@angular/material/expansion';
         MatCardModule,
         MatChipsModule,
         MatTooltipModule,
-        MatExpansionModule
+        MatExpansionModule,
+        HeroComponent,
+        SummaryComponent,
+        ExperienceComponent,
+        SkillsComponent
     ],
     providers: [GlobalData]
 })
@@ -112,12 +120,6 @@ export class PortfolioComponent implements OnDestroy, OnInit, AfterViewInit {
     })
 
     jobtitle = signal("");
-
-    openInNewTab = (url: string) => {
-        if (url) {
-            window.open(url);
-        }
-    }
 
     ngOnDestroy() {
         this.destroyed.next();

@@ -1,0 +1,29 @@
+<section class="skills-section reveal-on-scroll">
+    <div class="section-heading">
+        <div>
+            <h2 class="section-title">Technical Skills</h2>
+            <p class="section-note">A curated skillset aligned with modern frontend product delivery, interface design, and engineering best practices.</p>
+        </div>
+    </div>
+
+    <div class="skills-grid-container" [style.grid-template-columns]="'repeat(' + gridColumns() + ', 1fr)'">
+        @for(skill of resume().skills; track skill.name){
+        <div class="skill-grid-item reveal-on-scroll">
+            <mat-card class="skillCard modern-card skill-card-with-accent">
+                <mat-card-header>
+                    <mat-card-title class="fs-16 font-weight-bold">{{skill.name}}</mat-card-title>
+                </mat-card-header>
+                <mat-card-content class="mt-3">
+                    <div class="skill-chips-container">
+                        @for(keyword of skill.keywords; track keyword){
+                        <mat-chip class="skill-chip" [matTooltip]="keyword.name" (click)="openInNewTab(keyword.url)">
+                            {{keyword.name}}
+                        </mat-chip>
+                        }
+                    </div>
+                </mat-card-content>
+            </mat-card>
+        </div>
+        }
+    </div>
+</section>
