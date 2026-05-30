@@ -5,15 +5,9 @@ import {
 } from '@angular/router';
 
 export const AppRoutes: Routes = [{
-  path: 'percentage-calculator',
+  path: 'calculator',
   loadComponent: () => import('./modules/calculator/calculator.component').then(comp => comp.CalculatorComponent)
-}, {
-  path: 'experience-calculator',
-  loadComponent: () => import('./modules/experience/experience.component').then(comp => comp.ExperienceComponent)
-}, {
-  path: 'time-zone-converter',
-  loadComponent: () => import('./modules/timezone-converter/timezone-converter.component').then(comp => comp.TimezoneConverterComponent)
-}, {
+},{
   path: 'formbuilder',
   loadChildren: () => import('./modules/formbuilder/formbuilder.module').then(comp => comp.FormbuilderModule)
 }, {
