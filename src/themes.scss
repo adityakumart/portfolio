@@ -22,7 +22,7 @@ $light-theme: mat.m2-define-light-theme((
     warn: $warn-palette,
   ),
   typography: $typography,
-  density: 0
+  density: -2
 ));
 
 // Define the dark theme.
@@ -33,5 +33,5 @@ $dark-theme: mat.m2-define-dark-theme((
     warn: $warn-palette,
   ),
   typography: $typography,
-  density: 0
+  density: -2
 ));

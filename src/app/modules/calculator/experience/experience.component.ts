@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { provideNativeDateAdapter } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -8,94 +8,120 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTableModule } from '@angular/material/table';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { DateTime } from 'luxon';
 
-interface Duration { years: number; months: number; days: number; };
-interface Dates { start: Date; end: Date };
-
-type DurationAndDates = Duration & Dates;
+import { ExperienceService, UserExperienceRecord } from 'src/shared/services/experience.service';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { ErrorMessageComponent } from '../../../shared/components/error-message.component';
 
 @Component({
-    selector: 'app-experience',
-    templateUrl: './experience.component.html',
-    styleUrl: './experience.component.scss',
-    providers: [provideNativeDateAdapter()],
-    imports: [CommonModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatTableModule, MatDatepickerModule, FormsModule],
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-experience',
+  templateUrl: './experience.component.html',
+  styleUrl: './experience.component.scss',
+  providers: [provideNativeDateAdapter()],
+  imports: [CommonModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatTableModule, MatDatepickerModule, ReactiveFormsModule, MatIconModule, MatTooltipModule, ErrorMessageComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class ExperienceComponent {
+export class ExperienceComponent implements OnInit {
+  private fb = inject(FormBuilder);
+  private expService = inject(ExperienceService);
+
   private snackBar = inject(MatSnackBar);
 
-  experiences = signal<DurationAndDates[]>([]);
-  startDate = signal<Date | null>(null);
-  endDate = signal<Date | null>(null);
 
-  totalExperience = signal<Duration>({
-    days: 0,
-    months: 0,
-    years: 0
+  savedRecords = signal<UserExperienceRecord[]>([]);
+
+  experienceForm: FormGroup = this.fb.group({
+    name: ['', Validators.required],
+    email: ['', Validators.email],
+    experience: this.fb.array([this.createDateRangeGroup()])
   });
+
+
+
+  ngOnInit(): void {
+    this.loadRecords();
+  }
+
+  get experienceFormArray(): FormArray {
+    return this.experienceForm.get('experience') as FormArray;
+  }
+
+  createDateRangeGroup(): FormGroup {
+    return this.fb.group({
+      start: ['', Validators.required],
+      end: ['', Validators.required]
+    });
+  }
+
+  addDateRangeRow() {
+    this.experienceFormArray.push(this.createDateRangeGroup());
+  }
+
+  removeDateRangeRow(index: number) {
+    if (this.experienceFormArray.length > 1) {
+      this.experienceFormArray.removeAt(index);
+    }
+  }
+
+  loadRecords() {
+    this.expService.getAllRecords().subscribe({
+      next: (data) => this.savedRecords.set(data),
+      error: (err) => console.error('DB Error:', err)
+    });
+  }
+
+  submitRecord() {
+    if (this.experienceForm.invalid) return;
+
+    const formValue = this.experienceForm.value;
+
+    // Calculate total experience details before saving
+    const calculatedExp = this.expService.calculateTotalExperience(formValue.experience);
+    const totalDays = (calculatedExp.years * 365) + (calculatedExp.months * 30) + calculatedExp.days;
+
+    const payload: UserExperienceRecord = {
+      name: formValue.name,
+      email: formValue.email,
+      experience: formValue.experience,
+      totalDays: totalDays,
+      displayYears: calculatedExp.years,
+      displayMonths: calculatedExp.months,
+      displayDays: calculatedExp.days
+    };
+
+    this.expService.saveRecord(payload).subscribe({
+      next: () => {
+        this.experienceForm.reset();
+        this.experienceFormArray.clear();
+        this.experienceFormArray.push(this.createDateRangeGroup());
+        this.loadRecords();
+      }
+    });
+  }
+
+  deleteRecord(id?: number) {
+    if (!id) return;
+    this.expService.deleteRecord(id).subscribe(() => this.loadRecords());
+  }
+
+  getComputedExperience(): string {
+    const total = this.expService.calculateTotalExperience(this.experienceForm.value.experience);
+    if (total.years || total.months || total.days) {
+      return `${total.years} Years, ${total.months} Months, ${total.days} Days`;
+    }
+    return ``;
+  }
 
   displayedColumns: string[] = ["index", "start", "end", "experience"];
   readonly maxDate = new Date();
 
 
-  calculateExperience = () => {
-    const start = this.startDate();
-    const end = this.endDate();
-    if (start && end) {
-      if (start < end) {
-        const diff = DateTime.fromJSDate(end).diff(DateTime.fromJSDate(start), ["years", "months", "days"]);
-
-        let tempArray: DurationAndDates[] = [...this.experiences(), {
-          ...diff.toObject() as Duration,
-          start: this.startDate() as Date,
-          end: this.endDate() as Date
-        }];
-        tempArray = tempArray.sort((a, b) => a.start.valueOf() - b.start.valueOf());
-        this.experiences.update(() => ([
-          ...tempArray
-        ]));
-
-
-        let timeDiff = Math.abs(end.getTime() - start.getTime());
-        let years = Math.floor(timeDiff / (1000 * 3600 * 24 * 365.25));
-        timeDiff -= years * (1000 * 3600 * 24 * 365.25);
-        let months = Math.floor(timeDiff / (1000 * 3600 * 24 * 30.44));
-        timeDiff -= months * (1000 * 3600 * 24 * 30.44);
-        let days = Math.floor(timeDiff / (1000 * 3600 * 24));
-
-
-        let totalYears = (this.totalExperience().years + years) + Math.floor((this.totalExperience().months + months) / 12);
-        let totalMonths = (this.totalExperience().months + months) % 12;
-        totalMonths += Math.floor((this.totalExperience().days + days) / 30);
-        let totalDays = (this.totalExperience().days + days) % 30;
-
-        this.totalExperience.update(() => ({
-          days: totalDays,
-          months: totalMonths,
-          years: totalYears
-        }));
-
-
-        this.startDate.update(() => null);
-        this.endDate.update(() => null);
-
-      } else {
-        this.openSnackBar("Last working date cannot be before the date of joining.");
-      }
-    }
-  }
 
   reset = () => {
-    this.experiences.update(() => ([]));
-    
-    this.totalExperience.update(() => ({
-      days: 0,
-      months: 0,
-      years: 0
-    }));
+    this.experienceForm.reset();
+
   }
 
 
