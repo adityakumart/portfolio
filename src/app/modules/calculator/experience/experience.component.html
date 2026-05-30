@@ -1,67 +1,71 @@
 <div class="p-5">
-    <form>
+    <form [formGroup]="experienceForm" (ngSubmit)="submitRecord()">
+        <div style="border: 1px solid rgba(0,0,0,0.12); border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+            <h4 style="margin-top: 0; margin-bottom: 16px;">Personal Details</h4>
+            <div data-layout="row">
+                <mat-form-field appearance="outline" class="mr-4">
+                    <mat-label>Name</mat-label>
+                    <input matInput type="text" formControlName="name" placeholder="Enter Name" name="name">
+                    <mat-error><app-error-message [control]="experienceForm.get('name')" fieldName="Name"></app-error-message></mat-error>
+                </mat-form-field>
 
-        <mat-form-field class="mr-4">
-            <mat-label>Select Start Date</mat-label>
-            <input matInput [matDatepicker]="matStartDate" [max]="maxDate" placeholder="Start date"
-                [ngModel]="startDate()" (ngModelChange)="startDate.set($event)" name="startDate" #startDateInput="ngModel">
-            <mat-datepicker-toggle matSuffix [for]="matStartDate"></mat-datepicker-toggle>
-            <mat-datepicker #matStartDate startView="multi-year"></mat-datepicker>
-            @if (startDateInput.touched && startDateInput.hasError('matStartDateInvalid')) {
-            <mat-error>Invalid start date</mat-error>
-            }
-        </mat-form-field>
+                <mat-form-field appearance="outline">
+                    <mat-label>Email</mat-label>
+                    <input matInput type="email" formControlName="email" placeholder="Enter Email" name="email">
+                    <mat-error><app-error-message [control]="experienceForm.get('email')" fieldName="Email"></app-error-message></mat-error>
+                </mat-form-field>
+            </div>
 
+            <div data-layout="row" data-layout-align="space-between center" class="mb-4 mt-2">
+                <h4 style="margin: 0;">Employment Intervals / Experiences</h4>
+                <button mat-icon-button type="button" (click)="addDateRangeRow()" color="primary" matTooltip="Add Experience">
+                    <mat-icon>add</mat-icon>
+                </button>
+            </div>
+            
+            <div formArrayName="experience">
+                @for (control of experienceFormArray.controls; track $index; let i = $index) {
+                <div [formGroupName]="i" style="display: flex; gap: 8px; align-items: center; margin-bottom: 16px; border: 1px solid rgba(0,0,0,0.12); border-radius: 8px; padding: 16px 16px; background-color: rgba(0,0,0,0.02);">
+                    <mat-form-field appearance="outline" class="mr-4">
+                        <mat-label>Select Start Date</mat-label>
+                        <input matInput [matDatepicker]="matStartDate" [max]="maxDate" placeholder="Start date"
+                            formControlName="start">
+                        <mat-datepicker-toggle matSuffix [for]="matStartDate"></mat-datepicker-toggle>
+                        <mat-datepicker #matStartDate startView="multi-year"></mat-datepicker>
+                        <mat-error><app-error-message [control]="control.get('start')" fieldName="Start date"></app-error-message></mat-error>
+                    </mat-form-field>
 
-        <mat-form-field>
-            <mat-label>Select End Date</mat-label>
-            <input matInput [matDatepicker]="matEndDate" placeholder="End date" [ngModel]="endDate()"
-                (ngModelChange)="endDate.set($event)" name="endDate" #endDateInput="ngModel">
-            <mat-datepicker-toggle matSuffix [for]="matEndDate"></mat-datepicker-toggle>
-            <mat-datepicker #matEndDate startView="multi-year"></mat-datepicker>
-            @if (endDateInput.touched && endDateInput.hasError('matEndDateInvalid')) {
-            <mat-error>Invalid end date</mat-error>
-            }
-        </mat-form-field>
+                    <mat-form-field appearance="outline">
+                        <mat-label>Select End Date</mat-label>
+                        <input matInput [matDatepicker]="matEndDate" placeholder="End date" formControlName="end">
+                        <mat-datepicker-toggle matSuffix [for]="matEndDate"></mat-datepicker-toggle>
+                        <mat-datepicker #matEndDate startView="multi-year"></mat-datepicker>
+                        <mat-error><app-error-message [control]="control.get('end')" fieldName="End date"></app-error-message></mat-error>
+                    </mat-form-field>
+                    
+                    <span style="flex: 1;"></span>
 
+                    <button mat-icon-button type="button" (click)="removeDateRangeRow(i)"
+                        [disabled]="experienceFormArray.length <= 1" color="warn" matTooltip="Remove Experience">
+                        <mat-icon>delete</mat-icon>
+                    </button>
+                </div>
+                }
+            </div>
+        </div>
+
+        <div data-layout="row" data-layout-align="start center">
+            <button mat-flat-button color="primary" type="button" (click)="submitRecord()"
+                [disabled]="experienceForm.invalid" class="mr-3">Save</button>
+            <button mat-flat-button color="accent" type="button" (click)="reset()">Reset</button>
+        </div>
     </form>
 
-    <button mat-flat-button (click)="calculateExperience()" class="mr-3">Add</button>
-    <button mat-flat-button (click)="reset()">Reset</button>
-
-    <div class="experienceTable">
-        <table mat-table [dataSource]="experiences()" class="">
-
-            <ng-container matColumnDef="index">
-                <th mat-header-cell *matHeaderCellDef> No. </th>
-                <td mat-cell *matCellDef="let element; let i = index"> {{i + 1}} </td>
-            </ng-container>
-
-            <ng-container matColumnDef="start">
-                <th mat-header-cell *matHeaderCellDef> Start Date </th>
-                <td mat-cell *matCellDef="let element"> {{element.start | date: 'MM/dd/yyyy'}} </td>
-            </ng-container>
-
-            <ng-container matColumnDef="end">
-                <th mat-header-cell *matHeaderCellDef> End Date </th>
-                <td mat-cell *matCellDef="let element"> {{element.end | date: 'MM/dd/yyyy'}} </td>
-            </ng-container>
-
-            <ng-container matColumnDef="experience">
-                <th mat-header-cell *matHeaderCellDef> Experience </th>
-                <td mat-cell *matCellDef="let element"> {{element.years}} Years {{element.months}} Months
-                    {{element.days}} days</td>
-            </ng-container>
-
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-        </table>
-
+    @if(getComputedExperience()) {
+    <div class="mt-4" style="border: 1px solid rgba(0,0,0,0.12); border-radius: 8px; padding: 16px; background-color: rgba(0,0,0,0.02);">
+        <h4 style="margin-top: 0; margin-bottom: 8px;">Calculated Experience</h4>
+        <div>{{getComputedExperience()}}</div>
     </div>
-    <div class="p-5">
-        @if(experiences().length){
-        <div>{{totalExperience().years}} Years {{totalExperience().months}} Months
-            {{totalExperience().days}} days</div>
-        }
-    </div>
+    }
+
 </div>

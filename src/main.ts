@@ -14,11 +14,13 @@ import { AppRoutes } from './app/app-routing.module';
 import { provideZonelessChangeDetection } from '@angular/core';
 // import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideAnimations } from '@angular/platform-browser/animations';
+import { appConfig } from './app.config';
 
 
 bootstrapApplication(AppComponent,
   {
     providers: [
+      ...(appConfig.providers || []),
       provideZonelessChangeDetection(),
       provideHttpClient(),
       provideRouter(
