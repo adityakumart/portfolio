@@ -1,45 +1,36 @@
-import {  Component, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 
 import {
-  FormBuilder,
-  FormGroup,
-  FormControl,
-  ReactiveFormsModule,
-  Validators,
+  FormsModule,
 } from '@angular/forms';
 
 @Component({
-    selector: 'app-percentage-calculator',
-    imports: [ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatIconModule, MatButtonModule],
-    templateUrl: './percentage-calculator.component.html',
-    styleUrl: './percentage-calculator.component.scss'
+  selector: 'app-percentage-calculator',
+  imports: [FormsModule, MatFormFieldModule, MatInputModule, MatIconModule, MatButtonModule],
+  templateUrl: './percentage-calculator.component.html',
+  styleUrl: './percentage-calculator.component.scss'
 })
 export class PercentageCalculatorComponent {
-  calculatorForm!: FormGroup;
 
-  constructor(private fb: FormBuilder) {
-    this.calculatorForm = this.fb.group({
-      initialValue: new FormControl('', Validators.required),
-      finalValue: new FormControl('', Validators.required)
-    });
-  }
+  initialValue = signal<number>(0);
+  finalValue = signal<number>(0);
 
-  showCalculated = signal(false);
+  percentageIncrease = computed(() => {
+    const initial = this.initialValue();
+    const final = this.finalValue();
 
-  calculatedPercentage = signal(0);
-
-  onSubmit() {
-    console.log('submited values: ', this.calculatorForm.value);
-    let valueToSet = 0;
-    if (this.calculatorForm.value.initialValue && this.calculatorForm.value.finalValue) {
-      valueToSet = (this.calculatorForm.value.finalValue - this.calculatorForm.value.initialValue) / this.calculatorForm.value.initialValue * 100;
-      valueToSet = Number(valueToSet.toFixed(2));
+    if (!initial || !final) {
+      return 0;
     }
-    this.calculatedPercentage.set(valueToSet);
-    this.showCalculated.set(true);
-  }
+
+    const increase = final - initial;
+    const result = (increase / initial) * 100;
+
+    // Return rounded to two decimal places
+    return Math.round(result * 100) / 100;
+  });
 }
