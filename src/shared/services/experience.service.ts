@@ -30,6 +30,10 @@ export class ExperienceService {
     return this.dbService.add<UserExperienceRecord>(this.storeName, record);
   }
 
+  updateRecord(record: UserExperienceRecord): Observable<UserExperienceRecord> {
+    return this.dbService.update<UserExperienceRecord>(this.storeName, record);
+  }
+
   getAllRecords(): Observable<UserExperienceRecord[]> {
     return this.dbService.getAll<UserExperienceRecord>(this.storeName);
   }
