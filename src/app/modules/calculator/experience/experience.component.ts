@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { provideNativeDateAdapter } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -20,14 +20,16 @@ type DurationAndDates = Duration & Dates;
     templateUrl: './experience.component.html',
     styleUrl: './experience.component.scss',
     providers: [provideNativeDateAdapter()],
-    imports: [CommonModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatTableModule, MatDatepickerModule, FormsModule, ReactiveFormsModule],
+    imports: [CommonModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatTableModule, MatDatepickerModule, FormsModule],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class ExperienceComponent {
-  private _snackBar = inject(MatSnackBar);
+  private snackBar = inject(MatSnackBar);
 
   experiences = signal<DurationAndDates[]>([]);
+  startDate = signal<Date | null>(null);
+  endDate = signal<Date | null>(null);
 
   totalExperience = signal<Duration>({
     days: 0,
@@ -38,20 +40,18 @@ export class ExperienceComponent {
   displayedColumns: string[] = ["index", "start", "end", "experience"];
   readonly maxDate = new Date();
 
-  experienceForm = new FormGroup({
-    start: new FormControl<Date | null>(null),
-    end: new FormControl<Date | null>(null),
-  });
 
   calculateExperience = () => {
-    if (this.experienceForm.value.start && this.experienceForm.value.end) {
-      if (this.experienceForm.value.start < this.experienceForm.value.end) {
-        const diff = DateTime.fromJSDate(this.experienceForm.value.end).diff(DateTime.fromJSDate(this.experienceForm.value.start), ["years", "months", "days"]);
+    const start = this.startDate();
+    const end = this.endDate();
+    if (start && end) {
+      if (start < end) {
+        const diff = DateTime.fromJSDate(end).diff(DateTime.fromJSDate(start), ["years", "months", "days"]);
 
         let tempArray: DurationAndDates[] = [...this.experiences(), {
           ...diff.toObject() as Duration,
-          start: this.experienceForm.value.start as Date,
-          end: this.experienceForm.value.end as Date
+          start: this.startDate() as Date,
+          end: this.endDate() as Date
         }];
         tempArray = tempArray.sort((a, b) => a.start.valueOf() - b.start.valueOf());
         this.experiences.update(() => ([
@@ -59,7 +59,7 @@ export class ExperienceComponent {
         ]));
 
 
-        let timeDiff = Math.abs(this.experienceForm.value.end.getTime() - this.experienceForm.value.start.getTime());
+        let timeDiff = Math.abs(end.getTime() - start.getTime());
         let years = Math.floor(timeDiff / (1000 * 3600 * 24 * 365.25));
         timeDiff -= years * (1000 * 3600 * 24 * 365.25);
         let months = Math.floor(timeDiff / (1000 * 3600 * 24 * 30.44));
@@ -79,7 +79,9 @@ export class ExperienceComponent {
         }));
 
 
-        this.experienceForm.reset();
+        this.startDate.update(() => null);
+        this.endDate.update(() => null);
+
       } else {
         this.openSnackBar("Last working date cannot be before the date of joining.");
       }
@@ -98,7 +100,7 @@ export class ExperienceComponent {
 
 
   openSnackBar(message: string) {
-    this._snackBar.open(message, '', {
+    this.snackBar.open(message, '', {
       horizontalPosition: "end",
       verticalPosition: "top",
       duration: 3000,
