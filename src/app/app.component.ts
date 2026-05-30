@@ -33,19 +33,9 @@ export class AppComponent {
       icon: "home"
     },
     {
-      link: "/experience-calculator",
-      label: "Experience Calculator",
-      icon: "work_history"
-    },
-    {
-      link: "/percentage-calculator",
-      label: "Percentage Increase Calculator",
+      link: "/calculator",
+      label: "Calculator",
       icon: "calculate"
-    },
-    {
-      link: "/time-zone-converter",
-      label: "Time Zone",
-      icon: "schedule"
     }
     // {
     //   link: "/formbuilder",
