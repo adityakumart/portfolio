@@ -1,4 +1,22 @@
-# Portfolio
+# Personal Portfolio
+
+A personal portfolio website built to showcase my projects, skills, and professional experience.
+
+## Features
+
+- **Project Showcase:** A detailed view of my recent work and personal projects.
+- **About Me:** Information about my background, education, and core skills.
+- **Responsive Design:** Optimized for both desktop and mobile viewing.
+
+## Technologies Used
+
+- [Angular](https://angular.io/) (v16.2.0)
+- TypeScript
+- HTML5 & SCSS
+
+---
+
+## Angular CLI Development Instructions
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 16.2.0.
 
@@ -27,14 +45,17 @@ Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To u
 To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
 
 
-## Deployment to Github Pages
+## Deployment to GitHub Pages
 
+You can use the custom npm script to build the project for GitHub Pages:
+
+```bash
 npm run buildgithub
+```
 
-Update 
-index.html
-<base href="/portfolio/">
+Alternatively, manually update `index.html` to include `<base href="/portfolio/">`, then run the following commands:
 
-
+```bash
 ng build
 npx angular-cli-ghpages --dir=dist/portfolio
+```
