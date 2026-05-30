@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { provideNativeDateAdapter } from '@angular/material/core';
@@ -13,13 +13,17 @@ import { ExperienceService, UserExperienceRecord } from 'src/shared/services/exp
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ErrorMessageComponent } from '../../../shared/components/error-message.component';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { ExperienceListDialogComponent } from './experience-list-dialog.component';
+import { CommonMaterialModule } from "src/app/shared/Material/common-material.module";
+import { MatDividerModule } from '@angular/material/divider';
 
 @Component({
   selector: 'app-experience',
   templateUrl: './experience.component.html',
   styleUrl: './experience.component.scss',
   providers: [provideNativeDateAdapter()],
-  imports: [CommonModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatTableModule, MatDatepickerModule, ReactiveFormsModule, MatIconModule, MatTooltipModule, ErrorMessageComponent],
+  imports: [CommonModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatTableModule, MatDatepickerModule, ReactiveFormsModule, MatIconModule, MatTooltipModule, ErrorMessageComponent, MatDialogModule, CommonMaterialModule, MatDividerModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 
@@ -28,11 +32,14 @@ export class ExperienceComponent implements OnInit {
   private expService = inject(ExperienceService);
 
   private snackBar = inject(MatSnackBar);
+  private dialog = inject(MatDialog);
+  private cdr = inject(ChangeDetectorRef);
 
 
   savedRecords = signal<UserExperienceRecord[]>([]);
 
   experienceForm: FormGroup = this.fb.group({
+    id: [null],
     name: ['', Validators.required],
     email: ['', Validators.email],
     experience: this.fb.array([this.createDateRangeGroup()])
@@ -82,6 +89,7 @@ export class ExperienceComponent implements OnInit {
     const totalDays = (calculatedExp.years * 365) + (calculatedExp.months * 30) + calculatedExp.days;
 
     const payload: UserExperienceRecord = {
+      ...(formValue.id ? { id: formValue.id } : {}),
       name: formValue.name,
       email: formValue.email,
       experience: formValue.experience,
@@ -91,12 +99,13 @@ export class ExperienceComponent implements OnInit {
       displayDays: calculatedExp.days
     };
 
-    this.expService.saveRecord(payload).subscribe({
+    const saveObs = formValue.id ? this.expService.updateRecord(payload) : this.expService.saveRecord(payload);
+
+    saveObs.subscribe({
       next: () => {
-        this.experienceForm.reset();
-        this.experienceFormArray.clear();
-        this.experienceFormArray.push(this.createDateRangeGroup());
+        this.reset();
         this.loadRecords();
+        this.cdr.markForCheck();
       }
     });
   }
@@ -104,6 +113,37 @@ export class ExperienceComponent implements OnInit {
   deleteRecord(id?: number) {
     if (!id) return;
     this.expService.deleteRecord(id).subscribe(() => this.loadRecords());
+  }
+
+  openListDialog() {
+    const dialogRef = this.dialog.open(ExperienceListDialogComponent, {
+      width: '800px',
+      data: { records: this.savedRecords() }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        if (result.action === 'edit') {
+          this.editRecord(result.record);
+        } else if (result.action === 'delete') {
+          this.deleteRecord(result.record.id);
+        }
+      }
+    });
+  }
+
+  editRecord(record: UserExperienceRecord) {
+    this.experienceFormArray.clear();
+    record.experience.forEach(exp => {
+      const group = this.createDateRangeGroup();
+      group.patchValue({
+        start: exp.start ? new Date(exp.start) : null,
+        end: exp.end ? new Date(exp.end) : null
+      });
+      this.experienceFormArray.push(group);
+    });
+    this.experienceForm.patchValue({ id: record.id, name: record.name, email: record.email });
+    this.cdr.markForCheck();
   }
 
   getComputedExperience(): string {
@@ -121,7 +161,8 @@ export class ExperienceComponent implements OnInit {
 
   reset = () => {
     this.experienceForm.reset();
-
+    this.experienceFormArray.clear();
+    this.experienceFormArray.push(this.createDateRangeGroup());
   }
 
 
