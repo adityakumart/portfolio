@@ -36,6 +36,11 @@ export class AppComponent {
       link: "/calculator",
       label: "Calculator",
       icon: "calculate"
+    },
+    {
+      link: "/json-to-typescript",
+      label: "JSON to TypeScript",
+      icon: "code"
     }
     // {
     //   link: "/formbuilder",

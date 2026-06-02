@@ -1,0 +1,259 @@
+// Import Material theme variables if available
+// Adjust colors based on your theme
+
+.json-to-typescript-container {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  min-height: 100vh;
+
+  // Header Card Styles
+  .header-card {
+    margin-bottom: 32px;
+    box-shadow: var(--mat-sys-level1);
+    border-radius: 8px;
+
+    mat-card-header {
+      display: block;
+      padding: 24px;
+    }
+
+    mat-card-title {
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    mat-card-subtitle {
+      font-size: 14px;
+    }
+  }
+
+  // Content Wrapper
+  .content-wrapper {
+    margin-bottom: 32px;
+
+    // Responsive Layout
+    @media (max-width: 1200px) {
+      flex-direction: column;
+      gap: 24px !important;
+    }
+  }
+
+  // Section Cards
+  .input-section,
+  .output-section {
+    box-shadow: var(--mat-sys-level1);
+    border-radius: 8px;
+    transition: box-shadow 0.3s ease;
+
+    &:hover {
+      box-shadow: var(--mat-sys-level3);
+    }
+
+    mat-card-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--mat-sys-outline-variant);
+    }
+
+    mat-card-content {
+      padding: 24px;
+    }
+  }
+
+  // Section Title
+  .section-title {
+    font-size: 18px !important;
+    font-weight: 600 !important;
+  }
+
+  // Form Fields
+  .full-width {
+    width: 100%;
+    margin-bottom: 16px;
+  }
+
+  .textarea-field {
+    margin-bottom: 24px;
+
+    .json-textarea {
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      padding: 12px;
+    }
+  }
+
+  mat-form-field {
+    ::ng-deep {
+      .mat-mdc-form-field-hint-wrapper {
+        padding: 0 !important;
+      }
+
+      .mat-mdc-text-field-wrapper {
+        padding-bottom: 0 !important;
+      }
+    }
+  }
+
+  // Button Styles
+  .button-group,
+  .output-button-group {
+    margin-top: 16px;
+
+    button {
+      transition: all 0.3s ease;
+
+      &:hover:not(:disabled) {
+        transform: translateY(-2px);
+      }
+
+      mat-icon {
+        margin-right: 8px;
+      }
+    }
+  }
+
+  .button-text {
+    font-weight: 500;
+  }
+
+  // Loading Indicator
+  .loading-indicator {
+    margin-top: 20px;
+    padding: 16px;
+    background-color: var(--mat-sys-surface-container);
+    border-radius: 4px;
+    gap: 12px;
+
+    .loading-text {
+      font-size: 14px;
+      font-weight: 500;
+    }
+  }
+
+  // Output Display
+  .interface-output {
+    background-color: var(--mat-sys-surface-container);
+    border: 1px solid var(--mat-sys-outline-variant);
+    border-radius: 4px;
+    padding: 16px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--mat-sys-on-surface);
+    overflow-x: auto;
+    max-height: 400px;
+    overflow-y: auto;
+    margin: 16px 0;
+  }
+
+  // Copy Button State
+  button[matTooltip] {
+    &.copied {
+      color: var(--mat-sys-primary);
+
+      mat-icon {
+        animation: pulse 0.5s ease;
+      }
+    }
+  }
+
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.2);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  // Responsive Design for Mobile
+  @media (max-width: 768px) {
+    padding: 16px;
+
+    .header-card {
+      margin-bottom: 20px;
+
+      mat-card-title {
+        font-size: 22px;
+      }
+
+      mat-card-subtitle {
+        font-size: 12px;
+      }
+    }
+
+    .input-section,
+    .output-section {
+      mat-card-content {
+        padding: 16px;
+      }
+    }
+
+    .json-textarea {
+      font-size: 11px !important;
+    }
+
+    .button-group {
+      flex-direction: column;
+      gap: 8px !important;
+
+      button {
+        width: 100%;
+      }
+    }
+
+    .interface-output {
+      font-size: 11px;
+      max-height: 300px;
+      padding: 12px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    padding: 12px;
+
+    .header-card {
+      mat-card-title {
+        font-size: 18px;
+      }
+    }
+
+    .button-group {
+      gap: 6px !important;
+
+      button {
+        font-size: 12px;
+
+        mat-icon {
+          margin-right: 4px;
+        }
+      }
+    }
+
+    .output-button-group {
+      gap: 4px !important;
+
+      button {
+        padding: 8px;
+      }
+    }
+  }
+}
+
+// Snackbar customization
+::ng-deep {
+  .error-snackbar {
+    background-color: var(--mat-sys-error) !important;
+    color: var(--mat-sys-on-error) !important;
+  }
+
+  .success-snackbar {
+    background-color: var(--mat-sys-primary) !important;
+    color: var(--mat-sys-on-primary) !important;
+  }
+}

@@ -1,0 +1,131 @@
+<div class="json-to-typescript-container">
+  <!-- Header Section -->
+  <mat-card class="header-card">
+    <mat-card-header>
+      <mat-card-title>JSON to TypeScript Interface Generator</mat-card-title>
+      <mat-card-subtitle>Convert your JSON objects into strongly-typed TypeScript interfaces</mat-card-subtitle>
+    </mat-card-header>
+  </mat-card>
+
+  <!-- Main Content -->
+  <div class="content-wrapper" fxLayout="row" fxLayoutGap="24px" fxLayoutAlign="stretch stretch">
+    <!-- Input Section -->
+    <mat-card class="input-section" fxFlex="1 1 50%">
+      <mat-card-header>
+        <mat-card-title class="section-title">Input JSON</mat-card-title>
+      </mat-card-header>
+
+      <mat-card-content>
+        <form [formGroup]="form">
+          <!-- Interface Name Input -->
+          <mat-form-field class="full-width" appearance="outline">
+            <mat-label>Interface Name</mat-label>
+            <input
+              matInput
+              formControlName="interfaceName"
+              placeholder="e.g., User, Product, Response"
+              type="text"
+            />
+            <mat-error *ngIf="interfaceName?.hasError('required')">
+              Interface name is required
+            </mat-error>
+            <mat-error *ngIf="interfaceName?.hasError('pattern')">
+              Must start with letter, $, or _ and contain only alphanumeric characters
+            </mat-error>
+          </mat-form-field>
+
+          <!-- JSON Input TextArea -->
+          <mat-form-field class="full-width textarea-field" appearance="outline">
+            <mat-label>Paste your JSON here</mat-label>
+            <textarea
+              matInput
+              formControlName="jsonInput"
+              placeholder='{"name": "John", "age": 30, "email": "john@example.com"}'
+              rows="12"
+              class="json-textarea"
+            ></textarea>
+            <mat-error *ngIf="jsonInput?.hasError('required')">
+              JSON input is required
+            </mat-error>
+            <mat-error *ngIf="jsonInput?.hasError('invalidJson')">
+              Please enter valid JSON format
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Action Buttons -->
+          <div class="button-group" fxLayout="row" fxLayoutGap="12px">
+            <button
+              mat-raised-button
+              color="primary"
+              (click)="generateInterface()"
+              [disabled]="form.invalid || isLoading"
+              fxFlex="1"
+            >
+              <mat-icon>auto_awesome</mat-icon>
+              <span class="button-text">Generate Interface</span>
+            </button>
+
+            <button
+              mat-stroked-button
+              (click)="clearInput()"
+              fxFlex="1"
+            >
+              <mat-icon>clear</mat-icon>
+              <span class="button-text">Clear</span>
+            </button>
+          </div>
+
+          <!-- Loading Indicator -->
+          <div *ngIf="isLoading" class="loading-indicator" fxLayout="row" fxLayoutAlign="center center">
+            <mat-spinner diameter="24"></mat-spinner>
+            <span class="loading-text">Processing...</span>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Output Section -->
+    <mat-card class="output-section" fxFlex="1 1 50%" *ngIf="showOutput">
+      <mat-card-header>
+        <mat-card-title class="section-title">Generated TypeScript Interface</mat-card-title>
+      </mat-card-header>
+
+      <mat-card-content>
+        <!-- Output Display -->
+        <pre class="interface-output">{{ generatedInterface }}</pre>
+
+        <!-- Action Buttons -->
+        <div class="output-button-group" fxLayout="row" fxLayoutGap="8px">
+          <button
+            mat-icon-button
+            matTooltip="Copy to Clipboard"
+            color="accent"
+            (click)="copyToClipboard()"
+            [class.copied]="copySuccess"
+          >
+            <mat-icon>{{ copySuccess ? 'check_circle' : 'content_copy' }}</mat-icon>
+          </button>
+
+          <button
+            mat-icon-button
+            matTooltip="Download as .ts file"
+            color="accent"
+            (click)="downloadInterface()"
+          >
+            <mat-icon>download</mat-icon>
+          </button>
+
+          <mat-divider [vertical]="true"></mat-divider>
+
+          <button
+            mat-icon-button
+            matTooltip="Close"
+            (click)="showOutput = false"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
