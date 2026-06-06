@@ -104,7 +104,7 @@ export class AppComponent {
       this.loadStyle('bootstrap.css');
       this.loadStyle('border.css');
       this.loadStyle('colors.css');
-      this.loadStyle('materialIcons.css');
+      // this.loadStyle('materialIcons.css');
       this.loadStyle('text.css');
 
       // let bases = this.document.getElementsByTagName('base');
