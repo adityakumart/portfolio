@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 
 @Component({
@@ -6,6 +6,7 @@ import { MatCardModule } from '@angular/material/card';
   standalone: true,
   imports: [MatCardModule],
   templateUrl: './education.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './education.component.scss'
 })
 export class EducationComponent {

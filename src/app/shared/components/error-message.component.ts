@@ -1,9 +1,10 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { AbstractControl } from '@angular/forms';
 
 @Component({
   selector: 'app-error-message',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `{{ errorMessage }}`
 })
 export class ErrorMessageComponent {

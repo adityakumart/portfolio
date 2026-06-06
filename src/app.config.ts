@@ -3,7 +3,7 @@ import { ApplicationConfig, provideZonelessChangeDetection } from '@angular/core
 import { provideIndexedDb, DBConfig } from 'ngx-indexed-db';
 import { provideRouter, withPreloading, NoPreloading } from '@angular/router';
 import { provideHttpClient, withFetch } from '@angular/common/http';
-import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
+import { provideClientHydration, withEventReplay, withNoIncrementalHydration } from '@angular/platform-browser';
 import { AppRoutes } from './app/app-routing.module';
 
 const dbConfig: DBConfig = {
@@ -30,6 +30,6 @@ export const appConfig: ApplicationConfig = {
       AppRoutes,
       withPreloading(NoPreloading)
     ),
-    provideClientHydration(withEventReplay())
+    provideClientHydration(withEventReplay(), withNoIncrementalHydration())
   ]
 };

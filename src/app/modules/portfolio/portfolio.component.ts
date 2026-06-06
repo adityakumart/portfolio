@@ -1,4 +1,4 @@
-import { Component, OnDestroy, signal, inject, OnInit, computed, AfterViewInit, ElementRef } from '@angular/core';
+import { Component, OnDestroy, signal, inject, OnInit, computed, AfterViewInit, ElementRef, ChangeDetectionStrategy } from '@angular/core';
 
 import { PortfolioRoutingModule } from './portfolio-routing.module';
 import { MatCardModule } from '@angular/material/card';
@@ -38,6 +38,7 @@ import { AwardsComponent } from './sub-components/awards/awards.component';
         EducationComponent,
         AwardsComponent
     ],
+    changeDetection: ChangeDetectionStrategy.Eager,
     providers: [GlobalData]
 })
 export class PortfolioComponent implements OnDestroy, OnInit, AfterViewInit {
