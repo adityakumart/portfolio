@@ -37,11 +37,6 @@
                 "inject": false
               },
               {
-                "input": "src/app/shared/styles/materialIcons.scss",
-                "bundleName": "materialIcons",
-                "inject": false
-              },
-              {
                 "input": "src/app/shared/styles/bootstrap.scss",
                 "bundleName": "bootstrap",
                 "inject": false
@@ -54,11 +49,6 @@
               {
                 "input": "src/app/shared/styles/colors.scss",
                 "bundleName": "colors",
-                "inject": false
-              },
-              {
-                "input": "src/app/shared/styles/materialIcons.scss",
-                "bundleName": "materialIcons",
                 "inject": false
               },
               {

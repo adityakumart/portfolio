@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { provideNativeDateAdapter } from '@angular/material/core';
@@ -7,9 +7,8 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTableModule } from '@angular/material/table';
-import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { ExperienceService, UserExperienceRecord } from 'src/shared/services/experience.service';
+import { ExperienceService, UserExperienceRecord } from './experience.service';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ErrorMessageComponent } from '../../../shared/components/error-message.component';
@@ -17,6 +16,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ExperienceListDialogComponent } from './experience-list-dialog.component';
 import { CommonMaterialModule } from "src/app/shared/Material/common-material.module";
 import { MatDividerModule } from '@angular/material/divider';
+import { ToastrService } from 'src/app/shared/services/toaster.service';
 
 @Component({
   selector: 'app-experience',
@@ -31,12 +31,9 @@ export class ExperienceComponent implements OnInit {
   private fb = inject(FormBuilder);
   private expService = inject(ExperienceService);
 
-  private snackBar = inject(MatSnackBar);
   private dialog = inject(MatDialog);
   private cdr = inject(ChangeDetectorRef);
 
-
-  savedRecords = signal<UserExperienceRecord[]>([]);
 
   experienceForm: FormGroup = this.fb.group({
     id: [null],
@@ -73,10 +70,7 @@ export class ExperienceComponent implements OnInit {
   }
 
   loadRecords() {
-    this.expService.getAllRecords().subscribe({
-      next: (data) => this.savedRecords.set(data),
-      error: (err) => console.error('DB Error:', err)
-    });
+    this.expService.refreshExperiences();
   }
 
   submitRecord() {
@@ -99,26 +93,24 @@ export class ExperienceComponent implements OnInit {
       displayDays: calculatedExp.days
     };
 
-    const saveObs = formValue.id ? this.expService.updateRecord(payload) : this.expService.saveRecord(payload);
+    const saveObs = formValue.id ? this.expService.updateExperience(payload) : this.expService.addExperience(payload);
 
-    saveObs.subscribe({
-      next: () => {
-        this.reset();
-        this.loadRecords();
-        this.cdr.markForCheck();
-      }
+    saveObs.then(() => {
+      this.reset();
+      this.loadRecords();
+      this.cdr.markForCheck();
     });
   }
 
   deleteRecord(id?: number) {
     if (!id) return;
-    this.expService.deleteRecord(id).subscribe(() => this.loadRecords());
+    this.expService.deleteExperience(id).then(() => this.loadRecords());
   }
 
   openListDialog() {
     const dialogRef = this.dialog.open(ExperienceListDialogComponent, {
       width: '800px',
-      data: { records: this.savedRecords() }
+      data: { records: this.expService.experiences() }
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -163,16 +155,6 @@ export class ExperienceComponent implements OnInit {
     this.experienceForm.reset();
     this.experienceFormArray.clear();
     this.experienceFormArray.push(this.createDateRangeGroup());
-  }
-
-
-  openSnackBar(message: string) {
-    this.snackBar.open(message, '', {
-      horizontalPosition: "end",
-      verticalPosition: "top",
-      duration: 3000,
-      panelClass: ['error-snackbar']
-    });
   }
 
 }
