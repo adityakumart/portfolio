@@ -7,7 +7,7 @@ import {
   ViewChild,
   ChangeDetectionStrategy,
 } from '@angular/core';
-import { CommonMaterialModule } from 'src/app/shared/Material/common-material.module';
+import { CommonMaterialModule } from '../../../shared/Material/common-material.module';
 import {
   CdkDragDrop,
   DragDropModule,

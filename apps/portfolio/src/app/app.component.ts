@@ -21,7 +21,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ThemeService } from './theme.service';
-import { GlobalData } from 'src/shared/data/GlobalData';
+import { GlobalData } from '../shared/data/GlobalData';
 
 @Component({
   selector: 'app-root',

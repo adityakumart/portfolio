@@ -26,9 +26,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ErrorMessageComponent } from '../../../shared/components/error-message.component';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ExperienceListDialogComponent } from './experience-list-dialog.component';
-import { CommonMaterialModule } from 'src/app/shared/Material/common-material.module';
+import { CommonMaterialModule } from '../../../shared/Material/common-material.module';
 import { MatDividerModule } from '@angular/material/divider';
-import { ToastrService } from 'src/app/shared/services/toaster.service';
 
 @Component({
   selector: 'app-experience',

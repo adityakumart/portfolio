@@ -60,7 +60,9 @@
         "security": {
           "allowedHosts": []
         },
-        "ssr": false
+        "ssr": {
+          "entry": "apps/portfolio/src/server.ts"
+        }
       },
       "configurations": {
         "production": {
@@ -86,9 +88,13 @@
         }
       },
       "defaultConfiguration": "production",
-      "outputs": ["{options.outputPath.base}"]
+      "outputs": [
+        "{options.outputPath.base}"
+      ]
     },
     "serve": {
+      "hmr": true,
+      "open": true,
       "executor": "@angular/build:dev-server",
       "configurations": {
         "production": {

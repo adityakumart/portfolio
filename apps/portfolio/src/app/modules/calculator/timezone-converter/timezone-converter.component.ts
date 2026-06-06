@@ -12,13 +12,13 @@ import { MatInputModule } from '@angular/material/input';
 import { MatTimepickerModule } from '@angular/material/timepicker';
 import { DateTime } from 'luxon';
 import { MatSelectModule } from '@angular/material/select';
-import { TimeZoneInterface, TimeZonesList } from 'src/shared/data/timeszones';
+import { TimeZoneInterface, TimeZonesList } from '../../../../shared/data/timeszones';
 import { MatButtonModule } from '@angular/material/button';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 import { AsyncPipe } from '@angular/common';
-import { ToastrService } from 'src/app/shared/services/toaster.service';
+import { ToastrService } from '../../../shared/services/toaster.service';
 
 @Component({
   selector: 'app-timezone-converter',

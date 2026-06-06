@@ -28,7 +28,7 @@ import {
   tap,
 } from 'rxjs/operators';
 
-import { GlobalData } from 'src/shared/data/GlobalData';
+import { GlobalData } from '../../../shared/data/GlobalData';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { HeroComponent } from './sub-components/hero/hero.component';
 import { SummaryComponent } from './sub-components/summary/summary.component';
@@ -59,10 +59,11 @@ import { AwardsComponent } from './sub-components/awards/awards.component';
   changeDetection: ChangeDetectionStrategy.Eager,
   providers: [GlobalData],
 })
-export class PortfolioComponent implements OnDestroy, OnInit, AfterViewInit {
+export class PortfolioComponent implements OnDestroy, AfterViewInit {
   destroyed = new Subject<void>();
   private el = inject(ElementRef);
   private platformId = inject(PLATFORM_ID);
+  private globalData = inject(GlobalData);
   columnsMap = new Map([
     // [Breakpoints.XSmall, 1],
     // [Breakpoints.Small, 2],
@@ -76,7 +77,7 @@ export class PortfolioComponent implements OnDestroy, OnInit, AfterViewInit {
     [Breakpoints.XLarge, 2],
   ]);
 
-  constructor(private globalData: GlobalData) {
+  constructor() {
     inject(BreakpointObserver)
       .observe([
         Breakpoints.XSmall,
@@ -93,9 +94,6 @@ export class PortfolioComponent implements OnDestroy, OnInit, AfterViewInit {
           }
         }
       });
-  }
-  ngOnInit(): void {
-    this.typewriterEffect(this.resume().basics.jobtitle);
   }
 
   ngAfterViewInit() {
@@ -121,6 +119,7 @@ export class PortfolioComponent implements OnDestroy, OnInit, AfterViewInit {
   }
 
   gridColumns = signal(1);
+
 
   resume = signal(this.globalData.resume);
   classNameForJobTitle = computed(() => {
@@ -155,26 +154,5 @@ export class PortfolioComponent implements OnDestroy, OnInit, AfterViewInit {
   ngOnDestroy() {
     this.destroyed.next();
     this.destroyed.complete();
-  }
-
-  typewriterEffect(text: string) {
-    const textArray = text.split('');
-    const interval$ = interval(100);
-
-    interval$
-      .pipe(
-        takeWhile((index) => index < textArray.length),
-        finalize(() => this.resetTypewriter(textArray)),
-      )
-      .subscribe((index) => {
-        this.jobtitle.update((char) => char + textArray[index]);
-      });
-  }
-
-  resetTypewriter(textArray: string[]) {
-    setTimeout(() => {
-      this.jobtitle.update(() => '');
-      this.typewriterEffect(this.resume().basics.jobtitle);
-    }, 2000); // reset after two seconds
   }
 }

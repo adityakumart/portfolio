@@ -1,5 +1,5 @@
 import { Component, input, ChangeDetectionStrategy } from '@angular/core';
-import { ResumeObject } from 'src/shared/Interface/Resume';
+import { ResumeObject } from '../../../../../shared/Interface/Resume';
 
 @Component({
   selector: 'app-hero',

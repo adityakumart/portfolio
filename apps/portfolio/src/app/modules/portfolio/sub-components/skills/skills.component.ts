@@ -2,7 +2,7 @@ import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { ResumeObject } from 'src/shared/Interface/Resume';
+import { ResumeObject } from '../../../../../shared/Interface/Resume';
 
 @Component({
   selector: 'app-skills',
