@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 import { MatChipsModule } from '@angular/material/chips';
 
 @Component({
@@ -6,6 +6,7 @@ import { MatChipsModule } from '@angular/material/chips';
   standalone: true,
   imports: [MatChipsModule],
   templateUrl: './projects.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './projects.component.scss'
 })
 export class ProjectsComponent {

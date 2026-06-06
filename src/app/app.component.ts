@@ -1,4 +1,4 @@
-import { Component, computed, DOCUMENT, Inject, inject, signal } from '@angular/core';
+import { Component, computed, DOCUMENT, Inject, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { RouterOutlet, RouterLink, Router, NavigationEnd } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map } from 'rxjs/operators';
@@ -23,6 +23,7 @@ import { GlobalData } from 'src/shared/data/GlobalData';
     MatTooltipModule
   ],
   templateUrl: './app.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
