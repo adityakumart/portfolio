@@ -163,84 +163,41 @@
     0% {
       transform: scale(1);
     }
+
     50% {
       transform: scale(1.2);
     }
+
     100% {
       transform: scale(1);
     }
   }
 
-  // Responsive Design for Mobile
-  @media (max-width: 768px) {
-    padding: 16px;
+  padding: 12px;
 
-    .header-card {
-      margin-bottom: 20px;
-
-      mat-card-title {
-        font-size: 22px;
-      }
-
-      mat-card-subtitle {
-        font-size: 12px;
-      }
-    }
-
-    .input-section,
-    .output-section {
-      mat-card-content {
-        padding: 16px;
-      }
-    }
-
-    .json-textarea {
-      font-size: 11px !important;
-    }
-
-    .button-group {
-      flex-direction: column;
-      gap: 8px !important;
-
-      button {
-        width: 100%;
-      }
-    }
-
-    .interface-output {
-      font-size: 11px;
-      max-height: 300px;
-      padding: 12px;
+  .header-card {
+    mat-card-title {
+      font-size: 18px;
     }
   }
 
-  @media (max-width: 480px) {
-    padding: 12px;
+  .button-group {
+    gap: 6px !important;
 
-    .header-card {
-      mat-card-title {
-        font-size: 18px;
+    button {
+      font-size: 12px;
+
+      mat-icon {
+        margin-right: 4px;
       }
     }
+  }
 
-    .button-group {
-      gap: 6px !important;
+  .output-button-group {
+    gap: 4px !important;
 
-      button {
-        font-size: 12px;
-
-        mat-icon {
-          margin-right: 4px;
-        }
-      }
-    }
-
-    .output-button-group {
-      gap: 4px !important;
-
-      button {
-        padding: 8px;
-      }
+    button {
+      padding: 8px;
     }
   }
 }
