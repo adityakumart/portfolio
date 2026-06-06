@@ -3,13 +3,14 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "nx serve portfolio --hmr -o",
-    "build": "nx build --configuration production --aot && gzipper compress ./dist/portfolio",
-    "githubBuild": "nx build --configuration production --aot && npx angular-cli-ghpages --dir=dist/portfolio/browser",
-    "build1": "nx build --configuration production --aot --source-map && gzipper compress ./dist/portfolio",
-    "watch": "nx build --watch --configuration development",
-    "test": "nx test",
-    "serve:ssr:portfolio": "node dist/portfolio/server/server.mjs"
+    "dev:web": "npx nx serve portfolio --hmr -o",
+    "build": "nx build portfolio --configuration production && gzipper compress ./dist/apps/portfolio",
+    "githubBuild": "nx build portfolio --configuration production && npx angular-cli-ghpages --dir=dist/apps/portfolio/browser",
+    "build1": "nx build portfolio --configuration production --source-map && gzipper compress ./dist/apps/portfolio",
+    "watch": "nx build portfolio --watch --configuration development",
+    "test": "nx test portfolio",
+    "serve:ssr:portfolio": "node dist/apps/portfolio/server/server.mjs",
+    "dev:api": "npx nx serve portfolio-core"
   },
   "private": true,
   "dependencies": {
@@ -51,7 +52,7 @@
     "@swc/helpers": "~0.5.18",
     "@types/express": "^5.0.1",
     "@types/luxon": "^3.4.2",
-    "@types/node": "20.19.9",
+    "@types/node": "^20.19.9",
     "angular-cli-ghpages": "^2.0.1",
     "esbuild": "^0.27.0",
     "eslint": "^9.8.0",
