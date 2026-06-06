@@ -79,7 +79,7 @@
 
         <div data-layout="row" data-layout-xs="column" data-layout-align="start center">
             <button mat-flat-button color="primary" type="button" (click)="submitRecord()"
-                [disabled]="experienceForm.invalid" class="mr-3">Save</button>
+                [disabled]="experienceForm.invalid" class="mr-3">{{experienceForm.value.id ? 'Update' : 'Add'}}</button>
             <button mat-flat-button color="accent" type="button" (click)="reset()">Reset</button>
         </div>
     </form>

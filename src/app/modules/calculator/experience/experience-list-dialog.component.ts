@@ -5,7 +5,7 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { UserExperienceRecord } from 'src/shared/services/experience.service';
+import { UserExperienceRecord } from './experience.service';
 
 @Component({
   selector: 'app-experience-list-dialog',
@@ -60,7 +60,10 @@ import { UserExperienceRecord } from 'src/shared/services/experience.service';
 export class ExperienceListDialogComponent {
   displayedColumns: string[] = ['name', 'email', 'experience', 'action'];
 
-  constructor(public dialogRef: MatDialogRef<ExperienceListDialogComponent>, @Inject(MAT_DIALOG_DATA) public data: { records: UserExperienceRecord[] }) {}
+  constructor(
+    public dialogRef: MatDialogRef<ExperienceListDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: { records: UserExperienceRecord[] }
+  ) { }
 
   onAction(action: string, record: UserExperienceRecord) { this.dialogRef.close({ action, record }); }
 }
