@@ -1,0 +1,27 @@
+<mat-tab-group
+  mat-stretch-tabs="false"
+  mat-align-tabs="start"
+  class="m-4 b-1 br-1"
+>
+  <mat-tab label="Percentage Increase">
+    <ng-template matTabContent>
+      <div class="fixed-tab-content p-5">
+        <app-percentage-calculator></app-percentage-calculator>
+      </div>
+    </ng-template>
+  </mat-tab>
+  <mat-tab label="Experience">
+    <ng-template matTabContent>
+      <div class="fixed-tab-content p-5">
+        <app-experience></app-experience>
+      </div>
+    </ng-template>
+  </mat-tab>
+  <mat-tab label="Time Zone Converter">
+    <ng-template matTabContent>
+      <div class="fixed-tab-content p-5">
+        <app-timezone-converter></app-timezone-converter>
+      </div>
+    </ng-template>
+  </mat-tab>
+</mat-tab-group>

@@ -1,0 +1,273 @@
+import { Injectable } from '@angular/core';
+import { ResumeObject } from '../Interface/Resume';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class GlobalData {
+  resume: ResumeObject = {
+    basics: {
+      name: 'Aditya Kumar T',
+      jobtitle: 'Product Group Lead Frontend',
+      image: '',
+      email: 'aditya.togaru@gmail.com',
+      phone: '+91 9505028181',
+      socialUrl: [
+        // {
+        //     name: "Github",
+        //     url: "https://adityakumart.github.io/portfolio/",
+        // },
+        {
+          name: 'LinkedIn',
+          url: 'https://www.linkedin.com/in/aditya-kumar-togaru/',
+        },
+      ],
+      summary: [
+        '8+ years of comprehensive experience in web-based application development, specializing in building scalable, enterprise-grade frontend solutions using Angular, React JS, JavaScript, and TypeScript.',
+        'Demonstrated leadership as a Product Group Lead, successfully managing frontend architecture, mentoring teams, and driving core technical decisions to establish best practices.',
+        'Proficient in modern web technologies including HTML5, CSS3, SASS, ES6+, jQuery, and Bootstrap, ensuring highly responsive, pixel-perfect, and accessible user interfaces.',
+        'Accelerated the software development lifecycle by extensively leveraging advanced AI coding assistants, including Claude AI and Cursor IDE, to rapidly build applications, optimize code, and prototype complex features.',
+        'Expertise in managing multiple concurrent projects under strict deadlines, aligning technical deliverables with complex business objectives and dynamic product roadmaps.',
+        'Proven track record of collaborating deeply with cross-functional teams (UX/UI, backend, QA, and product managers) to gather precise business requirements, design intuitive UI workflows, and enforce agile/scrum methodologies.',
+        'Conducted thorough R&D of cutting-edge third-party tools, exploring functionalities and seamless integration methods to significantly enhance internal product capabilities.',
+        'Deep understanding of the complete Software Development Life Cycle (SDLC), actively contributing to requirements analysis, system design, test-driven development, code reviews, and automated deployment planning.',
+        'Strong focus on web performance optimization, implementing SEO best practices, reducing bundle sizes, and strictly adhering to Core Web Vitals to improve end-user experience.',
+      ],
+      location: {
+        address: '',
+        postalCode: '',
+        city: 'Hyderabad',
+        countryCode: 'India',
+        region: 'Telangana',
+      },
+      profiles: [
+        {
+          network: 'Github',
+          username: 'adityakumart',
+          url: 'https://github.com/adityakumart',
+        },
+      ],
+    },
+    work: [
+      {
+        name: 'OVA INNOVATION LABS PVT LTD(Curately AI)',
+        position: 'Product Group Lead Frontend',
+        url: 'https://www.curately.ai/',
+        startDate: '2018-01',
+        endDate: 'Present',
+        summary: '',
+        highlights: [''],
+        projects: [
+          {
+            name: 'Curately & Chrome Extension',
+            startDate: 'April 2023',
+            endDate: 'Present',
+            position: 'Product Group Lead Frontend',
+            description:
+              'Spearheaded the architectural design and frontend development of an AI-powered talent relationship management platform. Successfully engineered and launched a robust custom Chrome Extension (Manifest V3) that embeds the entire Curately web app. Built advanced analytics Dashboard and optimized build process by migrating to Vite.',
+            link: 'https://www.curately.ai/',
+            skills: [
+              'React JS',
+              'Material UI',
+              'SCSS',
+              'TypeScript',
+              'Chrome Extensions API',
+              'Node.js',
+              'MongoDB',
+              'Vite',
+              'Zustand',
+            ],
+          },
+          {
+            name: 'Sequence & Workflow',
+            startDate: 'June 2022',
+            endDate: 'September 2023',
+            position: 'Senior Web Developer',
+            description:
+              'Designed and implemented the complete user interface of both Sequence (automated outreach) and Workflow (ATS software) modules within a highly performant Single Page Application (SPA) architecture. Developed complex dynamic form elements using Formik and YUP schema builder.',
+            link: '',
+            skills: [
+              'React JS',
+              'Material UI',
+              'SCSS',
+              'TypeScript',
+              'Formik',
+              'Yup',
+            ],
+          },
+          {
+            name: 'Accuick',
+            startDate: 'March 2021',
+            endDate: 'Present',
+            position: 'Web Developer',
+            description:
+              'Architected and developed the UI from scratch for staffing VMS/MSP clients. Engineered robust, data-intensive forms using Angular Reactive Forms and FormArrays. Leveraged RxJS observables for sophisticated asynchronous data handling.',
+            link: '',
+            skills: ['Angular 13', 'Material UI', 'SCSS', 'TypeScript', 'RxJS'],
+          },
+        ],
+      },
+      {
+        name: 'ASK IT Solutions India Pvt. Ltd',
+        position: 'Senior Software Engineer',
+        url: 'https://www.askconsulting.com/',
+        startDate: '2018-01-02',
+        endDate: '2022-09-01',
+        summary: '',
+        highlights: [''],
+        projects: [
+          {
+            name: 'CX Ninja',
+            startDate: 'October 2019',
+            endDate: 'February 2022',
+            position: 'Web Developer',
+            description:
+              'Developed a scalable, high-availability web application front-end for a nationwide customer service talent platform. Engineered dynamic PDF file generation directly from the browser and integrated Oneall API for social login.',
+            link: 'https://www.cxninja.com/',
+            skills: ['Angular 12', 'Angular Material', 'SCSS', 'TypeScript'],
+          },
+          {
+            name: 'ACCUICK',
+            startDate: 'March 2018',
+            endDate: 'September 2019',
+            position: 'Web Developer',
+            description:
+              'Designed and developed highly responsive, interactive web pages utilizing the Bootstrap CSS framework and custom CSS Media Queries. Integrated multiple HTML themes and deeply customized various jQuery Plugins.',
+            link: '',
+            skills: ['Bootstrap', 'jQuery', 'HTML5', 'CSS3', 'JSON'],
+          },
+          {
+            name: 'Onboarding',
+            startDate: 'January 2018',
+            endDate: 'August 2018',
+            position: 'Jr Software Engineer',
+            description:
+              'Contributed significantly to the frontend development of an advanced, versatile paperless onboarding tool tailored specifically for the unique needs of the staffing industry.',
+            link: 'https://www.ova.work/',
+            skills: ['AngularJS', 'REST API', 'HTML5', 'CSS3'],
+          },
+        ],
+      },
+    ],
+    volunteer: [],
+    education: [
+      {
+        institution: 'GIET',
+        url: 'https://giet.ac.in/',
+        area: 'Software Development',
+        studyType: 'Bachelor',
+        startDate: '2012-06',
+        endDate: '2016-05',
+        score: '67',
+        courses: ['Computer Science and Engineering'],
+      },
+    ],
+    awards: [
+      {
+        title: 'Super Applause Award',
+        date: '2019-12',
+        awarder: 'OVA Innovation Labs',
+        summary:
+          'Honored for outstanding technical performance and timely project delivery under pressure.',
+      },
+      {
+        title: 'Applause Award',
+        date: '2018-08',
+        awarder: 'OVA Innovation Labs',
+        summary:
+          'Received for exceptional contributions and dedication to the frontend development team.',
+      },
+    ],
+    certificates: [
+      {
+        name: 'Angular - The Complete Guide',
+        date: '2021-01-30',
+        issuer: 'udemy',
+        url: 'https://www.udemy.com/certificate/UC-a5c72e11-71da-4b9b-934f-0967a9af4a4e',
+      },
+      {
+        name: 'React - The Complete Guide (incl Hooks, React Router, Redux)',
+        date: '2022-07-24',
+        issuer: 'udemy',
+        url: 'https://www.udemy.com/certificate/UC-62386b6c-cd5d-4ea0-98d2-bd4cef2cc877/',
+      },
+      {
+        name: 'NodeJS - The Complete Guide (MVC, REST APIs, GraphQL, Deno)',
+        date: '2021-03-01',
+        issuer: 'udemy',
+        url: 'https://www.udemy.com/certificate/UC-11db4614-08f2-4b69-bb5a-abfad050cc50/',
+      },
+    ],
+
+    publications: [],
+    skills: [
+      {
+        name: 'Web Technologies & Languages',
+        keywords: [
+          { name: 'HTML5', url: 'https://html.com/' },
+          { name: 'CSS3', url: 'https://www.w3.org/Style/CSS/' },
+          { name: 'SASS/SCSS', url: 'https://sass-lang.com/' },
+          { name: 'JavaScript', url: 'https://www.javascript.com/' },
+          { name: 'TypeScript', url: 'https://www.typescriptlang.org/' },
+        ],
+      },
+      {
+        name: 'Frontend Frameworks & Libraries',
+        keywords: [
+          { name: 'Angular', url: 'https://angular.dev/' },
+          { name: 'React JS', url: 'https://react.dev/' },
+          { name: 'AngularJS', url: 'https://angularjs.org/' },
+          { name: 'jQuery', url: 'https://jquery.com/' },
+        ],
+      },
+      {
+        name: 'UI Component Libraries',
+        keywords: [
+          { name: 'Material UI (MUI)', url: 'https://mui.com/' },
+          { name: 'Angular Material', url: 'https://material.angular.dev/' },
+          { name: 'shadcn ui', url: 'https://ui.shadcn.com/' },
+          { name: 'Bootstrap', url: 'https://getbootstrap.com/' },
+        ],
+      },
+      {
+        name: 'State Management & Data Flow',
+        keywords: [
+          { name: 'Zustand', url: 'https://github.com/pmndrs/zustand' },
+          { name: 'RxJS', url: 'https://rxjs.dev/' },
+        ],
+      },
+      {
+        name: 'Backend & Databases',
+        keywords: [
+          { name: 'Node.js', url: 'https://nodejs.org/' },
+          { name: 'MongoDB', url: 'https://www.mongodb.com/' },
+        ],
+      },
+      {
+        name: 'Development & AI Tools',
+        keywords: [
+          { name: 'VS Code', url: 'https://code.visualstudio.com/' },
+          { name: 'Cursor IDE', url: 'https://cursor.sh/' },
+          { name: 'Claude AI', url: 'https://claude.ai/' },
+          { name: 'Git', url: 'https://git-scm.com/' },
+          { name: 'GitHub', url: 'https://github.com/' },
+          { name: 'Webpack', url: 'https://webpack.js.org/' },
+          { name: 'Vite', url: 'https://vitejs.dev/' },
+          {
+            name: 'Chrome Extensions API',
+            url: 'https://developer.chrome.com/docs/extensions/reference/',
+          },
+        ],
+      },
+    ],
+    languages: [
+      {
+        language: 'English',
+        fluency: 'Native speaker',
+      },
+    ],
+    interests: [],
+    references: [],
+    projects: [],
+  };
+}
