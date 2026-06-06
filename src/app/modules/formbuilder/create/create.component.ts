@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, signal, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { CommonMaterialModule } from 'src/app/shared/Material/common-material.module';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 
@@ -11,6 +11,7 @@ import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-
     DragDropModule
   ],
   templateUrl: './create.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './create.component.scss'
 })
 export class CreateComponent implements OnInit {

@@ -1,4 +1,4 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, signal, ChangeDetectionStrategy } from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -12,6 +12,7 @@ import {
   selector: 'app-percentage-calculator',
   imports: [FormsModule, MatFormFieldModule, MatInputModule, MatIconModule, MatButtonModule],
   templateUrl: './percentage-calculator.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './percentage-calculator.component.scss'
 })
 export class PercentageCalculatorComponent {
