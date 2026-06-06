@@ -1,6 +1,6 @@
 import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
-import { ResumeObject } from 'src/shared/Interface/Resume';
+import { ResumeObject } from '../../../../../shared/Interface/Resume';
 
 @Component({
   selector: 'app-summary',

@@ -1,7 +1,7 @@
 // src/app/services/experience.service.ts
 import { inject, Injectable, signal, WritableSignal } from '@angular/core';
-import { ToastrService } from 'src/app/shared/services/toaster.service';
-import { IndexedDbService } from 'src/shared/services/indexed-db-base.service';
+import { ToastrService } from '../../../shared/services/toaster.service';
+import { IndexedDbService } from '../../../../shared/services/indexed-db-base.service';
 
 export interface DateRange {
   start: string;

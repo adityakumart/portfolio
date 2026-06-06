@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "nx serve --hmr -o",
+    "start": "nx serve portfolio --hmr -o",
     "build": "nx build --configuration production --aot && gzipper compress ./dist/portfolio",
     "githubBuild": "nx build --configuration production --aot && npx angular-cli-ghpages --dir=dist/portfolio/browser",
     "build1": "nx build --configuration production --aot --source-map && gzipper compress ./dist/portfolio",
