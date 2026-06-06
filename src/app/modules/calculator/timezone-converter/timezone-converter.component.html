@@ -15,10 +15,10 @@
                 </mat-form-field>
                 <mat-form-field appearance="outline" class="timePickerWidth">
                     <mat-label>Time</mat-label>
-                    <input matInput [ngxMatTimepicker]="fromTimePicker" formControlName="fromTime">
-                    <mat-icon matSuffix (click)="fromTimePicker.open()">schedule</mat-icon>
+                    <input matInput [matTimepicker]="fromTimePicker" formControlName="fromTime">
+                    <mat-timepicker-toggle matSuffix [for]="fromTimePicker"></mat-timepicker-toggle>
+                    <mat-timepicker interval="15min" #fromTimePicker></mat-timepicker>
                 </mat-form-field>
-                <ngx-mat-timepicker #fromTimePicker color="primary"></ngx-mat-timepicker>
                 <mat-form-field appearance="outline" class="timeZoneWidth">
                     <mat-label>Time Zone</mat-label>
                     <input type="text" aria-label="Time Zone" matInput formControlName="fromTimeZone"
@@ -45,10 +45,10 @@
             </mat-form-field>
             <mat-form-field appearance="outline" class="timePickerWidth">
                 <mat-label>To Time</mat-label>
-                <input matInput [ngxMatTimepicker]="toTimePicker" formControlName="toTime">
-                <mat-icon matSuffix (click)="toTimePicker.open()">schedule</mat-icon>
-            </mat-form-field>
-            <ngx-mat-timepicker #toTimePicker color="primary"></ngx-mat-timepicker> -->
+                <input matInput [matTimepicker]="toTimePicker" formControlName="toTime">
+                <mat-timepicker-toggle matSuffix [for]="toTimePicker"></mat-timepicker-toggle>
+                <mat-timepicker #toTimePicker></mat-timepicker>
+            </mat-form-field> -->
             <div data-layout="row wrap" data-layout-align="start start" data-layout-gap="8px" class="mb-5"
                 style="width: calc(100% - 50px);">
                 <mat-form-field appearance="outline" data-flex="50">
