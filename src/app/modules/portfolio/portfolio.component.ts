@@ -1,4 +1,5 @@
-import { Component, OnDestroy, signal, inject, OnInit, computed, AfterViewInit, ElementRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnDestroy, signal, inject, OnInit, computed, AfterViewInit, ElementRef, ChangeDetectionStrategy, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
 import { PortfolioRoutingModule } from './portfolio-routing.module';
 import { MatCardModule } from '@angular/material/card';
@@ -44,6 +45,7 @@ import { AwardsComponent } from './sub-components/awards/awards.component';
 export class PortfolioComponent implements OnDestroy, OnInit, AfterViewInit {
     destroyed = new Subject<void>();
     private el = inject(ElementRef);
+    private platformId = inject(PLATFORM_ID);
     columnsMap = new Map([
         // [Breakpoints.XSmall, 1],
         // [Breakpoints.Small, 2],
@@ -80,19 +82,21 @@ export class PortfolioComponent implements OnDestroy, OnInit, AfterViewInit {
     }
 
     ngAfterViewInit() {
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                    observer.unobserve(entry.target); // Only animate once
-                }
-            });
-        }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+        if (isPlatformBrowser(this.platformId)) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target); // Only animate once
+                    }
+                });
+            }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
 
-        setTimeout(() => {
-            const elements = this.el.nativeElement.querySelectorAll('.reveal-on-scroll');
-            elements.forEach((el: Element) => observer.observe(el));
-        }, 100); // Small timeout ensures the @for loops have rendered
+            setTimeout(() => {
+                const elements = this.el.nativeElement.querySelectorAll('.reveal-on-scroll');
+                elements.forEach((el: Element) => observer.observe(el));
+            }, 100); // Small timeout ensures the @for loops have rendered
+        }
     }
 
     gridColumns = signal(1);
