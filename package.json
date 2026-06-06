@@ -8,7 +8,8 @@
     "githubBuild": "ng build --configuration production --aot && npx angular-cli-ghpages --dir=dist/portfolio/browser",
     "build1": "ng build --configuration production --aot --source-map && gzipper compress ./dist/portfolio",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "serve:ssr:portfolio": "node dist/portfolio/server/server.mjs"
   },
   "private": true,
   "dependencies": {
@@ -21,8 +22,11 @@
     "@angular/material": "^21.2.13",
     "@angular/platform-browser": "^21.2.14",
     "@angular/platform-browser-dynamic": "^21.2.14",
+    "@angular/platform-server": "^21.2.14",
     "@angular/router": "^21.2.14",
+    "@angular/ssr": "^21.2.12",
     "css-fx-layout": "^3.0.4",
+    "express": "^5.1.0",
     "luxon": "^3.5.0",
     "material-icons": "^1.13.12",
     "ngx-indexed-db": "^22.0.0",
@@ -35,8 +39,10 @@
     "@angular/build": "^21.2.12",
     "@angular/cli": "~21.2.12",
     "@angular/compiler-cli": "^21.2.14",
+    "@types/express": "^5.0.1",
     "@types/jasmine": "~5.1.0",
     "@types/luxon": "^3.4.2",
+    "@types/node": "^20.17.19",
     "angular-cli-ghpages": "^2.0.1",
     "gzipper": "^8.0.1",
     "jasmine-core": "~5.1.0",
