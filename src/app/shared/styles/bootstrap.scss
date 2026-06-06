@@ -37,31 +37,31 @@ $sides: (
 
 @each $space in $spaces {
   .m-#{$space} {
-    margin: #{math.div($space,4)}rem;
+    margin: #{math.div($space,4)}rem !important;
   }
 
   .p-#{$space} {
-    padding: #{math.div($space,4)}rem;
+    padding: #{math.div($space,4)}rem !important;
   }
 
   .mx-#{$space} {
-    margin-left: #{math.div($space,4)}rem;
-    margin-right: #{math.div($space,4)}rem;
+    margin-left: #{math.div($space,4)}rem !important;
+    margin-right: #{math.div($space,4)}rem !important;
   }
 
   .px-#{$space} {
-    padding-left: #{math.div($space,4)}rem;
-    padding-right: #{math.div($space,4)}rem;
+    padding-left: #{math.div($space,4)}rem !important;
+    padding-right: #{math.div($space,4)}rem !important;
   }
 
   .my-#{$space} {
-    margin-top: #{math.div($space,4)}rem;
-    margin-bottom: #{math.div($space,4)}rem;
+    margin-top: #{math.div($space,4)}rem !important;
+    margin-bottom: #{math.div($space,4)}rem !important;
   }
 
   .py-#{$space} {
-    padding-top: #{math.div($space,4)}rem;
-    padding-bottom: #{math.div($space,4)}rem;
+    padding-top: #{math.div($space,4)}rem !important;
+    padding-bottom: #{math.div($space,4)}rem !important;
   }
 
   @each $side in $sides {
