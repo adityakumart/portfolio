@@ -1,0 +1,31 @@
+<mat-card class="matCard modern-card mb-4 reveal-on-scroll">
+  <mat-card-header>
+    <mat-card-title class="gradient-title">Work Experience</mat-card-title>
+  </mat-card-header>
+  <mat-card-content class="work-experience-content mt-4">
+    @for (work of worksData(); track $index) {
+      <div class="work-item mb-4 reveal-on-scroll">
+        <div
+          class="work-header d-flex justify-content-between align-items-center flex-wrap mb-1"
+        >
+          <h3 class="m-0 font-weight-bold">
+            <a [href]="work.url" target="_blank" class="work-company">{{
+              work.name
+            }}</a>
+          </h3>
+          <span class="work-dates badge-modern"
+            >{{ work.startDate }} - {{ work.endDate }}</span
+          >
+        </div>
+        <div class="work-position mb-3 text-primary">{{ work.position }}</div>
+
+        @if (work.projects && work.projects.length) {
+          <app-projects [projects]="work.projects"></app-projects>
+        }
+      </div>
+      @if (!$last) {
+        <hr class="work-divider" />
+      }
+    }
+  </mat-card-content>
+</mat-card>

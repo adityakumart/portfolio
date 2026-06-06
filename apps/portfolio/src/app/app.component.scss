@@ -1,0 +1,14 @@
+.mainContainer {
+  .buttonList {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+
+  mat-sidenav-content {
+    // margin-left: 65px !important;
+    // background-color: var(--portLightGrey);
+    height: calc(100vh - 64px);
+  }
+}

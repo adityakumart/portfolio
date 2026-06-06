@@ -3,12 +3,12 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --hmr -o",
-    "build": "ng build --configuration production --aot && gzipper compress ./dist/portfolio",
-    "githubBuild": "ng build --configuration production --aot && npx angular-cli-ghpages --dir=dist/portfolio/browser",
-    "build1": "ng build --configuration production --aot --source-map && gzipper compress ./dist/portfolio",
-    "watch": "ng build --watch --configuration development",
-    "test": "ng test",
+    "start": "nx serve --hmr -o",
+    "build": "nx build --configuration production --aot && gzipper compress ./dist/portfolio",
+    "githubBuild": "nx build --configuration production --aot && npx angular-cli-ghpages --dir=dist/portfolio/browser",
+    "build1": "nx build --configuration production --aot --source-map && gzipper compress ./dist/portfolio",
+    "watch": "nx build --watch --configuration development",
+    "test": "nx test",
     "serve:ssr:portfolio": "node dist/portfolio/server/server.mjs"
   },
   "private": true,
@@ -32,9 +32,18 @@
     "tslib": "^2.3.0"
   },
   "devDependencies": {
+    "@angular-devkit/core": "~22.0.0",
+    "@angular-devkit/schematics": "~22.0.0",
     "@angular/build": "^22.0.0",
     "@angular/cli": "~22.0.0",
     "@angular/compiler-cli": "^22.0.0",
+    "@nx/angular": "22.7.5",
+    "@nx/js": "22.7.5",
+    "@nx/workspace": "22.7.5",
+    "@schematics/angular": "~22.0.0",
+    "@swc-node/register": "~1.11.1",
+    "@swc/core": "~1.15.5",
+    "@swc/helpers": "~0.5.18",
     "@types/express": "^5.0.1",
     "@types/luxon": "^3.4.2",
     "@types/node": "^20.17.19",
@@ -42,6 +51,8 @@
     "gzipper": "^8.0.1",
     "istanbul-lib-instrument": "^6.0.3",
     "jsdom": "^29.1.1",
+    "nx": "22.7.5",
+    "prettier": "~3.6.2",
     "typescript": "~6.0.3",
     "vitest": "^4.1.8"
   }
