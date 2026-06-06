@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -34,6 +34,7 @@ import { JsonTransformerService } from './services/json-transformer.service';
     MatDividerModule
   ],
   templateUrl: './json-to-typescript.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./json-to-typescript.component.scss']
 })
 export class JsonToTypeScriptComponent implements OnInit, OnDestroy {

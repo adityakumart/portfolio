@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, ChangeDetectionStrategy } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MAT_SNACK_BAR_DATA, MatSnackBarRef } from '@angular/material/snack-bar';
@@ -11,6 +11,7 @@ import { MAT_SNACK_BAR_DATA, MatSnackBarRef } from '@angular/material/snack-bar'
         MatIconModule
     ],
     templateUrl: './snackbar.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './snackbar.component.scss'
 })
 export class SnackbarComponent {

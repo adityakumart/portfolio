@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
 import { provideNativeDateAdapter } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -34,6 +34,7 @@ import { ToastrService } from 'src/app/shared/services/toaster.service';
     ],
     providers: [provideNativeDateAdapter()],
     templateUrl: './timezone-converter.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './timezone-converter.component.scss'
 })
 export class TimezoneConverterComponent {

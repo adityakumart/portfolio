@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { ResumeObject } from 'src/shared/Interface/Resume';
 import { ProjectsComponent } from '../projects/projects.component';
@@ -8,6 +8,7 @@ import { ProjectsComponent } from '../projects/projects.component';
   standalone: true,
   imports: [MatCardModule, ProjectsComponent],
   templateUrl: './experience.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './experience.component.scss'
 })
 export class ExperienceComponent {
