@@ -4,9 +4,8 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
-import { NgxMatTimepickerModule } from 'ngx-mat-timepicker';
+import { MatTimepickerModule } from '@angular/material/timepicker';
 import { DateTime } from 'luxon';
-import { MatIcon } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { TimeZoneInterface, TimeZonesList } from 'src/shared/data/timeszones';
 import { MatButtonModule } from '@angular/material/button';
@@ -26,8 +25,7 @@ import { ToastrService } from 'src/app/shared/services/toaster.service';
         ReactiveFormsModule,
         MatInputModule,
         MatSelectModule,
-        NgxMatTimepickerModule,
-        MatIcon,
+        MatTimepickerModule,
         MatButtonModule,
         MatAutocompleteModule,
         AsyncPipe
@@ -50,7 +48,7 @@ export class TimezoneConverterComponent {
 
   timeForm = new FormGroup({
     fromDate: new FormControl<Date>(new Date()),
-    fromTime: new FormControl<string>(DateTime.now().toFormat('hh:mm a')),
+    fromTime: new FormControl<Date>(new Date()),
     fromTimeZone: new FormControl<string>(""),
     // toDate: new FormControl<Date | null>(new Date()),
     // toTime: new FormControl<string>(DateTime.now().toFormat('hh:mm a')),
@@ -105,7 +103,7 @@ export class TimezoneConverterComponent {
       return;
     }
 
-    let time = DateTime.fromFormat(this.timeForm.value.fromTime as string, 'h:mm a');
+    let time = DateTime.fromFormat(this.timeForm.value.fromTime.toTimeString().substring(0, 5), 'HH:mm');
     let fromDate = DateTime.fromJSDate(this.timeForm.value.fromDate as Date, {
       zone: fromZone
     }).set({
