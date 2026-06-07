@@ -45,6 +45,8 @@
     "@nx/eslint-plugin": "22.7.5",
     "@nx/js": "22.7.5",
     "@nx/node": "22.7.5",
+    "@nx/vite": "22.7.5",
+    "@nx/vitest": "22.7.5",
     "@nx/workspace": "22.7.5",
     "@schematics/angular": "~22.0.0",
     "@swc-node/register": "~1.11.1",
@@ -53,6 +55,7 @@
     "@types/express": "^5.0.1",
     "@types/luxon": "^3.4.2",
     "@types/node": "^20.19.9",
+    "@vitest/coverage-v8": "~4.1.0",
     "angular-cli-ghpages": "^2.0.1",
     "esbuild": "^0.27.0",
     "eslint": "^9.8.0",
@@ -60,10 +63,12 @@
     "gzipper": "^8.0.1",
     "istanbul-lib-instrument": "^6.0.3",
     "jsdom": "^29.1.1",
+    "jsonc-eslint-parser": "^2.1.0",
     "nx": "22.7.5",
     "prettier": "~3.6.2",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.40.0",
+    "vite": "^8.0.0",
     "vitest": "^4.1.8"
   }
 }

@@ -3,21 +3,9 @@ import { inject, Injectable, signal, WritableSignal } from '@angular/core';
 import { ToastrService } from '../../../shared/services/toaster.service';
 import { IndexedDbService } from '../../../../shared/services/indexed-db-base.service';
 
-export interface DateRange {
-  start: string;
-  end: string;
-}
+import { UserExperienceRecord, DateRange } from '@portfolio/shared-types';
 
-export interface UserExperienceRecord {
-  id?: number;
-  name: string;
-  email: string;
-  experience: DateRange[];
-  totalDays: number; // Stored for database indexing/sorting
-  displayYears: number; // Stored for easy UI display
-  displayMonths: number; // Stored for easy UI display
-  displayDays: number; // Stored for easy UI display
-}
+
 
 @Injectable({
   providedIn: 'root',

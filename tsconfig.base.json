@@ -2,7 +2,8 @@
   "compileOnSave": false,
   "compilerOptions": {
     "paths": {
-      "src/*": ["./src/*"]
+      "src/*": ["./src/*"],
+      "@portfolio/shared-types": ["./libs/shared-types/src/index.ts"]
     },
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
