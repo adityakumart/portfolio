@@ -20,7 +20,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTableModule } from '@angular/material/table';
 
-import { ExperienceService, UserExperienceRecord } from './experience.service';
+import { ExperienceService } from './experience.service';
+import { UserExperienceRecord } from '@portfolio/shared-types';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ErrorMessageComponent } from '../../../shared/components/error-message.component';

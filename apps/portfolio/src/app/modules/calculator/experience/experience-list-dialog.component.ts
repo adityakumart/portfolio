@@ -9,7 +9,7 @@ import {
 import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { UserExperienceRecord } from './experience.service';
+import { UserExperienceRecord } from '@portfolio/shared-types';
 
 @Component({
   selector: 'app-experience-list-dialog',
