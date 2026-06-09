@@ -2,8 +2,12 @@
   "compileOnSave": false,
   "compilerOptions": {
     "paths": {
-      "src/*": ["./src/*"],
-      "@portfolio/shared-types": ["./libs/shared-types/src/index.ts"]
+      "src/*": [
+        "./src/*"
+      ],
+      "@portfolio/shared-types": [
+        "./libs/shared-types/src/index.ts"
+      ]
     },
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
@@ -28,5 +32,8 @@
     "strictInputAccessModifiers": true,
     "strictTemplates": true
   },
-  "exclude": ["node_modules", "tmp"]
+  "exclude": [
+    "node_modules",
+    "tmp"
+  ]
 }

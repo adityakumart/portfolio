@@ -10,8 +10,14 @@
   "sourceRoot": "apps/portfolio/src",
   "prefix": "app",
   "targets": {
+    "set-env": {
+      "command": "node tools/scripts/set-env.js"
+    },
     "build": {
       "executor": "@angular/build:application",
+      "dependsOn": [
+        "set-env"
+      ],
       "options": {
         "outputPath": {
           "base": "dist/apps/portfolio"
@@ -78,7 +84,13 @@
               "maximumError": "4kb"
             }
           ],
-          "outputHashing": "all"
+          "outputHashing": "all",
+          "fileReplacements": [
+            {
+              "replace": "apps/portfolio/src/environments/environment.ts",
+              "with": "apps/portfolio/src/environments/environment.prod.ts"
+            }
+          ]
         },
         "development": {
           "optimization": false,
@@ -96,6 +108,9 @@
       "hmr": true,
       "open": true,
       "executor": "@angular/build:dev-server",
+      "dependsOn": [
+        "set-env"
+      ],
       "configurations": {
         "production": {
           "buildTarget": "portfolio:build:production"

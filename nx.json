@@ -57,5 +57,10 @@
         "testMode": "watch"
       }
     }
-  ]
+  ],
+  "generators": {
+    "@nx/angular:component": {
+      "style": "css"
+    }
+  }
 }
