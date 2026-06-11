@@ -33,6 +33,8 @@
       <button
         mat-icon-button
         [routerLink]="item.link"
+        routerLinkActive="active-link"
+        [routerLinkActiveOptions]="{exact: item.link === '/'}"
         [attr.aria-label]="item.label + ' Icon Button'"
         class="mb-5"
         [matTooltip]="item.label"
