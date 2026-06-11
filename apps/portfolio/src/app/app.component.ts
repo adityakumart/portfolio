@@ -2,9 +2,7 @@ import {
   Component,
   computed,
   DOCUMENT,
-  Inject,
   inject,
-  signal,
   ChangeDetectionStrategy,
 } from '@angular/core';
 import {
@@ -22,6 +20,7 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ThemeService } from './theme.service';
 import { GlobalData } from '../shared/data/GlobalData';
+import { appRoutingList } from './shared/data/routes';
 
 @Component({
   selector: 'app-root',
@@ -40,33 +39,7 @@ import { GlobalData } from '../shared/data/GlobalData';
   styleUrl: './app.component.scss',
 })
 export class AppComponent {
-  routingList = [
-    {
-      link: '/',
-      label: 'Home',
-      icon: 'home',
-    },
-    {
-      link: '/calculator',
-      label: 'Calculator',
-      icon: 'calculate',
-    },
-    {
-      link: '/json-to-typescript',
-      label: 'JSON to TypeScript',
-      icon: 'code',
-    },
-    {
-      link: '/user',
-      label: 'User',
-      icon: 'account_circle',
-    },
-    // {
-    //   link: "/formbuilder",
-    //   label: "Dynamic Form",
-    //   icon: "dynamic_form"
-    // }
-  ];
+  routingList = appRoutingList;
 
   private document = inject(DOCUMENT);
   private globalData: GlobalData = inject(GlobalData);
@@ -74,6 +47,25 @@ export class AppComponent {
   private router = inject(Router);
 
   readonly isDarkMode = computed(() => this.themeService.theme() === 'dark');
+
+  readonly isUserRoute = toSignal(
+    this.router.events.pipe(
+      filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+      map((event) => {
+        const urlWithoutQueryParams = event.urlAfterRedirects.split('?')[0];
+        return (
+          urlWithoutQueryParams === '/user' ||
+          urlWithoutQueryParams.startsWith('/user/')
+        );
+      }),
+    ),
+    {
+      initialValue: this.document.location
+        ? this.document.location.pathname === '/user' ||
+          this.document.location.pathname.startsWith('/user/')
+        : false,
+    },
+  );
 
   readonly activeRouteLabel = toSignal(
     this.router.events.pipe(

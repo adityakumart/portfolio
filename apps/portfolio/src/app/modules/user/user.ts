@@ -1,10 +1,33 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
+import { RouterOutlet, RouterLink } from '@angular/router';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { appRoutingList } from '../../shared/data/routes';
+import { ThemeService } from '../../theme.service';
 
 @Component({
   selector: 'app-user',
-  imports: [CommonModule],
+  imports: [
+    RouterOutlet,
+    RouterLink,
+    MatToolbarModule,
+    MatIconModule,
+    MatButtonModule,
+    MatSidenavModule,
+    MatTooltipModule,
+  ],
   templateUrl: './user.html',
-  styleUrl: './user.scss',
+  styleUrls: ['./../../app.component.scss', './user.scss'],
 })
-export class UserComponent { }
+export class UserComponent {
+  private themeService = inject(ThemeService);
+  routingList = appRoutingList;
+
+  readonly isDarkMode = computed(() => this.themeService.theme() === 'dark');
+  toggleTheme(): void {
+    this.themeService.toggleTheme();
+  }
+}
