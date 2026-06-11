@@ -1,4 +1,3 @@
-// src/app/app.config.ts
 import {
   ApplicationConfig,
   provideZonelessChangeDetection,
@@ -10,6 +9,7 @@ import {
   withEventReplay,
   withNoIncrementalHydration,
 } from '@angular/platform-browser';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { AppRoutes } from './app/app-routing.module';
 
 export const appConfig: ApplicationConfig = {
@@ -18,5 +18,6 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withFetch()),
     provideRouter(AppRoutes, withPreloading(NoPreloading)),
     provideClientHydration(withEventReplay(), withNoIncrementalHydration()),
+    provideAnimationsAsync(),
   ],
 };

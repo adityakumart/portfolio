@@ -3,7 +3,6 @@ import {
   OnDestroy,
   signal,
   inject,
-  OnInit,
   computed,
   AfterViewInit,
   ElementRef,
@@ -18,15 +17,8 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { interval, merge, of, Subject } from 'rxjs';
-import {
-  concatMap,
-  finalize,
-  map,
-  takeUntil,
-  takeWhile,
-  tap,
-} from 'rxjs/operators';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 import { GlobalData } from '../../../shared/data/GlobalData';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -119,7 +111,6 @@ export class PortfolioComponent implements OnDestroy, AfterViewInit {
   }
 
   gridColumns = signal(1);
-
 
   resume = signal(this.globalData.resume);
   classNameForJobTitle = computed(() => {
