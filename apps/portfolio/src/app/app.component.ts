@@ -8,6 +8,7 @@ import {
 import {
   RouterOutlet,
   RouterLink,
+  RouterLinkActive,
   Router,
   NavigationEnd,
 } from '@angular/router';
@@ -28,6 +29,7 @@ import { appRoutingList } from './shared/data/routes';
   imports: [
     RouterOutlet,
     RouterLink,
+    RouterLinkActive,
     MatToolbarModule,
     MatIconModule,
     MatButtonModule,
