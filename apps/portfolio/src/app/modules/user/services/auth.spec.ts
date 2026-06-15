@@ -9,16 +9,19 @@ describe('AuthService', () => {
   beforeEach(() => {
     mockSupabaseClient = {
       auth: {
-        getSession: () => Promise.resolve({ data: { session: null }, error: null }),
-        onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
-      }
+        getSession: () =>
+          Promise.resolve({ data: { session: null }, error: null }),
+        onAuthStateChange: () => ({
+          data: { subscription: { unsubscribe: () => {} } },
+        }),
+      },
     };
 
     TestBed.configureTestingModule({
       providers: [
         AuthService,
-        { provide: SupabaseClient, useValue: mockSupabaseClient }
-      ]
+        { provide: SupabaseClient, useValue: mockSupabaseClient },
+      ],
     });
     service = TestBed.inject(AuthService);
   });

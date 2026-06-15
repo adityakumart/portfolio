@@ -108,29 +108,46 @@ export class LoginComponent {
     }
   }
 
-
   private getErrorMessage(msg: string): string {
     const lowercaseMsg = (msg || '').toLowerCase();
 
-    if (lowercaseMsg.includes('invalid') && (lowercaseMsg.includes('credential') || lowercaseMsg.includes('login') || lowercaseMsg.includes('email'))) {
+    if (
+      lowercaseMsg.includes('invalid') &&
+      (lowercaseMsg.includes('credential') ||
+        lowercaseMsg.includes('login') ||
+        lowercaseMsg.includes('email'))
+    ) {
       return 'Invalid email address or password.';
     }
-    if (lowercaseMsg.includes('already registered') || lowercaseMsg.includes('already exists') || lowercaseMsg.includes('already in use')) {
+    if (
+      lowercaseMsg.includes('already registered') ||
+      lowercaseMsg.includes('already exists') ||
+      lowercaseMsg.includes('already in use')
+    ) {
       return 'This email address is already registered.';
     }
     if (lowercaseMsg.includes('disabled')) {
       return 'This user account has been disabled.';
     }
-    if (lowercaseMsg.includes('not found') || lowercaseMsg.includes('no user')) {
+    if (
+      lowercaseMsg.includes('not found') ||
+      lowercaseMsg.includes('no user')
+    ) {
       return 'No user found with this email.';
     }
-    if (lowercaseMsg.includes('wrong password') || lowercaseMsg.includes('incorrect password')) {
+    if (
+      lowercaseMsg.includes('wrong password') ||
+      lowercaseMsg.includes('incorrect password')
+    ) {
       return 'Incorrect password. Please try again.';
     }
     if (lowercaseMsg.includes('weak') || lowercaseMsg.includes('characters')) {
       return 'The password is too weak. Choose at least 6 characters.';
     }
-    if (lowercaseMsg.includes('not confirmed') || lowercaseMsg.includes('confirm your email')) {
+    if (
+      lowercaseMsg.includes('not confirmed') ||
+      lowercaseMsg.includes('confirm your email')
+    ) {
       return 'Please confirm your email address.';
     }
 
