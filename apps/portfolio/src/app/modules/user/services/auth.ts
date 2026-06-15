@@ -1,55 +1,52 @@
 // auth.service.ts
 import { Injectable, inject, signal } from '@angular/core';
-import {
-    Auth,
-    user,
-    User,
-    signInWithEmailAndPassword,
-    createUserWithEmailAndPassword,
-    signOut,
-    GoogleAuthProvider,
-    signInWithPopup
-} from '@angular/fire/auth';
+import { SupabaseClient, User } from '@supabase/supabase-js';
 
 @Injectable()
 export class AuthService {
-    // Inject the Auth instance configured in app.config.ts
-    private auth = inject(Auth);
+    // Inject the Supabase Client
+    private supabase = inject(SupabaseClient);
 
     // Expose a read-only signal for tracking user state reactively
     currentUser = signal<User | null | undefined>(undefined);
 
     constructor() {
-        // Wait for initial auth state verification to complete
-        this.auth.authStateReady().then(() => {
-            // Set the initial verified user state
-            this.currentUser.set(this.auth.currentUser);
+        // Fetch current session and subscribe to subsequent auth changes
+        this.supabase.auth.getSession().then(({ data: { session } }) => {
+            this.currentUser.set(session?.user ?? null);
 
-            // Subscribe to subsequent auth changes
-            user(this.auth).subscribe((userState) => {
-                this.currentUser.set(userState);
+            this.supabase.auth.onAuthStateChange((_event, session) => {
+                this.currentUser.set(session?.user ?? null);
             });
+        }).catch(() => {
+            this.currentUser.set(null);
         });
     }
 
     // Register a new user
     async register(email: string, password: string) {
-        return createUserWithEmailAndPassword(this.auth, email, password);
+        const { data, error } = await this.supabase.auth.signUp({
+            email,
+            password,
+        });
+        if (error) throw error;
+        return data;
     }
 
     // Sign in existing user
     async login(email: string, password: string) {
-        return signInWithEmailAndPassword(this.auth, email, password);
+        const { data, error } = await this.supabase.auth.signInWithPassword({
+            email,
+            password,
+        });
+        if (error) throw error;
+        return data;
     }
 
-    // Sign in/up with Google
-    async loginWithGoogle() {
-        const provider = new GoogleAuthProvider();
-        return signInWithPopup(this.auth, provider);
-    }
 
     // Logout
     async logout() {
-        return signOut(this.auth);
+        const { error } = await this.supabase.auth.signOut();
+        if (error) throw error;
     }
 }

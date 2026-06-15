@@ -1,36 +1,56 @@
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { NgModule, inject } from '@angular/core';
+import { RouterModule, Routes, CanActivateFn, Router } from '@angular/router';
+import { toObservable } from '@angular/core/rxjs-interop';
+import { filter, map, take } from 'rxjs/operators';
+import { SupabaseClient, createClient } from '@supabase/supabase-js';
 import { UserComponent } from './user';
-
-// Firebase core and auth providers
-import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
-import { getAuth, provideAuth } from '@angular/fire/auth';
 import { LoginComponent } from './components/login/login';
-import { AuthGuard, redirectUnauthorizedTo } from '@angular/fire/auth-guard';
 import { AuthService } from './services/auth';
 import { environment } from '../../../environments/environment';
 
-const redirectUnauthorizedToLogin = () => redirectUnauthorizedTo(['user', 'login']);
+export const authGuard: CanActivateFn = () => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  const user = authService.currentUser();
+  if (user !== undefined) {
+    return user ? true : router.createUrlTree(['/user', 'login']);
+  }
+
+  return toObservable(authService.currentUser).pipe(
+    filter((u) => u !== undefined),
+    take(1),
+    map((u) => (u ? true : router.createUrlTree(['/user', 'login']))),
+  );
+};
 
 const routes: Routes = [
-  { path: 'login', component: LoginComponent },
   {
     path: '',
     component: UserComponent,
-    // Block access if the user is unauthenticated
-    canActivate: [AuthGuard],
-    data: { authGuardPipe: redirectUnauthorizedToLogin }
-  }
+    children: [
+      { path: 'login', component: LoginComponent },
+      {
+        path: '',
+        pathMatch: 'full',
+        // Block access if the user is unauthenticated
+        canActivate: [authGuard],
+        children: [],
+      },
+    ],
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule],
   providers: [
-    provideFirebaseApp(() => initializeApp(environment.firebase)),
-    provideAuth(() => getAuth()),
-    AuthService
-  ]
+    {
+      provide: SupabaseClient,
+      useFactory: () =>
+        createClient(environment.supabase.url, environment.supabase.key),
+    },
+    AuthService,
+  ],
 })
-export class UserRoutingModule { }
-
+export class UserRoutingModule {}

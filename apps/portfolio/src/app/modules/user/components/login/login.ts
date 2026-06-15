@@ -108,46 +108,32 @@ export class LoginComponent {
     }
   }
 
-  async onGoogleLogin() {
-    this.error.set(null);
-    this.success.set(null);
-    this.loading.set(true);
 
-    try {
-      await this.authService.loginWithGoogle();
-      this.success.set('Successfully authenticated with Google! Redirecting...');
-      setTimeout(() => {
-        this.router.navigate(['/user']);
-      }, 1000);
-    } catch (err: any) {
-      console.error('Google Sign-In error:', err);
-      if (err.code !== 'auth/popup-closed-by-user') {
-        this.error.set(this.getErrorMessage(err.code || err.message));
-      }
-    } finally {
-      this.loading.set(false);
-    }
-  }
+  private getErrorMessage(msg: string): string {
+    const lowercaseMsg = (msg || '').toLowerCase();
 
-  private getErrorMessage(code: string): string {
-    switch (code) {
-      case 'auth/invalid-email':
-      case 'auth/invalid-credential':
-        return 'Invalid email address or password.';
-      case 'auth/user-disabled':
-        return 'This user account has been disabled.';
-      case 'auth/user-not-found':
-        return 'No user found with this email.';
-      case 'auth/wrong-password':
-        return 'Incorrect password. Please try again.';
-      case 'auth/email-already-in-use':
-        return 'This email address is already registered.';
-      case 'auth/weak-password':
-        return 'The password is too weak. Choose at least 6 characters.';
-      case 'auth/operation-not-allowed':
-        return 'Email/password authentication is not enabled.';
-      default:
-        return 'An unexpected error occurred. Please try again.';
+    if (lowercaseMsg.includes('invalid') && (lowercaseMsg.includes('credential') || lowercaseMsg.includes('login') || lowercaseMsg.includes('email'))) {
+      return 'Invalid email address or password.';
     }
+    if (lowercaseMsg.includes('already registered') || lowercaseMsg.includes('already exists') || lowercaseMsg.includes('already in use')) {
+      return 'This email address is already registered.';
+    }
+    if (lowercaseMsg.includes('disabled')) {
+      return 'This user account has been disabled.';
+    }
+    if (lowercaseMsg.includes('not found') || lowercaseMsg.includes('no user')) {
+      return 'No user found with this email.';
+    }
+    if (lowercaseMsg.includes('wrong password') || lowercaseMsg.includes('incorrect password')) {
+      return 'Incorrect password. Please try again.';
+    }
+    if (lowercaseMsg.includes('weak') || lowercaseMsg.includes('characters')) {
+      return 'The password is too weak. Choose at least 6 characters.';
+    }
+    if (lowercaseMsg.includes('not confirmed') || lowercaseMsg.includes('confirm your email')) {
+      return 'Please confirm your email address.';
+    }
+
+    return msg || 'An unexpected error occurred. Please try again.';
   }
 }

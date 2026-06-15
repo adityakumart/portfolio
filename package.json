@@ -19,7 +19,6 @@
     "@angular/common": "^22.0.0",
     "@angular/compiler": "^22.0.0",
     "@angular/core": "^22.0.0",
-    "@angular/fire": "^20.0.1",
     "@angular/forms": "^22.0.0",
     "@angular/material": "^22.0.0",
     "@angular/platform-browser": "^22.0.0",
@@ -27,9 +26,9 @@
     "@angular/platform-server": "^22.0.0",
     "@angular/router": "^22.0.0",
     "@angular/ssr": "^22.0.0",
+    "@supabase/supabase-js": "^2.108.1",
     "css-fx-layout": "^3.0.4",
     "express": "^5.1.0",
-    "firebase": "^12.14.0",
     "luxon": "^3.5.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
