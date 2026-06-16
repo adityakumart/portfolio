@@ -39,6 +39,8 @@ export class LoginComponent {
   }
 
   mode = signal<'login' | 'signup'>('login');
+  firstName = signal('');
+  lastName = signal('');
   email = signal('');
   password = signal('');
   confirmPassword = signal('');
@@ -56,6 +58,8 @@ export class LoginComponent {
     this.success.set(null);
     this.password.set('');
     this.confirmPassword.set('');
+    this.firstName.set('');
+    this.lastName.set('');
   }
 
   async onSubmit() {
@@ -64,8 +68,15 @@ export class LoginComponent {
 
     const emailVal = this.email().trim();
     const passwordVal = this.password();
+    const firstNameVal = this.firstName().trim();
+    const lastNameVal = this.lastName().trim();
 
-    if (!emailVal || !passwordVal) {
+    if (this.mode() === 'signup') {
+      if (!firstNameVal || !lastNameVal || !emailVal || !passwordVal) {
+        this.error.set('Please fill out all required fields.');
+        return;
+      }
+    } else if (!emailVal || !passwordVal) {
       this.error.set('Please fill out all required fields.');
       return;
     }
@@ -90,7 +101,7 @@ export class LoginComponent {
           this.router.navigate(['/user']);
         }, 1000);
       } else {
-        await this.authService.register(emailVal, passwordVal);
+        await this.authService.register(emailVal, passwordVal, firstNameVal, lastNameVal);
         this.success.set('Account created successfully! Redirecting...');
         setTimeout(() => {
           this.router.navigate(['/user']);
@@ -100,6 +111,8 @@ export class LoginComponent {
       this.email.set('');
       this.password.set('');
       this.confirmPassword.set('');
+      this.firstName.set('');
+      this.lastName.set('');
     } catch (err: any) {
       console.error('Authentication error:', err);
       this.error.set(this.getErrorMessage(err.code || err.message));

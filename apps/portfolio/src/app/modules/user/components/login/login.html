@@ -63,6 +63,42 @@
 
     <!-- Auth Form -->
     <form (submit)="onSubmit()" class="auth-form" #authForm="ngForm">
+      @if (mode() === 'signup') {
+      <mat-form-field appearance="outline" class="full-width animate-field">
+        <mat-label>First Name</mat-label>
+        <input
+          matInput
+          [ngModel]="firstName()"
+          (ngModelChange)="firstName.set($event)"
+          name="firstName"
+          required
+          placeholder="First name"
+          #firstNameInput="ngModel"
+        />
+        <mat-icon matPrefix>person</mat-icon>
+        @if (firstNameInput.invalid && (firstNameInput.dirty || firstNameInput.touched)) {
+        <mat-error>First name is required.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width animate-field">
+        <mat-label>Last Name</mat-label>
+        <input
+          matInput
+          [ngModel]="lastName()"
+          (ngModelChange)="lastName.set($event)"
+          name="lastName"
+          required
+          placeholder="Last name"
+          #lastNameInput="ngModel"
+        />
+        <mat-icon matPrefix>person</mat-icon>
+        @if (lastNameInput.invalid && (lastNameInput.dirty || lastNameInput.touched)) {
+        <mat-error>Last name is required.</mat-error>
+        }
+      </mat-form-field>
+      }
+
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Email Address</mat-label>
         <input
@@ -174,7 +210,7 @@
       <div class="avatar-container">
         <mat-icon class="avatar-icon">account_circle</mat-icon>
       </div>
-      <h2 class="title">Welcome back!</h2>
+      <h2 class="title">Welcome back{{ authService.currentUser()?.['first_name'] ? ', ' + authService.currentUser()?.['first_name'] : '' }}!</h2>
       <p class="email-display">{{ authService.currentUser()?.email }}</p>
     </div>
 
@@ -187,7 +223,7 @@
       </div>
       <div class="info-row">
         <span class="label">Provider</span>
-        <span class="value">Supabase Auth</span>
+        <span class="value">Custom Token Auth</span>
       </div>
     </div>
 

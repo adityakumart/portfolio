@@ -48,7 +48,10 @@ Thumbs.db
 vitest.config.*.timestamp*
 
 .env
+/apps/portfolio/.env
+/apps/portfolio-core/.env
 *.env
+
 # Auto-generated environment configurations
 /apps/portfolio/src/environments/environment.ts
 /apps/portfolio/src/environments/environment.prod.ts

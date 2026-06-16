@@ -2,11 +2,9 @@ import { NgModule, inject } from '@angular/core';
 import { RouterModule, Routes, CanActivateFn, Router } from '@angular/router';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { filter, map, take } from 'rxjs/operators';
-import { SupabaseClient, createClient } from '@supabase/supabase-js';
 import { UserComponent } from './user';
 import { LoginComponent } from './components/login/login';
 import { AuthService } from './services/auth';
-import { environment } from '../../../environments/environment';
 
 export const authGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
@@ -44,13 +42,6 @@ const routes: Routes = [
 @NgModule({
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule],
-  providers: [
-    {
-      provide: SupabaseClient,
-      useFactory: () =>
-        createClient(environment.supabase.url, environment.supabase.key),
-    },
-    AuthService,
-  ],
+  providers: [AuthService],
 })
 export class UserRoutingModule {}

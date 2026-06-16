@@ -1,26 +1,21 @@
 import { TestBed } from '@angular/core/testing';
-import { SupabaseClient } from '@supabase/supabase-js';
+import { HttpClient } from '@angular/common/http';
+import { of } from 'rxjs';
 import { AuthService } from './auth';
 
 describe('AuthService', () => {
   let service: AuthService;
-  let mockSupabaseClient: any;
+  let mockHttpClient: any;
 
   beforeEach(() => {
-    mockSupabaseClient = {
-      auth: {
-        getSession: () =>
-          Promise.resolve({ data: { session: null }, error: null }),
-        onAuthStateChange: () => ({
-          data: { subscription: { unsubscribe: () => {} } },
-        }),
-      },
+    mockHttpClient = {
+      post: () => of({}),
     };
 
     TestBed.configureTestingModule({
       providers: [
         AuthService,
-        { provide: SupabaseClient, useValue: mockSupabaseClient },
+        { provide: HttpClient, useValue: mockHttpClient },
       ],
     });
     service = TestBed.inject(AuthService);

@@ -28,14 +28,17 @@ if (fs.existsSync(dotenvPath)) {
 }
 
 const supabaseConfig = {
-  url: envConfig.SUPABASE_URL || 'YOUR_SUPABASE_URL',
-  key: envConfig.SUPABASE_KEY || 'YOUR_SUPABASE_KEY',
+  url: envConfig.SUPABASE_URL || '',
+  key: envConfig.SUPABASE_KEY || ''
 };
+
+const apiUrl = envConfig.API_URL || 'http://localhost:3000/api';
 
 const envFileContent = `// This file is generated dynamically at build/serve time.
 export const environment = {
   production: false,
   baseHref: '/',
+  apiUrl: '${apiUrl}',
   supabase: ${JSON.stringify(supabaseConfig, null, 2)}
 };
 `;
@@ -44,6 +47,7 @@ const envProdFileContent = `// This file is generated dynamically at build/serve
 export const environment = {
   production: true,
   baseHref: '/portfolio/',
+  apiUrl: '${apiUrl}',
   supabase: ${JSON.stringify(supabaseConfig, null, 2)}
 };
 `;

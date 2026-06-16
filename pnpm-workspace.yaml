@@ -3,6 +3,7 @@ allowBuilds:
   '@firebase/util': true
   '@parcel/watcher': true
   '@swc/core': true
+  bcrypt: true
   browser-tabs-lock: true
   bufferutil: true
   core-js: true
