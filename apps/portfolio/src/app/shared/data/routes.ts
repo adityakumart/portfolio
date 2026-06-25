@@ -15,6 +15,11 @@ export const appRoutingList = [
     icon: 'code',
   },
   {
+    link: '/line-splitter',
+    label: 'Line Splitter',
+    icon: 'format_list_numbered',
+  },
+  {
     link: '/user',
     label: 'User',
     icon: 'account_circle',

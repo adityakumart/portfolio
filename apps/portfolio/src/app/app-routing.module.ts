@@ -24,6 +24,13 @@ export const AppRoutes: Routes = [
       ),
   },
   {
+    path: 'line-splitter',
+    loadComponent: () =>
+      import('./modules/line-splitter/line-splitter.component').then(
+        (comp) => comp.LineSplitterComponent,
+      ),
+  },
+  {
     path: 'user',
     loadChildren: () => import('./modules/user/user-routing.module').then(m => m.UserRoutingModule)
   },

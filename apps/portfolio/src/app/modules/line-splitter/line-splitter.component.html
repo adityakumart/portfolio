@@ -1,0 +1,278 @@
+<div class="line-splitter-container">
+  <!-- Header Card -->
+  <mat-card class="header-card mb-4">
+    <mat-card-header class="py-3">
+      <mat-card-title>Text Line Splitter & Utility</mat-card-title>
+      <mat-card-subtitle>
+        Split text dynamically by line or delimiter, analyze statistics, and
+        copy individual lines with ease.
+      </mat-card-subtitle>
+    </mat-card-header>
+  </mat-card>
+
+  <!-- Main Work Area -->
+  <div
+    class="content-wrapper"
+    fxLayout="row"
+    fxLayout.lt-md="column"
+    fxLayoutGap="24px"
+  >
+    <!-- Left Column: Input & Settings -->
+    <mat-card fxFlex="1 1 45%" class="input-card">
+      <mat-card-header>
+        <mat-card-title class="pb-3">Input Text</mat-card-title>
+      </mat-card-header>
+
+      <mat-card-content>
+        <form [formGroup]="form">
+          <!-- Textarea Input -->
+          <mat-form-field
+            class="full-width textarea-field"
+            appearance="outline"
+          >
+            <mat-label>Paste or type your text here</mat-label>
+            <textarea
+              matInput
+              formControlName="textInput"
+              placeholder="Paste list of items, URLs, query parameters, or comma-separated values..."
+              rows="12"
+              class="text-textarea"
+              (input)="sanitizeInput($event)"
+            ></textarea>
+          </mat-form-field>
+
+          <!-- Settings and Split Options -->
+          <div class="settings-section mb-4">
+            <h3 class="section-subtitle">Split & Formatting Options</h3>
+
+            <div class="options-grid">
+              <!-- Delimiter Selection -->
+              <mat-form-field
+                class="full-width select-field"
+                appearance="outline"
+              >
+                <mat-label>Split Delimiter</mat-label>
+                <mat-select formControlName="delimiter">
+                  <mat-option value="newline">Newline (\n)</mat-option>
+                  <mat-option value="comma">Comma (,)</mat-option>
+                  <mat-option value="semicolon">Semicolon (;)</mat-option>
+                  <mat-option value="space">Space ( )</mat-option>
+                  <mat-option value="custom">Custom String</mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <!-- Custom Delimiter Input (Conditional) -->
+              @if (delimiterType() === 'custom') {
+                <mat-form-field
+                  class="full-width custom-delim-field animate-fade-in"
+                  appearance="outline"
+                >
+                  <mat-label>Custom Delimiter String</mat-label>
+                  <input
+                    matInput
+                    formControlName="customDelim"
+                    placeholder="e.g. | or - or [SPACE]"
+                  />
+                </mat-form-field>
+              }
+            </div>
+
+            <!-- Formatting Checkboxes -->
+            <div class="checkbox-group" fxLayout="column" fxLayoutGap="8px">
+              <mat-checkbox formControlName="trim">
+                Trim Whitespace (remove leading/trailing spaces)
+              </mat-checkbox>
+              <mat-checkbox formControlName="ignoreEmpty">
+                Ignore Empty Lines / Items
+              </mat-checkbox>
+              <mat-checkbox formControlName="unique">
+                Remove Duplicate Lines (Unique Only)
+              </mat-checkbox>
+            </div>
+          </div>
+
+          <!-- Buttons Group -->
+          <div class="button-group" fxLayout="row" fxLayoutGap="12px">
+            <button
+              mat-raised-button
+              color="primary"
+              (click)="copyAllLines()"
+              [disabled]="totalCount() === 0"
+              fxFlex
+            >
+              <mat-icon>content_copy</mat-icon>
+              <span class="button-text">Copy All Joined</span>
+            </button>
+
+            <button
+              mat-stroked-button
+              color="warn"
+              (click)="clearInput()"
+              fxFlex="30"
+            >
+              <mat-icon>delete_sweep</mat-icon>
+              <span class="button-text">Clear</span>
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Right Column: Output Table & Analytics -->
+    <div
+      fxFlex="1 1 55%"
+      class="output-column"
+      fxLayout="column"
+      fxLayoutGap="24px"
+    >
+      <!-- Stats / Analytics Badges -->
+      <mat-card class="stats-card">
+        <mat-card-content class="stats-container">
+          <div class="stat-badge">
+            <span class="stat-label">Total Lines</span>
+            <span class="stat-value text-primary">{{ totalCount() }}</span>
+          </div>
+          <mat-divider [vertical]="true"></mat-divider>
+          <div class="stat-badge">
+            <span class="stat-label">Characters</span>
+            <span class="stat-value text-accent">{{ charCount() }}</span>
+          </div>
+          <mat-divider [vertical]="true"></mat-divider>
+          <div class="stat-badge">
+            <span class="stat-label">Duplicates</span>
+            <span class="stat-value text-warn">{{ duplicateCount() }}</span>
+          </div>
+          <mat-divider [vertical]="true"></mat-divider>
+          <div class="stat-badge">
+            <span class="stat-label">Empty Lines</span>
+            <span class="stat-value text-muted">{{ emptyCount() }}</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Table Section -->
+      <mat-card class="table-card" fxFlex>
+        <mat-card-header
+          fxLayout="row"
+          fxLayoutAlign="space-between center"
+          class="pb-3 pr-4 table-card-header"
+        >
+          <mat-card-title>Split Results Table</mat-card-title>
+          <!-- Export Actions -->
+          <div class="export-actions" fxLayout="row" fxLayoutGap="8px">
+            <button
+              mat-icon-button
+              matTooltip="Download CSV"
+              (click)="downloadAsCsv()"
+              [disabled]="totalCount() === 0"
+              color="primary"
+            >
+              <mat-icon>table_view</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              matTooltip="Download TXT"
+              (click)="downloadAsTxt()"
+              [disabled]="totalCount() === 0"
+              color="primary"
+            >
+              <mat-icon>download</mat-icon>
+            </button>
+          </div>
+        </mat-card-header>
+
+        <mat-card-content class="table-content-container">
+          @if (totalCount() > 0) {
+            <div class="table-scroll-container">
+              <table
+                mat-table
+                [dataSource]="dataSource"
+                class="w-100 splitter-table"
+              >
+                <!-- Index / Line Number Column -->
+                <ng-container matColumnDef="index">
+                  <th mat-header-cell *matHeaderCellDef class="index-header">
+                    Line
+                  </th>
+                  <td mat-cell *matCellDef="let element" class="index-cell">
+                    <span class="index-badge">{{ element.index }}</span>
+                  </td>
+                </ng-container>
+
+                <!-- Line Content Column -->
+                <ng-container matColumnDef="content">
+                  <th mat-header-cell *matHeaderCellDef class="content-header">
+                    Content
+                  </th>
+                  <td mat-cell *matCellDef="let element" class="content-cell">
+                    @if (element.content.length === 0) {
+                      <span class="empty-line-placeholder"
+                        >&lt;empty line&gt;</span
+                      >
+                    } @else {
+                      <code class="line-code fw-6">{{ element.content }}</code>
+                    }
+                  </td>
+                </ng-container>
+
+                <!-- Action Button Column -->
+                <ng-container matColumnDef="actions">
+                  <th mat-header-cell *matHeaderCellDef class="actions-header">
+                    Copy
+                  </th>
+                  <td mat-cell *matCellDef="let element" class="actions-cell">
+                    <button
+                      mat-icon-button
+                      [matTooltip]="
+                        copiedLines()[element.index] ? 'Copied!' : 'Copy Line'
+                      "
+                      (click)="copyLine(element.content, element.index)"
+                      [class.copied]="copiedLines()[element.index]"
+                      class="copy-btn"
+                    >
+                      <mat-icon class="copy-icon">
+                        {{
+                          copiedLines()[element.index]
+                            ? 'check_circle'
+                            : 'content_copy'
+                        }}
+                      </mat-icon>
+                    </button>
+                  </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr
+                  mat-row
+                  *matRowDef="let row; columns: displayedColumns"
+                  class="table-row"
+                ></tr>
+              </table>
+            </div>
+
+            <!-- Table Pagination -->
+            <mat-paginator
+              [pageSize]="10"
+              [pageSizeOptions]="[5, 10, 25, 50]"
+              showFirstLastButtons
+              class="table-paginator"
+            >
+            </mat-paginator>
+          } @else {
+            <div
+              class="empty-state"
+              fxLayout="column"
+              fxLayoutAlign="center center"
+              class="py-5"
+            >
+              <mat-icon class="empty-icon text-muted">splitscreen</mat-icon>
+              <p class="empty-text text-muted mt-2">
+                Enter text in the input card to generate the table.
+              </p>
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>
