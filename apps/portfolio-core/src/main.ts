@@ -22,6 +22,10 @@ app.get('/', (req, res) => {
   res.send({ message: `portfolio-core API` });
 });
 
-app.listen(port, host, () => {
-  console.log(`[ ready ] http://${host}:${port}`);
-});
+if (!process.env['VERCEL']) {
+  app.listen(port, host, () => {
+    console.log(`[ ready ] http://${host}:${port}`);
+  });
+}
+
+export default app;
