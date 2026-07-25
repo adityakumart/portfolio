@@ -26,10 +26,10 @@
 
     <!-- Toggle Slider -->
     <div class="auth-toggle-container">
-      <div
+      <!-- <div
         class="auth-toggle-slider"
         [class.signup-mode]="mode() === 'signup'"
-      ></div>
+      ></div> -->
       <button
         type="button"
         class="auth-toggle-btn"
@@ -38,14 +38,14 @@
       >
         Sign In
       </button>
-      <button
+      <!-- <button
         type="button"
         class="auth-toggle-btn"
         [class.active]="mode() === 'signup'"
         (click)="setMode('signup')"
       >
         Sign Up
-      </button>
+      </button> -->
     </div>
 
     <!-- Feedback Banners -->
@@ -76,7 +76,8 @@
           #firstNameInput="ngModel"
         />
         <mat-icon matPrefix>person</mat-icon>
-        @if (firstNameInput.invalid && (firstNameInput.dirty || firstNameInput.touched)) {
+        @if (firstNameInput.invalid && (firstNameInput.dirty ||
+        firstNameInput.touched)) {
         <mat-error>First name is required.</mat-error>
         }
       </mat-form-field>
@@ -93,7 +94,8 @@
           #lastNameInput="ngModel"
         />
         <mat-icon matPrefix>person</mat-icon>
-        @if (lastNameInput.invalid && (lastNameInput.dirty || lastNameInput.touched)) {
+        @if (lastNameInput.invalid && (lastNameInput.dirty ||
+        lastNameInput.touched)) {
         <mat-error>Last name is required.</mat-error>
         }
       </mat-form-field>
@@ -210,7 +212,10 @@
       <div class="avatar-container">
         <mat-icon class="avatar-icon">account_circle</mat-icon>
       </div>
-      <h2 class="title">Welcome back{{ authService.currentUser()?.['first_name'] ? ', ' + authService.currentUser()?.['first_name'] : '' }}!</h2>
+      <h2 class="title">
+        Welcome back{{ authService.currentUser()?.['first_name'] ? ', ' +
+        authService.currentUser()?.['first_name'] : '' }}!
+      </h2>
       <p class="email-display">{{ authService.currentUser()?.email }}</p>
     </div>
 

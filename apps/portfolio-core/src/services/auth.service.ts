@@ -49,8 +49,8 @@ export class AuthService {
         .select('*')
         .eq('email', email)
         .single();
-
-      if (error || !user) throw new Error('Invalid email or password');
+      if (error) throw new Error(error.message);
+      if (!user) throw new Error('Invalid email or password');
       if (user.is_deleted) throw new Error('Account has been deleted');
       if (!user.isEnabled) throw new Error('Account is disabled');
 
