@@ -10,7 +10,9 @@
     "watch": "nx build portfolio --watch --configuration development",
     "test": "nx test portfolio",
     "serve:ssr:portfolio": "node dist/apps/portfolio/server/server.mjs",
-    "dev:api": "npx nx serve portfolio-core"
+    "dev:api": "npx nx serve portfolio-core",
+    "vercel:preview": "npx vercel --cwd apps/portfolio-core",
+    "vercel:production": "npx vercel --cwd apps/portfolio-core --prod"
   },
   "private": true,
   "dependencies": {
