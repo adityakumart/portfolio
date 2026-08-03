@@ -4,6 +4,8 @@ import {
   DOCUMENT,
   inject,
   ChangeDetectionStrategy,
+  ViewChildren,
+  QueryList,
 } from '@angular/core';
 import {
   RouterOutlet,
@@ -22,6 +24,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ThemeService } from './theme.service';
 import { GlobalData } from '../shared/data/GlobalData';
 import { appRoutingList } from './shared/data/routes';
+import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
 
 @Component({
   selector: 'app-root',
@@ -35,13 +38,24 @@ import { appRoutingList } from './shared/data/routes';
     MatButtonModule,
     MatSidenavModule,
     MatTooltipModule,
+    MatMenuModule,
   ],
   templateUrl: './app.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './app.component.scss',
 })
 export class AppComponent {
+  @ViewChildren(MatMenuTrigger) menuTriggers!: QueryList<MatMenuTrigger>;
+
   routingList = appRoutingList;
+
+  closeAllMenus(): void {
+    this.menuTriggers.forEach((trigger) => {
+      if (trigger.menuOpen) {
+        trigger.closeMenu();
+      }
+    });
+  }
 
   private document = inject(DOCUMENT);
   private globalData: GlobalData = inject(GlobalData);

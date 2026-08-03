@@ -10,6 +10,13 @@ export const AppRoutes: Routes = [
       ),
   },
   {
+    path: 'dev-tools',
+    loadComponent: () =>
+      import('./modules/calculator/calculator.component').then(
+        (comp) => comp.CalculatorComponent,
+      ),
+  },
+  {
     path: 'formbuilder',
     loadChildren: () =>
       import('./modules/formbuilder/formbuilder.module').then(
@@ -32,7 +39,10 @@ export const AppRoutes: Routes = [
   },
   {
     path: 'user',
-    loadChildren: () => import('./modules/user/user-routing.module').then(m => m.UserRoutingModule)
+    loadChildren: () =>
+      import('./modules/user/user-routing.module').then(
+        (m) => m.UserRoutingModule,
+      ),
   },
   {
     path: '',
@@ -47,4 +57,4 @@ export const AppRoutes: Routes = [
   imports: [RouterModule.forRoot(AppRoutes)],
   exports: [RouterModule],
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {}
