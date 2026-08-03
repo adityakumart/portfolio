@@ -40,3 +40,21 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+
+
+.nx/cache
+.nx/workspace-data
+vitest.config.*.timestamp*
+
+.env
+/apps/portfolio/.env
+/apps/portfolio-core/.env
+*.env
+
+# Auto-generated environment configurations
+/apps/portfolio/src/environments/environment.ts
+/apps/portfolio/src/environments/environment.prod.ts
+
+# Vercel
+/.vercel

@@ -1,0 +1,17 @@
+allowBuilds:
+  '@clerk/shared': true
+  '@firebase/util': true
+  '@parcel/watcher': true
+  '@swc/core': true
+  bcrypt: true
+  browser-tabs-lock: true
+  bufferutil: true
+  core-js: true
+  esbuild: true
+  less: true
+  lmdb: true
+  msgpackr-extract: true
+  nx: true
+  protobufjs: true
+  unrs-resolver: true
+  utf-8-validate: true

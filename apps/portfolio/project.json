@@ -1,0 +1,138 @@
+{
+  "name": "portfolio",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "generators": {
+    "@schematics/angular:component": {
+      "style": "scss"
+    }
+  },
+  "sourceRoot": "apps/portfolio/src",
+  "prefix": "app",
+  "targets": {
+    "set-env": {
+      "command": "node tools/scripts/set-env.js"
+    },
+    "build": {
+      "executor": "@angular/build:application",
+      "dependsOn": [
+        "set-env"
+      ],
+      "options": {
+        "outputPath": {
+          "base": "dist/apps/portfolio"
+        },
+        "baseHref": "/portfolio/",
+        "index": "apps/portfolio/src/index.html",
+        "polyfills": [],
+        "tsConfig": "apps/portfolio/tsconfig.app.json",
+        "inlineStyleLanguage": "scss",
+        "assets": [
+          "apps/portfolio/src/favicon.ico",
+          "apps/portfolio/src/assets"
+        ],
+        "styles": [
+          "apps/portfolio/src/styles.scss",
+          {
+            "input": "apps/portfolio/src/app/shared/styles/custom.scss",
+            "bundleName": "custom",
+            "inject": false
+          },
+          {
+            "input": "apps/portfolio/src/app/shared/styles/bootstrap.scss",
+            "bundleName": "bootstrap",
+            "inject": false
+          },
+          {
+            "input": "apps/portfolio/src/app/shared/styles/border.scss",
+            "bundleName": "border",
+            "inject": false
+          },
+          {
+            "input": "apps/portfolio/src/app/shared/styles/colors.scss",
+            "bundleName": "colors",
+            "inject": false
+          },
+          {
+            "input": "apps/portfolio/src/app/shared/styles/text.scss",
+            "bundleName": "text",
+            "inject": false
+          }
+        ],
+        "scripts": [],
+        "browser": "apps/portfolio/src/main.ts",
+        "server": "apps/portfolio/src/main.server.ts",
+        "outputMode": "server",
+        "security": {
+          "allowedHosts": []
+        },
+        "ssr": {
+          "entry": "apps/portfolio/src/server.ts"
+        }
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "10kb",
+              "maximumError": "20kb"
+            }
+          ],
+          "outputHashing": "all",
+          "fileReplacements": [
+            {
+              "replace": "apps/portfolio/src/environments/environment.ts",
+              "with": "apps/portfolio/src/environments/environment.prod.ts"
+            }
+          ]
+        },
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true,
+          "namedChunks": true
+        }
+      },
+      "defaultConfiguration": "production",
+      "outputs": [
+        "{options.outputPath.base}"
+      ]
+    },
+    "serve": {
+      "hmr": true,
+      "open": true,
+      "executor": "@angular/build:dev-server",
+      "dependsOn": [
+        "set-env"
+      ],
+      "configurations": {
+        "production": {
+          "buildTarget": "portfolio:build:production"
+        },
+        "development": {
+          "buildTarget": "portfolio:build:development"
+        }
+      },
+      "defaultConfiguration": "development"
+    },
+    "extract-i18n": {
+      "executor": "@angular/build:extract-i18n",
+      "options": {
+        "buildTarget": "portfolio:build"
+      }
+    },
+    "test": {
+      "executor": "@angular/build:unit-test",
+      "options": {
+        "runner": "vitest",
+        "tsConfig": "apps/portfolio/tsconfig.spec.json"
+      }
+    }
+  }
+}

@@ -1,0 +1,263 @@
+<div class="auth-container">
+  @if (authService.currentUser() === undefined) {
+  <div class="glass-card loading-card">
+    <mat-progress-spinner
+      mode="indeterminate"
+      diameter="48"
+    ></mat-progress-spinner>
+    <p class="loading-text">Checking authentication state...</p>
+  </div>
+  } @else if (authService.currentUser() === null) {
+  <div class="glass-card">
+    <div class="auth-header">
+      <div class="shield-glow">
+        <mat-icon class="auth-header-icon">
+          {{ mode() === 'login' ? 'lock' : 'person_add' }}
+        </mat-icon>
+      </div>
+      <h2 class="title">
+        {{ mode() === 'login' ? 'Welcome Back' : 'Create Account' }}
+      </h2>
+      <p class="subtitle">
+        {{ mode() === 'login' ? 'Please log in to manage your portfolio.' :
+        'Sign up to build your custom portfolio.' }}
+      </p>
+    </div>
+
+    <!-- Toggle Slider -->
+    <div class="auth-toggle-container">
+      <!-- <div
+        class="auth-toggle-slider"
+        [class.signup-mode]="mode() === 'signup'"
+      ></div> -->
+      <button
+        type="button"
+        class="auth-toggle-btn"
+        [class.active]="mode() === 'login'"
+        (click)="setMode('login')"
+      >
+        Sign In
+      </button>
+      <!-- <button
+        type="button"
+        class="auth-toggle-btn"
+        [class.active]="mode() === 'signup'"
+        (click)="setMode('signup')"
+      >
+        Sign Up
+      </button> -->
+    </div>
+
+    <!-- Feedback Banners -->
+    @if (error()) {
+    <div class="feedback-banner error-banner">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ error() }}</span>
+    </div>
+    } @if (success()) {
+    <div class="feedback-banner success-banner">
+      <mat-icon>check_circle_outline</mat-icon>
+      <span>{{ success() }}</span>
+    </div>
+    }
+
+    <!-- Auth Form -->
+    <form (submit)="onSubmit()" class="auth-form" #authForm="ngForm">
+      @if (mode() === 'signup') {
+      <mat-form-field appearance="outline" class="full-width animate-field">
+        <mat-label>First Name</mat-label>
+        <input
+          matInput
+          [ngModel]="firstName()"
+          (ngModelChange)="firstName.set($event)"
+          name="firstName"
+          required
+          placeholder="First name"
+          #firstNameInput="ngModel"
+        />
+        <mat-icon matPrefix>person</mat-icon>
+        @if (firstNameInput.invalid && (firstNameInput.dirty ||
+        firstNameInput.touched)) {
+        <mat-error>First name is required.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width animate-field">
+        <mat-label>Last Name</mat-label>
+        <input
+          matInput
+          [ngModel]="lastName()"
+          (ngModelChange)="lastName.set($event)"
+          name="lastName"
+          required
+          placeholder="Last name"
+          #lastNameInput="ngModel"
+        />
+        <mat-icon matPrefix>person</mat-icon>
+        @if (lastNameInput.invalid && (lastNameInput.dirty ||
+        lastNameInput.touched)) {
+        <mat-error>Last name is required.</mat-error>
+        }
+      </mat-form-field>
+      }
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Email Address</mat-label>
+        <input
+          matInput
+          [ngModel]="email()"
+          (ngModelChange)="email.set($event)"
+          name="email"
+          type="email"
+          required
+          email
+          placeholder="your.email@example.com"
+          #emailInput="ngModel"
+        />
+        <mat-icon matPrefix>email</mat-icon>
+        @if (emailInput.invalid && (emailInput.dirty || emailInput.touched)) {
+        <mat-error>Please enter a valid email address.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Password</mat-label>
+        <input
+          matInput
+          [ngModel]="password()"
+          (ngModelChange)="password.set($event)"
+          name="password"
+          [type]="showPassword() ? 'text' : 'password'"
+          required
+          minlength="6"
+          placeholder="Enter password"
+          #passwordInput="ngModel"
+        />
+        <mat-icon matPrefix>lock</mat-icon>
+        <button
+          type="button"
+          mat-icon-button
+          matSuffix
+          (click)="showPassword.set(!showPassword())"
+          [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+        >
+          <mat-icon>
+            {{ showPassword() ? 'visibility_off' : 'visibility' }}
+          </mat-icon>
+        </button>
+        @if (passwordInput.invalid && (passwordInput.dirty ||
+        passwordInput.touched)) {
+        <mat-error>Password must be at least 6 characters long.</mat-error>
+        }
+      </mat-form-field>
+
+      @if (mode() === 'signup') {
+      <mat-form-field appearance="outline" class="full-width animate-field">
+        <mat-label>Confirm Password</mat-label>
+        <input
+          matInput
+          [ngModel]="confirmPassword()"
+          (ngModelChange)="confirmPassword.set($event)"
+          name="confirmPassword"
+          [type]="showConfirmPassword() ? 'text' : 'password'"
+          required
+          placeholder="Repeat password"
+          #confirmInput="ngModel"
+        />
+        <mat-icon matPrefix>lock_reset</mat-icon>
+        <button
+          type="button"
+          mat-icon-button
+          matSuffix
+          (click)="showConfirmPassword.set(!showConfirmPassword())"
+          [attr.aria-label]="showConfirmPassword() ? 'Hide password' : 'Show password'"
+        >
+          <mat-icon>
+            {{ showConfirmPassword() ? 'visibility_off' : 'visibility' }}
+          </mat-icon>
+        </button>
+        @if (confirmInput.invalid && (confirmInput.dirty ||
+        confirmInput.touched)) {
+        <mat-error>Please confirm your password.</mat-error>
+        } @if (confirmInput.valid && password() !== confirmPassword() &&
+        (confirmInput.dirty || confirmInput.touched)) {
+        <mat-error>Passwords do not match.</mat-error>
+        }
+      </mat-form-field>
+      }
+
+      <button
+        mat-raised-button
+        color="primary"
+        class="submit-btn"
+        type="submit"
+        [disabled]="loading() || authForm.invalid || (mode() === 'signup' && password() !== confirmPassword())"
+      >
+        <div class="spinner-container">
+          @if (loading()) {
+          <mat-progress-spinner
+            mode="indeterminate"
+            diameter="24"
+          ></mat-progress-spinner>
+          } @else {
+          <span>{{ mode() === 'login' ? 'Sign In' : 'Create Account' }}</span>
+          }
+        </div>
+      </button>
+    </form>
+  </div>
+  } @else if (authService.currentUser()) {
+  <div class="glass-card welcome-card">
+    <div class="welcome-header">
+      <div class="avatar-container">
+        <mat-icon class="avatar-icon">account_circle</mat-icon>
+      </div>
+      <h2 class="title">
+        Welcome back{{ authService.currentUser()?.['first_name'] ? ', ' +
+        authService.currentUser()?.['first_name'] : '' }}!
+      </h2>
+      <p class="email-display">{{ authService.currentUser()?.email }}</p>
+    </div>
+
+    <div class="profile-info">
+      <div class="info-row">
+        <span class="label">Status</span>
+        <span class="value active"
+          ><span class="dot"></span> Authenticated</span
+        >
+      </div>
+      <div class="info-row">
+        <span class="label">Provider</span>
+        <span class="value">Custom Token Auth</span>
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <button
+        mat-raised-button
+        color="primary"
+        class="dashboard-btn"
+        routerLink="/"
+      >
+        <mat-icon>home</mat-icon> Go to Home
+      </button>
+      <button
+        mat-stroked-button
+        color="warn"
+        class="logout-btn"
+        (click)="authService.logout()"
+      >
+        <mat-icon>logout</mat-icon> Log Out
+      </button>
+    </div>
+  </div>
+  } @else {
+  <div class="glass-card loading-card">
+    <mat-progress-spinner
+      mode="indeterminate"
+      diameter="48"
+    ></mat-progress-spinner>
+    <p class="loading-text">Checking authentication state...</p>
+  </div>
+  }
+</div>
