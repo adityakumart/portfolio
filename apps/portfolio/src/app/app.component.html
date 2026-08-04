@@ -36,23 +36,68 @@
     <mat-sidenav mode="side" class="mainSideNav" #sidenav>
       <div class="buttonList pt-3">
         @for (item of routingList; track $index) {
-          <button
-            mat-icon-button
-            [routerLink]="item.link"
-            routerLinkActive="active-link"
-            [routerLinkActiveOptions]="{exact: item.link === '/'}"
-            [attr.aria-label]="item.label + ' Icon Button'"
-            class="mb-5"
-            [matTooltip]="item.label"
-            [matTooltipPosition]="'right'"
-            (click)="sidenav.toggle()"
-          >
-            <mat-icon
-              aria-hidden="false"
-              [attr.aria-label]="item.label + ' Icon'"
-              >{{ item.icon }}</mat-icon
+          @if (item.groups) {
+            <button
+              mat-icon-button
+              [matMenuTriggerFor]="itemMenu"
+              #itemMenuTrigger="matMenuTrigger"
+              (mouseenter)="itemMenuTrigger.openMenu()"
+              [attr.aria-label]="item.label + ' Icon Button'"
+              class="mb-5"
+              [matTooltip]="item.label"
+              [matTooltipPosition]="'right'"
             >
-          </button>
+              <mat-icon
+                aria-hidden="false"
+                [attr.aria-label]="item.label + ' Icon'"
+                >{{ item.icon }}</mat-icon
+              >
+            </button>
+            <mat-menu
+              #itemMenu="matMenu"
+              xPosition="after"
+              yPosition="below"
+              [overlapTrigger]="true"
+              panelClass="sidebar-menu-panel"
+            >
+              @for (group of item.groups; track $index) {
+                <button mat-menu-item [matMenuTriggerFor]="toolMenu">
+                  {{ group.header }}
+                </button>
+                <mat-menu #toolMenu="matMenu">
+                  @for (tool of group.tools; track $index) {
+                    <button
+                      mat-menu-item
+                      [routerLink]="tool.link"
+                      routerLinkActive="active-link"
+                      (click)="sidenav.toggle()"
+                    >
+                      {{ tool.name }}
+                    </button>
+                  }
+                </mat-menu>
+              }
+            </mat-menu>
+          } @else {
+            <button
+              mat-icon-button
+              [routerLink]="item.link"
+              routerLinkActive="active-link"
+              [routerLinkActiveOptions]="{ exact: item.link === '/' }"
+              [attr.aria-label]="item.label + ' Icon Button'"
+              class="mb-5"
+              [matTooltip]="item.label"
+              [matTooltipPosition]="'right'"
+              (click)="sidenav.toggle()"
+              (mouseenter)="closeAllMenus()"
+            >
+              <mat-icon
+                aria-hidden="false"
+                [attr.aria-label]="item.label + ' Icon'"
+                >{{ item.icon }}</mat-icon
+              >
+            </button>
+          }
         }
       </div>
     </mat-sidenav>

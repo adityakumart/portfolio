@@ -4,6 +4,8 @@ import {
   DOCUMENT,
   inject,
   ChangeDetectionStrategy,
+  ViewChildren,
+  QueryList,
 } from '@angular/core';
 import {
   RouterOutlet,
@@ -22,6 +24,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ThemeService } from './theme.service';
 import { GlobalData } from '../shared/data/GlobalData';
 import { appRoutingList } from './shared/data/routes';
+import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
 
 @Component({
   selector: 'app-root',
@@ -35,13 +38,24 @@ import { appRoutingList } from './shared/data/routes';
     MatButtonModule,
     MatSidenavModule,
     MatTooltipModule,
+    MatMenuModule,
   ],
   templateUrl: './app.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './app.component.scss',
 })
 export class AppComponent {
+  @ViewChildren(MatMenuTrigger) menuTriggers!: QueryList<MatMenuTrigger>;
+
   routingList = appRoutingList;
+
+  closeAllMenus(): void {
+    this.menuTriggers.forEach((trigger) => {
+      if (trigger.menuOpen) {
+        trigger.closeMenu();
+      }
+    });
+  }
 
   private document = inject(DOCUMENT);
   private globalData: GlobalData = inject(GlobalData);
@@ -74,13 +88,30 @@ export class AppComponent {
       filter((event): event is NavigationEnd => event instanceof NavigationEnd),
       map((event) => {
         const urlWithoutQueryParams = event.urlAfterRedirects.split('?')[0];
+        
+        // Check top-level routes first
         const activeRoute = this.routingList.find(
           (route) => route.link === urlWithoutQueryParams,
         );
-        if (activeRoute?.label === 'Home') {
-          return '';
+        if (activeRoute) {
+          return activeRoute.label === 'Home' ? '' : activeRoute.label;
         }
-        return activeRoute?.label || '';
+
+        // Check nested groups (like Dev Tools categories)
+        for (const route of this.routingList) {
+          if (route.groups) {
+            for (const group of route.groups) {
+              const matchedTool = group.tools.find(
+                (tool) => tool.link === urlWithoutQueryParams,
+              );
+              if (matchedTool) {
+                return `${route.label} - ${matchedTool.name}`;
+              }
+            }
+          }
+        }
+
+        return '';
       }),
     ),
     { initialValue: '' },
