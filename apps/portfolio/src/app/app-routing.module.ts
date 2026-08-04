@@ -11,9 +11,9 @@ export const AppRoutes: Routes = [
   },
   {
     path: 'dev-tools',
-    loadComponent: () =>
-      import('./modules/calculator/calculator.component').then(
-        (comp) => comp.CalculatorComponent,
+    loadChildren: () =>
+      import('./modules/dev-tools/dev-tools-routing.module').then(
+        (m) => m.DevToolsRoutingModule,
       ),
   },
   {

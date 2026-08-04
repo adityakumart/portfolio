@@ -5,6 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatMenuModule } from '@angular/material/menu';
 import { appRoutingList } from '../../shared/data/routes';
 import { ThemeService } from '../../theme.service';
 
@@ -19,6 +20,7 @@ import { ThemeService } from '../../theme.service';
     MatButtonModule,
     MatSidenavModule,
     MatTooltipModule,
+    MatMenuModule,
   ],
   templateUrl: './user.html',
   styleUrls: ['./../../app.component.scss', './user.scss'],

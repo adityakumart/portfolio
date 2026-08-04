@@ -88,13 +88,30 @@ export class AppComponent {
       filter((event): event is NavigationEnd => event instanceof NavigationEnd),
       map((event) => {
         const urlWithoutQueryParams = event.urlAfterRedirects.split('?')[0];
+        
+        // Check top-level routes first
         const activeRoute = this.routingList.find(
           (route) => route.link === urlWithoutQueryParams,
         );
-        if (activeRoute?.label === 'Home') {
-          return '';
+        if (activeRoute) {
+          return activeRoute.label === 'Home' ? '' : activeRoute.label;
         }
-        return activeRoute?.label || '';
+
+        // Check nested groups (like Dev Tools categories)
+        for (const route of this.routingList) {
+          if (route.groups) {
+            for (const group of route.groups) {
+              const matchedTool = group.tools.find(
+                (tool) => tool.link === urlWithoutQueryParams,
+              );
+              if (matchedTool) {
+                return `${route.label} - ${matchedTool.name}`;
+              }
+            }
+          }
+        }
+
+        return '';
       }),
     ),
     { initialValue: '' },

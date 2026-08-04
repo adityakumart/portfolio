@@ -36,7 +36,7 @@
     <mat-sidenav mode="side" class="mainSideNav" #sidenav>
       <div class="buttonList pt-3">
         @for (item of routingList; track $index) {
-          @if (item.children) {
+          @if (item.groups) {
             <button
               mat-icon-button
               [matMenuTriggerFor]="itemMenu"
@@ -60,13 +60,20 @@
               [overlapTrigger]="true"
               panelClass="sidebar-menu-panel"
             >
-              @for (childItem of item.children; track $index) {
+              @for (group of item.groups; track $index) {
                 <button mat-menu-item [matMenuTriggerFor]="toolMenu">
-                  {{ childItem.header }}
+                  {{ group.header }}
                 </button>
                 <mat-menu #toolMenu="matMenu">
-                  @for (tool of childItem.tools; track $index) {
-                    <button mat-menu-item>{{ tool }}</button>
+                  @for (tool of group.tools; track $index) {
+                    <button
+                      mat-menu-item
+                      [routerLink]="tool.link"
+                      routerLinkActive="active-link"
+                      (click)="sidenav.toggle()"
+                    >
+                      {{ tool.name }}
+                    </button>
                   }
                 </mat-menu>
               }
