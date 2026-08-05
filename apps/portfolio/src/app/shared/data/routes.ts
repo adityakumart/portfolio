@@ -45,7 +45,7 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
         name: 'JSON',
         path: 'formatters/json',
         link: '/dev-tools/formatters/json',
-        loadComponent: () => import('../../modules/dev-tools/components/tool-placeholder/tool-placeholder.component').then(m => m.ToolPlaceholderComponent)
+        loadComponent: () => import('../../modules/dev-tools/components/json-formatter/json-formatter.component').then(m => m.JsonFormatterComponent)
       },
       {
         name: 'HTML',
