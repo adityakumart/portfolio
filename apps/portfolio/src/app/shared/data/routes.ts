@@ -51,19 +51,19 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
         name: 'HTML',
         path: 'formatters/html',
         link: '/dev-tools/formatters/html',
-        loadComponent: () => import('../../modules/dev-tools/components/tool-placeholder/tool-placeholder.component').then(m => m.ToolPlaceholderComponent)
+        loadComponent: () => import('../../modules/dev-tools/components/code-formatter/html-formatter/html-formatter.component').then(m => m.HtmlFormatterComponent)
       },
       {
         name: 'CSS',
         path: 'formatters/css',
         link: '/dev-tools/formatters/css',
-        loadComponent: () => import('../../modules/dev-tools/components/tool-placeholder/tool-placeholder.component').then(m => m.ToolPlaceholderComponent)
+        loadComponent: () => import('../../modules/dev-tools/components/code-formatter/css-formatter/css-formatter.component').then(m => m.CssFormatterComponent)
       },
       {
         name: 'JS',
         path: 'formatters/js',
         link: '/dev-tools/formatters/js',
-        loadComponent: () => import('../../modules/dev-tools/components/tool-placeholder/tool-placeholder.component').then(m => m.ToolPlaceholderComponent)
+        loadComponent: () => import('../../modules/dev-tools/components/code-formatter/js-formatter/js-formatter.component').then(m => m.JsFormatterComponent)
       }
     ]
   },
