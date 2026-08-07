@@ -74,7 +74,7 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
         name: 'Base64',
         path: 'encode-decode/base64',
         link: '/dev-tools/encode-decode/base64',
-        loadComponent: () => import('../../modules/dev-tools/components/tool-placeholder/tool-placeholder.component').then(m => m.ToolPlaceholderComponent)
+        loadComponent: () => import('../../modules/dev-tools/components/base64-converter/base64-converter.component').then(m => m.Base64ConverterComponent)
       },
       {
         name: 'MD5',
