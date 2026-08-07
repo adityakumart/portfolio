@@ -1,0 +1,289 @@
+<div class="base64-container">
+  <!-- Header Card -->
+  <mat-card class="header-card mb-4">
+    <mat-card-header class="py-3">
+      <mat-card-title>Base64 Encoder & Decoder</mat-card-title>
+      <mat-card-subtitle>Encode text and files to Base64, or decode Base64 strings back to text and preview media content.</mat-card-subtitle>
+    </mat-card-header>
+  </mat-card>
+
+  <form [formGroup]="form" class="base64-form">
+    <!-- Toolbar Section -->
+    <mat-card class="toolbar-card mb-4">
+      <mat-card-content class="toolbar-content">
+        <!-- Configuration Controls -->
+        <div class="controls-group">
+          <div class="control-item">
+            <span class="control-label">Mode</span>
+            <mat-radio-group formControlName="mode" color="primary" class="mode-radio-group">
+              <mat-radio-button value="text">Text Mode</mat-radio-button>
+              <mat-radio-button value="file">File Mode</mat-radio-button>
+            </mat-radio-group>
+          </div>
+
+          <!-- Operation selection - only shown for text mode -->
+          @if (form.get('mode')?.value === 'text') {
+            <mat-divider [vertical]="true" class="control-divider"></mat-divider>
+            <div class="control-item">
+              <span class="control-label">Operation</span>
+              <mat-radio-group formControlName="operation" color="primary" class="operation-radio-group">
+                <mat-radio-button value="encode">Encode</mat-radio-button>
+                <mat-radio-button value="decode">Decode</mat-radio-button>
+              </mat-radio-group>
+            </div>
+          }
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="actions-group">
+          @if (form.get('mode')?.value === 'text') {
+            <button
+              mat-raised-button
+              color="primary"
+              type="button"
+              (click)="onProcessText()"
+              [disabled]="!form.get('inputText')?.value"
+              class="action-btn"
+            >
+              <mat-icon>{{ form.get('operation')?.value === 'encode' ? 'lock' : 'lock_open' }}</mat-icon>
+              {{ form.get('operation')?.value === 'encode' ? 'Encode' : 'Decode' }}
+            </button>
+
+            <button
+              mat-button
+              type="button"
+              (click)="onClearText()"
+              class="action-btn"
+            >
+              <mat-icon>clear_all</mat-icon>
+              Clear
+            </button>
+          } @else {
+            <button
+              mat-button
+              type="button"
+              (click)="onClearFile()"
+              [disabled]="!selectedFile"
+              class="action-btn"
+            >
+              <mat-icon>clear_all</mat-icon>
+              Clear File
+            </button>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Error Detail Panel -->
+    @if (errorMessage) {
+      <div class="error-detail-box mb-4">
+        <mat-icon class="error-box-icon">warning</mat-icon>
+        <div class="error-box-content">
+          <strong>Process Error:</strong>
+          <p class="error-message-text">{{ errorMessage }}</p>
+        </div>
+      </div>
+    }
+
+    <!-- Dynamic Metadata / Visual Preview Section -->
+    @if (metadataLabel || (previewUrl && isImagePreview)) {
+      <mat-card class="preview-card mb-4">
+        <mat-card-header class="py-2">
+          <mat-card-title>Decoded File Info & Visual Preview</mat-card-title>
+        </mat-card-header>
+        <mat-card-content class="preview-content">
+          @if (metadataLabel) {
+            <div class="metadata-badge">
+              <mat-icon class="info-icon">info</mat-icon>
+              <span class="metadata-text">{{ metadataLabel }}</span>
+            </div>
+          }
+
+          @if (previewUrl && isImagePreview) {
+            <div class="preview-frame mt-3">
+              <img [src]="previewUrl" alt="Decoded preview image" class="img-preview" />
+            </div>
+          } @else if (previewUrl && !isImagePreview) {
+            <div class="binary-placeholder mt-3">
+              <mat-icon class="placeholder-icon">insert_drive_file</mat-icon>
+              <p class="placeholder-text">Binary format detected. Previews are only supported for image files.</p>
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+    }
+
+    <!-- Main Workspace Split-Screen Layout -->
+    <div class="workspace-layout">
+      <!-- TEXT MODE WORKSPACE -->
+      @if (form.get('mode')?.value === 'text') {
+        <!-- Input Section -->
+        <mat-card class="editor-card">
+          <mat-card-header class="card-header-with-actions py-2">
+            <mat-card-title>
+              {{ form.get('operation')?.value === 'encode' ? 'Plain Text Input' : 'Base64 Input' }}
+            </mat-card-title>
+            <span class="char-count-badge">
+              {{ form.get('inputText')?.value?.length || 0 }} chars
+            </span>
+          </mat-card-header>
+
+          <mat-card-content class="card-content-fill">
+            <mat-form-field appearance="outline" class="full-width textarea-field" subscriptSizing="dynamic">
+              <textarea
+                matInput
+                formControlName="inputText"
+                [placeholder]="form.get('operation')?.value === 'encode' ? 'Type or paste plain text here to encode...' : 'Paste Base64 or Data URI here to decode...'"
+                rows="18"
+                class="base64-textarea"
+              ></textarea>
+            </mat-form-field>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Output Section -->
+        <mat-card class="editor-card">
+          <mat-card-header class="card-header-with-actions py-2">
+            <mat-card-title>
+              {{ form.get('operation')?.value === 'encode' ? 'Base64 Output' : 'Decoded Text Output' }}
+            </mat-card-title>
+            
+            <div class="output-actions">
+              <button
+                mat-icon-button
+                matTooltip="Copy to Clipboard"
+                type="button"
+                (click)="onCopy(form.get('outputText')?.value, 'outputText')"
+                [disabled]="!form.get('outputText')?.value"
+                [class.copied]="copiedField === 'outputText'"
+              >
+                <mat-icon>{{ copiedField === 'outputText' ? 'check_circle' : 'content_copy' }}</mat-icon>
+              </button>
+            </div>
+          </mat-card-header>
+
+          <mat-card-content class="card-content-fill">
+            <mat-form-field appearance="outline" class="full-width textarea-field" subscriptSizing="dynamic">
+              <textarea
+                matInput
+                formControlName="outputText"
+                [placeholder]="form.get('operation')?.value === 'encode' ? 'Base64 encoded string will appear here...' : 'Decoded plain text will appear here...'"
+                rows="18"
+                readonly
+                class="base64-textarea readonly-textarea"
+              ></textarea>
+            </mat-form-field>
+          </mat-card-content>
+        </mat-card>
+      }
+
+      <!-- FILE MODE WORKSPACE -->
+      @if (form.get('mode')?.value === 'file') {
+        <!-- Left Side: Upload Input -->
+        <mat-card class="editor-card">
+          <mat-card-header class="py-2">
+            <mat-card-title>Upload Source File</mat-card-title>
+          </mat-card-header>
+
+          <mat-card-content class="card-content-fill">
+            <!-- Drag and drop zone -->
+            <div 
+              class="drop-zone"
+              [class.dragover]="isDragOver"
+              (dragover)="onDragOver($event)"
+              (dragleave)="onDragLeave($event)"
+              (drop)="onDrop($event)"
+              (click)="fileInput.click()"
+            >
+              <input 
+                #fileInput 
+                type="file" 
+                (change)="onFileSelected($event)" 
+                style="display: none;" 
+              />
+              <mat-icon class="upload-icon">cloud_upload</mat-icon>
+              <p class="upload-text">Drag & drop files here, or <span class="browse-link">browse</span></p>
+              <p class="upload-hint">Maximum file size: 15MB. Support for images, PDFs, text, and binary formats.</p>
+            </div>
+
+            <!-- Selected File Metadata -->
+            @if (selectedFile) {
+              <div class="file-info-panel">
+                <mat-icon class="file-icon">insert_drive_file</mat-icon>
+                <div class="file-details">
+                  <div class="file-name">{{ selectedFile.name }}</div>
+                  <div class="file-meta">
+                    Size: {{ formatBytes(selectedFile.size) }} | Type: {{ selectedFile.type || 'unknown' }}
+                  </div>
+                </div>
+              </div>
+            }
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Right Side: Base64 Code Snippet Results -->
+        <mat-card class="editor-card">
+          <mat-card-header class="py-2">
+            <mat-card-title>Encoded File Output</mat-card-title>
+          </mat-card-header>
+
+          <mat-card-content class="card-content-fill gap-4">
+            <!-- Raw Base64 string group -->
+            <div class="output-subgroup">
+              <div class="subgroup-header">
+                <span class="subgroup-title">Raw Base64 string</span>
+                <button
+                  mat-icon-button
+                  matTooltip="Copy Raw Base64"
+                  type="button"
+                  (click)="onCopy(form.get('rawBase64')?.value, 'rawBase64')"
+                  [disabled]="!form.get('rawBase64')?.value"
+                  [class.copied]="copiedField === 'rawBase64'"
+                >
+                  <mat-icon>{{ copiedField === 'rawBase64' ? 'check_circle' : 'content_copy' }}</mat-icon>
+                </button>
+              </div>
+              <mat-form-field appearance="outline" class="full-width textarea-field" subscriptSizing="dynamic">
+                <textarea
+                  matInput
+                  formControlName="rawBase64"
+                  placeholder="Raw base64 data will show up here after selecting a file..."
+                  rows="6"
+                  readonly
+                  class="base64-textarea code-font readonly-textarea"
+                ></textarea>
+              </mat-form-field>
+            </div>
+
+            <!-- Complete CSS/HTML Data URI group -->
+            <div class="output-subgroup">
+              <div class="subgroup-header">
+                <span class="subgroup-title">Full Data URI (HTML/CSS compatible)</span>
+                <button
+                  mat-icon-button
+                  matTooltip="Copy Data URI"
+                  type="button"
+                  (click)="onCopy(form.get('outputDataUri')?.value, 'outputDataUri')"
+                  [disabled]="!form.get('outputDataUri')?.value"
+                  [class.copied]="copiedField === 'outputDataUri'"
+                >
+                  <mat-icon>{{ copiedField === 'outputDataUri' ? 'check_circle' : 'content_copy' }}</mat-icon>
+                </button>
+              </div>
+              <mat-form-field appearance="outline" class="full-width textarea-field" subscriptSizing="dynamic">
+                <textarea
+                  matInput
+                  formControlName="outputDataUri"
+                  placeholder="Data URI schema (data:image/png;base64,...) will show up here..."
+                  rows="6"
+                  readonly
+                  class="base64-textarea code-font readonly-textarea"
+                ></textarea>
+              </mat-form-field>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+  </form>
+</div>
