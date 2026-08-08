@@ -92,7 +92,7 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
         name: 'JWT',
         path: 'encode-decode/jwt',
         link: '/dev-tools/encode-decode/jwt',
-        loadComponent: () => import('../../modules/dev-tools/components/tool-placeholder/tool-placeholder.component').then(m => m.ToolPlaceholderComponent)
+        loadComponent: () => import('../../modules/dev-tools/components/jwt-decoder/jwt-decoder.component').then(m => m.JwtDecoderComponent)
       },
       {
         name: 'URL',

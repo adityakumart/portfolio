@@ -1,0 +1,271 @@
+<div class="jwt-decoder-container">
+  <!-- Header Card -->
+  <mat-card class="header-card mb-4">
+    <mat-card-header class="py-3">
+      <mat-card-title id="jwt-decoder-title">JWT Decoder</mat-card-title>
+      <mat-card-subtitle>Decode JSON Web Tokens (JWT) client-side in real-time, dissecting headers, payloads, and signatures with mapped claims.</mat-card-subtitle>
+    </mat-card-header>
+  </mat-card>
+
+  <form [formGroup]="form" class="jwt-form">
+    <!-- Toolbar Section -->
+    <mat-card class="toolbar-card mb-4">
+      <mat-card-content class="toolbar-content">
+        <div class="controls-group">
+          <span class="control-label">Decode JSON Web Tokens securely (100% Client-Side)</span>
+        </div>
+
+        <div class="actions-group">
+          <button
+            mat-raised-button
+            color="primary"
+            type="button"
+            (click)="onLoadDemo()"
+            class="action-btn"
+            id="load-demo-btn"
+          >
+            <mat-icon>play_circle_outline</mat-icon>
+            Load Demo Token
+          </button>
+
+          <button
+            mat-button
+            type="button"
+            (click)="onClear()"
+            [disabled]="!form.get('tokenInput')?.value"
+            class="action-btn"
+            id="clear-btn"
+          >
+            <mat-icon>clear_all</mat-icon>
+            Clear
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Error Detail Panel -->
+    @if (errorMessage) {
+      <div class="error-detail-box mb-4" id="jwt-error-box">
+        <mat-icon class="error-box-icon">error_outline</mat-icon>
+        <div class="error-box-content">
+          <strong>Malformed Token Exception</strong>
+          <p class="error-message-text">{{ errorMessage }}</p>
+        </div>
+      </div>
+    }
+
+    <!-- Main Workspace Layout -->
+    <div class="workspace-layout">
+      <!-- Input Panel (Left Column) -->
+      <div class="input-column">
+        <mat-card class="editor-card">
+          <mat-card-header class="card-header-with-actions">
+            <mat-card-title>Encoded Token (Paste here)</mat-card-title>
+          </mat-card-header>
+          
+          <mat-card-content class="card-content-fill">
+            <mat-form-field appearance="outline" class="full-width textarea-field">
+              <textarea
+                matInput
+                formControlName="tokenInput"
+                placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+                rows="10"
+                class="jwt-textarea"
+                id="jwt-input-textarea"
+              ></textarea>
+            </mat-form-field>
+
+            <!-- Color-Coded Token Segment Split Visualizer -->
+            @if (tokenPartHeader || tokenPartPayload || tokenPartSignature) {
+              <div class="visualizer-section">
+                <span class="section-title">Color-Coded Token Structure:</span>
+                <div class="token-split-display" id="token-split-display">
+                  <span class="token-segment segment-header" *ngIf="tokenPartHeader" matTooltip="Header (Algorithm & Type)">{{ tokenPartHeader }}</span>
+                  <span class="token-dot" *ngIf="tokenPartPayload">.</span>
+                  <span class="token-segment segment-payload" *ngIf="tokenPartPayload" matTooltip="Payload (Claims & User Data)">{{ tokenPartPayload }}</span>
+                  <span class="token-dot" *ngIf="tokenPartSignature">.</span>
+                  <span class="token-segment segment-signature" *ngIf="tokenPartSignature" matTooltip="Signature (Cryptographic Verification)">{{ tokenPartSignature }}</span>
+                </div>
+              </div>
+            }
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- Output Panel (Right Column) -->
+      <div class="output-column">
+        @if (decodedToken) {
+          <div class="decoded-sections">
+            <!-- Header Section (Coral/Red) -->
+            <mat-card class="decoded-card border-header mb-4">
+              <div class="decoded-card-header">
+                <span class="card-title text-header">
+                  <mat-icon>settings</mat-icon>
+                  HEADER: ALGORITHM & TOKEN TYPE
+                </span>
+                <div class="card-actions">
+                  <button
+                    mat-icon-button
+                    (click)="onCopy(decodedToken.headerRaw, 'headerRaw')"
+                    [class.copied]="copiedSection === 'headerRaw'"
+                    matTooltip="Copy Raw Encoded Header"
+                  >
+                    <mat-icon>{{ copiedSection === 'headerRaw' ? 'check' : 'content_copy' }}</mat-icon>
+                  </button>
+                  <button
+                    mat-icon-button
+                    (click)="onCopy(formatJson(decodedToken.header), 'headerJson')"
+                    [class.copied]="copiedSection === 'headerJson'"
+                    matTooltip="Copy Formatted Header JSON"
+                  >
+                    <mat-icon>{{ copiedSection === 'headerJson' ? 'assignment' : 'code' }}</mat-icon>
+                  </button>
+                </div>
+              </div>
+              <mat-card-content class="decoded-card-content">
+                <pre class="json-code text-header-dark">{{ formatJson(decodedToken.header) }}</pre>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Payload Section (Purple/Indigo) -->
+            <mat-card class="decoded-card border-payload mb-4">
+              <div class="decoded-card-header">
+                <span class="card-title text-payload">
+                  <mat-icon>person</mat-icon>
+                  PAYLOAD: DATA & CLAIMS
+                </span>
+                <div class="card-actions">
+                  <button
+                    mat-icon-button
+                    (click)="onCopy(decodedToken.payloadRaw, 'payloadRaw')"
+                    [class.copied]="copiedSection === 'payloadRaw'"
+                    matTooltip="Copy Raw Encoded Payload"
+                  >
+                    <mat-icon>{{ copiedSection === 'payloadRaw' ? 'check' : 'content_copy' }}</mat-icon>
+                  </button>
+                  <button
+                    mat-icon-button
+                    (click)="onCopy(formatJson(decodedToken.payload), 'payloadJson')"
+                    [class.copied]="copiedSection === 'payloadJson'"
+                    matTooltip="Copy Formatted Payload JSON"
+                  >
+                    <mat-icon>{{ copiedSection === 'payloadJson' ? 'assignment' : 'code' }}</mat-icon>
+                  </button>
+                </div>
+              </div>
+              <mat-card-content class="decoded-card-content">
+                <pre class="json-code text-payload-dark">{{ formatJson(decodedToken.payload) }}</pre>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Signature Section (Teal/Green) -->
+            <mat-card class="decoded-card border-signature mb-4">
+              <div class="decoded-card-header">
+                <span class="card-title text-signature">
+                  <mat-icon>verified_user</mat-icon>
+                  SIGNATURE: VERIFICATION
+                </span>
+                <div class="card-actions">
+                  <button
+                    mat-icon-button
+                    (click)="onCopy(decodedToken.signatureRaw, 'signature')"
+                    [class.copied]="copiedSection === 'signature'"
+                    matTooltip="Copy Raw Signature"
+                  >
+                    <mat-icon>{{ copiedSection === 'signature' ? 'check' : 'content_copy' }}</mat-icon>
+                  </button>
+                </div>
+              </div>
+              <mat-card-content class="decoded-card-content">
+                <div class="signature-display">
+                  <pre class="signature-code text-signature-dark">{{ decodedToken.signature }}</pre>
+                  <div class="signature-explanation">
+                    <p class="explanation-title">Signature Scheme Verification</p>
+                    <p class="explanation-detail">
+                      The signature certifies that the token was signed with a secure algorithm (such as <strong>{{ decodedToken.header.alg || 'HS256' }}</strong>). Note that cryptographic signature validation must be executed securely on a backend server, as the verification secrets/keys should never be exposed in client-side code.
+                    </p>
+                  </div>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        } @else {
+          <!-- Empty State / Instructions Panel -->
+          <mat-card class="placeholder-card">
+            <mat-card-content class="placeholder-content">
+              <div class="placeholder-icon-container">
+                <mat-icon class="large-icon">vpn_key</mat-icon>
+              </div>
+              <h3>Awaiting Token Input</h3>
+              <p>Paste a JWT token in the input area or load the demo token to inspect its visual decoding and mapped claims.</p>
+              <div class="placeholder-benefits">
+                <div class="benefit-item">
+                  <mat-icon>shield</mat-icon>
+                  <span>100% Client-Side decoding protects secret payloads</span>
+                </div>
+                <div class="benefit-item">
+                  <mat-icon>palette</mat-icon>
+                  <span>Color-coded sections match standard specifications</span>
+                </div>
+                <div class="benefit-item">
+                  <mat-icon>format_list_bulleted</mat-icon>
+                  <span>Registered claims maps expose human-readable labels</span>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        }
+      </div>
+    </div>
+
+    <!-- Registered Claims Mapping Section (Full Width Table) -->
+    @if (decodedToken && claimsDataSource.length > 0) {
+      <mat-card class="claims-card mt-4">
+        <mat-card-header class="claims-header">
+          <mat-card-title>
+            <mat-icon>list_alt</mat-icon>
+            Payload Claims Analysis & Interpretations
+          </mat-card-title>
+          <mat-card-subtitle>
+            Iterated fields from the JWT Payload mapped against standard registered specifications.
+          </mat-card-subtitle>
+        </mat-card-header>
+        
+        <mat-card-content class="claims-table-wrapper">
+          <table mat-table [dataSource]="claimsDataSource" class="claims-table" id="jwt-claims-table">
+            
+            <!-- Key Column -->
+            <ng-container matColumnDef="key">
+              <th mat-header-cell *matHeaderCellDef> Claim </th>
+              <td mat-cell *matCellDef="let claim" class="claim-key-cell">
+                <span class="badge" [class.badge-registered]="claim.isRegistered" [class.badge-custom]="!claim.isRegistered">
+                  {{ claim.key }}
+                </span>
+              </td>
+            </ng-container>
+
+            <!-- Name / Value Column -->
+            <ng-container matColumnDef="value">
+              <th mat-header-cell *matHeaderCellDef> Mapped Property & Value </th>
+              <td mat-cell *matCellDef="let claim" class="claim-value-cell">
+                <div class="property-name">{{ claim.name }}</div>
+                <div class="property-value">{{ claim.formattedValue }}</div>
+              </td>
+            </ng-container>
+
+            <!-- Description Column -->
+            <ng-container matColumnDef="description">
+              <th mat-header-cell *matHeaderCellDef> Standard Specification Description </th>
+              <td mat-cell *matCellDef="let claim" class="claim-description-cell">
+                {{ claim.description }}
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="claim-row"></tr>
+          </table>
+        </mat-card-content>
+      </mat-card>
+    }
+  </form>
+</div>
