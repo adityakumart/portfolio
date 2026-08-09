@@ -80,13 +80,13 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
         name: 'MD5',
         path: 'encode-decode/md5',
         link: '/dev-tools/encode-decode/md5',
-        loadComponent: () => import('../../modules/dev-tools/components/tool-placeholder/tool-placeholder.component').then(m => m.ToolPlaceholderComponent)
+        loadComponent: () => import('../../modules/dev-tools/components/encoder-hash-tools/encoder-hash-tools.component').then(m => m.EncoderHashToolsComponent)
       },
       {
         name: 'SHA256',
         path: 'encode-decode/sha256',
         link: '/dev-tools/encode-decode/sha256',
-        loadComponent: () => import('../../modules/dev-tools/components/tool-placeholder/tool-placeholder.component').then(m => m.ToolPlaceholderComponent)
+        loadComponent: () => import('../../modules/dev-tools/components/encoder-hash-tools/encoder-hash-tools.component').then(m => m.EncoderHashToolsComponent)
       },
       {
         name: 'JWT',
@@ -98,7 +98,7 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
         name: 'URL',
         path: 'encode-decode/url',
         link: '/dev-tools/encode-decode/url',
-        loadComponent: () => import('../../modules/dev-tools/components/tool-placeholder/tool-placeholder.component').then(m => m.ToolPlaceholderComponent)
+        loadComponent: () => import('../../modules/dev-tools/components/encoder-hash-tools/encoder-hash-tools.component').then(m => m.EncoderHashToolsComponent)
       }
     ]
   },
