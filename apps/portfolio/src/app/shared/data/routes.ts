@@ -109,7 +109,7 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
         name: 'JSON to CSV/TS/Schema',
         path: 'converters/json-to-csv-ts-schema',
         link: '/dev-tools/converters/json-to-csv-ts-schema',
-        loadComponent: () => import('../../modules/dev-tools/components/tool-placeholder/tool-placeholder.component').then(m => m.ToolPlaceholderComponent)
+        loadComponent: () => import('../../modules/dev-tools/components/json-csv-converter/json-csv-converter.component').then(m => m.JsonCsvConverterComponent)
       },
       {
         name: 'Query String',

@@ -1,0 +1,53 @@
+<div class="converter-container">
+  <div class="controls">
+    <mat-form-field appearance="outline" class="delimiter-select">
+      <mat-label>Delimiter</mat-label>
+      <mat-select [(ngModel)]="selectedDelimiter">
+        @for (delimiter of delimiters; track delimiter.value) {
+          <mat-option [value]="delimiter.value">{{ delimiter.viewValue }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <div class="actions">
+      <button mat-flat-button color="primary" (click)="handleJsonToCsv()">JSON to CSV</button>
+      <button mat-flat-button color="primary" (click)="handleCsvToJson()">CSV to JSON</button>
+      <button mat-stroked-button (click)="copyJson()" [disabled]="!outputText()">Copy JSON</button>
+      <button mat-stroked-button (click)="copyCsv()" [disabled]="!outputText()">Copy CSV</button>
+      <button mat-icon-button (click)="clear()" aria-label="Clear all fields">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0z" fill="none"/><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="error-panel">
+      <strong>Error:</strong> {{ error() }}
+    </div>
+  }
+
+  <div class="io-grid">
+    <mat-form-field appearance="outline" class="textarea-wrapper">
+      <mat-label>Input</mat-label>
+      <textarea matInput
+                cdkTextareaAutosize
+                cdkAutosizeMinRows="10"
+                cdkAutosizeMaxRows="20"
+                [(ngModel)]="inputText"
+                placeholder="Paste your JSON or CSV here..."></textarea>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="textarea-wrapper">
+      <mat-label>Output</mat-label>
+      @if (metadata(); as meta) {
+        <div matSuffix class="metadata-label">Converted: {{ meta.rows }} rows, {{ meta.cols }} columns</div>
+      }
+      <textarea matInput
+                cdkTextareaAutosize
+                cdkAutosizeMinRows="10"
+                cdkAutosizeMaxRows="20"
+                [readonly]="true"
+                [ngModel]="outputText()"></textarea>
+    </mat-form-field>
+  </div>
+</div>
