@@ -121,7 +121,7 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
         name: 'Number Base',
         path: 'converters/number-base',
         link: '/dev-tools/converters/number-base',
-        loadComponent: () => import('../../modules/dev-tools/components/tool-placeholder/tool-placeholder.component').then(m => m.ToolPlaceholderComponent)
+        loadComponent: () => import('../../modules/dev-tools/components/number-base-converter/number-base-converter.component').then(m => m.NumberBaseConverterComponent)
       }
     ]
   },

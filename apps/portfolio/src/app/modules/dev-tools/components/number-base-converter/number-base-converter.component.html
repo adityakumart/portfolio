@@ -1,0 +1,160 @@
+<div class="base-converter-container">
+  <!-- Header Card -->
+  <mat-card class="header-card mb-4">
+    <mat-card-header class="py-3">
+      <mat-card-title>Number Base Converter</mat-card-title>
+      <mat-card-subtitle>Convert values between Decimal, Binary, Octal, and Hexadecimal in real-time, complete with step-by-step mathematical breakdown formulas.</mat-card-subtitle>
+    </mat-card-header>
+  </mat-card>
+
+  <!-- Main Workspace Grid -->
+  <div class="workspace-layout">
+    <!-- Left Column: Inputs -->
+    <div class="panel-column">
+      <mat-card class="editor-card" [formGroup]="form">
+        <mat-card-header class="panel-header">
+          <mat-card-title>Number Systems</mat-card-title>
+          <div class="header-actions">
+            <button
+              mat-stroked-button
+              color="warn"
+              type="button"
+              [disabled]="!form.get('decimal')?.value && !form.get('binary')?.value && !form.get('octal')?.value && !form.get('hexadecimal')?.value"
+              (click)="onClear()"
+            >
+              <mat-icon>clear_all</mat-icon>
+              Clear All
+            </button>
+          </div>
+        </mat-card-header>
+        <mat-divider></mat-divider>
+        
+        <mat-card-content class="panel-body">
+          <!-- Decimal (Base 10) Input -->
+          <mat-form-field appearance="outline" class="w-100 mb-3">
+            <mat-label>Decimal (Base 10)</mat-label>
+            <input
+              matInput
+              type="text"
+              formControlName="decimal"
+              placeholder="e.g. 255"
+              inputmode="numeric"
+              (keydown)="onKeyDown($event, 10)"
+            />
+            <button
+              mat-icon-button
+              matSuffix
+              (click)="copyField('decimal')"
+              [disabled]="!form.get('decimal')?.value"
+              matTooltip="Copy Decimal value"
+              type="button"
+            >
+              <mat-icon>content_copy</mat-icon>
+            </button>
+            @if (form.get('decimal')?.hasError('pattern')) {
+              <mat-error>Please enter valid digits (0-9) only.</mat-error>
+            }
+          </mat-form-field>
+
+          <!-- Binary (Base 2) Input -->
+          <mat-form-field appearance="outline" class="w-100 mb-3">
+            <mat-label>Binary (Base 2)</mat-label>
+            <input
+              matInput
+              type="text"
+              formControlName="binary"
+              placeholder="e.g. 11111111"
+              inputmode="numeric"
+              (keydown)="onKeyDown($event, 2)"
+            />
+            <button
+              mat-icon-button
+              matSuffix
+              (click)="copyField('binary')"
+              [disabled]="!form.get('binary')?.value"
+              matTooltip="Copy Binary value"
+              type="button"
+            >
+              <mat-icon>content_copy</mat-icon>
+            </button>
+            @if (form.get('binary')?.hasError('pattern')) {
+              <mat-error>Please enter binary digits (0 and 1) only.</mat-error>
+            }
+          </mat-form-field>
+
+          <!-- Octal (Base 8) Input -->
+          <mat-form-field appearance="outline" class="w-100 mb-3">
+            <mat-label>Octal (Base 8)</mat-label>
+            <input
+              matInput
+              type="text"
+              formControlName="octal"
+              placeholder="e.g. 377"
+              inputmode="numeric"
+              (keydown)="onKeyDown($event, 8)"
+            />
+            <button
+              mat-icon-button
+              matSuffix
+              (click)="copyField('octal')"
+              [disabled]="!form.get('octal')?.value"
+              matTooltip="Copy Octal value"
+              type="button"
+            >
+              <mat-icon>content_copy</mat-icon>
+            </button>
+            @if (form.get('octal')?.hasError('pattern')) {
+              <mat-error>Please enter octal digits (0-7) only.</mat-error>
+            }
+          </mat-form-field>
+
+          <!-- Hexadecimal (Base 16) Input -->
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Hexadecimal (Base 16)</mat-label>
+            <input
+              matInput
+              type="text"
+              formControlName="hexadecimal"
+              placeholder="e.g. FF"
+              (keydown)="onKeyDown($event, 16)"
+            />
+            <button
+              mat-icon-button
+              matSuffix
+              (click)="copyField('hexadecimal')"
+              [disabled]="!form.get('hexadecimal')?.value"
+              matTooltip="Copy Hexadecimal value"
+              type="button"
+            >
+              <mat-icon>content_copy</mat-icon>
+            </button>
+            @if (form.get('hexadecimal')?.hasError('pattern')) {
+              <mat-error>Please enter valid hex characters (0-9, A-F) only.</mat-error>
+            }
+          </mat-form-field>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Right Column: Mathematical Walkthrough -->
+    <div class="panel-column">
+      <mat-card class="editor-card explanation-card">
+        <mat-card-header class="panel-header">
+          <mat-card-title>Mathematical Breakdown</mat-card-title>
+        </mat-card-header>
+        <mat-divider></mat-divider>
+        <mat-card-content class="panel-body">
+          @if (!explanation()) {
+            <div class="empty-state">
+              <mat-icon class="empty-icon">calculate</mat-icon>
+              <p>No conversion active.</p>
+              <span>Enter a value in any base on the left to see the step-by-step mathematical conversion breakdown.</span>
+            </div>
+          } @else {
+            <div class="explanation-container animate-fade-in" [innerHTML]="explanation()"></div>
+          }
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>
