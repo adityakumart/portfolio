@@ -115,7 +115,7 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
         name: 'Query String',
         path: 'converters/query-string',
         link: '/dev-tools/converters/query-string',
-        loadComponent: () => import('../../modules/dev-tools/components/tool-placeholder/tool-placeholder.component').then(m => m.ToolPlaceholderComponent)
+        loadComponent: () => import('../../modules/dev-tools/components/query-string-converter/query-string-converter.component').then(m => m.QueryStringConverterComponent)
       },
       {
         name: 'Number Base',

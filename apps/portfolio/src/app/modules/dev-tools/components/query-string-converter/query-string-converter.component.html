@@ -1,0 +1,164 @@
+<div class="query-converter-container">
+  <!-- Header Card -->
+  <mat-card class="header-card mb-4">
+    <mat-card-header class="py-3">
+      <mat-card-title>Query String Converter</mat-card-title>
+      <mat-card-subtitle>Parse, sort, and convert URL query strings or full URLs into clean JSON objects and interactive key-value lists in real-time.</mat-card-subtitle>
+    </mat-card-header>
+  </mat-card>
+
+  <!-- Error Detail Panel -->
+  @if (errorMessage()) {
+    <div class="error-detail-box mb-4 animate-fade-in">
+      <mat-icon class="error-box-icon">warning</mat-icon>
+      <div class="error-box-content">
+        <strong>Parsing Error:</strong>
+        <p class="error-message-text">{{ errorMessage() }}</p>
+      </div>
+    </div>
+  }
+
+  <!-- Main Workspace Grid -->
+  <div class="workspace-layout">
+    <!-- Left Panel: Input & Tools -->
+    <div class="panel-column">
+      <mat-card class="editor-card">
+        <mat-card-header class="panel-header">
+          <mat-card-title>Input Source</mat-card-title>
+          <div class="header-actions">
+            <button mat-button color="primary" type="button" (click)="loadSampleUrl()" matTooltip="Load a standard URL with multiple parameters">
+              <mat-icon>link</mat-icon>
+              Sample URL
+            </button>
+            <button mat-button color="primary" type="button" (click)="loadSampleQueryString()" matTooltip="Load a raw query string with duplicate keys">
+              <mat-icon>code</mat-icon>
+              Sample Query
+            </button>
+          </div>
+        </mat-card-header>
+        <mat-divider></mat-divider>
+        <mat-card-content class="panel-body">
+          <mat-form-field appearance="outline" class="w-100 mt-3">
+            <mat-label>Query String or Full URL</mat-label>
+            <textarea
+              matInput
+              rows="8"
+              placeholder="Paste URL (e.g. https://example.com?foo=bar) or query string (e.g. foo=bar&baz=qux)..."
+              [ngModel]="rawInput()"
+              (ngModelChange)="rawInput.set($event)"
+            ></textarea>
+          </mat-form-field>
+
+          <div class="options-toolbar mt-2">
+            <mat-checkbox
+              color="primary"
+              [ngModel]="sortKeys()"
+              (ngModelChange)="sortKeys.set($event)"
+              class="sort-checkbox"
+            >
+              Sort keys alphabetically
+            </mat-checkbox>
+
+            <button
+              mat-stroked-button
+              color="warn"
+              type="button"
+              [disabled]="!rawInput()"
+              (click)="clearInput()"
+            >
+              <mat-icon>clear_all</mat-icon>
+              Clear
+            </button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Right Panel: Output JSON & Param Grid -->
+    <div class="panel-column">
+      <!-- JSON Output Card -->
+      <mat-card class="editor-card mb-4">
+        <mat-card-header class="panel-header">
+          <mat-card-title>JSON Object</mat-card-title>
+          <div class="header-actions">
+            <button
+              mat-raised-button
+              color="primary"
+              type="button"
+              [disabled]="!jsonOutputString()"
+              (click)="copyJson()"
+              class="action-btn"
+            >
+              <mat-icon>content_copy</mat-icon>
+              Copy JSON
+            </button>
+          </div>
+        </mat-card-header>
+        <mat-divider></mat-divider>
+        <mat-card-content class="panel-body">
+          <mat-form-field appearance="outline" class="w-100 mt-3">
+            <mat-label>Formatted Output</mat-label>
+            <textarea
+              matInput
+              rows="8"
+              readonly
+              [value]="jsonOutputString() || '{}'"
+              class="code-textarea"
+              placeholder="{}"
+            ></textarea>
+          </mat-form-field>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Key-Value Breakdown Card -->
+      <mat-card class="editor-card">
+        <mat-card-header class="panel-header">
+          <mat-card-title>Parsed Parameters ({{ paramsList().length }})</mat-card-title>
+        </mat-card-header>
+        <mat-divider></mat-divider>
+        <mat-card-content class="panel-body table-body">
+          @if (paramsList().length === 0) {
+            <div class="empty-state">
+              <mat-icon class="empty-icon">find_in_page</mat-icon>
+              <p>No active query parameters detected.</p>
+              <span>Enter a query string or URL in the input section to view parameters.</span>
+            </div>
+          } @else {
+            <div class="params-list-container">
+              <div class="params-header-row">
+                <span class="col-key-header">Parameter Key</span>
+                <span class="col-val-header">Decoded Value</span>
+              </div>
+              <mat-divider></mat-divider>
+              <div class="params-list">
+                @for (param of paramsList(); track $index) {
+                  <div class="param-item-row animate-slide-in">
+                    <!-- Key column -->
+                    <div class="col-key">
+                      <code class="key-badge" (click)="copyText(param.key, 'Key')" matTooltip="Click to copy Key">
+                        {{ param.key }}
+                      </code>
+                      <button mat-icon-button class="mini-copy-btn" (click)="copyText(param.key, 'Key')" matTooltip="Copy Key">
+                        <mat-icon>content_copy</mat-icon>
+                      </button>
+                    </div>
+
+                    <!-- Value column -->
+                    <div class="col-val">
+                      <span class="val-text" [class.val-empty]="!param.value" (click)="copyText(param.value, 'Value')" matTooltip="Click to copy Value">
+                        {{ param.value || '(empty)' }}
+                      </span>
+                      <button mat-icon-button class="mini-copy-btn" (click)="copyText(param.value, 'Value')" matTooltip="Copy Value">
+                        <mat-icon>content_copy</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>
