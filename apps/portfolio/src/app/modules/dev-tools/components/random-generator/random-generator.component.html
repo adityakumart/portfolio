@@ -1,0 +1,298 @@
+<div class="random-generator-container">
+  <!-- Header Card -->
+  <mat-card class="header-card mb-4">
+    <mat-card-header class="py-3">
+      <mat-card-title>Random Data Generator</mat-card-title>
+      <mat-card-subtitle>
+        Generate multiple randomized values including Arrays, Numbers, Objects, UUIDs, Passwords, and Cryptographic Hashes for mock data or development testing.
+      </mat-card-subtitle>
+    </mat-card-header>
+  </mat-card>
+
+  <!-- Route Selection Card -->
+  <mat-card class="selector-card mb-4">
+    <mat-card-content class="selector-content py-3">
+      <div class="selector-label">Select Generator Type:</div>
+      <mat-radio-group
+        [value]="generatorType"
+        (change)="onRadioChange($event.value)"
+        color="primary"
+        class="generator-radio-group"
+      >
+        <mat-radio-button value="array">Array</mat-radio-button>
+        <mat-radio-button value="number">Number</mat-radio-button>
+        <mat-radio-button value="objects">Object</mat-radio-button>
+        <mat-radio-button value="uuid">UUID</mat-radio-button>
+        <mat-radio-button value="password">Password</mat-radio-button>
+        <mat-radio-button value="hash">Hash</mat-radio-button>
+      </mat-radio-group>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Workspace Grid Layout -->
+  <form [formGroup]="settingsForm" class="workspace-layout">
+    <!-- Left Column: Settings Configuration -->
+    <mat-card class="editor-card">
+      <mat-card-header class="card-header-with-actions py-2">
+        <mat-card-title>Generator Configuration</mat-card-title>
+      </mat-card-header>
+
+      <mat-card-content class="card-content-fill p-4">
+        <!-- ARRAY GENERATOR SETTINGS -->
+        @if (generatorType === 'array') {
+          <div class="settings-group">
+            <div class="setting-row">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Element Data Type</mat-label>
+                <mat-select formControlName="arrayType">
+                  <mat-option value="number">Numbers Only</mat-option>
+                  <mat-option value="string">Strings Only</mat-option>
+                  <mat-option value="boolean">Booleans Only</mat-option>
+                  <mat-option value="mixed">Mixed Elements (Numbers, Strings, Booleans)</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+            
+            <div class="setting-row-two-col">
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Min Elements</mat-label>
+                <input matInput type="number" formControlName="arrayMinElements" />
+                @if (settingsForm.get('arrayMinElements')?.hasError('min')) {
+                  <mat-error>Min elements is 1</mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Max Elements</mat-label>
+                <input matInput type="number" formControlName="arrayMaxElements" />
+                @if (settingsForm.get('arrayMaxElements')?.hasError('max')) {
+                  <mat-error>Max elements is 50</mat-error>
+                }
+              </mat-form-field>
+            </div>
+
+            <div class="setting-row py-2">
+              <mat-checkbox formControlName="arrayUnique" color="primary">
+                Enforce unique elements
+              </mat-checkbox>
+            </div>
+          </div>
+        }
+
+        <!-- NUMBER GENERATOR SETTINGS -->
+        @if (generatorType === 'number') {
+          <div class="settings-group">
+            <div class="setting-row-two-col">
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Min Value</mat-label>
+                <input matInput type="number" formControlName="numberMin" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="half-width">
+                <mat-label>Max Value</mat-label>
+                <input matInput type="number" formControlName="numberMax" />
+              </mat-form-field>
+            </div>
+
+            <div class="setting-row py-2">
+              <mat-checkbox formControlName="numberInteger" color="primary">
+                Integer numbers only
+              </mat-checkbox>
+            </div>
+
+            @if (!settingsForm.get('numberInteger')?.value) {
+              <div class="setting-row animate-slide-down">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Decimal Precision (Places)</mat-label>
+                  <input matInput type="number" formControlName="numberPrecision" />
+                  @if (settingsForm.get('numberPrecision')?.hasError('min')) {
+                    <mat-error>Precision cannot be negative</mat-error>
+                  }
+                  @if (settingsForm.get('numberPrecision')?.hasError('max')) {
+                    <mat-error>Maximum precision is 10</mat-error>
+                  }
+                </mat-form-field>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- OBJECTS GENERATOR SETTINGS -->
+        @if (generatorType === 'objects') {
+          <div class="settings-group">
+            <div class="setting-row">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Object Template Preset</mat-label>
+                <mat-select formControlName="objectPreset">
+                  <mat-option value="user">User Profile record</mat-option>
+                  <mat-option value="product">Product Catalog catalog-item</mat-option>
+                  <mat-option value="transaction">Financial Transaction log</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </div>
+        }
+
+        <!-- UUID GENERATOR SETTINGS -->
+        @if (generatorType === 'uuid') {
+          <div class="settings-group">
+            <div class="setting-row mb-3">
+              <span class="setting-label">Letter Casing:</span>
+              <mat-radio-group formControlName="uuidCasing" color="primary" class="row-radio-group">
+                <mat-radio-button value="lower">Lowercase</mat-radio-button>
+                <mat-radio-button value="upper">Uppercase</mat-radio-button>
+              </mat-radio-group>
+            </div>
+
+            <div class="setting-row py-2">
+              <mat-checkbox formControlName="uuidHyphens" color="primary">
+                Include standard hyphens
+              </mat-checkbox>
+            </div>
+          </div>
+        }
+
+        <!-- PASSWORD GENERATOR SETTINGS -->
+        @if (generatorType === 'password') {
+          <div class="settings-group">
+            <div class="setting-row">
+              <div class="password-metric-row mb-2">
+                <span class="setting-label" style="margin-bottom: 0;">Length: {{ passwordLength }}</span>
+                <span class="strength-badge" [style.color]="passwordStrength.color" style="font-weight: 600; font-size: 13px;">
+                  {{ passwordStrength.text }}
+                </span>
+              </div>
+              <div class="slider-wrapper mb-3">
+                <input
+                  type="range"
+                  min="4"
+                  max="128"
+                  formControlName="passwordLength"
+                  class="password-range-slider"
+                />
+              </div>
+            </div>
+
+            <div class="setting-row grid-checkboxes">
+              <mat-checkbox formControlName="passwordLowercase" color="primary">Lowercase (a-z)</mat-checkbox>
+              <mat-checkbox formControlName="passwordUppercase" color="primary">Uppercase (A-Z)</mat-checkbox>
+              <mat-checkbox formControlName="passwordNumbers" color="primary">Numbers (0-9)</mat-checkbox>
+              <mat-checkbox formControlName="passwordSymbols" color="primary">Symbols (!@#$...)</mat-checkbox>
+            </div>
+
+            <div class="setting-row py-2 mt-2 border-top">
+              <mat-checkbox formControlName="passwordExcludeAmbiguous" color="primary" class="mb-2">
+                Exclude ambiguous (0O, 1lI)
+              </mat-checkbox>
+              <mat-checkbox formControlName="passwordExcludeSimilar" color="primary">
+                Exclude similar (&#123;&#125;[]())
+              </mat-checkbox>
+            </div>
+          </div>
+        }
+
+        <!-- HASH GENERATOR SETTINGS -->
+        @if (generatorType === 'hash') {
+          <div class="settings-group">
+            <div class="setting-row">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Hash Algorithm</mat-label>
+                <mat-select formControlName="hashAlgorithm">
+                  <mat-option value="md5">MD5 (128-bit)</mat-option>
+                  <mat-option value="sha1">SHA-1 (160-bit)</mat-option>
+                  <mat-option value="sha256">SHA-256 (256-bit)</mat-option>
+                  <mat-option value="sha512">SHA-512 (512-bit)</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+
+            <div class="setting-row mt-3">
+              <span class="setting-label">Hash Hex Letter Casing:</span>
+              <mat-radio-group formControlName="hashCasing" color="primary" class="row-radio-group">
+                <mat-radio-button value="lower">Lowercase</mat-radio-button>
+                <mat-radio-button value="upper">Uppercase</mat-radio-button>
+              </mat-radio-group>
+            </div>
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Right Column: Generated Output Results -->
+    <mat-card class="editor-card">
+      <mat-card-header class="card-header-with-actions py-2">
+        <mat-card-title>Generated Output (5 items)</mat-card-title>
+        <div class="action-buttons-container">
+          <button
+            mat-stroked-button
+            type="button"
+            color="primary"
+            class="action-btn"
+            (click)="onCopyAll()"
+            [disabled]="generatedOutputs.length === 0"
+            matTooltip="Copy all 5 items to clipboard"
+          >
+            <mat-icon>{{ copiedAll ? 'check_circle' : 'content_copy' }}</mat-icon>
+            Copy All
+          </button>
+
+          <button
+            mat-raised-button
+            type="button"
+            color="primary"
+            class="action-btn ml-2"
+            (click)="generate()"
+            [disabled]="settingsForm.invalid"
+          >
+            <mat-icon>refresh</mat-icon>
+            Regenerate
+          </button>
+        </div>
+      </mat-card-header>
+
+      <mat-card-content class="card-content-fill p-4">
+        <div class="output-list">
+          @for (item of generatedOutputs; track $index) {
+            <div class="output-item-row mb-4 animate-slide-down">
+              @if (generatorType === 'hash' && hashSeeds[$index]) {
+                <div class="hash-seed-info">
+                  Plain Text Seed: <code>"{{ hashSeeds[$index] }}"</code>
+                </div>
+              }
+
+              <div class="output-input-wrapper">
+                @if (generatorType === 'objects' || generatorType === 'array') {
+                  <textarea
+                    readonly
+                    class="readonly-textarea code-font"
+                    [rows]="generatorType === 'objects' ? 8 : 3"
+                    [value]="item"
+                  ></textarea>
+                } @else {
+                  <input
+                    readonly
+                    type="text"
+                    class="readonly-input code-font"
+                    [value]="item"
+                  />
+                }
+
+                <button
+                  mat-icon-button
+                  type="button"
+                  color="primary"
+                  class="copy-item-btn"
+                  [matTooltip]="copiedIndex === $index ? 'Copied!' : 'Copy item'"
+                  (click)="onCopy(item, $index)"
+                  [class.copied]="copiedIndex === $index"
+                >
+                  <mat-icon>{{ copiedIndex === $index ? 'check_circle' : 'content_copy' }}</mat-icon>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </form>
+</div>

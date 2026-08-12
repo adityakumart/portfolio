@@ -179,8 +179,8 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
         link: '/dev-tools/generator/array',
         loadComponent: () =>
           import(
-            '../../modules/dev-tools/components/tool-placeholder/tool-placeholder.component'
-          ).then((m) => m.ToolPlaceholderComponent),
+            '../../modules/dev-tools/components/random-generator/random-generator.component'
+          ).then((m) => m.RandomGeneratorComponent),
       },
       {
         name: 'Number',
@@ -188,8 +188,8 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
         link: '/dev-tools/generator/number',
         loadComponent: () =>
           import(
-            '../../modules/dev-tools/components/tool-placeholder/tool-placeholder.component'
-          ).then((m) => m.ToolPlaceholderComponent),
+            '../../modules/dev-tools/components/random-generator/random-generator.component'
+          ).then((m) => m.RandomGeneratorComponent),
       },
       {
         name: 'Objects',
@@ -197,8 +197,8 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
         link: '/dev-tools/generator/objects',
         loadComponent: () =>
           import(
-            '../../modules/dev-tools/components/tool-placeholder/tool-placeholder.component'
-          ).then((m) => m.ToolPlaceholderComponent),
+            '../../modules/dev-tools/components/random-generator/random-generator.component'
+          ).then((m) => m.RandomGeneratorComponent),
       },
       {
         name: 'UUID',
@@ -206,8 +206,8 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
         link: '/dev-tools/generator/uuid',
         loadComponent: () =>
           import(
-            '../../modules/dev-tools/components/tool-placeholder/tool-placeholder.component'
-          ).then((m) => m.ToolPlaceholderComponent),
+            '../../modules/dev-tools/components/random-generator/random-generator.component'
+          ).then((m) => m.RandomGeneratorComponent),
       },
       {
         name: 'Password',
@@ -215,8 +215,17 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
         link: '/dev-tools/generator/password',
         loadComponent: () =>
           import(
-            '../../modules/dev-tools/components/tool-placeholder/tool-placeholder.component'
-          ).then((m) => m.ToolPlaceholderComponent),
+            '../../modules/dev-tools/components/random-generator/random-generator.component'
+          ).then((m) => m.RandomGeneratorComponent),
+      },
+      {
+        name: 'Hash',
+        path: 'generator/hash',
+        link: '/dev-tools/generator/hash',
+        loadComponent: () =>
+          import(
+            '../../modules/dev-tools/components/random-generator/random-generator.component'
+          ).then((m) => m.RandomGeneratorComponent),
       },
     ],
   },
