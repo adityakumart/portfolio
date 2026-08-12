@@ -1,5 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -18,7 +17,6 @@ import { JwtDecoderService, DecodedJwt, ClaimInfo } from './services/jwt-decoder
   selector: 'app-jwt-decoder',
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     MatCardModule,
     MatFormFieldModule,
@@ -34,6 +32,12 @@ import { JwtDecoderService, DecodedJwt, ClaimInfo } from './services/jwt-decoder
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class JwtDecoderComponent implements OnInit, OnDestroy {
+  private fb = inject(FormBuilder);
+  private jwtDecoderService = inject(JwtDecoderService);
+  private clipboard = inject(Clipboard);
+  private snackBar = inject(MatSnackBar);
+  private cdr = inject(ChangeDetectorRef);
+
   form!: FormGroup;
   decodedToken: DecodedJwt | null = null;
   claimsDataSource: ClaimInfo[] = [];
@@ -48,13 +52,7 @@ export class JwtDecoderComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
 
-  constructor(
-    private fb: FormBuilder,
-    private jwtDecoderService: JwtDecoderService,
-    private clipboard: Clipboard,
-    private snackBar: MatSnackBar,
-    private cdr: ChangeDetectorRef
-  ) {}
+
 
   ngOnInit(): void {
     this.form = this.fb.group({

@@ -1,0 +1,174 @@
+<div class="regex-tester-container">
+  <!-- Title section -->
+  <div class="title-section">
+    <mat-icon>settings_ethernet</mat-icon>
+    <h1>Regex Builder & Tester</h1>
+  </div>
+  <p class="intro-text">
+    Select predefined regular expressions, customize their strict rules, and test strings in real-time with visual matching feedback.
+  </p>
+
+  <form [formGroup]="form" class="grid-layout">
+    <!-- Configuration Card -->
+    <mat-card class="config-card">
+      <div class="card-header">
+        <mat-icon>tune</mat-icon>
+        <h2>Configuration & Rules</h2>
+      </div>
+
+      <div class="card-content">
+        <!-- Pattern row -->
+        <div class="pattern-row">
+          <div class="pattern-field-container">
+            <mat-form-field appearance="outline">
+              <mat-label>Regex Pattern</mat-label>
+              <input matInput type="text" formControlName="pattern" placeholder="Enter regular expression" />
+              <span matSuffix style="font-family: monospace; color: var(--portGrey); margin-right: 8px; font-weight: 500;">/{{ activeFlags }}</span>
+            </mat-form-field>
+
+            <button
+              mat-icon-button
+              type="button"
+              class="btn-copy"
+              matTooltip="Copy Regex to Clipboard"
+              (click)="copyPattern()"
+            >
+              <mat-icon>content_copy</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- Controls row (Category & Flags side-by-side) -->
+        <div class="controls-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Regex Category</mat-label>
+            <mat-select formControlName="category">
+              @for (opt of regexOptions; track opt.id) {
+                <mat-option [value]="opt.id">
+                  {{ opt.name }}
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <div class="flags-container">
+            <span class="flags-label">Flags:</span>
+            <mat-button-toggle-group multiple formControlName="flags" class="premium-toggle-group">
+              <mat-button-toggle value="g" matTooltip="Global Search (g)">g</mat-button-toggle>
+              <mat-button-toggle value="i" matTooltip="Case Insensitive (i)">i</mat-button-toggle>
+              <mat-button-toggle value="m" matTooltip="Multiline (m)">m</mat-button-toggle>
+            </mat-button-toggle-group>
+          </div>
+        </div>
+
+        <!-- Interactive Password Rules Customizer -->
+        @if (showPasswordBuilder) {
+          <div class="password-builder-panel">
+            <h3>
+              <mat-icon>security</mat-icon>
+              Password Rule Builder
+            </h3>
+
+            <div class="rules-grid">
+              <mat-checkbox formControlName="passRequireUppercase">Uppercase (A-Z)</mat-checkbox>
+              <mat-checkbox formControlName="passRequireLowercase">Lowercase (a-z)</mat-checkbox>
+              <mat-checkbox formControlName="passRequireDigit">Digits (0-9)</mat-checkbox>
+              <mat-checkbox formControlName="passRequireSpecial">Special Character</mat-checkbox>
+            </div>
+
+            <div class="length-control">
+              <mat-form-field appearance="outline">
+                <mat-label>Min Length</mat-label>
+                <input matInput type="number" formControlName="passMinLength" min="1" max="100" />
+              </mat-form-field>
+              <span class="intro-text" style="margin: 0;">characters</span>
+            </div>
+
+            <div class="instructions-note">
+              <strong>How to modify this regex manually:</strong>
+              <ul>
+                <li>Minimum length: Adjust the <code>{{ '{' }}{{ form.get('passMinLength')?.value || 8 }},{{ '}' }}</code> quantifier at the end.</li>
+                <li>At least one uppercase: Remove condition by deleting <code>(?=.*?[A-Z])</code>.</li>
+                <li>At least one lowercase: Remove condition by deleting <code>(?=.*?[a-z])</code>.</li>
+                <li>At least one digit: Remove condition by deleting <code>(?=.*?[0-9])</code>.</li>
+                <li>At least one special character: Remove condition by deleting <code>(?=.*?[#?!&#64;$%^&*-])</code>.</li>
+              </ul>
+            </div>
+          </div>
+        }
+
+        <!-- Explanation Block -->
+        <!-- Explanation Block -->
+        @if (selectedOption?.explanation || parsedTokens.length > 0) {
+          <div class="explanation-block">
+            @if (selectedOption?.explanation) {
+              <p class="explanation-text">{{ selectedOption?.explanation }}</p>
+            }
+
+            <!-- Dynamic Visual Token Breakdown -->
+            @if (parsedTokens.length > 0) {
+              <div class="token-breakdown-section">
+                <span class="breakdown-label">Regex Breakdown</span>
+                <div class="token-list">
+                  @for (tok of parsedTokens; track $index) {
+                    <div class="token-chip">
+                      <span class="token-symbol" [class]="tok.type">{{ tok.token }}</span>
+                      <span class="token-desc">{{ tok.meaning }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </mat-card>
+
+    <!-- Testing & Highlight Playground Card -->
+    <mat-card class="tester-card">
+      <div class="card-header">
+        <mat-icon>biotech</mat-icon>
+        <h2>Interactive Playground</h2>
+      </div>
+
+      <div class="card-content">
+        <div class="tester-playground">
+          <div class="editor-label-row">
+            <h3>Test Text Area</h3>
+            @if (testTextStatus) {
+              <div
+                class="status-badge"
+                [class.valid]="testTextStatus === 'match'"
+                [class.invalid]="testTextStatus === 'nomatch'"
+              >
+                {{ testTextStatus === 'match' ? 'Match Found' : 'No Match' }}
+              </div>
+            }
+          </div>
+
+          <!-- Overlapping highlights input container -->
+          <div class="regex-editor-container">
+            <div class="editor-highlight" #highlightLayer [innerHTML]="form.get('testText')?.value | regexHighlight:form.get('pattern')?.value:activeFlags">
+            </div>
+            <textarea
+              class="editor-textarea"
+              #textareaLayer
+              formControlName="testText"
+              placeholder="Type or paste your test text here to verify regex matches..."
+              (scroll)="syncScroll(textareaLayer, highlightLayer)"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Syntax error alerts -->
+        <!-- Syntax error alerts -->
+        @if (regexError) {
+          <div class="regex-error-msg">
+            <mat-icon>error_outline</mat-icon>
+            <span>Invalid Regular Expression: {{ regexError }}</span>
+          </div>
+        }
+      </div>
+    </mat-card>
+  </form>
+</div>

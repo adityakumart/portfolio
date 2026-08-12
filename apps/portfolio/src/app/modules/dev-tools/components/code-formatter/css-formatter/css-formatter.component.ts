@@ -1,5 +1,4 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject } from '@angular/core';
 import { SharedFormatterComponent } from '../shared-formatter/shared-formatter.component';
 import { CodeFormatterService } from '../services/code-formatter.service';
 import { 
@@ -11,7 +10,7 @@ import {
 @Component({
   selector: 'app-css-formatter',
   standalone: true,
-  imports: [CommonModule, SharedFormatterComponent],
+  imports: [SharedFormatterComponent],
   template: `
     <!-- CSS Specific Smart Wrapper -->
     <app-shared-formatter
@@ -38,11 +37,11 @@ export class CssFormatterComponent {
     sortOptionLabel: 'Sort Properties Alphabetically'
   };
 
+  private formatterService = inject(CodeFormatterService);
+
   outputText = '';
   validationState: ValidationState = 'idle';
   errorMessage = '';
-
-  constructor(private formatterService: CodeFormatterService) {}
 
   /**
    * Triggers CSS specific formatting options.

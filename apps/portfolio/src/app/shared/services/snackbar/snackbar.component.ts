@@ -1,4 +1,4 @@
-import { Component, Inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import {
@@ -14,10 +14,8 @@ import {
   styleUrl: './snackbar.component.scss',
 })
 export class SnackbarComponent {
-  constructor(
-    @Inject(MAT_SNACK_BAR_DATA) public data: any,
-    private snackBarRef: MatSnackBarRef<SnackbarComponent>,
-  ) {}
+  public data = inject(MAT_SNACK_BAR_DATA);
+  private snackBarRef = inject<MatSnackBarRef<SnackbarComponent>>(MatSnackBarRef);
 
   close() {
     this.snackBarRef.dismiss();

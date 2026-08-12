@@ -1,5 +1,4 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -23,7 +22,6 @@ export type GeneratorType = 'array' | 'number' | 'objects' | 'uuid' | 'password'
   selector: 'app-random-generator',
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     MatCardModule,
     MatFormFieldModule,

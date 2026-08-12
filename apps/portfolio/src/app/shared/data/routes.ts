@@ -165,6 +165,15 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
     header: 'Generator',
     tools: [
       {
+        name: 'Regex',
+        path: 'generator/regex',
+        link: '/dev-tools/generator/regex',
+        loadComponent: () =>
+          import(
+            '../../modules/dev-tools/components/regex-tester/regex-tester.component'
+          ).then((m) => m.RegexTesterComponent),
+      },
+      {
         name: 'QR',
         path: 'generator/qr',
         link: '/dev-tools/generator/qr',

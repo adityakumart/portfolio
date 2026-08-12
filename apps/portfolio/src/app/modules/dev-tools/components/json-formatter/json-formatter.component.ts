@@ -1,5 +1,5 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
+import { TitleCasePipe } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -19,7 +19,7 @@ export type ValidationState = 'idle' | 'valid' | 'invalid';
   selector: 'app-json-formatter',
   standalone: true,
   imports: [
-    CommonModule,
+    TitleCasePipe,
     ReactiveFormsModule,
     MatCardModule,
     MatFormFieldModule,
@@ -37,17 +37,15 @@ export type ValidationState = 'idle' | 'valid' | 'invalid';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class JsonFormatterComponent implements OnInit {
+  private fb = inject(FormBuilder);
+  private formatterService = inject(JsonFormatterService);
+  private snackBar = inject(MatSnackBar);
+
   form!: FormGroup;
   validationState: ValidationState = 'idle';
   errorMessage = '';
   copySuccess = false;
   parsedType: 'array' | 'object' | null = null;
-
-  constructor(
-    private fb: FormBuilder,
-    private formatterService: JsonFormatterService,
-    private snackBar: MatSnackBar
-  ) {}
 
   ngOnInit(): void {
     this.initializeForm();
