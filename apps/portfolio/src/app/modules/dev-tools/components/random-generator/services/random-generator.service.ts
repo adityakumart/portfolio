@@ -31,6 +31,7 @@ export interface PasswordSettings {
   numbers: boolean;
   symbols: boolean;
   excludeAmbiguous: boolean;
+  excludeSimilar: boolean;
 }
 
 export interface HashSettings {
@@ -216,6 +217,10 @@ export class RandomGeneratorService {
       let pool = symbolsPool;
       if (settings.excludeAmbiguous) {
         pool = pool.replace(ambiguousChars, '');
+      }
+      if (settings.excludeSimilar) {
+        const similarChars = /[{}[\]()]/g;
+        pool = pool.replace(similarChars, '');
       }
       if (pool.length > 0) {
         combinedPool += pool;

@@ -124,6 +124,7 @@ export class RandomGeneratorComponent implements OnInit, OnDestroy {
       passwordNumbers: [true],
       passwordSymbols: [true],
       passwordExcludeAmbiguous: [false],
+      passwordExcludeSimilar: [false],
 
       // Hash generator settings
       hashAlgorithm: ['sha256'],
@@ -247,6 +248,7 @@ export class RandomGeneratorComponent implements OnInit, OnDestroy {
               numbers: formVal.passwordNumbers,
               symbols: formVal.passwordSymbols,
               excludeAmbiguous: formVal.passwordExcludeAmbiguous,
+              excludeSimilar: formVal.passwordExcludeSimilar,
             })
           );
           break;

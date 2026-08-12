@@ -181,8 +181,11 @@
             </div>
 
             <div class="setting-row py-2 mt-2 border-top">
-              <mat-checkbox formControlName="passwordExcludeAmbiguous" color="primary">
+              <mat-checkbox formControlName="passwordExcludeAmbiguous" color="primary" class="mb-2">
                 Exclude ambiguous (0O, 1lI)
+              </mat-checkbox>
+              <mat-checkbox formControlName="passwordExcludeSimilar" color="primary">
+                Exclude similar (&#123;&#125;[]())
               </mat-checkbox>
             </div>
           </div>
