@@ -1,0 +1,287 @@
+.base-converter-container {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+
+  .header-card {
+    border-radius: 12px;
+    border: 1px solid var(--mat-sys-outline-variant, rgba(0, 0, 0, 0.08));
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+
+    mat-card-title {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--mat-sys-primary, #3f51b5);
+    }
+
+    mat-card-subtitle {
+      font-size: 14px;
+      margin-top: 4px;
+    }
+  }
+
+  .workspace-layout {
+    display: grid;
+    grid-template-columns: 450px 1fr;
+    gap: 24px;
+
+    @media (max-width: 960px) {
+      grid-template-columns: 1fr;
+    }
+
+    .panel-column {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .editor-card {
+      border-radius: 12px;
+      border: 1px solid var(--mat-sys-outline-variant, rgba(0, 0, 0, 0.08));
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+
+      &.explanation-card {
+        min-height: 480px;
+      }
+
+      .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+        flex-direction: row;
+
+        mat-card-title {
+          font-size: 18px;
+          font-weight: 550;
+          margin: 0;
+        }
+
+        .header-actions {
+          display: flex;
+          gap: 8px;
+        }
+      }
+
+      .panel-body {
+        padding: 20px;
+
+        .w-100 {
+          width: 100%;
+        }
+
+        input {
+          font-family: 'Courier New', Courier, monospace;
+          font-size: 16px;
+          font-weight: 600;
+          letter-spacing: 0.5px;
+        }
+      }
+    }
+  }
+
+  // Dynamic Math Explanation styles
+  .explanation-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    color: var(--mat-sys-on-surface, #333);
+
+    .explanation-flow {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .steps-divider {
+      height: 1px;
+      background-color: var(--mat-sys-outline-variant, rgba(0, 0, 0, 0.08));
+      margin: 8px 0;
+    }
+
+    .step-card {
+      h3 {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--mat-sys-primary, #3f51b5);
+        margin: 0 0 12px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      p {
+        font-size: 14px;
+        line-height: 1.6;
+        margin: 0 0 16px 0;
+        color: var(--mat-sys-on-surface-variant, #555);
+      }
+    }
+
+    .math-block {
+      background-color: var(--mat-sys-surface-container-low, #f7f7f9);
+      border: 1px solid var(--mat-sys-outline-variant, rgba(0, 0, 0, 0.08));
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      .math-line {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 14px;
+        font-weight: 550;
+        color: var(--mat-sys-on-surface, #111);
+        word-break: break-all;
+
+        code {
+          font-family: inherit;
+        }
+
+        sub, sup {
+          font-size: 10px;
+        }
+      }
+    }
+
+    .targets-container {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+
+      @media (min-width: 1200px) {
+        grid-template-columns: 1fr 1fr;
+        
+        .target-step:only-child {
+          grid-column: span 2;
+        }
+        
+        // If there are exactly two conversion blocks, render them side-by-side
+        // If three, some layout control
+      }
+      
+      .target-step {
+        background-color: var(--mat-sys-surface-container-lowest, #fff);
+        border: 1px solid var(--mat-sys-outline-variant, rgba(0, 0, 0, 0.06));
+        border-radius: 8px;
+        padding: 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.01);
+
+        h4 {
+          font-size: 14px;
+          font-weight: 600;
+          color: var(--mat-sys-secondary, #5c6bc0);
+          margin: 0 0 8px 0;
+        }
+
+        p {
+          font-size: 13px;
+          margin-bottom: 12px;
+        }
+
+        .math-result {
+          margin-top: 12px;
+          margin-bottom: 0;
+          font-size: 13px;
+          color: var(--mat-sys-on-surface, #333);
+
+          code {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            font-weight: bold;
+            background-color: var(--mat-sys-primary-container, #e8eaf6);
+            color: var(--mat-sys-on-primary-container, #1a237e);
+            padding: 2px 6px;
+            border-radius: 4px;
+          }
+        }
+      }
+    }
+
+    // Mathematical Division Steps Table
+    .math-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 8px 0;
+      font-size: 13px;
+
+      th, td {
+        padding: 8px 12px;
+        text-align: left;
+        border-bottom: 1px solid var(--mat-sys-outline-variant, rgba(0, 0, 0, 0.06));
+      }
+
+      th {
+        font-weight: 600;
+        background-color: var(--mat-sys-surface-container-high, #f1f1f1);
+        color: var(--mat-sys-on-surface-variant, #666);
+      }
+
+      td {
+        font-family: 'Courier New', Courier, monospace;
+
+        &.highlight-remainder {
+          font-weight: bold;
+          color: var(--mat-sys-primary, #3f51b5);
+          background-color: var(--mat-sys-hover-state-layer, rgba(63, 81, 181, 0.03));
+        }
+      }
+
+      tr:last-child td {
+        border-bottom: none;
+      }
+    }
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 64px 24px;
+    text-align: center;
+    color: var(--mat-sys-outline, #888);
+
+    .empty-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+      margin-bottom: 16px;
+      opacity: 0.6;
+    }
+
+    p {
+      margin: 0 0 4px 0;
+      font-size: 16px;
+      font-weight: 550;
+      color: var(--mat-sys-on-surface, #333);
+    }
+
+    span {
+      font-size: 13px;
+      opacity: 0.8;
+    }
+  }
+
+  // Animation utilities
+  .animate-fade-in {
+    animation: fadeIn 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
