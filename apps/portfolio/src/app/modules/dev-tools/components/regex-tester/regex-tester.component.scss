@@ -1,0 +1,507 @@
+.regex-tester-container {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.title-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+
+  mat-icon {
+    font-size: 32px;
+    height: 32px;
+    width: 32px;
+    color: var(--c-primary-color);
+  }
+
+  h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.5px;
+    color: var(--portBlack);
+  }
+}
+
+.intro-text {
+  color: var(--portGrey, #7e92a4);
+  font-size: 15px;
+  margin: 0 0 16px 0;
+}
+
+.grid-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+
+  @media (max-width: 959px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.config-card,
+.tester-card {
+  border-radius: 16px;
+  border: 1px solid var(--portLightGrey, #eff3fe);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.02);
+  background: var(--portWhite, #ffffff);
+  overflow: hidden;
+  transition: transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+
+  &:hover {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.04);
+  }
+}
+
+.card-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--portLightGrey, #eff3fe);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  mat-icon {
+    color: var(--portPurple, #7d62ef);
+  }
+
+  h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    color: var(--portBlack);
+  }
+}
+
+.card-content {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.pattern-row {
+  width: 100%;
+}
+
+.controls-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 20px;
+
+  mat-form-field {
+    flex: 1;
+    min-width: 200px;
+    margin-bottom: -1.25em;
+  }
+}
+
+.flags-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: -12px;
+
+  .flags-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--portGrey, #7e92a4);
+  }
+
+  .premium-toggle-group {
+    border: 1px solid var(--portLightGrey, #eff3fe);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--portPaleGrey, #f6f8ff);
+    display: inline-flex;
+
+    ::ng-deep .mat-button-toggle {
+      font-family: monospace;
+      font-weight: 600;
+      font-size: 15px;
+      width: 42px;
+      height: 34px;
+      background: transparent;
+      border: none;
+      transition: all 0.2s ease;
+      color: var(--portGrey, #7e92a4);
+
+      .mat-button-toggle-label-content {
+        line-height: 34px;
+        padding: 0;
+        text-align: center;
+      }
+
+      &.mat-button-toggle-checked {
+        background: var(--portPurple, #7d62ef);
+        color: #ffffff;
+      }
+    }
+  }
+}
+
+.pattern-field-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+
+  mat-form-field {
+    flex-grow: 1;
+  }
+}
+
+.btn-copy {
+  margin-top: -12px;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: scale(1.05);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.password-builder-panel {
+  background: var(--portPaleGrey, #f6f8ff);
+  border: 1px dashed var(--portGrey, #7e92a4);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: slideDown 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+
+  h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--portPurple, #7d62ef);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .rules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+  }
+
+  .length-control {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 4px;
+
+    mat-form-field {
+      width: 100px;
+      margin-bottom: -1.25em; // Clean up bottom spacing of form field inside panel
+    }
+  }
+
+  .instructions-note {
+    font-size: 13px;
+    color: var(--portBlack, #354053);
+    line-height: 1.5;
+    background: rgba(125, 98, 239, 0.05);
+    padding: 12px 14px;
+    border-radius: 8px;
+    border-left: 3px solid var(--portPurple, #7d62ef);
+
+    code {
+      font-family: Consolas, Monaco, monospace;
+      font-weight: 600;
+      color: var(--portRed, #ef5b5b);
+      background: rgba(0, 0, 0, 0.04);
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.explanation-block {
+  background: var(--portPaleGrey, #f6f8ff);
+  border-left: 4px solid var(--portPurple, #7d62ef);
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  .explanation-text {
+    line-height: 1.6;
+    font-size: 14.5px;
+    color: var(--portBlack, #354053);
+    margin: 0;
+    white-space: pre-line;
+  }
+}
+
+.token-breakdown-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid var(--portLightGrey, #eff3fe);
+  padding-top: 12px;
+
+  .breakdown-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--portGrey, #7e92a4);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .token-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 250px;
+    overflow-y: auto;
+    padding-right: 4px;
+
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: var(--portLightGrey, #eff3fe);
+      border-radius: 2px;
+    }
+  }
+
+  .token-chip {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 10px;
+    background: var(--portWhite, #ffffff);
+    border: 1px solid var(--portLightGrey, #eff3fe);
+    border-radius: 6px;
+    transition: transform 0.2s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+
+    &:hover {
+      transform: translateX(3px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    }
+
+    .token-symbol {
+      font-family: 'Fira Code', Consolas, Monaco, monospace;
+      font-weight: 700;
+      font-size: 13px;
+      padding: 3px 6px;
+      border-radius: 4px;
+      white-space: nowrap;
+      border: 1px solid;
+
+      &.anchor {
+        color: #0b84ff;
+        background: rgba(11, 132, 255, 0.08);
+        border-color: rgba(11, 132, 255, 0.25);
+      }
+
+      &.quantifier {
+        color: #ff9f0a;
+        background: rgba(255, 159, 10, 0.08);
+        border-color: rgba(255, 159, 10, 0.25);
+      }
+
+      &.set {
+        color: #30d158;
+        background: rgba(48, 209, 88, 0.08);
+        border-color: rgba(48, 209, 88, 0.25);
+      }
+
+      &.group {
+        color: #bf5af2;
+        background: rgba(191, 90, 242, 0.08);
+        border-color: rgba(191, 90, 242, 0.25);
+      }
+
+      &.literal {
+        color: var(--portGrey, #7e92a4);
+        background: var(--portPaleGrey, #f6f8ff);
+        border-color: var(--portLightGrey, #eff3fe);
+      }
+    }
+
+    .token-desc {
+      font-size: 13px;
+      color: var(--portBlack, #354053);
+      line-height: 1.4;
+    }
+  }
+}
+
+.tester-playground {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+}
+
+.editor-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--portGrey, #7e92a4);
+    text-transform: uppercase;
+  }
+
+  .status-badge {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 12px;
+
+    &.valid {
+      background: rgba(45, 206, 152, 0.1);
+      color: var(--portLightGreen, #2dce98);
+    }
+
+    &.invalid {
+      background: rgba(239, 91, 91, 0.1);
+      color: var(--portRed, #ef5b5b);
+    }
+  }
+}
+
+.regex-editor-container {
+  position: relative;
+  width: 100%;
+  height: 250px;
+  border: 1px solid var(--portLightGrey, #eff3fe);
+  border-radius: 8px;
+  background: var(--portPaleGrey, #f6f8ff);
+  overflow: hidden;
+
+  &:focus-within {
+    border-color: var(--portPurple, #7d62ef);
+    box-shadow: 0 0 0 2px rgba(125, 98, 239, 0.15);
+  }
+}
+
+%editor-layer-shared {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 16px;
+  border: none;
+  background: transparent;
+  font-family: 'Fira Code', Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+  font-size: 15px;
+  line-height: 1.5;
+  letter-spacing: 0px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  word-break: break-all;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.editor-textarea {
+  @extend %editor-layer-shared;
+  z-index: 2;
+  color: transparent;
+  caret-color: var(--portBlack, #354053);
+  resize: none;
+  outline: none;
+
+  &::placeholder {
+    color: var(--portGrey, #7e92a4);
+    -webkit-text-fill-color: var(--portGrey, #7e92a4);
+  }
+}
+
+.editor-highlight {
+  @extend %editor-layer-shared;
+  z-index: 1;
+  color: var(--portBlack, #354053);
+  pointer-events: none;
+  overflow: hidden;
+}
+
+::ng-deep .regex-line-match {
+  color: var(--portGreen, #26be77);
+  background-color: rgba(45, 206, 152, 0.08);
+  display: block;
+  width: calc(100% + 32px);
+  margin: 0 -16px;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+
+::ng-deep .regex-line-no-match {
+  color: var(--portRed, #ef5b5b);
+  background-color: rgba(239, 91, 91, 0.04);
+  display: block;
+  width: calc(100% + 32px);
+  margin: 0 -16px;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+
+::ng-deep .regex-line-empty {
+  display: block;
+  min-height: 1.5em;
+  width: 100%;
+}
+
+.regex-error-msg {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--portRed, #ef5b5b);
+  font-size: 13px;
+  background: rgba(239, 91, 91, 0.05);
+  padding: 10px 12px;
+  border-radius: 6px;
+  border-left: 3px solid var(--portRed, #ef5b5b);
+  margin-top: 8px;
+
+  mat-icon {
+    font-size: 18px;
+    height: 18px;
+    width: 18px;
+  }
+}
