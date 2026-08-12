@@ -1,5 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { MatCardModule } from '@angular/material/card';
@@ -19,7 +18,6 @@ import { Base64Service, FileMetadata } from './services/base64.service';
   selector: 'app-base64-converter',
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     MatCardModule,
     MatFormFieldModule,
@@ -36,6 +34,11 @@ import { Base64Service, FileMetadata } from './services/base64.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Base64ConverterComponent implements OnInit, OnDestroy {
+  private fb = inject(FormBuilder);
+  private base64Service = inject(Base64Service);
+  private sanitizer = inject(DomSanitizer);
+  private snackBar = inject(MatSnackBar);
+
   form!: FormGroup;
   selectedFile: FileMetadata | null = null;
   previewUrl: SafeResourceUrl | null = null;
@@ -48,12 +51,7 @@ export class Base64ConverterComponent implements OnInit, OnDestroy {
   private fileSubscription: Subscription | null = null;
   private destroy$ = new Subject<void>();
 
-  constructor(
-    private fb: FormBuilder,
-    private base64Service: Base64Service,
-    private sanitizer: DomSanitizer,
-    private snackBar: MatSnackBar
-  ) {}
+
 
   ngOnInit(): void {
     this.initializeForm();

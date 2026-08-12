@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -6,13 +6,11 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ConversionMetadata, Delimiter, csvToJson, jsonToCsv } from './json-csv-converter.utils';
-import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-json-csv-converter',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     MatFormFieldModule,
     MatInputModule,
@@ -25,6 +23,8 @@ import { CommonModule } from '@angular/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class JsonCsvConverterComponent {
+  private _snackBar = inject(MatSnackBar);
+
   // --- State Management using Angular Signals ---
   inputText = signal<string>('');
   outputText = signal<string>('');
@@ -38,7 +38,7 @@ export class JsonCsvConverterComponent {
     { value: '\t', viewValue: 'Tab (\\t)' },
   ];
 
-  constructor(private _snackBar: MatSnackBar) {}
+
 
   // --- Action Handlers ---
 

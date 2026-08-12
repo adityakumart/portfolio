@@ -1,5 +1,4 @@
-import { CommonModule } from '@angular/common';
-import { Component, Inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import {
   MAT_DIALOG_DATA,
@@ -15,7 +14,6 @@ import { UserExperienceRecord } from '@portfolio/shared-types';
   selector: 'app-experience-list-dialog',
   standalone: true,
   imports: [
-    CommonModule,
     MatDialogModule,
     MatTableModule,
     MatButtonModule,
@@ -87,12 +85,10 @@ import { UserExperienceRecord } from '@portfolio/shared-types';
   `,
 })
 export class ExperienceListDialogComponent {
-  displayedColumns: string[] = ['name', 'email', 'experience', 'action'];
+  public dialogRef = inject<MatDialogRef<ExperienceListDialogComponent>>(MatDialogRef);
+  public data = inject<{ records: UserExperienceRecord[] }>(MAT_DIALOG_DATA);
 
-  constructor(
-    public dialogRef: MatDialogRef<ExperienceListDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { records: UserExperienceRecord[] },
-  ) {}
+  displayedColumns: string[] = ['name', 'email', 'experience', 'action'];
 
   onAction(action: string, record: UserExperienceRecord) {
     this.dialogRef.close({ action, record });

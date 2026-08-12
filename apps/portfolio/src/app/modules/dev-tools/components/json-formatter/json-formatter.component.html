@@ -85,7 +85,7 @@
           <mat-card-title>Input JSON</mat-card-title>
           
           <!-- Validation Status Badge -->
-          <span class="status-badge" [ngClass]="validationState">
+          <span [class]="'status-badge ' + validationState">
             @if (validationState === 'valid') {
               <mat-icon class="status-icon success-icon">check_circle</mat-icon>
               <span>Valid JSON ({{ parsedType | titlecase }})</span>

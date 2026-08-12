@@ -1,4 +1,4 @@
-import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy, inject } from '@angular/core';
 import { provideNativeDateAdapter } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -56,7 +56,9 @@ export class TimezoneConverterComponent {
 
   timeZones = TimeZonesList;
 
-  constructor(private toastr: ToastrService) {
+  private toastr = inject(ToastrService);
+
+  constructor() {
     this.filteredFromTimeZones =
       this.timeForm.controls.fromTimeZone.valueChanges.pipe(
         startWith(''),
