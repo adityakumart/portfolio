@@ -1,4 +1,5 @@
-<div class="code-formatter-container" *ngIf="config">
+@if (config) {
+  <div class="code-formatter-container">
   <!-- Header Card -->
   <mat-card class="header-card mb-4">
     <mat-card-header class="py-3">
@@ -87,7 +88,7 @@
           <mat-card-title>Input {{ config.language | uppercase }}</mat-card-title>
           
           <!-- Validation Status Badge -->
-          <span class="status-badge" [ngClass]="validationState">
+          <span [class]="'status-badge ' + validationState">
             @if (validationState === 'valid') {
               <mat-icon class="status-icon success-icon">check_circle</mat-icon>
               <span>Valid Syntax</span>
@@ -162,4 +163,5 @@
       </mat-card>
     </div>
   </form>
-</div>
+  </div>
+}

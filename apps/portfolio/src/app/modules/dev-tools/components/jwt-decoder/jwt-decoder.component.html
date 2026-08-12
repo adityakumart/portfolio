@@ -80,11 +80,17 @@
               <div class="visualizer-section">
                 <span class="section-title">Color-Coded Token Structure:</span>
                 <div class="token-split-display" id="token-split-display">
-                  <span class="token-segment segment-header" *ngIf="tokenPartHeader" matTooltip="Header (Algorithm & Type)">{{ tokenPartHeader }}</span>
-                  <span class="token-dot" *ngIf="tokenPartPayload">.</span>
-                  <span class="token-segment segment-payload" *ngIf="tokenPartPayload" matTooltip="Payload (Claims & User Data)">{{ tokenPartPayload }}</span>
-                  <span class="token-dot" *ngIf="tokenPartSignature">.</span>
-                  <span class="token-segment segment-signature" *ngIf="tokenPartSignature" matTooltip="Signature (Cryptographic Verification)">{{ tokenPartSignature }}</span>
+                  @if (tokenPartHeader) {
+                    <span class="token-segment segment-header" matTooltip="Header (Algorithm & Type)">{{ tokenPartHeader }}</span>
+                  }
+                  @if (tokenPartPayload) {
+                    <span class="token-dot">.</span>
+                    <span class="token-segment segment-payload" matTooltip="Payload (Claims & User Data)">{{ tokenPartPayload }}</span>
+                  }
+                  @if (tokenPartSignature) {
+                    <span class="token-dot">.</span>
+                    <span class="token-segment segment-signature" matTooltip="Signature (Cryptographic Verification)">{{ tokenPartSignature }}</span>
+                  }
                 </div>
               </div>
             }

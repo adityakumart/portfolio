@@ -43,9 +43,11 @@
           <mat-form-field appearance="outline">
             <mat-label>Regex Category</mat-label>
             <mat-select formControlName="category">
-              <mat-option *ngFor="let opt of regexOptions" [value]="opt.id">
-                {{ opt.name }}
-              </mat-option>
+              @for (opt of regexOptions; track opt.id) {
+                <mat-option [value]="opt.id">
+                  {{ opt.name }}
+                </mat-option>
+              }
             </mat-select>
           </mat-form-field>
 
@@ -60,54 +62,65 @@
         </div>
 
         <!-- Interactive Password Rules Customizer -->
-        <div *ngIf="showPasswordBuilder" class="password-builder-panel">
-          <h3>
-            <mat-icon>security</mat-icon>
-            Password Rule Builder
-          </h3>
+        @if (showPasswordBuilder) {
+          <div class="password-builder-panel">
+            <h3>
+              <mat-icon>security</mat-icon>
+              Password Rule Builder
+            </h3>
 
-          <div class="rules-grid">
-            <mat-checkbox formControlName="passRequireUppercase">Uppercase (A-Z)</mat-checkbox>
-            <mat-checkbox formControlName="passRequireLowercase">Lowercase (a-z)</mat-checkbox>
-            <mat-checkbox formControlName="passRequireDigit">Digits (0-9)</mat-checkbox>
-            <mat-checkbox formControlName="passRequireSpecial">Special Character</mat-checkbox>
-          </div>
+            <div class="rules-grid">
+              <mat-checkbox formControlName="passRequireUppercase">Uppercase (A-Z)</mat-checkbox>
+              <mat-checkbox formControlName="passRequireLowercase">Lowercase (a-z)</mat-checkbox>
+              <mat-checkbox formControlName="passRequireDigit">Digits (0-9)</mat-checkbox>
+              <mat-checkbox formControlName="passRequireSpecial">Special Character</mat-checkbox>
+            </div>
 
-          <div class="length-control">
-            <mat-form-field appearance="outline">
-              <mat-label>Min Length</mat-label>
-              <input matInput type="number" formControlName="passMinLength" min="1" max="100" />
-            </mat-form-field>
-            <span class="intro-text" style="margin: 0;">characters</span>
-          </div>
+            <div class="length-control">
+              <mat-form-field appearance="outline">
+                <mat-label>Min Length</mat-label>
+                <input matInput type="number" formControlName="passMinLength" min="1" max="100" />
+              </mat-form-field>
+              <span class="intro-text" style="margin: 0;">characters</span>
+            </div>
 
-          <div class="instructions-note">
-            <strong>How to modify this regex manually:</strong>
-            <ul>
-              <li>Minimum length: Adjust the <code>{{ '{' }}{{ form.get('passMinLength')?.value || 8 }},{{ '}' }}</code> quantifier at the end.</li>
-              <li>At least one uppercase: Remove condition by deleting <code>(?=.*?[A-Z])</code>.</li>
-              <li>At least one lowercase: Remove condition by deleting <code>(?=.*?[a-z])</code>.</li>
-              <li>At least one digit: Remove condition by deleting <code>(?=.*?[0-9])</code>.</li>
-              <li>At least one special character: Remove condition by deleting <code>(?=.*?[#?!&#64;$%^&*-])</code>.</li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- Explanation Block -->
-        <div class="explanation-block" *ngIf="selectedOption?.explanation || parsedTokens.length > 0">
-          <p class="explanation-text" *ngIf="selectedOption?.explanation">{{ selectedOption?.explanation }}</p>
-
-          <!-- Dynamic Visual Token Breakdown -->
-          <div class="token-breakdown-section" *ngIf="parsedTokens.length > 0">
-            <span class="breakdown-label">Regex Breakdown</span>
-            <div class="token-list">
-              <div class="token-chip" *ngFor="let tok of parsedTokens">
-                <span class="token-symbol" [class]="tok.type">{{ tok.token }}</span>
-                <span class="token-desc">{{ tok.meaning }}</span>
-              </div>
+            <div class="instructions-note">
+              <strong>How to modify this regex manually:</strong>
+              <ul>
+                <li>Minimum length: Adjust the <code>{{ '{' }}{{ form.get('passMinLength')?.value || 8 }},{{ '}' }}</code> quantifier at the end.</li>
+                <li>At least one uppercase: Remove condition by deleting <code>(?=.*?[A-Z])</code>.</li>
+                <li>At least one lowercase: Remove condition by deleting <code>(?=.*?[a-z])</code>.</li>
+                <li>At least one digit: Remove condition by deleting <code>(?=.*?[0-9])</code>.</li>
+                <li>At least one special character: Remove condition by deleting <code>(?=.*?[#?!&#64;$%^&*-])</code>.</li>
+              </ul>
             </div>
           </div>
-        </div>
+        }
+
+        <!-- Explanation Block -->
+        <!-- Explanation Block -->
+        @if (selectedOption?.explanation || parsedTokens.length > 0) {
+          <div class="explanation-block">
+            @if (selectedOption?.explanation) {
+              <p class="explanation-text">{{ selectedOption?.explanation }}</p>
+            }
+
+            <!-- Dynamic Visual Token Breakdown -->
+            @if (parsedTokens.length > 0) {
+              <div class="token-breakdown-section">
+                <span class="breakdown-label">Regex Breakdown</span>
+                <div class="token-list">
+                  @for (tok of parsedTokens; track $index) {
+                    <div class="token-chip">
+                      <span class="token-symbol" [class]="tok.type">{{ tok.token }}</span>
+                      <span class="token-desc">{{ tok.meaning }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
       </div>
     </mat-card>
 
@@ -122,13 +135,15 @@
         <div class="tester-playground">
           <div class="editor-label-row">
             <h3>Test Text Area</h3>
-            <div
-              *ngIf="testTextStatus"
-              class="status-badge"
-              [ngClass]="testTextStatus === 'match' ? 'valid' : 'invalid'"
-            >
-              {{ testTextStatus === 'match' ? 'Match Found' : 'No Match' }}
-            </div>
+            @if (testTextStatus) {
+              <div
+                class="status-badge"
+                [class.valid]="testTextStatus === 'match'"
+                [class.invalid]="testTextStatus === 'nomatch'"
+              >
+                {{ testTextStatus === 'match' ? 'Match Found' : 'No Match' }}
+              </div>
+            }
           </div>
 
           <!-- Overlapping highlights input container -->
@@ -146,10 +161,13 @@
         </div>
 
         <!-- Syntax error alerts -->
-        <div *ngIf="regexError" class="regex-error-msg">
-          <mat-icon>error_outline</mat-icon>
-          <span>Invalid Regular Expression: {{ regexError }}</span>
-        </div>
+        <!-- Syntax error alerts -->
+        @if (regexError) {
+          <div class="regex-error-msg">
+            <mat-icon>error_outline</mat-icon>
+            <span>Invalid Regular Expression: {{ regexError }}</span>
+          </div>
+        }
       </div>
     </mat-card>
   </form>

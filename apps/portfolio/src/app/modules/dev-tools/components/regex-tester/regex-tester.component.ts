@@ -1,5 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -28,7 +27,6 @@ export interface RegexOption {
   selector: 'app-regex-tester',
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     MatCardModule,
     MatFormFieldModule,
@@ -47,6 +45,11 @@ export interface RegexOption {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RegexTesterComponent implements OnInit, OnDestroy {
+  private fb = inject(FormBuilder);
+  private clipboard = inject(Clipboard);
+  private snackBar = inject(MatSnackBar);
+  private cdr = inject(ChangeDetectorRef);
+
   form!: FormGroup;
   regexError: string | null = null;
   testTextStatus: 'match' | 'nomatch' | null = null;
@@ -288,12 +291,7 @@ $ matches end.`,
     },
   ];
 
-  constructor(
-    private fb: FormBuilder,
-    private clipboard: Clipboard,
-    private snackBar: MatSnackBar,
-    private cdr: ChangeDetectorRef
-  ) {}
+
 
   ngOnInit(): void {
     // 1. Initialize reactive form state

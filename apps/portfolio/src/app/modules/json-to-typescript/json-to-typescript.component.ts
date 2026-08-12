@@ -3,8 +3,8 @@ import {
   OnInit,
   OnDestroy,
   ChangeDetectionStrategy,
+  inject,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
   FormGroup,
@@ -31,7 +31,6 @@ import { JsonTransformerService } from './services/json-transformer.service';
   selector: 'app-json-to-typescript',
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     MatFormFieldModule,
     MatInputModule,
@@ -48,6 +47,10 @@ import { JsonTransformerService } from './services/json-transformer.service';
   styleUrls: ['./json-to-typescript.component.scss'],
 })
 export class JsonToTypeScriptComponent implements OnInit, OnDestroy {
+  private fb = inject(FormBuilder);
+  private jsonTransformer = inject(JsonTransformerService);
+  private snackBar = inject(MatSnackBar);
+
   form!: FormGroup;
   generatedInterface: string = '';
   isLoading: boolean = false;
@@ -56,11 +59,7 @@ export class JsonToTypeScriptComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
 
-  constructor(
-    private fb: FormBuilder,
-    private jsonTransformer: JsonTransformerService,
-    private snackBar: MatSnackBar,
-  ) {}
+
 
   ngOnInit(): void {
     this.initializeForm();

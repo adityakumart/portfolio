@@ -1,5 +1,4 @@
 import { Component, OnInit, OnDestroy, AfterViewInit, ChangeDetectionStrategy, ViewChild, ElementRef, signal, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -21,7 +20,6 @@ export type ErrorCorrectionLevel = 'L' | 'M' | 'Q' | 'H';
   selector: 'app-qr-code-generator',
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     MatCardModule,
     MatFormFieldModule,

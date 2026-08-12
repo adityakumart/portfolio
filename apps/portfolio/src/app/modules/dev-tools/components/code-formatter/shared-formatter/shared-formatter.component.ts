@@ -6,10 +6,11 @@ import {
   Output, 
   EventEmitter, 
   SimpleChanges, 
-  ChangeDetectionStrategy 
+  ChangeDetectionStrategy,
+  inject
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { UpperCasePipe } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -30,7 +31,6 @@ import {
   selector: 'app-shared-formatter',
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     MatCardModule,
     MatFormFieldModule,
@@ -42,12 +42,15 @@ import {
     MatIconModule,
     MatTooltipModule,
     MatDividerModule,
+    UpperCasePipe,
   ],
   templateUrl: './shared-formatter.component.html',
   styleUrls: ['./shared-formatter.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SharedFormatterComponent implements OnInit, OnChanges {
+  private fb = inject(FormBuilder);
+  private snackBar = inject(MatSnackBar);
   @Input() config!: FormatterConfig;
   @Input() outputText = '';
   @Input() validationState: ValidationState = 'idle';
@@ -61,10 +64,7 @@ export class SharedFormatterComponent implements OnInit, OnChanges {
   form!: FormGroup;
   copySuccess = false;
 
-  constructor(
-    private fb: FormBuilder,
-    private snackBar: MatSnackBar
-  ) {}
+
 
   ngOnInit(): void {
     this.initializeForm();

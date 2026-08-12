@@ -34,13 +34,17 @@
               placeholder="e.g., User, Product, Response"
               type="text"
             />
-            <mat-error *ngIf="interfaceName?.hasError('required')">
-              Interface name is required
-            </mat-error>
-            <mat-error *ngIf="interfaceName?.hasError('pattern')">
-              Must start with letter, $, or _ and contain only alphanumeric
-              characters
-            </mat-error>
+            @if (interfaceName?.hasError('required')) {
+              <mat-error>
+                Interface name is required
+              </mat-error>
+            }
+            @if (interfaceName?.hasError('pattern')) {
+              <mat-error>
+                Must start with letter, $, or _ and contain only alphanumeric
+                characters
+              </mat-error>
+            }
           </mat-form-field>
 
           <!-- JSON Input TextArea -->
@@ -56,12 +60,16 @@
               rows="12"
               class="json-textarea"
             ></textarea>
-            <mat-error *ngIf="jsonInput?.hasError('required')">
-              JSON input is required
-            </mat-error>
-            <mat-error *ngIf="jsonInput?.hasError('invalidJson')">
-              Please enter valid JSON format
-            </mat-error>
+            @if (jsonInput?.hasError('required')) {
+              <mat-error>
+                JSON input is required
+              </mat-error>
+            }
+            @if (jsonInput?.hasError('invalidJson')) {
+              <mat-error>
+                Please enter valid JSON format
+              </mat-error>
+            }
           </mat-form-field>
 
           <!-- Action Buttons -->
@@ -84,65 +92,68 @@
           </div>
 
           <!-- Loading Indicator -->
-          <div
-            *ngIf="isLoading"
-            class="loading-indicator"
-            fxLayout="row"
-            fxLayoutAlign="center center"
-          >
-            <mat-spinner diameter="24"></mat-spinner>
-            <span class="loading-text">Processing...</span>
-          </div>
+          @if (isLoading) {
+            <div
+              class="loading-indicator"
+              fxLayout="row"
+              fxLayoutAlign="center center"
+            >
+              <mat-spinner diameter="24"></mat-spinner>
+              <span class="loading-text">Processing...</span>
+            </div>
+          }
         </form>
       </mat-card-content>
     </mat-card>
 
     <!-- Output Section -->
-    <mat-card class="output-section" fxFlex="1 1 50%" *ngIf="showOutput">
-      <mat-card-header>
-        <mat-card-title class="section-title"
-          >Generated TypeScript Interface</mat-card-title
-        >
-      </mat-card-header>
-
-      <mat-card-content>
-        <!-- Output Display -->
-        <pre class="interface-output">{{ generatedInterface }}</pre>
-
-        <!-- Action Buttons -->
-        <div class="output-button-group" fxLayout="row" fxLayoutGap="8px">
-          <button
-            mat-icon-button
-            matTooltip="Copy to Clipboard"
-            color="accent"
-            (click)="copyToClipboard()"
-            [class.copied]="copySuccess"
+    @if (showOutput) {
+      <mat-card class="output-section" fxFlex="1 1 50%">
+        <mat-card-header>
+          <mat-card-title class="section-title"
+            >Generated TypeScript Interface</mat-card-title
           >
-            <mat-icon>{{
-              copySuccess ? 'check_circle' : 'content_copy'
-            }}</mat-icon>
-          </button>
+        </mat-card-header>
 
-          <button
-            mat-icon-button
-            matTooltip="Download as .ts file"
-            color="accent"
-            (click)="downloadInterface()"
-          >
-            <mat-icon>download</mat-icon>
-          </button>
+        <mat-card-content>
+          <!-- Output Display -->
+          <pre class="interface-output">{{ generatedInterface }}</pre>
 
-          <mat-divider [vertical]="true"></mat-divider>
+          <!-- Action Buttons -->
+          <div class="output-button-group" fxLayout="row" fxLayoutGap="8px">
+            <button
+              mat-icon-button
+              matTooltip="Copy to Clipboard"
+              color="accent"
+              (click)="copyToClipboard()"
+              [class.copied]="copySuccess"
+            >
+              <mat-icon>{{
+                copySuccess ? 'check_circle' : 'content_copy'
+              }}</mat-icon>
+            </button>
 
-          <button
-            mat-icon-button
-            matTooltip="Close"
-            (click)="showOutput = false"
-          >
-            <mat-icon>close</mat-icon>
-          </button>
-        </div>
-      </mat-card-content>
-    </mat-card>
+            <button
+              mat-icon-button
+              matTooltip="Download as .ts file"
+              color="accent"
+              (click)="downloadInterface()"
+            >
+              <mat-icon>download</mat-icon>
+            </button>
+
+            <mat-divider [vertical]="true"></mat-divider>
+
+            <button
+              mat-icon-button
+              matTooltip="Close"
+              (click)="showOutput = false"
+            >
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    }
   </div>
 </div>
