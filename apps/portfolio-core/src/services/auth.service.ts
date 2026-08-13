@@ -1,4 +1,5 @@
-import { supabase } from '../utils/DB/supabase';
+import { connectToDatabase } from '../utils/DB/mongodb';
+import { ObjectId } from 'mongodb';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 
@@ -14,26 +15,38 @@ export class AuthService {
     lastName: string,
   ) {
     try {
+      const db = await connectToDatabase();
+      const userCollection = db.collection('user');
+
+      // Check if user already exists
+      const existingUser = await userCollection.findOne({ email });
+      if (existingUser) {
+        throw new Error('User already exists');
+      }
+
       const saltRounds = 10;
       const hashedPassword = await bcrypt.hash(passwordRaw, saltRounds);
 
-      const { data, error } = await supabase
-        .from('user')
-        .insert([
-          {
-            email: email,
-            password: hashedPassword,
-            first_name: firstName,
-            last_name: lastName,
-            updated_at: new Date().toISOString(),
-          },
-        ])
-        .select()
-        .single();
+      const newUser = {
+        email: email,
+        password: hashedPassword,
+        first_name: firstName,
+        last_name: lastName,
+        isEnabled: true,
+        is_deleted: false,
+        access_token: null,
+        refresh_token: null,
+        user_logged_in_at: null,
+        updated_at: new Date().toISOString(),
+      };
 
-      if (error) throw new Error(error.message);
+      const result = await userCollection.insertOne(newUser);
 
-      const { password, ...safeUser } = data;
+      // Return user without password
+      const { password, ...safeUser } = {
+        id: result.insertedId.toString(),
+        ...newUser,
+      };
       return safeUser;
     } catch (err) {
       console.error('Signup Error:', err);
@@ -44,44 +57,50 @@ export class AuthService {
   // 2. LOGIN (Updated for user_logged_in_at)
   static async login(email: string, passwordRaw: string) {
     try {
-      const { data: user, error } = await supabase
-        .from('user')
-        .select('*')
-        .eq('email', email)
-        .single();
-      if (error) throw new Error(error.message);
-      if (!user) throw new Error('Invalid email or password');
-      if (user.is_deleted) throw new Error('Account has been deleted');
-      if (!user.isEnabled) throw new Error('Account is disabled');
+      const db = await connectToDatabase();
+      const userCollection = db.collection('user');
 
-      const isMatch = await bcrypt.compare(passwordRaw, user.password);
+      const user = await userCollection.findOne({ email });
+      if (!user) throw new Error('Invalid email or password');
+      if (user['is_deleted']) throw new Error('Account has been deleted');
+      if (user['isEnabled'] === false) throw new Error('Account is disabled');
+
+      const isMatch = await bcrypt.compare(passwordRaw, user['password']);
       if (!isMatch) throw new Error('Invalid email or password');
 
-      const accessToken = jwt.sign({ id: user.id }, JWT_SECRET, {
+      const userIdStr = user._id.toString();
+
+      const accessToken = jwt.sign({ id: userIdStr }, JWT_SECRET, {
         expiresIn: '15m',
       });
-      const refreshToken = jwt.sign({ id: user.id }, REFRESH_SECRET, {
+      const refreshToken = jwt.sign({ id: userIdStr }, REFRESH_SECRET, {
         expiresIn: '7d',
       });
 
       // Capturing the current timestamp for the updated column
       const userLoggedInAt = new Date().toISOString();
 
-      const { data: updatedUser, error: updateError } = await supabase
-        .from('user')
-        .update({
-          access_token: accessToken,
-          refresh_token: refreshToken,
-          user_logged_in_at: userLoggedInAt, // <-- Updated mapping here
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', user.id)
-        .select()
-        .single();
+      await userCollection.updateOne(
+        { _id: user._id },
+        {
+          $set: {
+            access_token: accessToken,
+            refresh_token: refreshToken,
+            user_logged_in_at: userLoggedInAt,
+            updated_at: new Date().toISOString(),
+          }
+        }
+      );
 
-      if (updateError) throw new Error(updateError.message);
+      const updatedUser = await userCollection.findOne({ _id: user._id });
+      if (!updatedUser) throw new Error('Error retrieving updated user profile');
 
-      const { password, ...safeUser } = updatedUser;
+      const { password, ...safeUser } = {
+        id: updatedUser._id.toString(),
+        ...updatedUser
+      } as any;
+      delete (safeUser as any)._id;
+
       return safeUser;
     } catch (err) {
       console.error('Login Error:', err);
@@ -96,36 +115,46 @@ export class AuthService {
         id: string;
       };
 
-      const { data: user, error } = await supabase
-        .from('user')
-        .select('*')
-        .eq('id', payload.id)
-        .eq('refresh_token', oldRefreshToken)
-        .single();
+      const db = await connectToDatabase();
+      const userCollection = db.collection('user');
 
-      if (error || !user) throw new Error('Invalid or expired refresh token');
+      let objId: ObjectId;
+      try {
+        objId = new ObjectId(payload.id);
+      } catch (e) {
+        throw new Error('Invalid user ID format');
+      }
 
-      const newAccessToken = jwt.sign({ id: user.id }, JWT_SECRET, {
+      const user = await userCollection.findOne({ _id: objId, refresh_token: oldRefreshToken });
+      if (!user) throw new Error('Invalid or expired refresh token');
+
+      const newAccessToken = jwt.sign({ id: user._id.toString() }, JWT_SECRET, {
         expiresIn: '15m',
       });
-      const newRefreshToken = jwt.sign({ id: user.id }, REFRESH_SECRET, {
+      const newRefreshToken = jwt.sign({ id: user._id.toString() }, REFRESH_SECRET, {
         expiresIn: '7d',
       });
 
-      const { data: updatedUser, error: updateError } = await supabase
-        .from('user')
-        .update({
-          access_token: newAccessToken,
-          refresh_token: newRefreshToken,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', user.id)
-        .select()
-        .single();
+      await userCollection.updateOne(
+        { _id: user._id },
+        {
+          $set: {
+            access_token: newAccessToken,
+            refresh_token: newRefreshToken,
+            updated_at: new Date().toISOString(),
+          }
+        }
+      );
 
-      if (updateError) throw new Error(updateError.message);
+      const updatedUser = await userCollection.findOne({ _id: user._id });
+      if (!updatedUser) throw new Error('Error retrieving updated user profile');
 
-      const { password, ...safeUser } = updatedUser;
+      const { password, ...safeUser } = {
+        id: updatedUser._id.toString(),
+        ...updatedUser
+      } as any;
+      delete (safeUser as any)._id;
+
       return {
         access_token: newAccessToken,
         refresh_token: newRefreshToken,
@@ -140,16 +169,26 @@ export class AuthService {
   // 4. LOGOUT
   static async logout(userId: string) {
     try {
-      const { error } = await supabase
-        .from('user')
-        .update({
-          access_token: null,
-          refresh_token: null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', userId);
+      const db = await connectToDatabase();
+      const userCollection = db.collection('user');
 
-      if (error) throw new Error(error.message);
+      let objId: ObjectId;
+      try {
+        objId = new ObjectId(userId);
+      } catch (e) {
+        throw new Error('Invalid user ID format');
+      }
+
+      await userCollection.updateOne(
+        { _id: objId },
+        {
+          $set: {
+            access_token: null,
+            refresh_token: null,
+            updated_at: new Date().toISOString(),
+          }
+        }
+      );
 
       return { message: 'Logged out successfully' };
     } catch (err) {
