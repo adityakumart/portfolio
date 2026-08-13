@@ -4,6 +4,7 @@ import { toObservable } from '@angular/core/rxjs-interop';
 import { filter, map, take } from 'rxjs/operators';
 import { UserComponent } from './user';
 import { LoginComponent } from './components/login/login';
+import { ProfileComponent } from './components/profile/profile';
 import { AuthService } from './services/auth';
 
 export const authGuard: CanActivateFn = () => {
@@ -30,10 +31,10 @@ const routes: Routes = [
       { path: 'login', component: LoginComponent },
       {
         path: '',
+        component: ProfileComponent,
         pathMatch: 'full',
         // Block access if the user is unauthenticated
         canActivate: [authGuard],
-        children: [],
       },
     ],
   },
