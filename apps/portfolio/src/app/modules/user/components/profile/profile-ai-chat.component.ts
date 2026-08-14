@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { ProfileAiChatService } from './profile-ai-chat.service';
+import { GeminiAiService } from './gemini-ai.service';
 import { AuthService } from '../../services/auth';
 
 @Component({
@@ -27,8 +28,32 @@ export class ProfileAiChatComponent implements AfterViewInit {
 
   // Inject services
   chatService = inject(ProfileAiChatService);
+  geminiService = inject(GeminiAiService);
   authService = inject(AuthService);
   private sanitizer = inject(DomSanitizer);
+
+  // Component state properties (mapped reactive-ly to service state signals)
+  get chatHistory() {
+    return this.chatService.messages();
+  }
+
+  get isLoading() {
+    return this.chatService.isLoading();
+  }
+
+  get userInput() {
+    return this.currentPrompt();
+  }
+
+  set userInput(value: string) {
+    this.currentPrompt.set(value);
+  }
+
+  get errorMessage(): string | null {
+    const messages = this.chatHistory;
+    const lastMsg = messages[messages.length - 1];
+    return (lastMsg && lastMsg.status === 'error') ? lastMsg.content : null;
+  }
 
   // Local component signals
   currentPrompt = signal<string>('');

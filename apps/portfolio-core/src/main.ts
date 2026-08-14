@@ -2,6 +2,7 @@ import express from 'express';
 
 import cors from 'cors';
 import { authRouter } from './routes/auth.routes';
+import { chatRouter } from './routes/chat.routes';
 
 const host = process.env['HOST'] ?? 'localhost';
 const port = process.env['PORT'] ? Number(process.env['PORT']) : 3000;
@@ -17,6 +18,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/auth', authRouter);
+app.use('/api/chat', chatRouter);
 
 app.get(['/', '/api'], (req, res) => {
   res.send({ message: `portfolio-core API` });
