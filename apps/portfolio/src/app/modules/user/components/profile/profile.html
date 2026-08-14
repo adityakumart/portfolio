@@ -1,4 +1,4 @@
-<div class="profile-container">
+<div class="profile-container" [class.has-user]="currentUser()">
   @if (currentUser()) {
     <div class="glass-card profile-card">
       <!-- Profile Header -->
@@ -57,6 +57,8 @@
         </button>
       </div>
     </div>
+
+    <app-profile-ai-chat [isEmbedded]="true" class="chat-column"></app-profile-ai-chat>
   } @else {
     <div class="glass-card loading-card">
       <div class="spinner-container">

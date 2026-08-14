@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AuthService } from '../../services/auth';
+import { ProfileAiChatComponent } from './profile-ai-chat.component';
 
 @Component({
   selector: 'app-profile',
@@ -15,6 +16,7 @@ import { AuthService } from '../../services/auth';
     MatButtonModule,
     MatIconModule,
     MatTooltipModule,
+    ProfileAiChatComponent,
   ],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
