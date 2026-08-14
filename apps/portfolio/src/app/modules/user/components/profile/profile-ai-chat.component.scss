@@ -189,19 +189,33 @@ $font-code: 'Fira Code', 'Cascadia Code', Consolas, Monaco, 'Andale Mono', monos
 // Message Rows and Bubbles
 .message-row {
   display: flex;
-  gap: 1rem;
-  max-width: 85%;
-  animation: message-slide-up 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  gap: 1.25rem;
+  width: 100%;
+  animation: message-slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
 
   &.user-message {
     align-self: flex-end;
     flex-direction: row-reverse;
+    max-width: 75%;
+
+    .message-avatar {
+      display: none; // Hides user avatar in bubbles view for compactness
+    }
 
     .message-bubble {
-      background: $user-bubble-gradient;
-      color: #ffffff;
-      border-radius: 20px 20px 4px 20px;
-      box-shadow: 0 4px 15px rgba(125, 98, 239, 0.25);
+      background: rgba(125, 98, 239, 0.08);
+      color: #0f172a;
+      border: 1px solid rgba(125, 98, 239, 0.15);
+      border-radius: 18px 18px 4px 18px;
+      box-shadow: 0 4px 15px rgba(125, 98, 239, 0.05);
+
+      :host-context(.dark-theme) & {
+        background: rgba(152, 130, 255, 0.1);
+        color: #f8fafc;
+        border-color: rgba(152, 130, 255, 0.2);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      }
     }
     
     .message-meta {
@@ -211,17 +225,24 @@ $font-code: 'Fira Code', 'Cascadia Code', Consolas, Monaco, 'Andale Mono', monos
 
   &.assistant-message {
     align-self: flex-start;
+    max-width: 100%;
+
+    .message-avatar {
+      align-self: flex-start;
+      margin-top: 4px;
+    }
 
     .message-bubble {
-      background: rgba(0, 0, 0, 0.035);
+      background: transparent;
       color: #1e293b;
-      border-radius: 20px 20px 20px 4px;
-      border: 1px solid rgba(0, 0, 0, 0.04);
+      border: none;
+      box-shadow: none;
+      padding: 0.25rem 0;
 
       :host-context(.dark-theme) & {
-        background: rgba(255, 255, 255, 0.035);
-        color: #f1f5f9;
-        border-color: rgba(255, 255, 255, 0.04);
+        background: transparent;
+        color: #cbd5e1;
+        border: none;
       }
     }
   }
@@ -259,12 +280,26 @@ $font-code: 'Fira Code', 'Cascadia Code', Consolas, Monaco, 'Andale Mono', monos
     &.ai-avatar {
       background: $primary-gradient;
       color: #ffffff;
-      box-shadow: 0 4px 12px rgba(125, 98, 239, 0.35);
+      box-shadow: 0 0 10px rgba(125, 98, 239, 0.4);
+      position: relative;
+
+      &::after {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: inherit;
+        z-index: -1;
+        opacity: 0.4;
+        animation: avatar-pulse 2s infinite ease-out;
+      }
 
       mat-icon {
         font-size: 20px;
         width: 20px;
         height: 20px;
+        z-index: 2;
       }
     }
   }
@@ -284,6 +319,21 @@ $font-code: 'Fira Code', 'Cascadia Code', Consolas, Monaco, 'Andale Mono', monos
   line-height: 1.6;
   letter-spacing: -0.01em;
   word-break: break-word;
+
+  &.is-typing {
+    display: inline-block;
+  }
+
+  .streaming-caret {
+    display: inline-block;
+    width: 6px;
+    height: 15px;
+    background: var(--portPurple);
+    margin-left: 3px;
+    vertical-align: -2px;
+    animation: blink-caret 0.8s infinite ease-in-out;
+    border-radius: 1px;
+  }
 
   // Rendered Markdown Formatting styles
   p {
@@ -687,6 +737,26 @@ $font-code: 'Fira Code', 'Cascadia Code', Consolas, Monaco, 'Andale Mono', monos
   100% {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes blink-caret {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes avatar-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
   }
 }
 

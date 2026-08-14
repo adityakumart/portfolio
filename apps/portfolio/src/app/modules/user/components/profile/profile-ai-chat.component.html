@@ -62,7 +62,12 @@
 
             <!-- Bubble Content -->
             <div class="message-body">
-              <div class="message-bubble" [innerHTML]="sanitizeHtml(msg.content)"></div>
+              <div class="message-bubble" [class.is-typing]="msg.status === 'sending'">
+                <div [innerHTML]="sanitizeHtml(msg.content)" class="bubble-markdown-inline"></div>
+                @if (msg.status === 'sending') {
+                  <span class="streaming-caret"></span>
+                }
+              </div>
               
               <!-- Footer status / date info -->
               <div class="message-meta">
