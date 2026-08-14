@@ -1,11 +1,14 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthenticatedRequest } from '../types/express';
 import { GeminiAiService } from '../services/gemini.service';
+import { ChatHistoryService } from '../services/chat-history.service';
 
 /**
  * Handles incoming user chat requests, invokes Gemini API, and returns response
  */
-export async function handleChat(req: Request, res: Response) {
+export async function handleChat(req: AuthenticatedRequest, res: Response) {
   try {
+    const { userId } = req;
     const { message, history } = req.body;
     
     if (!message || typeof message !== 'string' || !message.trim()) {
@@ -18,6 +21,18 @@ export async function handleChat(req: Request, res: Response) {
 
     // Invoke backend service
     const reply = await GeminiAiService.generateResponse(message, history || []);
+
+    // Save history asynchronously in the background so it does not block the response
+    if (userId) {
+      const modelUsed = process.env['GEMINI_MODEL'] || 'gemini-flash-latest';
+      ChatHistoryService.saveChat(userId, {
+        userPrompt: message,
+        aiResponse: reply,
+        modelUsed
+      }).catch(err => {
+        console.error('Failed to save chat history in background:', err);
+      });
+    }
 
     res.status(200).json({ reply });
   } catch (error: any) {

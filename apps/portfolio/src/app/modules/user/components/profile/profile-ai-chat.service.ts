@@ -159,8 +159,8 @@ export class ProfileAiChatService {
   /**
    * Dispatches the prompt to the AI response generator.
    */
-  async sendMessage(content: string) {
-    if (!content.trim()) return;
+  async sendMessage(content: string): Promise<string | null> {
+    if (!content.trim()) return null;
 
     // 1. Add User Message
     const userMessageId = `user-${Date.now()}`;
@@ -228,6 +228,7 @@ export class ProfileAiChatService {
         }
       }, 40);
 
+      return rawReply;
     } catch (error: any) {
       console.error('Error generating AI response:', error);
       this.isLoading.set(false);
@@ -242,6 +243,7 @@ export class ProfileAiChatService {
         rawContent: errorMsgText,
       };
       this.messages.update(prev => [...prev, errorMsg]);
+      return null;
     }
   }
 
@@ -256,10 +258,10 @@ export class ProfileAiChatService {
   /**
    * Retries the last failed user message
    */
-  retryMessage(failedMessageContent: string) {
+  async retryMessage(failedMessageContent: string): Promise<string | null> {
     // Remove the error message from the log
     this.messages.update(prev => prev.filter(m => m.status !== 'error'));
-    this.sendMessage(failedMessageContent);
+    return this.sendMessage(failedMessageContent);
   }
 
   /**
