@@ -5,6 +5,7 @@ import { filter, map, take } from 'rxjs/operators';
 import { UserComponent } from './user';
 import { LoginComponent } from './components/login/login';
 import { ProfileComponent } from './components/profile/profile';
+import { ProfileAiChatComponent } from './components/profile/profile-ai-chat.component';
 import { AuthService } from './services/auth';
 
 export const authGuard: CanActivateFn = () => {
@@ -33,6 +34,12 @@ const routes: Routes = [
         path: '',
         component: ProfileComponent,
         pathMatch: 'full',
+        // Block access if the user is unauthenticated
+        canActivate: [authGuard],
+      },
+      {
+        path: 'ai',
+        component: ProfileAiChatComponent,
         // Block access if the user is unauthenticated
         canActivate: [authGuard],
       },

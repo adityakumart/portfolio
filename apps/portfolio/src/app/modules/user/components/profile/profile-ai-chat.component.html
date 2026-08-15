@@ -1,0 +1,142 @@
+<div [class.chat-route-container]="!isEmbedded" [class.embedded]="isEmbedded" class="reveal-on-scroll visible">
+  <div class="glass-card chat-card-container">
+    
+    <!-- Chat Header Panel -->
+    <div class="chat-header">
+      <div class="header-left">
+        @if (!isEmbedded) {
+          <button
+            mat-icon-button
+            color="primary"
+            routerLink="/user"
+            matTooltip="Back to Profile"
+            class="back-btn"
+          >
+            <mat-icon>arrow_back</mat-icon>
+          </button>
+        }
+        <div class="header-titles">
+          <h3>AI Developer Assistant</h3>
+          <span class="subtitle-badge">
+            <span class="status-indicator-dot pulsing"></span>
+            Online • Gemini Sandbox
+          </span>
+        </div>
+      </div>
+      
+      <div class="header-right">
+        <button
+          mat-stroked-button
+          color="warn"
+          (click)="onClearChat()"
+          [disabled]="chatService.messages().length <= 1 && !chatService.isLoading()"
+          matTooltip="Clear Conversation History"
+          class="clear-btn"
+        >
+          <mat-icon>delete_outline</mat-icon> Clear Chat
+        </button>
+      </div>
+    </div>
+
+    <!-- Chat Message History Feed -->
+    <div class="chat-history-container" #scrollContainer>
+      <div class="messages-list">
+        @for (msg of chatService.messages(); track msg.id) {
+          <div
+            class="message-row"
+            [class.user-message]="msg.role === 'user'"
+            [class.assistant-message]="msg.role === 'assistant'"
+          >
+            <!-- Avatar circle -->
+            <div class="message-avatar">
+              @if (msg.role === 'user') {
+                <div class="avatar-circle user-avatar">
+                  <span>{{ userInitials() }}</span>
+                </div>
+              } @else {
+                <div class="avatar-circle ai-avatar">
+                  <mat-icon>smart_toy</mat-icon>
+                </div>
+              }
+            </div>
+
+            <!-- Bubble Content -->
+            <div class="message-body">
+              <div class="message-bubble" [innerHTML]="sanitizeHtml(msg.content)"></div>
+              
+              <!-- Footer status / date info -->
+              <div class="message-meta">
+                <span class="time-stamp">{{ msg.timestamp | date:'shortTime' }}</span>
+                @if (msg.status === 'sending') {
+                  <span class="status-sending-text">• Typing...</span>
+                } @else if (msg.status === 'error') {
+                  <button class="retry-inline-btn" (click)="onRetry(msg.id)">
+                    <mat-icon class="size-14">refresh</mat-icon> Retry
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- AI Typing / Generation State Loader -->
+        @if (chatService.isLoading()) {
+          <div class="message-row assistant-message loading-state">
+            <div class="message-avatar">
+              <div class="avatar-circle ai-avatar">
+                <mat-icon>smart_toy</mat-icon>
+              </div>
+            </div>
+            <div class="message-body">
+              <div class="message-bubble loading-bubble">
+                <div class="typing-indicator">
+                  <span class="dot"></span>
+                  <span class="dot"></span>
+                  <span class="dot"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Chat Prompt Input Panel -->
+    <div class="chat-input-panel">
+      <div class="input-wrapper">
+        <textarea
+          #promptTextarea
+          [value]="currentPrompt()"
+          (input)="onPromptInput($event)"
+          (keydown)="onKeyDown($event)"
+          class="chat-textarea"
+          placeholder="Ask a technical question (e.g. 'Show me a Signal code example')"
+          rows="1"
+          maxlength="2000"
+          [disabled]="chatService.isLoading()"
+        ></textarea>
+        
+        <div class="input-actions-bar">
+          <span class="char-counter" [class.maxed-out]="currentPrompt().length >= 1900">
+            {{ currentPrompt().length }} / 2000
+          </span>
+          
+          <button
+            mat-fab
+            color="primary"
+            class="send-fab-btn"
+            (click)="onSend()"
+            [disabled]="!currentPrompt().trim() || chatService.isLoading()"
+            matTooltip="Send Prompt (Enter)"
+          >
+            <mat-icon>send</mat-icon>
+          </button>
+        </div>
+      </div>
+      <div class="input-tip-footer">
+        <span><strong>Enter</strong> to Send • <strong>Shift + Enter</strong> for a new line</span>
+      </div>
+    </div>
+
+  </div>
+</div>
