@@ -1,10 +1,14 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import { ChatMessage } from './profile-ai-chat.model';
+import { GeminiAiService } from './gemini-ai.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ProfileAiChatService {
+  private geminiService = inject(GeminiAiService);
+
   // Reactive Signals for state management
   messages = signal<ChatMessage[]>([]);
   isLoading = signal<boolean>(false);
@@ -166,19 +170,26 @@ export class ProfileAiChatService {
       content: this.escapeHtml(content),
       timestamp: new Date(),
       status: 'complete',
+      rawContent: content,
     };
 
     this.messages.update(prev => [...prev, userMsg]);
     this.isLoading.set(true);
 
-    // 2. Generate AI response with simulated network latency
     const assistantMessageId = `ai-${Date.now()}`;
-    const rawReply = this.generateMockResponse(content);
 
     try {
-      // Simulate network request delay (1.2 to 2 seconds)
-      const delay = 1200 + Math.random() * 800;
-      await new Promise(resolve => setTimeout(resolve, delay));
+      // Map complete messages history (excluding welcome node) for backend request payload
+      const history = this.messages()
+        .filter(m => m.status === 'complete' && m.id !== 'welcome')
+        .map(m => ({
+          role: m.role,
+          content: m.rawContent || m.content
+        }));
+
+      // Call backend Gemini HTTP request via the Angular GeminiAiService
+      const res = await firstValueFrom(this.geminiService.sendMessage(content, history));
+      const rawReply = res.reply;
 
       // Streaming typing effect: feed the message chunk by chunk
       const assistantMsg: ChatMessage = {
@@ -211,22 +222,24 @@ export class ProfileAiChatService {
           clearInterval(interval);
           this.messages.update(prev =>
             prev.map(m =>
-              m.id === assistantMessageId ? { ...m, status: 'complete' as const } : m
+              m.id === assistantMessageId ? { ...m, status: 'complete' as const, rawContent: rawReply } : m
             )
           );
         }
       }, 40);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating AI response:', error);
       this.isLoading.set(false);
       
+      const errorMsgText = error.error?.message || error.message || 'Failed to retrieve response from developer assistant. Please check your connection and try again.';
       const errorMsg: ChatMessage = {
         id: assistantMessageId,
         role: 'assistant',
-        content: `<span class="chat-error-text">Failed to retrieve response from developer assistant. Please check your connection and try again.</span>`,
+        content: `<span class="chat-error-text">${this.escapeHtml(errorMsgText)}</span>`,
         timestamp: new Date(),
         status: 'error',
+        rawContent: errorMsgText,
       };
       this.messages.update(prev => [...prev, errorMsg]);
     }

@@ -14,8 +14,8 @@ describe('JsonToTypeScriptComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [JsonToTypeScriptComponent],
       imports: [
+        JsonToTypeScriptComponent,
         ReactiveFormsModule,
         MatSnackBarModule,
         BrowserAnimationsModule,

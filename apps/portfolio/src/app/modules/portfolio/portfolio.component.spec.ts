@@ -6,9 +6,22 @@ describe('PortfolioComponent', () => {
   let component: PortfolioComponent;
   let fixture: ComponentFixture<PortfolioComponent>;
 
+  beforeAll(() => {
+    class MockIntersectionObserver {
+      observe() {}
+      disconnect() {}
+      unobserve() {}
+    }
+    Object.defineProperty(window, 'IntersectionObserver', {
+      writable: true,
+      configurable: true,
+      value: MockIntersectionObserver,
+    });
+  });
+
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [PortfolioComponent],
+      imports: [PortfolioComponent],
     });
     fixture = TestBed.createComponent(PortfolioComponent);
     component = fixture.componentInstance;
