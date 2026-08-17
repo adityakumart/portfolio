@@ -19,7 +19,9 @@ export class GeminiAiService {
   private static getApiKey(): string {
     const key = process.env['GEMINI_API_KEY'];
     if (!key) {
-      throw new Error('GEMINI_API_KEY environment variable is not configured on the backend server.');
+      throw new Error(
+        'GEMINI_API_KEY environment variable is not configured on the backend server.',
+      );
     }
     return key;
   }
@@ -27,23 +29,27 @@ export class GeminiAiService {
   /**
    * Sends user prompt with history context to Gemini API
    */
-  static async generateResponse(prompt: string, history: HistoryMessage[] = []): Promise<string> {
+  static async generateResponse(
+    prompt: string,
+    history: HistoryMessage[] = [],
+  ): Promise<string> {
     try {
       const apiKey = this.getApiKey();
 
       // Map chat history roles from frontend ('assistant' -> 'model') to Gemini API specs
-      const contents: GeminiChatMessage[] = history.map(msg => ({
+      const contents: GeminiChatMessage[] = history.map((msg) => ({
         role: msg.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: msg.content }]
+        parts: [{ text: msg.content }],
       }));
 
       // Append the current active prompt to the thread
       contents.push({
         role: 'user',
-        parts: [{ text: prompt }]
+        parts: [{ text: prompt }],
       });
 
-      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+      const model = process.env['GEMINI_MODEL'] || 'gemini-flash-latest';
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
       const response = await fetch(apiUrl, {
         method: 'POST',
@@ -51,14 +57,16 @@ export class GeminiAiService {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          contents: contents
-        })
+          contents: contents,
+        }),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Gemini API Error details:', errorText);
-        throw new Error(`Gemini API returned status ${response.status}: ${errorText}`);
+        throw new Error(
+          `Gemini API returned status ${response.status}: ${errorText}`,
+        );
       }
 
       const data = (await response.json()) as any;
