@@ -96,6 +96,19 @@ export class AuthService {
     this.currentUser.set(null);
   }
 
+  getAccessToken(): string | null {
+    const sessionStr = this.getStorageItem(this.STORAGE_KEY);
+    if (!sessionStr) return null;
+    try {
+      const session = JSON.parse(sessionStr) as AuthSession;
+      return session.access_token || null;
+    } catch (e) {
+      console.error('Error reading access token from storage:', e);
+      return null;
+    }
+  }
+
+
   private getHeaders(): HttpHeaders {
     return new HttpHeaders({
       'Content-Type': 'application/json',
