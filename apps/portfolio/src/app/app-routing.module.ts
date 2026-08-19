@@ -24,13 +24,6 @@ export const AppRoutes: Routes = [
       ),
   },
   {
-    path: 'json-to-typescript',
-    loadComponent: () =>
-      import('./modules/json-to-typescript/json-to-typescript.component').then(
-        (comp) => comp.JsonToTypeScriptComponent,
-      ),
-  },
-  {
     path: 'line-splitter',
     loadComponent: () =>
       import('./modules/line-splitter/line-splitter.component').then(

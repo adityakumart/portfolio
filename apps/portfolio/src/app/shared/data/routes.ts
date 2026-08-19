@@ -133,13 +133,22 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
     header: 'Converters',
     tools: [
       {
-        name: 'JSON to CSV/TS/Schema',
+        name: 'JSON to CSV',
         path: 'converters/json-to-csv-ts-schema',
         link: '/dev-tools/converters/json-to-csv-ts-schema',
         loadComponent: () =>
           import(
             '../../modules/dev-tools/components/json-csv-converter/json-csv-converter.component'
           ).then((m) => m.JsonCsvConverterComponent),
+      },
+      {
+        name: 'JSON to TypeScript',
+        path: 'converters/json-to-typescript',
+        link: '/dev-tools/converters/json-to-typescript',
+        loadComponent: () =>
+          import(
+            '../../modules/dev-tools/components/json-to-typescript/json-to-typescript.component'
+          ).then((m) => m.JsonToTypeScriptComponent),
       },
       {
         name: 'Query String',
@@ -270,16 +279,6 @@ export const appRoutingList: AppRouteConfig[] = [
     label: 'Dev Tools',
     icon: 'code_xml',
     groups: devToolsRoutingList,
-  },
-  {
-    path: 'json-to-typescript',
-    link: '/json-to-typescript',
-    label: 'JSON to TypeScript',
-    icon: 'code',
-    loadComponent: () =>
-      import(
-        '../../modules/json-to-typescript/json-to-typescript.component'
-      ).then((m) => m.JsonToTypeScriptComponent),
   },
   {
     path: 'line-splitter',
