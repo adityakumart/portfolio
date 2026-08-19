@@ -18,7 +18,9 @@ interface AuthSession {
   user: User;
 }
 
-@Injectable()
+@Injectable({
+  providedIn: 'root',
+})
 export class AuthService {
   private http = inject(HttpClient);
   private readonly STORAGE_KEY = 'portfolio_auth_session';
