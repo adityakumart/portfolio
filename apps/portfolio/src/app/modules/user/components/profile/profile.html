@@ -1,4 +1,4 @@
-<div class="profile-container" [class.has-user]="currentUser()">
+<div class="profile-container">
   @if (currentUser()) {
     <div class="glass-card profile-card">
       <!-- Profile Header -->
@@ -42,6 +42,14 @@
         <button
           mat-raised-button
           color="primary"
+          class="ai-btn"
+          routerLink="/user/ai"
+        >
+          <mat-icon>smart_toy</mat-icon> AI Assistant
+        </button>
+        <button
+          mat-raised-button
+          color="primary"
           class="home-btn"
           routerLink="/"
         >
@@ -57,8 +65,6 @@
         </button>
       </div>
     </div>
-
-    <app-profile-ai-chat [isEmbedded]="true" class="chat-column"></app-profile-ai-chat>
   } @else {
     <div class="glass-card loading-card">
       <div class="spinner-container">
