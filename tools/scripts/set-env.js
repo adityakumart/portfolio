@@ -28,11 +28,11 @@ if (fs.existsSync(dotenvPath)) {
 }
 
 const supabaseConfig = {
-  url: envConfig.SUPABASE_URL || '',
-  key: envConfig.SUPABASE_KEY || ''
+  url: envConfig.SUPABASE_URL || process.env.SUPABASE_URL || '',
+  key: envConfig.SUPABASE_KEY || process.env.SUPABASE_KEY || ''
 };
 
-const apiUrl = envConfig.API_URL || 'http://localhost:3000/api';
+const apiUrl = envConfig.API_URL || process.env.API_URL || 'http://localhost:3000/api';
 
 const envFileContent = `// This file is generated dynamically at build/serve time.
 export const environment = {
