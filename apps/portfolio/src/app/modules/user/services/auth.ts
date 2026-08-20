@@ -190,7 +190,7 @@ export class AuthService {
 
   // Refresh user session using refresh token
   private async refreshSession(refreshToken: string): Promise<User> {
-    const url = `${environment.apiUrl}/auth/refresh`;
+    const url = `${environment.APIURL}/auth/refresh`;
     try {
       const res = await firstValueFrom(
         this.http.post<AuthResponse>(
@@ -214,7 +214,7 @@ export class AuthService {
     firstName: string,
     lastName: string,
   ) {
-    const url = `${environment.apiUrl}/auth/signup`;
+    const url = `${environment.APIURL}/auth/signup`;
     try {
       const res = await firstValueFrom(
         this.http.post<AuthResponse>(
@@ -259,7 +259,7 @@ export class AuthService {
 
   // Sign in existing user
   async login(email: string, password: string) {
-    const url = `${environment.apiUrl}/auth/login`;
+    const url = `${environment.APIURL}/auth/login`;
     try {
       const res = await firstValueFrom(
         this.http.post<AuthResponse>(
@@ -293,7 +293,7 @@ export class AuthService {
 
   // Logout
   async logout() {
-    const url = `${environment.apiUrl}/auth/logout`;
+    const url = `${environment.APIURL}/auth/logout`;
     const sessionStr = this.getStorageItem(this.STORAGE_KEY);
     let token = '';
     if (sessionStr) {

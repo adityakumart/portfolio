@@ -32,13 +32,13 @@ const supabaseConfig = {
   key: envConfig.SUPABASE_KEY || process.env.SUPABASE_KEY || ''
 };
 
-const apiUrl = envConfig.API_URL || process.env.API_URL || 'http://localhost:3000/api';
+const apiUrl = envConfig.APIURL || process.env.APIURL || 'http://localhost:3000/api';
 
 const envFileContent = `// This file is generated dynamically at build/serve time.
 export const environment = {
   production: false,
   baseHref: '/',
-  apiUrl: '${apiUrl}',
+  APIURL: '${apiUrl}',
   supabase: ${JSON.stringify(supabaseConfig, null, 2)}
 };
 `;
@@ -47,7 +47,7 @@ const envProdFileContent = `// This file is generated dynamically at build/serve
 export const environment = {
   production: true,
   baseHref: '/portfolio/',
-  apiUrl: '${apiUrl}',
+  APIURL: '${apiUrl}',
   supabase: ${JSON.stringify(supabaseConfig, null, 2)}
 };
 `;

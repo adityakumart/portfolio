@@ -25,7 +25,7 @@ export class ProfileAiChatService {
         id: 'welcome',
         role: 'assistant',
         content: this.formatMarkdown(
-          'Hello! I am your **AI Developer Assistant**. \n\nI can help you explore the tech stack of this portfolio, demonstrate Angular Signals, or answer coding questions. Try asking: \n- *What is the tech stack?*\n- *Show me a Signal code example.*\n- *How do I connect a real API?*'
+          'Hello! I am your **AI Developer Assistant**. \n\nI can help you explore the tech stack of this portfolio, demonstrate Angular Signals, or answer coding questions. Try asking: \n- *What is the tech stack?*\n- *Show me a Signal code example.*\n- *How do I connect a real API?*',
         ),
         timestamp: new Date(),
         status: 'complete',
@@ -36,24 +36,32 @@ export class ProfileAiChatService {
   // Inject a global helper on the window object to handle copying code from rendered HTML
   private setupGlobalClipboardHelper() {
     if (typeof window !== 'undefined') {
-      (window as Window & { copyCodeToClipboard?: (button: HTMLButtonElement) => void }).copyCodeToClipboard = (button: HTMLButtonElement) => {
+      (
+        window as Window & {
+          copyCodeToClipboard?: (button: HTMLButtonElement) => void;
+        }
+      ).copyCodeToClipboard = (button: HTMLButtonElement) => {
         const wrapper = button.closest('.code-block-wrapper');
         const codeElement = wrapper?.querySelector('.code-block-content');
         if (codeElement) {
           const codeText = codeElement.textContent || '';
-          navigator.clipboard.writeText(codeText).then(() => {
-            const originalText = button.innerHTML;
-            button.innerHTML = '<span class="material-icons">check</span> Copied!';
-            button.classList.add('copied');
-            button.disabled = true;
-            setTimeout(() => {
-              button.innerHTML = originalText;
-              button.classList.remove('copied');
-              button.disabled = false;
-            }, 2000);
-          }).catch(err => {
-            console.error('Failed to copy code:', err);
-          });
+          navigator.clipboard
+            .writeText(codeText)
+            .then(() => {
+              const originalText = button.innerHTML;
+              button.innerHTML =
+                '<span class="material-icons">check</span> Copied!';
+              button.classList.add('copied');
+              button.disabled = true;
+              setTimeout(() => {
+                button.innerHTML = originalText;
+                button.classList.remove('copied');
+                button.disabled = false;
+              }, 2000);
+            })
+            .catch((err) => {
+              console.error('Failed to copy code:', err);
+            });
         }
       };
     }
@@ -72,13 +80,15 @@ export class ProfileAiChatService {
 
     // RegEx to capture ```lang\ncode\n```
     const codeBlockRegex = /```(\w*)\n([\s\S]*?)```/g;
-    processedText = processedText.replace(codeBlockRegex, (match, lang, code) => {
-      const index = codeBlocks.length;
-      // Escape code block content for rendering
-      const escapedCode = this.escapeHtml(code.trim());
-      const displayLang = lang || 'code';
-      
-      const codeHtml = `
+    processedText = processedText.replace(
+      codeBlockRegex,
+      (match, lang, code) => {
+        const index = codeBlocks.length;
+        // Escape code block content for rendering
+        const escapedCode = this.escapeHtml(code.trim());
+        const displayLang = lang || 'code';
+
+        const codeHtml = `
         <div class="code-block-wrapper">
           <div class="code-block-header">
             <span class="code-block-lang">${displayLang}</span>
@@ -89,9 +99,10 @@ export class ProfileAiChatService {
           <pre class="code-block-pre"><code class="code-block-content">${escapedCode}</code></pre>
         </div>
       `;
-      codeBlocks.push(codeHtml);
-      return `__CODE_BLOCK_PLACEHOLDER_${index}__`;
-    });
+        codeBlocks.push(codeHtml);
+        return `__CODE_BLOCK_PLACEHOLDER_${index}__`;
+      },
+    );
 
     // 2. Escape HTML of the surrounding text content to prevent XSS
     processedText = this.escapeHtml(processedText);
@@ -99,7 +110,7 @@ export class ProfileAiChatService {
     // 3. Format Lists (Unordered lists starting with - or *)
     const lines = processedText.split('\n');
     let inList = false;
-    const processedLines = lines.map(line => {
+    const processedLines = lines.map((line) => {
       const trimmed = line.trim();
       if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
         const itemContent = trimmed.substring(2).trim();
@@ -124,24 +135,36 @@ export class ProfileAiChatService {
     processedText = processedLines.join('\n');
 
     // 4. Format Inline bold: **text**
-    processedText = processedText.replace(/\*\*([\s\S]*?)\*\*/g, '<strong>$1</strong>');
+    processedText = processedText.replace(
+      /\*\*([\s\S]*?)\*\*/g,
+      '<strong>$1</strong>',
+    );
 
     // 5. Format Inline italics: *text* or _text_
     processedText = processedText.replace(/\*([\s\S]*?)\*/g, '<em>$1</em>');
     processedText = processedText.replace(/_([\s\S]*?)_/g, '<em>$1</em>');
 
     // 6. Format Inline code: `code`
-    processedText = processedText.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
+    processedText = processedText.replace(
+      /`([^`]+)`/g,
+      '<code class="inline-code">$1</code>',
+    );
 
     // 7. Format Links: [label](url)
-    processedText = processedText.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="chat-link">$1</a>');
+    processedText = processedText.replace(
+      /\[([^\]]+)\]\(([^)]+)\)/g,
+      '<a href="$2" target="_blank" rel="noopener noreferrer" class="chat-link">$1</a>',
+    );
 
     // 8. Convert remaining newlines to <br> tags (except those inside tags)
     processedText = processedText.replace(/\n/g, '<br>');
 
     // 9. Reinsert the untouched formatted code blocks
     codeBlocks.forEach((codeHtml, index) => {
-      processedText = processedText.replace(`__CODE_BLOCK_PLACEHOLDER_${index}__`, codeHtml);
+      processedText = processedText.replace(
+        `__CODE_BLOCK_PLACEHOLDER_${index}__`,
+        codeHtml,
+      );
     });
 
     return processedText;
@@ -173,7 +196,7 @@ export class ProfileAiChatService {
       rawContent: content,
     };
 
-    this.messages.update(prev => [...prev, userMsg]);
+    this.messages.update((prev) => [...prev, userMsg]);
     this.isLoading.set(true);
 
     const assistantMessageId = `ai-${Date.now()}`;
@@ -181,14 +204,16 @@ export class ProfileAiChatService {
     try {
       // Map complete messages history (excluding welcome node) for backend request payload
       const history = this.messages()
-        .filter(m => m.status === 'complete' && m.id !== 'welcome')
-        .map(m => ({
+        .filter((m) => m.status === 'complete' && m.id !== 'welcome')
+        .map((m) => ({
           role: m.role,
-          content: m.rawContent || m.content
+          content: m.rawContent || m.content,
         }));
 
       // Call backend Gemini HTTP request via the Angular GeminiAiService
-      const res = await firstValueFrom(this.geminiService.sendMessage(content, history));
+      const res = await firstValueFrom(
+        this.geminiService.sendMessage(content, history),
+      );
       const rawReply = res.reply;
 
       // Streaming typing effect: feed the message chunk by chunk
@@ -201,7 +226,7 @@ export class ProfileAiChatService {
       };
 
       // Push initial empty response object
-      this.messages.update(prev => [...prev, assistantMsg]);
+      this.messages.update((prev) => [...prev, assistantMsg]);
       this.isLoading.set(false);
 
       // Perform a typing effect
@@ -209,21 +234,28 @@ export class ProfileAiChatService {
       const totalLength = rawReply.length;
       // Type 8-15 characters at a time for smooth rendering speed
       const interval = setInterval(() => {
-        currentLength += Math.min(totalLength - currentLength, Math.floor(Math.random() * 12) + 8);
+        currentLength += Math.min(
+          totalLength - currentLength,
+          Math.floor(Math.random() * 12) + 8,
+        );
         const slicedText = rawReply.substring(0, currentLength);
         const htmlFormatted = this.formatMarkdown(slicedText);
 
         // Update active message content
-        this.messages.update(prev =>
-          prev.map(m => (m.id === assistantMessageId ? { ...m, content: htmlFormatted } : m))
+        this.messages.update((prev) =>
+          prev.map((m) =>
+            m.id === assistantMessageId ? { ...m, content: htmlFormatted } : m,
+          ),
         );
 
         if (currentLength >= totalLength) {
           clearInterval(interval);
-          this.messages.update(prev =>
-            prev.map(m =>
-              m.id === assistantMessageId ? { ...m, status: 'complete' as const, rawContent: rawReply } : m
-            )
+          this.messages.update((prev) =>
+            prev.map((m) =>
+              m.id === assistantMessageId
+                ? { ...m, status: 'complete' as const, rawContent: rawReply }
+                : m,
+            ),
           );
         }
       }, 40);
@@ -232,9 +264,12 @@ export class ProfileAiChatService {
     } catch (error: unknown) {
       console.error('Error generating AI response:', error);
       this.isLoading.set(false);
-      
+
       const err = error as { error?: { message?: string }; message?: string };
-      const errorMsgText = err.error?.message || err.message || 'Failed to retrieve response from developer assistant. Please check your connection and try again.';
+      const errorMsgText =
+        err.error?.message ||
+        err.message ||
+        'Failed to retrieve response from developer assistant. Please check your connection and try again.';
       const errorMsg: ChatMessage = {
         id: assistantMessageId,
         role: 'assistant',
@@ -243,7 +278,7 @@ export class ProfileAiChatService {
         status: 'error',
         rawContent: errorMsgText,
       };
-      this.messages.update(prev => [...prev, errorMsg]);
+      this.messages.update((prev) => [...prev, errorMsg]);
       return null;
     }
   }
@@ -261,7 +296,7 @@ export class ProfileAiChatService {
    */
   async retryMessage(failedMessageContent: string): Promise<string | null> {
     // Remove the error message from the log
-    this.messages.update(prev => prev.filter(m => m.status !== 'error'));
+    this.messages.update((prev) => prev.filter((m) => m.status !== 'error'));
     return this.sendMessage(failedMessageContent);
   }
 
@@ -271,7 +306,11 @@ export class ProfileAiChatService {
   private generateMockResponse(prompt: string): string {
     const cleanPrompt = prompt.toLowerCase();
 
-    if (cleanPrompt.includes('tech stack') || cleanPrompt.includes('technologies') || cleanPrompt.includes('framework')) {
+    if (
+      cleanPrompt.includes('tech stack') ||
+      cleanPrompt.includes('technologies') ||
+      cleanPrompt.includes('framework')
+    ) {
       return `This modern portfolio application is built using a highly optimized frontend-focused architecture:
 
 * **Frontend Framework:** Angular 22 (using standalone components, Signals, and the elegant control flow template structures).
@@ -285,7 +324,11 @@ export class ProfileAiChatService {
 Would you like to see how we implement Signal state management or would you like to review some router guard patterns?`;
     }
 
-    if (cleanPrompt.includes('signal') || cleanPrompt.includes('code example') || cleanPrompt.includes('typescript')) {
+    if (
+      cleanPrompt.includes('signal') ||
+      cleanPrompt.includes('code example') ||
+      cleanPrompt.includes('typescript')
+    ) {
       return `Here is a production-grade example of an Angular Standalone Component showing Signal reactivity, state management, and modern control flow syntax:
 
 \`\`\`typescript
@@ -344,7 +387,12 @@ export class UserStatsComponent {
 4. Values are never mutated directly—always use \`.set()\` or \`.update()\` to trigger notifications!`;
     }
 
-    if (cleanPrompt.includes('connect a real api') || cleanPrompt.includes('live api') || cleanPrompt.includes('backend') || cleanPrompt.includes('connect api')) {
+    if (
+      cleanPrompt.includes('connect a real api') ||
+      cleanPrompt.includes('live api') ||
+      cleanPrompt.includes('backend') ||
+      cleanPrompt.includes('connect api')
+    ) {
       return `To connect this client-side chat interface to a live LLM endpoint (such as Google Gemini, OpenAI, or a custom LLM), follow these structured steps:
 
 ### Step 1: Create a Backend Endpoint in \`portfolio-core\`
@@ -385,7 +433,7 @@ private http = inject(HttpClient);
 async sendMessage(content: string) {
   // Add user message...
   
-  this.http.post<any>(\`\${environment.apiUrl}/chat\`, { message: content })
+  this.http.post<any>(\`\${environment.APIURL}/chat\`, { message: content })
     .subscribe({
       next: (res) => {
         const parsedReply = this.formatMarkdown(res.reply);
@@ -401,7 +449,11 @@ async sendMessage(content: string) {
 This provides a fully secured and structured API routing setup, protecting your private API Keys on the backend server.`;
     }
 
-    if (cleanPrompt.includes('hello') || cleanPrompt.includes('hi') || cleanPrompt.includes('hey')) {
+    if (
+      cleanPrompt.includes('hello') ||
+      cleanPrompt.includes('hi') ||
+      cleanPrompt.includes('hey')
+    ) {
       return `Hello! Welcome to the AI chat console. I am your developer assistant. 
 
 I can answer questions regarding the frontend layout of this portfolio, show you coding samples using Angular Signals, or discuss connecting to databases or OpenAI/Gemini. 
@@ -409,7 +461,12 @@ I can answer questions regarding the frontend layout of this portfolio, show you
 What can I code or explain for you today?`;
     }
 
-    if (cleanPrompt.includes('who are you') || cleanPrompt.includes('author') || cleanPrompt.includes('creator') || cleanPrompt.includes('aditya')) {
+    if (
+      cleanPrompt.includes('who are you') ||
+      cleanPrompt.includes('author') ||
+      cleanPrompt.includes('creator') ||
+      cleanPrompt.includes('aditya')
+    ) {
       return `I am the AI assistant integrated into the Developer Portfolio of **Aditya**. 
 
 Aditya is a Software Engineer specializing in modern frontend architectures, building high-performance reactive applications, and engineering backend APIs with Node.js and MongoDB.
