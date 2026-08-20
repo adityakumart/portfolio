@@ -25,6 +25,8 @@ import { ThemeService } from './theme.service';
 import { GlobalData } from '../shared/data/GlobalData';
 import { appRoutingList } from './shared/data/routes';
 import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
+import { AuthService } from './modules/user/services/auth';
+
 
 @Component({
   selector: 'app-root',
@@ -61,6 +63,8 @@ export class AppComponent {
   private globalData: GlobalData = inject(GlobalData);
   private themeService = inject(ThemeService);
   private router = inject(Router);
+  private authService = inject(AuthService);
+
 
   readonly isDarkMode = computed(() => this.themeService.theme() === 'dark');
 

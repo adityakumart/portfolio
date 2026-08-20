@@ -1,5 +1,6 @@
 import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
+import { Education } from '@portfolio/shared-types';
 
 @Component({
   selector: 'app-education',
@@ -10,5 +11,5 @@ import { MatCardModule } from '@angular/material/card';
   styleUrl: './education.component.scss',
 })
 export class EducationComponent {
-  education = input.required<any[]>();
+  education = input.required<Education[]>();
 }

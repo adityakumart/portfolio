@@ -2,6 +2,7 @@ import { connectToDatabase } from '../utils/DB/mongodb';
 import { ObjectId } from 'mongodb';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
+import { User } from '@portfolio/shared-types';
 
 const JWT_SECRET = process.env['JWT_SECRET'] || '';
 const REFRESH_SECRET = process.env['REFRESH_SECRET'] || '';
@@ -32,7 +33,8 @@ export class AuthService {
         password: hashedPassword,
         first_name: firstName,
         last_name: lastName,
-        isEnabled: true,
+        admin: false,
+        isEnabled: false,
         is_deleted: false,
         access_token: null,
         refresh_token: null,
@@ -88,18 +90,18 @@ export class AuthService {
             refresh_token: refreshToken,
             user_logged_in_at: userLoggedInAt,
             updated_at: new Date().toISOString(),
-          }
-        }
+          },
+        },
       );
 
       const updatedUser = await userCollection.findOne({ _id: user._id });
-      if (!updatedUser) throw new Error('Error retrieving updated user profile');
+      if (!updatedUser)
+        throw new Error('Error retrieving updated user profile');
 
-      const { password, ...safeUser } = {
+      const { password, _id, ...safeUser } = {
         id: updatedUser._id.toString(),
-        ...updatedUser
-      } as any;
-      delete (safeUser as any)._id;
+        ...updatedUser,
+      } as unknown as User & { password?: string; _id?: unknown };
 
       return safeUser;
     } catch (err) {
@@ -125,15 +127,22 @@ export class AuthService {
         throw new Error('Invalid user ID format');
       }
 
-      const user = await userCollection.findOne({ _id: objId, refresh_token: oldRefreshToken });
+      const user = await userCollection.findOne({
+        _id: objId,
+        refresh_token: oldRefreshToken,
+      });
       if (!user) throw new Error('Invalid or expired refresh token');
 
       const newAccessToken = jwt.sign({ id: user._id.toString() }, JWT_SECRET, {
         expiresIn: '15m',
       });
-      const newRefreshToken = jwt.sign({ id: user._id.toString() }, REFRESH_SECRET, {
-        expiresIn: '7d',
-      });
+      const newRefreshToken = jwt.sign(
+        { id: user._id.toString() },
+        REFRESH_SECRET,
+        {
+          expiresIn: '7d',
+        },
+      );
 
       await userCollection.updateOne(
         { _id: user._id },
@@ -142,18 +151,18 @@ export class AuthService {
             access_token: newAccessToken,
             refresh_token: newRefreshToken,
             updated_at: new Date().toISOString(),
-          }
-        }
+          },
+        },
       );
 
       const updatedUser = await userCollection.findOne({ _id: user._id });
-      if (!updatedUser) throw new Error('Error retrieving updated user profile');
+      if (!updatedUser)
+        throw new Error('Error retrieving updated user profile');
 
-      const { password, ...safeUser } = {
+      const { password, _id, ...safeUser } = {
         id: updatedUser._id.toString(),
-        ...updatedUser
-      } as any;
-      delete (safeUser as any)._id;
+        ...updatedUser,
+      } as unknown as User & { password?: string; _id?: unknown };
 
       return {
         access_token: newAccessToken,
@@ -186,8 +195,8 @@ export class AuthService {
             access_token: null,
             refresh_token: null,
             updated_at: new Date().toISOString(),
-          }
-        }
+          },
+        },
       );
 
       return { message: 'Logged out successfully' };

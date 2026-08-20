@@ -4,7 +4,7 @@ export class IndexedDbService<T> {
   private storeName: string;
   private version: number;
 
-  constructor(dbName: string, storeName: string, version: number = 1) {
+  constructor(dbName: string, storeName: string, version = 1) {
     this.dbName = dbName;
     this.storeName = storeName;
     this.version = version;
@@ -15,8 +15,8 @@ export class IndexedDbService<T> {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open(this.dbName, this.version);
 
-      request.onupgradeneeded = (event: any) => {
-        const db = event.target.result;
+      request.onupgradeneeded = () => {
+        const db = request.result;
         if (!db.objectStoreNames.contains(this.storeName)) {
           // Creates table auto-incrementing the key 'id'
           db.createObjectStore(this.storeName, {
@@ -26,8 +26,8 @@ export class IndexedDbService<T> {
         }
       };
 
-      request.onsuccess = (event: any) => resolve(event.target.result);
-      request.onerror = (event: any) => reject(event.target.error);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
     });
   }
 
@@ -39,8 +39,8 @@ export class IndexedDbService<T> {
       const store = transaction.objectStore(this.storeName);
       const request = store.add(item);
 
-      request.onsuccess = (event: any) => resolve(event.target.result);
-      request.onerror = (event: any) => reject(event.target.error);
+      request.onsuccess = () => resolve(request.result as number);
+      request.onerror = () => reject(request.error);
     });
   }
 
@@ -53,7 +53,7 @@ export class IndexedDbService<T> {
       const request = store.put(item);
 
       request.onsuccess = () => resolve();
-      request.onerror = (event: any) => reject(event.target.error);
+      request.onerror = () => reject(request.error);
     });
   }
 
@@ -65,8 +65,8 @@ export class IndexedDbService<T> {
       const store = transaction.objectStore(this.storeName);
       const request = store.getAll();
 
-      request.onsuccess = (event: any) => resolve(event.target.result);
-      request.onerror = (event: any) => reject(event.target.error);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
     });
   }
 
@@ -78,8 +78,8 @@ export class IndexedDbService<T> {
       const store = transaction.objectStore(this.storeName);
       const request = store.get(id);
 
-      request.onsuccess = (event: any) => resolve(event.target.result);
-      request.onerror = (event: any) => reject(event.target.error);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
     });
   }
 
@@ -92,7 +92,7 @@ export class IndexedDbService<T> {
       const request = store.delete(id);
 
       request.onsuccess = () => resolve();
-      request.onerror = (event: any) => reject(event.target.error);
+      request.onerror = () => reject(request.error);
     });
   }
 
@@ -105,7 +105,7 @@ export class IndexedDbService<T> {
       const request = store.clear();
 
       request.onsuccess = () => resolve();
-      request.onerror = (event: any) => reject(event.target.error);
+      request.onerror = () => reject(request.error);
     });
   }
 }

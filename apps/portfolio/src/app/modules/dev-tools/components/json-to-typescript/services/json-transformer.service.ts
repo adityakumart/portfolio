@@ -37,7 +37,7 @@ export class JsonTransformerService {
    */
   transformJsonToInterface(
     jsonString: string,
-    interfaceName: string = 'GeneratedInterface',
+    interfaceName = 'GeneratedInterface',
   ): TransformResult {
     try {
       // Validate and parse JSON
@@ -93,7 +93,7 @@ export class JsonTransformerService {
    * @param value - The value to analyze
    * @returns JsonTypeInfo containing type information
    */
-  getTypeInfo(value: any): JsonTypeInfo {
+  getTypeInfo(value: unknown): JsonTypeInfo {
     const info: JsonTypeInfo = {
       type: 'any',
       isArray: false,
@@ -127,7 +127,7 @@ export class JsonTransformerService {
    * @param value - The value to analyze
    * @returns TypeScript type as string
    */
-  private getValueType(value: any): string {
+  private getValueType(value: unknown): string {
     if (typeof value === 'string') {
       return 'string';
     }

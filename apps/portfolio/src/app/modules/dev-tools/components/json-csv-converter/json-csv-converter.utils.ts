@@ -34,7 +34,7 @@ function escapeCsvField(field: string, delimiter: Delimiter): string {
  * @returns A tuple containing the CSV string and conversion metadata.
  */
 export function jsonToCsv(jsonString: string, delimiter: Delimiter): [string, ConversionMetadata] {
-  const jsonArray: Record<string, any>[] = JSON.parse(jsonString);
+  const jsonArray: Record<string, unknown>[] = JSON.parse(jsonString);
   if (!Array.isArray(jsonArray) || jsonArray.length === 0) {
     return ['', { rows: 0, cols: 0 }];
   }
@@ -76,13 +76,13 @@ export function csvToJson(csvString: string, delimiter: Delimiter): [string, Con
   }
 
   const headers = lines[0].split(delimiter).map(h => h.trim());
-  const jsonArray: Record<string, any>[] = [];
+  const jsonArray: Record<string, unknown>[] = [];
 
   // Regex to handle quoted fields, including those with escaped quotes.
   const csvRegex = new RegExp(`(,|\\n|^)("(?:(?:"")*[^"]*)*"|[^",\\n]*|\\n|$)`.replace(/,/g, delimiter), 'gi');
 
   for (let i = 1; i < lines.length; i++) {
-    const obj: Record<string, any> = {};
+    const obj: Record<string, unknown> = {};
     let match;
     let colIndex = 0;
     const line = lines[i];

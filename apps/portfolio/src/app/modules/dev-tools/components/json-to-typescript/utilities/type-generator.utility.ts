@@ -18,7 +18,7 @@ export class TypeGeneratorUtility {
    * @returns Formatted TypeScript interface as string
    */
   generateInterface(
-    jsonObject: Record<string, any>,
+    jsonObject: Record<string, unknown>,
     interfaceName: string,
   ): string {
     const lines: string[] = [];
@@ -37,7 +37,7 @@ export class TypeGeneratorUtility {
    * @param depth - Current indentation depth
    * @returns Formatted properties as string
    */
-  private generateProperties(obj: Record<string, any>, depth: number): string {
+  private generateProperties(obj: Record<string, unknown>, depth: number): string {
     const lines: string[] = [];
     const keys = Object.keys(obj);
 
@@ -57,7 +57,7 @@ export class TypeGeneratorUtility {
    * @param depth - Current indentation depth
    * @returns Type definition line
    */
-  private getTypeDefinition(value: any, key: string, depth: number): string {
+  private getTypeDefinition(value: unknown, key: string, depth: number): string {
     const indent = this.INDENT.repeat(depth);
     const sanitizedKey = this.sanitizePropertyName(key);
     const isOptional = value === null || value === undefined ? '?' : '';
@@ -72,7 +72,7 @@ export class TypeGeneratorUtility {
 
     if (typeof value === 'object') {
       return this.getObjectTypeDefinition(
-        value,
+        value as Record<string, unknown>,
         sanitizedKey,
         indent,
         key,
@@ -93,7 +93,7 @@ export class TypeGeneratorUtility {
    * @returns Type definition line
    */
   private getArrayTypeDefinition(
-    array: any[],
+    array: unknown[],
     key: string,
     indent: string,
     depth: number,
@@ -116,7 +116,7 @@ export class TypeGeneratorUtility {
       // Array of objects - create interface for array element
       const elementInterfaceName = this.generateInterfaceNameFromProperty(key);
       const elementInterface = this.generateInterface(
-        firstElement,
+        firstElement as Record<string, unknown>,
         elementInterfaceName,
       );
 
@@ -138,7 +138,7 @@ export class TypeGeneratorUtility {
    * @returns Type definition line
    */
   private getObjectTypeDefinition(
-    obj: Record<string, any>,
+    obj: Record<string, unknown>,
     key: string,
     indent: string,
     originalKey: string,
@@ -162,7 +162,7 @@ export class TypeGeneratorUtility {
    * @param value - The value to analyze
    * @returns TypeScript type as string
    */
-  private getValueType(value: any): string {
+  private getValueType(value: unknown): string {
     if (value === null || value === undefined) {
       return 'any';
     }

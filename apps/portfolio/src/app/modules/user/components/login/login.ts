@@ -113,9 +113,10 @@ export class LoginComponent {
       this.confirmPassword.set('');
       this.firstName.set('');
       this.lastName.set('');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Authentication error:', err);
-      this.error.set(this.getErrorMessage(err.code || err.message));
+      const errorObj = err as { code?: string; message?: string };
+      this.error.set(this.getErrorMessage(errorObj.code || errorObj.message || ''));
     } finally {
       this.loading.set(false);
     }

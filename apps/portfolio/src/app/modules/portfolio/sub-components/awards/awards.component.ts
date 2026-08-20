@@ -1,5 +1,6 @@
 import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
+import { Award } from '@portfolio/shared-types';
 
 @Component({
   selector: 'app-awards',
@@ -10,5 +11,5 @@ import { MatCardModule } from '@angular/material/card';
   styleUrl: './awards.component.scss',
 })
 export class AwardsComponent {
-  awards = input.required<any[]>();
+  awards = input.required<Award[]>();
 }

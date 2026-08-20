@@ -1,4 +1,4 @@
-import { Routes } from '@angular/router';
+import { Routes, Route } from '@angular/router';
 import { Type } from '@angular/core';
 
 /**
@@ -8,7 +8,7 @@ export interface ToolConfig {
   name: string;
   path: string; // Child path segment (e.g., 'formatters/json')
   link: string; // Complete navigation URL (e.g., '/dev-tools/formatters/json')
-  loadComponent?: () => Promise<Type<any> | any>; // Lazy-loaded tool component
+  loadComponent?: Route['loadComponent']; // Lazy-loaded tool component
 }
 
 /**
@@ -27,8 +27,8 @@ export interface AppRouteConfig {
   link: string; // Complete navigation URL (e.g., '/calculator')
   label: string; // Display label in SideNav
   icon: string; // Material Icon name
-  loadComponent?: () => Promise<Type<any> | any>; // Standalone lazy-loaded component
-  loadChildren?: () => Promise<any>; // Lazy-loaded child routing module
+  loadComponent?: Route['loadComponent']; // Standalone lazy-loaded component
+  loadChildren?: Route['loadChildren']; // Lazy-loaded child routing module
   groups?: ToolGroupConfig[]; // Sub-menu groupings (specific to Dev Tools)
   children?: AppRouteConfig[]; // Nested child route configurations
 }

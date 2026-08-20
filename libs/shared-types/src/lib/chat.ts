@@ -16,3 +16,24 @@ export interface SaveChatHistoryResponse {
     createdAt: string;
   };
 }
+
+export interface GeminiChatMessage {
+  role: 'user' | 'model';
+  parts: Array<{ text: string }>;
+}
+
+export interface HistoryMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export interface GeminiResponse {
+  candidates?: Array<{
+    content?: {
+      parts?: Array<{
+        text?: string;
+      }>;
+    };
+  }>;
+}
+

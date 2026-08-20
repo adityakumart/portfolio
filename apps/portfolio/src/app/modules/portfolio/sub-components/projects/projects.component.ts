@@ -1,5 +1,6 @@
 import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 import { MatChipsModule } from '@angular/material/chips';
+import { WorkProject } from '@portfolio/shared-types';
 
 @Component({
   selector: 'app-projects',
@@ -10,5 +11,5 @@ import { MatChipsModule } from '@angular/material/chips';
   styleUrl: './projects.component.scss',
 })
 export class ProjectsComponent {
-  projects = input.required<any[]>();
+  projects = input.required<WorkProject[]>();
 }

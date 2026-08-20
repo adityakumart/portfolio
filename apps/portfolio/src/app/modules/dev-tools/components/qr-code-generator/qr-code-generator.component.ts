@@ -309,8 +309,9 @@ export class QrCodeGeneratorComponent implements OnInit, OnDestroy, AfterViewIni
       link.click();
       
       this.showSnackBar('QR Code image downloaded successfully!', 'success');
-    } catch (err: any) {
-      this.showSnackBar(`Failed to save QR Code: ${err.message}`, 'error');
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : 'Unknown error';
+      this.showSnackBar(`Failed to save QR Code: ${errMsg}`, 'error');
     }
   }
 

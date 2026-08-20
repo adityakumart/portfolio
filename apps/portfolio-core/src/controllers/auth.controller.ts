@@ -22,9 +22,10 @@ export async function signup(req: Request, res: Response) {
       expires_in: 900,
       user: loggedInUser
     });
-  } catch (error: any) {
-    console.error('Signup error:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Signup error:', err);
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }
 }
 
@@ -44,9 +45,10 @@ export async function login(req: Request, res: Response) {
       expires_in: 900,
       user: loggedInUser
     });
-  } catch (error: any) {
-    console.error('Login error:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Login error:', err);
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }
 }
 
@@ -69,9 +71,10 @@ export async function logout(req: Request, res: Response) {
 
     const result = await AuthService.logout(payload.id);
     res.status(200).json(result);
-  } catch (error: any) {
-    console.error('Logout error:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Logout error:', err);
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }
 }
 
@@ -90,8 +93,9 @@ export async function refresh(req: Request, res: Response) {
       expires_in: 900,
       user: result.user
     });
-  } catch (error: any) {
-    console.error('Token refresh error:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Token refresh error:', err);
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }
 }
