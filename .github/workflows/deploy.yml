@@ -3,7 +3,7 @@ name: Deploy Portfolio to GitHub Pages
 on:
   push:
     branches:
-      - main  # Change this to your default branch if it's different
+      - main # Change this to your default branch if it's different
   workflow_dispatch: # <-- THIS enables the "Run workflow" button in the GitHub Actions UI!
 
 permissions:
@@ -25,7 +25,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
         with:
-          version: 9  # Installs pnpm v9
+          version: 9 # Installs pnpm v9
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -35,7 +35,7 @@ jobs:
           # Injects secrets from GitHub Settings -> Secrets and Variables -> Actions
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-          API_URL: ${{ secrets.API_URL }}
+          APIURL: ${{ secrets.APIURL }}
         run: |
           # Configure Git credentials in runner
           git config --global user.name "github-actions[bot]"
