@@ -1,6 +1,20 @@
-import { Injectable, inject, signal } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
+import {
+  Injectable,
+  inject,
+  signal,
+  effect,
+  NgZone,
+  PLATFORM_ID,
+} from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import {
+  HttpClient,
+  HttpHeaders,
+  HttpErrorResponse,
+} from '@angular/common/http';
+import { Router } from '@angular/router';
+import { firstValueFrom, fromEvent, merge, Subscription } from 'rxjs';
+import { throttleTime } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 import { User, AuthSession, AuthResponse } from '@portfolio/shared-types';
 
@@ -9,13 +23,85 @@ import { User, AuthSession, AuthResponse } from '@portfolio/shared-types';
 })
 export class AuthService {
   private http = inject(HttpClient);
+  private router = inject(Router);
+  private ngZone = inject(NgZone);
+  private platformId = inject(PLATFORM_ID);
   private readonly STORAGE_KEY = 'portfolio_auth_session';
 
   // Expose a read-only signal for tracking user state reactively
   currentUser = signal<User | null | undefined>(undefined);
 
+  private idleSubscription?: Subscription;
+  private idleTimeoutId?: ReturnType<typeof setTimeout>;
+  private readonly IDLE_TIMEOUT = 3 * 60 * 60 * 1000; // 3 hours in ms
+
   constructor() {
     this.initSession();
+
+    // Set up auto-logout effect if in browser
+    if (isPlatformBrowser(this.platformId)) {
+      effect(() => {
+        const user = this.currentUser();
+        if (user) {
+          this.startIdleTimer();
+        } else {
+          this.stopIdleTimer();
+        }
+      });
+    }
+  }
+
+  private startIdleTimer() {
+    this.stopIdleTimer();
+
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    this.ngZone.runOutsideAngular(() => {
+      // Listen to common user activity events
+      const activityEvents$ = merge(
+        fromEvent(window, 'mousemove'),
+        fromEvent(window, 'mousedown'),
+        fromEvent(window, 'keypress'),
+        fromEvent(window, 'scroll'),
+        fromEvent(window, 'touchstart'),
+        fromEvent(window, 'click'),
+      );
+
+      // Reset timer on activity, throttle to once every 2 seconds to save CPU
+      this.idleSubscription = activityEvents$
+        .pipe(throttleTime(2000))
+        .subscribe(() => {
+          this.resetIdleTimer();
+        });
+
+      // Start the initial timer
+      this.resetIdleTimer();
+    });
+  }
+
+  private resetIdleTimer() {
+    if (this.idleTimeoutId) {
+      clearTimeout(this.idleTimeoutId);
+    }
+
+    this.idleTimeoutId = setTimeout(() => {
+      // Time is up! Run logout inside Angular zone so that routing and state updates work correctly
+      this.ngZone.run(() => {
+        console.warn('User idle for 2 hours. Logging out automatically.');
+        this.logout();
+      });
+    }, this.IDLE_TIMEOUT);
+  }
+
+  private stopIdleTimer() {
+    if (this.idleSubscription) {
+      this.idleSubscription.unsubscribe();
+      this.idleSubscription = undefined;
+    }
+    if (this.idleTimeoutId) {
+      clearTimeout(this.idleTimeoutId);
+      this.idleTimeoutId = undefined;
+    }
   }
 
   private getStorageItem(key: string): string | null {
@@ -96,7 +182,6 @@ export class AuthService {
     }
   }
 
-
   private getHeaders(): HttpHeaders {
     return new HttpHeaders({
       'Content-Type': 'application/json',
@@ -111,8 +196,8 @@ export class AuthService {
         this.http.post<AuthResponse>(
           url,
           { refresh_token: refreshToken },
-          { headers: this.getHeaders() }
-        )
+          { headers: this.getHeaders() },
+        ),
       );
       this.saveSession(res);
       return res.user;
@@ -123,7 +208,12 @@ export class AuthService {
   }
 
   // Register a new user
-  async register(email: string, password: string, firstName: string, lastName: string) {
+  async register(
+    email: string,
+    password: string,
+    firstName: string,
+    lastName: string,
+  ) {
     const url = `${environment.apiUrl}/auth/signup`;
     try {
       const res = await firstValueFrom(
@@ -135,8 +225,8 @@ export class AuthService {
             first_name: firstName,
             last_name: lastName,
           },
-          { headers: this.getHeaders() }
-        )
+          { headers: this.getHeaders() },
+        ),
       );
 
       // If direct signup returns a session (auto-confirm is enabled), save it
@@ -155,7 +245,11 @@ export class AuthService {
     } catch (err: unknown) {
       let errorMsg = 'An unknown error occurred';
       if (err instanceof HttpErrorResponse) {
-        errorMsg = err.error?.error_description || err.error?.message || err.error?.msg || err.message;
+        errorMsg =
+          err.error?.error_description ||
+          err.error?.message ||
+          err.error?.msg ||
+          err.message;
       } else if (err instanceof Error) {
         errorMsg = err.message;
       }
@@ -171,8 +265,8 @@ export class AuthService {
         this.http.post<AuthResponse>(
           url,
           { email, password },
-          { headers: this.getHeaders() }
-        )
+          { headers: this.getHeaders() },
+        ),
       );
 
       this.saveSession(res);
@@ -185,7 +279,11 @@ export class AuthService {
     } catch (err: unknown) {
       let errorMsg = 'An unknown error occurred';
       if (err instanceof HttpErrorResponse) {
-        errorMsg = err.error?.error_description || err.error?.message || err.error?.msg || err.message;
+        errorMsg =
+          err.error?.error_description ||
+          err.error?.message ||
+          err.error?.msg ||
+          err.message;
       } else if (err instanceof Error) {
         errorMsg = err.message;
       }
@@ -202,22 +300,31 @@ export class AuthService {
       try {
         const session = JSON.parse(sessionStr) as AuthSession;
         token = session.access_token;
-      } catch (e) {
+      } catch {
         // ignore
       }
     }
 
     try {
       if (token) {
-        const headers = this.getHeaders().set('Authorization', `Bearer ${token}`);
-        await firstValueFrom(
-          this.http.post<unknown>(url, {}, { headers })
+        const headers = this.getHeaders().set(
+          'Authorization',
+          `Bearer ${token}`,
         );
+        await firstValueFrom(this.http.post<unknown>(url, {}, { headers }));
       }
     } catch (err) {
       console.error('Error calling logout API:', err);
     } finally {
       this.clearSession();
+      // Redirect to login if on a protected user route
+      const currentUrl = this.router.url;
+      if (
+        currentUrl.startsWith('/user') &&
+        !currentUrl.startsWith('/user/login')
+      ) {
+        this.router.navigate(['/user/login']);
+      }
     }
   }
 }
