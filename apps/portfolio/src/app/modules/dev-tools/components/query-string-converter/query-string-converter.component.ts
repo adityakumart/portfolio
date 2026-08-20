@@ -18,7 +18,7 @@ export interface ParamPair {
 }
 
 export interface ParsedResult {
-  json: Record<string, any>;
+  json: Record<string, string | string[]>;
   params: ParamPair[];
   error: string | null;
 }
@@ -85,7 +85,7 @@ export class QueryStringConverterComponent {
       // This handles standard key=value formatting, character decoding, and multiple values automatically.
       const searchParams = new URLSearchParams(queryString);
       
-      const json: Record<string, any> = {};
+      const json: Record<string, string | string[]> = {};
       const params: ParamPair[] = [];
 
       // Extract unique keys to construct the structured JSON
@@ -120,7 +120,7 @@ export class QueryStringConverterComponent {
       }
 
       return { json, params, error: null };
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Capture malformed URL or decoding errors (like URIError from bad percent encoding)
       return {
         json: {},

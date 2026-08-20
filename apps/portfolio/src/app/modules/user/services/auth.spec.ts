@@ -1,11 +1,11 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClient } from '@angular/common/http';
-import { of } from 'rxjs';
+import { of, Observable } from 'rxjs';
 import { AuthService } from './auth';
 
 describe('AuthService', () => {
   let service: AuthService;
-  let mockHttpClient: any;
+  let mockHttpClient: { post: () => Observable<unknown> };
 
   beforeEach(() => {
     mockHttpClient = {

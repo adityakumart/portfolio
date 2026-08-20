@@ -36,7 +36,7 @@ export class ProfileAiChatService {
   // Inject a global helper on the window object to handle copying code from rendered HTML
   private setupGlobalClipboardHelper() {
     if (typeof window !== 'undefined') {
-      (window as any).copyCodeToClipboard = (button: HTMLButtonElement) => {
+      (window as Window & { copyCodeToClipboard?: (button: HTMLButtonElement) => void }).copyCodeToClipboard = (button: HTMLButtonElement) => {
         const wrapper = button.closest('.code-block-wrapper');
         const codeElement = wrapper?.querySelector('.code-block-content');
         if (codeElement) {
@@ -229,11 +229,12 @@ export class ProfileAiChatService {
       }, 40);
 
       return rawReply;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error generating AI response:', error);
       this.isLoading.set(false);
       
-      const errorMsgText = error.error?.message || error.message || 'Failed to retrieve response from developer assistant. Please check your connection and try again.';
+      const err = error as { error?: { message?: string }; message?: string };
+      const errorMsgText = err.error?.message || err.message || 'Failed to retrieve response from developer assistant. Please check your connection and try again.';
       const errorMsg: ChatMessage = {
         id: assistantMessageId,
         role: 'assistant',

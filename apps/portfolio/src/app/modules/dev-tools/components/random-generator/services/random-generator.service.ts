@@ -114,7 +114,7 @@ export class RandomGeneratorService {
    * Generates a structured JSON object as a string.
    */
   generateObject(settings: ObjectSettings): string {
-    let obj: any = {};
+    let obj: Record<string, unknown> = {};
 
     if (settings.preset === 'user') {
       const first = this.randomItem(this.firstNames);

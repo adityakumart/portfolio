@@ -441,8 +441,8 @@ info@sub.domain.co`],
         const checkRegex = new RegExp(pattern, checkFlags);
         this.testTextStatus = checkRegex.test(testText) ? 'match' : 'nomatch';
       }
-    } catch (e: any) {
-      this.regexError = e.message || 'Syntax error in regex pattern.';
+    } catch (e: unknown) {
+      this.regexError = e instanceof Error ? e.message : 'Syntax error in regex pattern.';
       this.testTextStatus = null;
     }
 

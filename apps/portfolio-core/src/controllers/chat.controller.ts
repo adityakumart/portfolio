@@ -35,11 +35,12 @@ export async function handleChat(req: AuthenticatedRequest, res: Response) {
     }
 
     res.status(200).json({ reply });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Chat controller error:', error);
+    const err = error as Error;
     res.status(500).json({ 
       error: 'Internal Server Error', 
-      message: error.message || 'An error occurred while processing your query with the AI Assistant.' 
+      message: err.message || 'An error occurred while processing your query with the AI Assistant.' 
     });
   }
 }

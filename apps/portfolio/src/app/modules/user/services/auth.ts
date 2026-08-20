@@ -1,22 +1,8 @@
-// auth.service.ts
 import { Injectable, inject, signal } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-
-export interface User {
-  id: string;
-  email?: string;
-  [key: string]: any;
-}
-
-interface AuthSession {
-  access_token: string;
-  refresh_token: string;
-  expires_in: number;
-  expires_at?: number;
-  user: User;
-}
+import { User, AuthSession, AuthResponse } from '@portfolio/shared-types';
 
 @Injectable({
   providedIn: 'root',
@@ -79,14 +65,14 @@ export class AuthService {
     }
   }
 
-  private saveSession(res: any) {
-    if (res && res.access_token) {
+  private saveSession(res: Partial<AuthResponse>) {
+    if (res && res.access_token && res.user) {
       const now = Math.floor(Date.now() / 1000);
       const session: AuthSession = {
         access_token: res.access_token,
-        refresh_token: res.refresh_token,
-        expires_in: res.expires_in,
-        expires_at: now + res.expires_in,
+        refresh_token: res.refresh_token || '',
+        expires_in: res.expires_in || 0,
+        expires_at: now + (res.expires_in || 0),
         user: res.user,
       };
       this.setStorageItem(this.STORAGE_KEY, JSON.stringify(session));
@@ -122,7 +108,7 @@ export class AuthService {
     const url = `${environment.apiUrl}/auth/refresh`;
     try {
       const res = await firstValueFrom(
-        this.http.post<any>(
+        this.http.post<AuthResponse>(
           url,
           { refresh_token: refreshToken },
           { headers: this.getHeaders() }
@@ -141,7 +127,7 @@ export class AuthService {
     const url = `${environment.apiUrl}/auth/signup`;
     try {
       const res = await firstValueFrom(
-        this.http.post<any>(
+        this.http.post<AuthResponse>(
           url,
           {
             email,
@@ -154,7 +140,7 @@ export class AuthService {
       );
 
       // If direct signup returns a session (auto-confirm is enabled), save it
-      if (res && res.access_token) {
+      if (res && res.access_token && res.user) {
         this.saveSession(res);
         this.currentUser.set(res.user);
       } else {
@@ -166,8 +152,13 @@ export class AuthService {
         user: res?.user || null,
         session: res?.access_token ? res : null,
       };
-    } catch (err: any) {
-      const errorMsg = err.error?.error_description || err.error?.message || err.error?.msg || err.message;
+    } catch (err: unknown) {
+      let errorMsg = 'An unknown error occurred';
+      if (err instanceof HttpErrorResponse) {
+        errorMsg = err.error?.error_description || err.error?.message || err.error?.msg || err.message;
+      } else if (err instanceof Error) {
+        errorMsg = err.message;
+      }
       throw new Error(errorMsg);
     }
   }
@@ -177,7 +168,7 @@ export class AuthService {
     const url = `${environment.apiUrl}/auth/login`;
     try {
       const res = await firstValueFrom(
-        this.http.post<any>(
+        this.http.post<AuthResponse>(
           url,
           { email, password },
           { headers: this.getHeaders() }
@@ -191,8 +182,13 @@ export class AuthService {
         user: res.user,
         session: res,
       };
-    } catch (err: any) {
-      const errorMsg = err.error?.error_description || err.error?.message || err.error?.msg || err.message;
+    } catch (err: unknown) {
+      let errorMsg = 'An unknown error occurred';
+      if (err instanceof HttpErrorResponse) {
+        errorMsg = err.error?.error_description || err.error?.message || err.error?.msg || err.message;
+      } else if (err instanceof Error) {
+        errorMsg = err.message;
+      }
       throw new Error(errorMsg);
     }
   }
@@ -215,7 +211,7 @@ export class AuthService {
       if (token) {
         const headers = this.getHeaders().set('Authorization', `Bearer ${token}`);
         await firstValueFrom(
-          this.http.post<any>(url, {}, { headers })
+          this.http.post<unknown>(url, {}, { headers })
         );
       }
     } catch (err) {

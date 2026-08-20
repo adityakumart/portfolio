@@ -10,6 +10,8 @@ import {
   FormGroup,
   Validators,
   ReactiveFormsModule,
+  AbstractControl,
+  ValidationErrors,
 } from '@angular/forms';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatButtonModule } from '@angular/material/button';
@@ -52,14 +54,12 @@ export class JsonToTypeScriptComponent implements OnInit, OnDestroy {
   private snackBar = inject(MatSnackBar);
 
   form!: FormGroup;
-  generatedInterface: string = '';
-  isLoading: boolean = false;
-  showOutput: boolean = false;
-  copySuccess: boolean = false;
+  generatedInterface = '';
+  isLoading = false;
+  showOutput = false;
+  copySuccess = false;
 
   private destroy$ = new Subject<void>();
-
-
 
   ngOnInit(): void {
     this.initializeForm();
@@ -87,7 +87,7 @@ export class JsonToTypeScriptComponent implements OnInit, OnDestroy {
    * Custom validator for JSON input
    * Validates that the input is valid JSON
    */
-  private jsonValidator(control: any): { [key: string]: any } | null {
+  private jsonValidator(control: AbstractControl): ValidationErrors | null {
     if (!control.value) {
       return null;
     }

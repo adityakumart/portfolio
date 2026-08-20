@@ -1,16 +1,4 @@
-interface ChatMessagePart {
-  text: string;
-}
-
-export interface GeminiChatMessage {
-  role: 'user' | 'model';
-  parts: ChatMessagePart[];
-}
-
-export interface HistoryMessage {
-  role: 'user' | 'assistant';
-  content: string;
-}
+import { GeminiResponse, GeminiChatMessage, HistoryMessage } from '@portfolio/shared-types';
 
 /**
  * Backend service for managing communication with Google Gemini API
@@ -69,7 +57,7 @@ export class GeminiAiService {
         );
       }
 
-      const data = (await response.json()) as any;
+      const data = (await response.json()) as GeminiResponse;
       const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
       if (!reply) {
@@ -77,7 +65,7 @@ export class GeminiAiService {
       }
 
       return reply;
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('GeminiService Error:', err);
       throw err;
     }
