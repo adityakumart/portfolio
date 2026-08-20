@@ -51,8 +51,8 @@ if (!process.env['VERCEL']) {
     setInterval(() => {
       fetch(`${selfUrl}/api/ping`)
         .then((res) => res.json())
-        .then((data) => console.log('Self-ping success:', data))
-        .catch((err) => console.error('Self-ping failed:', err));
+        .then((data) => console.log('Self-ping - success:', data))
+        .catch((err) => console.error('Self-ping - failed:', err));
     }, THIRTEEN_MINUTES);
   }
 }
