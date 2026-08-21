@@ -1,71 +1,33 @@
 <div class="profile-container">
   @if (currentUser()) {
-  <div class="glass-card profile-card">
-    <!-- Profile Header -->
-    <div class="profile-header">
-      <div class="avatar-glow">
-        <div class="avatar-circle">
-          <span class="avatar-initials">{{ initials() }}</span>
+    <div class="glass-card profile-card">
+      <div class="profile-header">
+        <div class="avatar-glow">
+          <div class="avatar-circle">
+            <mat-icon class="ai-avatar-icon">smart_toy</mat-icon>
+          </div>
         </div>
-      </div>
-      <h2 class="title">{{ fullName() }}</h2>
-    </div>
-
-    <!-- Account Info Cards -->
-    <div class="profile-info-grid">
-      <div class="info-item">
-        <span class="label">First Name</span>
-        <span class="value">{{ currentUser()?.['first_name'] || 'N/A' }}</span>
+        <h2 class="title">AI Assistant</h2>
+        <p class="subtitle">Ask questions, format code, and get help from your personal assistant.</p>
       </div>
 
-      <div class="info-item">
-        <span class="label">Last Name</span>
-        <span class="value">{{ currentUser()?.['last_name'] || 'N/A' }}</span>
-      </div>
-
-      <div class="info-item full-width">
-        <span class="label">Email Address</span>
-        <span class="value">{{ currentUser()?.email }}</span>
-      </div>
-
-      <div class="info-item full-width">
-        <span class="label">Last Logged In</span>
-        <span class="value date-value">
-          {{ currentUser()?.['user_logged_in_at'] ?
-          (currentUser()?.['user_logged_in_at'] | date:'medium') : 'Just now' }}
-        </span>
+      <div class="action-buttons">
+        <button
+          mat-raised-button
+          color="primary"
+          class="ai-btn"
+          routerLink="/user/ai"
+        >
+          <mat-icon>chat</mat-icon> Chat with Assistant
+        </button>
       </div>
     </div>
-
-    <!-- Action Buttons -->
-    <div class="action-buttons">
-      <button
-        mat-raised-button
-        color="primary"
-        class="ai-btn"
-        routerLink="/user/ai"
-      >
-        <mat-icon>smart_toy</mat-icon> AI Assistant
-      </button>
-      <button mat-raised-button color="primary" class="home-btn" routerLink="/">
-        <mat-icon>home</mat-icon> Go to Home
-      </button>
-      <button
-        mat-stroked-button
-        color="warn"
-        class="logout-btn"
-        (click)="onLogout()"
-      >
-        <mat-icon>logout</mat-icon> Log Out
-      </button>
-    </div>
-  </div>
   } @else {
-  <div class="glass-card loading-card">
-    <div class="spinner-container">
-      <div class="loading-ring"></div>
+    <div class="glass-card loading-card">
+      <div class="spinner-container">
+        <div class="loading-ring"></div>
+      </div>
+      <p class="loading-text">Loading...</p>
     </div>
-    <p class="loading-text">Loading profile details...</p>
-  </div>
   }
 </div>

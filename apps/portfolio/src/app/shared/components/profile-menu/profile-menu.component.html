@@ -1,0 +1,67 @@
+<div class="profile-menu-container" (click)="$event.stopPropagation()">
+  @if (currentUser()) {
+    <button
+      class="profile-trigger"
+      (click)="toggleDropdown()"
+      [attr.aria-expanded]="isOpen()"
+      aria-haspopup="true"
+      aria-label="User Profile Menu"
+    >
+      <span class="avatar-initials">{{ currentUser() | initials }}</span>
+    </button>
+
+    @if (isOpen()) {
+      <div 
+        class="profile-dropdown" 
+        role="menu" 
+        aria-label="User Profile Dropdown"
+      >
+        <div class="dropdown-header">
+          <div class="dropdown-avatar-circle">
+            <span class="dropdown-avatar-initials">{{ currentUser() | initials }}</span>
+          </div>
+          <div class="user-details">
+            <h4 class="full-name">{{ fullName() }}</h4>
+            <span class="email-address">{{ currentUser()?.email }}</span>
+          </div>
+        </div>
+
+        <div class="dropdown-divider"></div>
+
+        <div class="dropdown-item info-item">
+          <mat-icon class="info-icon">history</mat-icon>
+          <div class="info-content">
+            <span class="info-label">Last Logged In</span>
+            <span class="info-value">
+              {{ currentUser()?.['user_logged_in_at'] ? 
+              (currentUser()?.['user_logged_in_at'] | date:'medium') : 'Just now' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="dropdown-divider"></div>
+
+        <div class="dropdown-actions">
+          <a 
+            routerLink="/" 
+            (click)="closeDropdown()" 
+            class="dropdown-action-link"
+            role="menuitem"
+          >
+            <mat-icon>home</mat-icon>
+            <span>Go Home</span>
+          </a>
+          
+          <button 
+            (click)="onLogout()" 
+            class="dropdown-action-btn logout"
+            role="menuitem"
+          >
+            <mat-icon>logout</mat-icon>
+            <span>Logout</span>
+          </button>
+        </div>
+      </div>
+    }
+  }
+</div>

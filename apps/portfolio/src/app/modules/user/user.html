@@ -13,18 +13,21 @@
       <mat-icon>menu</mat-icon>
     </button>
   </div>
-  <button
-    mat-icon-button
-    (click)="toggleTheme()"
-    [matTooltip]="isDarkMode() ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
-    class="ml-2 left-0"
-  >
-    @if (isDarkMode()) {
-    <mat-icon>light_mode</mat-icon>
-    } @else {
-    <mat-icon>dark_mode</mat-icon>
-    }
-  </button>
+  <div data-layout="row" data-layout-align="end center">
+    <button
+      mat-icon-button
+      (click)="toggleTheme()"
+      [matTooltip]="isDarkMode() ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+      class="ml-2 left-0"
+    >
+      @if (isDarkMode()) {
+      <mat-icon>light_mode</mat-icon>
+      } @else {
+      <mat-icon>dark_mode</mat-icon>
+      }
+    </button>
+    <app-profile-menu></app-profile-menu>
+  </div>
 </mat-toolbar>
 <mat-sidenav-container class="mainContainer" autosize>
   <mat-sidenav mode="side" class="mainSideNav" #usersidenav>
