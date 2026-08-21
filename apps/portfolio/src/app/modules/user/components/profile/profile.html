@@ -1,33 +1,30 @@
 <div class="profile-container">
   @if (currentUser()) {
-    <div class="glass-card profile-card">
-      <div class="profile-header">
-        <div class="avatar-glow">
-          <div class="avatar-circle">
-            <mat-icon class="ai-avatar-icon">smart_toy</mat-icon>
-          </div>
-        </div>
-        <h2 class="title">AI Assistant</h2>
-        <p class="subtitle">Ask questions, format code, and get help from your personal assistant.</p>
-      </div>
+  <div class="glass-card profile-card">
+    <div class="profile-header">
+      <h2 class="title">AI Assistant</h2>
+      <p class="subtitle">
+        Ask questions, format code, and get help from your personal assistant.
+      </p>
+    </div>
 
-      <div class="action-buttons">
-        <button
-          mat-raised-button
-          color="primary"
-          class="ai-btn"
-          routerLink="/user/ai"
-        >
-          <mat-icon>chat</mat-icon> Chat with Assistant
-        </button>
-      </div>
+    <div class="action-buttons">
+      <button
+        mat-raised-button
+        color="primary"
+        class="ai-btn"
+        routerLink="/user/ai"
+      >
+        <mat-icon>chat</mat-icon> Chat with Assistant
+      </button>
     </div>
+  </div>
   } @else {
-    <div class="glass-card loading-card">
-      <div class="spinner-container">
-        <div class="loading-ring"></div>
-      </div>
-      <p class="loading-text">Loading...</p>
+  <div class="glass-card loading-card">
+    <div class="spinner-container">
+      <div class="loading-ring"></div>
     </div>
+    <p class="loading-text">Loading...</p>
+  </div>
   }
 </div>
