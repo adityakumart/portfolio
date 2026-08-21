@@ -13,6 +13,8 @@
     "dev:api": "npx nx serve portfolio-core",
     "vercel:preview": "npx vercel --cwd apps/portfolio-core",
     "vercel:production": "npx vercel --cwd apps/portfolio-core --prod",
+    "vercel:web:preview": "npx vercel",
+    "vercel:web:production": "npx vercel --prod",
     "build:vercel": "nx build portfolio --configuration production --base-href /"
   },
   "private": true,
