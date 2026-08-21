@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import { authRouter } from './routes/auth.routes';
 import { chatRouter } from './routes/chat.routes';
+import { filesRouter } from './routes/files.routes';
 
 const host = process.env['HOST'] ?? 'localhost';
 const port = process.env['PORT'] ? Number(process.env['PORT']) : 3000;
@@ -30,6 +31,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/auth', authRouter);
 app.use('/api/chat', chatRouter);
+app.use('/api/files', filesRouter);
 
 app.get('/api/ping', (req, res) => {
   res.send({ status: 'ok', message: 'ping' });

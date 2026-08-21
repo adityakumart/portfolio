@@ -3,13 +3,16 @@ $ai-gradient: linear-gradient(135deg, var(--portBlue) 0%, var(--portSkyBlue) 100
 
 .profile-container {
   display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 2rem;
   justify-content: center;
-  align-items: center;
+  align-items: stretch;
   min-height: calc(100vh - 160px);
   padding: 1.5rem;
   box-sizing: border-box;
-  perspective: 1000px;
   width: 100%;
+  max-width: 1100px;
   margin: 0 auto;
 }
 
@@ -55,36 +58,6 @@ $ai-gradient: linear-gradient(135deg, var(--portBlue) 0%, var(--portSkyBlue) 100
   text-align: center;
   margin-bottom: 2rem;
 
-  .avatar-glow {
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    width: 90px;
-    height: 90px;
-    border-radius: 50%;
-    background: $ai-gradient;
-    margin-bottom: 1.25rem;
-    box-shadow: 0 10px 25px -5px rgba(88, 56, 255, 0.4);
-    position: relative;
-    padding: 3px;
-
-    &::after {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: linear-gradient(
-        45deg,
-        transparent 45%,
-        rgba(255, 255, 255, 0.25) 50%,
-        transparent 55%
-      );
-      transform: rotate(45deg);
-      animation: shine 4s infinite linear;
-    }
-  }
 
   .avatar-circle {
     width: 100%;
@@ -117,6 +90,13 @@ $ai-gradient: linear-gradient(135deg, var(--portBlue) 0%, var(--portSkyBlue) 100
     letter-spacing: -0.025em;
     margin-bottom: 0.25rem;
     background: $ai-gradient;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .files-title {
+    background: $primary-gradient;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -168,6 +148,16 @@ $ai-gradient: linear-gradient(135deg, var(--portBlue) 0%, var(--portSkyBlue) 100
 
     &:hover {
       box-shadow: 0 8px 20px rgba(88, 56, 255, 0.35) !important;
+    }
+  }
+
+  .files-btn {
+    background: $primary-gradient !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(224, 86, 36, 0.2) !important;
+
+    &:hover {
+      box-shadow: 0 8px 20px rgba(224, 86, 36, 0.35) !important;
     }
   }
 }
