@@ -1,8 +1,5 @@
-// profile.component.scss
-
 $primary-gradient: linear-gradient(135deg, var(--portPurple) 0%, var(--portLightOrange) 100%);
 $ai-gradient: linear-gradient(135deg, var(--portBlue) 0%, var(--portSkyBlue) 100%);
-$error-color: #ef4444;
 
 .profile-container {
   display: flex;
@@ -54,7 +51,6 @@ $error-color: #ef4444;
   }
 }
 
-// Profile Header
 .profile-header {
   text-align: center;
   margin-bottom: 2rem;
@@ -66,9 +62,9 @@ $error-color: #ef4444;
     width: 90px;
     height: 90px;
     border-radius: 50%;
-    background: $primary-gradient;
+    background: $ai-gradient;
     margin-bottom: 1.25rem;
-    box-shadow: 0 10px 25px -5px rgba(125, 98, 239, 0.4);
+    box-shadow: 0 10px 25px -5px rgba(88, 56, 255, 0.4);
     position: relative;
     padding: 3px;
 
@@ -105,13 +101,14 @@ $error-color: #ef4444;
     }
   }
 
-  .avatar-initials {
-    font-size: 2rem;
-    font-weight: 700;
-    background: $primary-gradient;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+  .ai-avatar-icon {
+    font-size: 2.5rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    color: var(--portBlue);
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
   .title {
@@ -119,7 +116,7 @@ $error-color: #ef4444;
     font-weight: 800;
     letter-spacing: -0.025em;
     margin-bottom: 0.25rem;
-    background: $primary-gradient;
+    background: $ai-gradient;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -136,72 +133,6 @@ $error-color: #ef4444;
   }
 }
 
-// Info Grid
-.profile-info-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.25rem;
-  margin-bottom: 2rem;
-}
-
-.info-item {
-  background: rgba(0, 0, 0, 0.02);
-  border: 1px solid rgba(0, 0, 0, 0.03);
-  border-radius: 16px;
-  padding: 1rem 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  transition: background-color 0.3s ease, border-color 0.3s ease;
-
-  &.full-width {
-    grid-column: span 2;
-  }
-
-  &:hover {
-    background: rgba(0, 0, 0, 0.03);
-    border-color: rgba(0, 0, 0, 0.05);
-  }
-
-  :host-context(.dark-theme) & {
-    background: rgba(255, 255, 255, 0.02);
-    border-color: rgba(255, 255, 255, 0.04);
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.04);
-      border-color: rgba(255, 255, 255, 0.06);
-    }
-  }
-
-  .label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #64748b;
-
-    :host-context(.dark-theme) & {
-      color: #94a3b8;
-    }
-  }
-
-  .value {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: #1e293b;
-    word-break: break-all;
-
-    &.date-value {
-      font-weight: 500;
-    }
-
-    :host-context(.dark-theme) & {
-      color: #f1f5f9;
-    }
-  }
-}
-
-// Buttons
 .action-buttons {
   display: flex;
   flex-direction: column;
@@ -239,37 +170,8 @@ $error-color: #ef4444;
       box-shadow: 0 8px 20px rgba(88, 56, 255, 0.35) !important;
     }
   }
-
-  .home-btn {
-    background: $primary-gradient !important;
-    color: #ffffff !important;
-    box-shadow: 0 4px 12px rgba(125, 98, 239, 0.2) !important;
-
-    &:hover {
-      box-shadow: 0 8px 20px rgba(125, 98, 239, 0.35) !important;
-    }
-  }
-
-  .logout-btn {
-    border-color: rgba(239, 68, 68, 0.3) !important;
-    color: #ef4444 !important;
-    
-    &:hover {
-      background: rgba(239, 68, 68, 0.05) !important;
-      border-color: #ef4444 !important;
-    }
-
-    :host-context(.dark-theme) & {
-      border-color: rgba(239, 68, 68, 0.4) !important;
-      
-      &:hover {
-        background: rgba(239, 68, 68, 0.1) !important;
-      }
-    }
-  }
 }
 
-// Loading Ring Spinner (fallback)
 .loading-card {
   display: flex;
   flex-direction: column;
@@ -304,7 +206,6 @@ $error-color: #ef4444;
   }
 }
 
-// Keyframes
 @keyframes shine {
   0% {
     left: -100%;

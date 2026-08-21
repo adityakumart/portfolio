@@ -26,6 +26,7 @@ import { GlobalData } from '../shared/data/GlobalData';
 import { appRoutingList } from './shared/data/routes';
 import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
 import { AuthService } from './modules/user/services/auth';
+import { ProfileMenuComponent } from './shared/components/profile-menu/profile-menu.component';
 
 
 @Component({
@@ -41,6 +42,7 @@ import { AuthService } from './modules/user/services/auth';
     MatSidenavModule,
     MatTooltipModule,
     MatMenuModule,
+    ProfileMenuComponent,
   ],
   templateUrl: './app.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,

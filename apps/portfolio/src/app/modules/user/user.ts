@@ -8,6 +8,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
 import { appRoutingList } from '../../shared/data/routes';
 import { ThemeService } from '../../theme.service';
+import { ProfileMenuComponent } from '../../shared/components/profile-menu/profile-menu.component';
 
 @Component({
   selector: 'app-user',
@@ -21,6 +22,7 @@ import { ThemeService } from '../../theme.service';
     MatSidenavModule,
     MatTooltipModule,
     MatMenuModule,
+    ProfileMenuComponent,
   ],
   templateUrl: './user.html',
   styleUrls: ['./../../app.component.scss', './user.scss'],
