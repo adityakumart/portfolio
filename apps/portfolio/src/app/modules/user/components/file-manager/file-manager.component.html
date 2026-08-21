@@ -1,0 +1,178 @@
+<div class="file-manager-container">
+  <!-- Header & Navigation Breadcrumbs -->
+  <div class="file-manager-header glass-card">
+    <div class="header-left">
+      <h1 class="title">
+        <mat-icon class="title-icon">folder_shared</mat-icon> File Vault
+      </h1>
+      
+      <!-- Breadcrumbs Path -->
+      <div class="breadcrumbs-bar">
+        <span class="crumb-item" (click)="navigateTo('')">
+          <mat-icon class="crumb-home">home</mat-icon> root
+        </span>
+        
+        @for (crumb of breadcrumbs(); track crumb.path) {
+          <span class="crumb-divider">/</span>
+          <span class="crumb-item" (click)="navigateTo(crumb.path)">
+            {{ crumb.name }}
+          </span>
+        }
+      </div>
+    </div>
+
+    <!-- Actions Control Panel -->
+    <div class="header-right">
+      <button mat-stroked-button class="action-btn" (click)="showFolderInput.set(!showFolderInput())">
+        <mat-icon>create_new_folder</mat-icon> New Folder
+      </button>
+      <button mat-flat-button color="primary" class="action-btn upload-btn" (click)="triggerUpload()">
+        <mat-icon>upload_file</mat-icon> Upload File
+      </button>
+      <input type="file" #fileInput (change)="onFileSelected($event)" style="display: none;" />
+    </div>
+  </div>
+
+  <!-- Inline New Folder Dialog/Form -->
+  @if (showFolderInput()) {
+    <div class="new-folder-card glass-card">
+      <mat-form-field appearance="outline" class="folder-input">
+        <mat-label>Folder Name</mat-label>
+        <input matInput placeholder="e.g. photos, documents" [ngModel]="newFolderName()" (ngModelChange)="newFolderName.set($event)" (keyup.enter)="onCreateFolderSubmit()" />
+      </mat-form-field>
+      <div class="form-actions">
+        <button mat-flat-button color="primary" [disabled]="!newFolderName().trim()" (click)="onCreateFolderSubmit()">
+          Create
+        </button>
+        <button mat-button (click)="showFolderInput.set(false); newFolderName.set('')">
+          Cancel
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Error Alerts -->
+  @if (fileService.error()) {
+    <div class="error-banner glass-card">
+      <mat-icon class="error-icon">error_outline</mat-icon>
+      <span class="error-text">{{ fileService.error() }}</span>
+      <button mat-icon-button (click)="fileService.error.set(null)" aria-label="Dismiss error">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  }
+
+  <!-- Active Uploading Progress Tracker -->
+  @if (fileService.uploadingFileName()) {
+    <div class="upload-progress-card glass-card">
+      <div class="upload-info">
+        <div class="upload-text">
+          <mat-icon class="uploading-spinner">cloud_upload</mat-icon>
+          Uploading <strong>{{ fileService.uploadingFileName() }}</strong>...
+        </div>
+        <div class="upload-percentage">{{ fileService.uploadProgress() }}%</div>
+      </div>
+      <mat-progress-bar mode="determinate" [value]="fileService.uploadProgress() || 0"></mat-progress-bar>
+    </div>
+  }
+
+  <!-- File Explorer Workspace (Drag & Drop Zone) -->
+  <div 
+    class="explorer-workspace glass-card"
+    [class.drag-active]="isDragging()"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave($event)"
+    (drop)="onDrop($event)"
+  >
+    <!-- Drag & Drop Overlay -->
+    @if (isDragging()) {
+      <div class="drag-overlay">
+        <mat-icon class="drag-icon">arrow_circle_down</mat-icon>
+        <p class="drag-text">Drop file to upload to the current folder</p>
+      </div>
+    }
+
+    <!-- Loading State -->
+    @if (fileService.loading()) {
+      <div class="loading-state">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Loading directory files...</p>
+      </div>
+    } @else {
+      <!-- File Explorer Grid Table -->
+      <div class="explorer-table-wrapper">
+        <table class="explorer-table">
+          <thead>
+            <tr>
+              <th class="col-name">Name</th>
+              <th class="col-size">Size</th>
+              <th class="col-date">Last Modified</th>
+              <th class="col-actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Parent Directory Navigation Option (..) -->
+            @if (fileService.currentPath()) {
+              <tr class="explorer-row parent-row" (click)="navigateUp()">
+                <td class="col-name">
+                  <div class="file-name-cell">
+                    <mat-icon class="folder-icon">subdirectory_arrow_left</mat-icon>
+                    <span>..</span>
+                  </div>
+                </td>
+                <td class="col-size">—</td>
+                <td class="col-date">—</td>
+                <td class="col-actions">—</td>
+              </tr>
+            }
+
+            <!-- Loop Files & Subfolders -->
+            @for (node of fileService.files(); track node.path) {
+              <tr 
+                class="explorer-row" 
+                (click)="node.type === 'folder' ? navigateTo(node.path) : downloadFile(node)"
+              >
+                <td class="col-name">
+                  <div class="file-name-cell">
+                    @if (node.type === 'folder') {
+                      <mat-icon class="folder-icon">folder</mat-icon>
+                    } @else {
+                      <mat-icon class="file-icon">insert_drive_file</mat-icon>
+                    }
+                    <span class="node-name-text">{{ node.name }}</span>
+                  </div>
+                </td>
+                <td class="col-size">
+                  {{ node.type === 'folder' ? '—' : formatSize(node.size) }}
+                </td>
+                <td class="col-date">
+                  {{ node.type === 'folder' ? '—' : formatDate(node.lastModified) }}
+                </td>
+                <td class="col-actions" (click)="$event.stopPropagation()">
+                  @if (node.type === 'file') {
+                    <button mat-icon-button (click)="downloadFile(node)" matTooltip="Download file">
+                      <mat-icon>download</mat-icon>
+                    </button>
+                  } @else {
+                    <button mat-icon-button (click)="navigateTo(node.path)" matTooltip="Open folder">
+                      <mat-icon>chevron_right</mat-icon>
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty Folder/Bucket State -->
+      @if (fileService.files().length === 0) {
+        <div class="empty-state">
+          <mat-icon class="empty-icon">cloud_queue</mat-icon>
+          <h3>This folder is empty</h3>
+          <p>Drag & drop files here, or click "Upload File" to add files.</p>
+        </div>
+      }
+    }
+  </div>
+</div>

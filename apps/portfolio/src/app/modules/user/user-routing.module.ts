@@ -6,6 +6,7 @@ import { UserComponent } from './user';
 import { LoginComponent } from './components/login/login';
 import { ProfileComponent } from './components/profile/profile';
 import { ProfileAiChatComponent } from './components/profile/profile-ai-chat.component';
+import { FileManagerComponent } from './components/file-manager/file-manager.component';
 import { AuthService } from './services/auth';
 
 export const authGuard: CanActivateFn = () => {
@@ -40,6 +41,12 @@ const routes: Routes = [
       {
         path: 'ai',
         component: ProfileAiChatComponent,
+        // Block access if the user is unauthenticated
+        canActivate: [authGuard],
+      },
+      {
+        path: 'files',
+        component: FileManagerComponent,
         // Block access if the user is unauthenticated
         canActivate: [authGuard],
       },
