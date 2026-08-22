@@ -1,0 +1,178 @@
+<div class="auth-container">
+  <div class="glass-card">
+    <div class="auth-header">
+      <div class="shield-glow">
+        <mat-icon class="auth-header-icon">directions_car</mat-icon>
+      </div>
+      <h2 class="title">Ram & Ram Car Rentals</h2>
+      <p class="subtitle">Log in to access your dashboard and fleet administration.</p>
+    </div>
+
+    <!-- Toggle Role Tabs -->
+    <div class="auth-toggle-container">
+      <button
+        type="button"
+        class="auth-toggle-btn"
+        [class.active]="selectedRole() === 'employee'"
+        (click)="setRole('employee')"
+      >
+        Employee
+      </button>
+      <button
+        type="button"
+        class="auth-toggle-btn"
+        [class.active]="selectedRole() === 'admin'"
+        (click)="setRole('admin')"
+      >
+        Admin
+      </button>
+    </div>
+
+    <!-- Feedback Banners -->
+    @if (error()) {
+    <div class="feedback-banner error-banner">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ error() }}</span>
+    </div>
+    } @if (success()) {
+    <div class="feedback-banner success-banner">
+      <mat-icon>check_circle_outline</mat-icon>
+      <span>{{ success() }}</span>
+    </div>
+    }
+
+    <!-- Employee Login Form -->
+    @if (selectedRole() === 'employee') {
+    <form (submit)="onEmployeeSubmit()" class="auth-form" #empForm="ngForm">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Employee ID</mat-label>
+        <input
+          matInput
+          [ngModel]="empId()"
+          (ngModelChange)="empId.set($event)"
+          name="empId"
+          required
+          placeholder="e.g. RRA002"
+          #empIdInput="ngModel"
+        />
+        <mat-icon matPrefix>badge</mat-icon>
+        @if (empIdInput.invalid && (empIdInput.dirty || empIdInput.touched)) {
+        <mat-error>Employee ID is required.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Date of Birth</mat-label>
+        <input
+          matInput
+          type="date"
+          [ngModel]="dob()"
+          (ngModelChange)="dob.set($event)"
+          name="dob"
+          required
+          #dobInput="ngModel"
+        />
+        <mat-icon matPrefix>calendar_today</mat-icon>
+        @if (dobInput.invalid && (dobInput.dirty || dobInput.touched)) {
+        <mat-error>Date of Birth is required.</mat-error>
+        }
+      </mat-form-field>
+
+      <button
+        mat-raised-button
+        color="primary"
+        class="submit-btn"
+        type="submit"
+        [disabled]="loading() || empForm.invalid"
+      >
+        <div class="spinner-container">
+          @if (loading()) {
+          <mat-progress-spinner
+            mode="indeterminate"
+            diameter="24"
+          ></mat-progress-spinner>
+          } @else {
+          <span>Login as Employee</span>
+          }
+        </div>
+      </button>
+    </form>
+    }
+
+    <!-- Admin Login Form -->
+    @if (selectedRole() === 'admin') {
+    <form (submit)="onAdminSubmit()" class="auth-form" #adminForm="ngForm">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Admin Username / Email</mat-label>
+        <input
+          matInput
+          [ngModel]="adminUsername()"
+          (ngModelChange)="adminUsername.set($event)"
+          name="adminUsername"
+          required
+          placeholder="e.g. admin@rams-cars.com"
+          #adminUsernameInput="ngModel"
+        />
+        <mat-icon matPrefix>person</mat-icon>
+        @if (adminUsernameInput.invalid && (adminUsernameInput.dirty || adminUsernameInput.touched)) {
+        <mat-error>Username/Email is required.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Password</mat-label>
+        <input
+          matInput
+          [ngModel]="adminPassword()"
+          (ngModelChange)="adminPassword.set($event)"
+          name="adminPassword"
+          [type]="showPassword() ? 'text' : 'password'"
+          required
+          placeholder="Enter admin password"
+          #adminPasswordInput="ngModel"
+        />
+        <mat-icon matPrefix>lock</mat-icon>
+        <button
+          type="button"
+          mat-icon-button
+          matSuffix
+          (click)="showPassword.set(!showPassword())"
+          [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+        >
+          <mat-icon>
+            {{ showPassword() ? 'visibility_off' : 'visibility' }}
+          </mat-icon>
+        </button>
+        @if (adminPasswordInput.invalid && (adminPasswordInput.dirty || adminPasswordInput.touched)) {
+        <mat-error>Password is required.</mat-error>
+        }
+      </mat-form-field>
+
+      <button
+        mat-raised-button
+        color="primary"
+        class="submit-btn"
+        type="submit"
+        [disabled]="loading() || adminForm.invalid"
+      >
+        <div class="spinner-container">
+          @if (loading()) {
+          <mat-progress-spinner
+            mode="indeterminate"
+            diameter="24"
+          ></mat-progress-spinner>
+          } @else {
+          <span>Login as Admin</span>
+          }
+        </div>
+      </button>
+    </form>
+    }
+
+    <div class="home-link-container">
+      <a routerLink="/rr/home" class="home-link">
+        <mat-icon>arrow_back</mat-icon> Back to Homepage
+      </a>
+    </div>
+  </div>
+</div>
