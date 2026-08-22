@@ -1,6 +1,6 @@
 import { Component, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -14,7 +14,7 @@ import { RRApiService } from '../../services/rr-api.service';
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
+    ReactiveFormsModule,
     RouterLink,
     MatFormFieldModule,
     MatInputModule,
@@ -29,6 +29,24 @@ export class RRLoginComponent {
   rrApi = inject(RRApiService);
   private router = inject(Router);
 
+  // Form Groups
+  employeeFormGroup = new FormGroup({
+    empId: new FormControl('', [Validators.required, Validators.pattern(/^RRA[0-9]{3}$/)]),
+    dob: new FormControl('', [Validators.required])
+  });
+
+  adminFormGroup = new FormGroup({
+    adminUsername: new FormControl('', [Validators.required]),
+    adminPassword: new FormControl('', [Validators.required, Validators.minLength(4)])
+  });
+
+  // State Signals
+  selectedRole = signal<'employee' | 'admin'>('employee');
+  loading = signal(false);
+  error = signal<string | null>(null);
+  success = signal<string | null>(null);
+  showPassword = signal(false);
+
   constructor() {
     effect(() => {
       const user = this.rrApi.currentUser();
@@ -38,41 +56,24 @@ export class RRLoginComponent {
     });
   }
 
-  // State Signals
-  selectedRole = signal<'employee' | 'admin'>('employee');
-  empId = signal('');
-  dob = signal('');
-  adminUsername = signal('');
-  adminPassword = signal('');
-
-  loading = signal(false);
-  error = signal<string | null>(null);
-  success = signal<string | null>(null);
-  showPassword = signal(false);
-
   setRole(role: 'employee' | 'admin') {
     this.selectedRole.set(role);
     this.error.set(null);
     this.success.set(null);
-    this.empId.set('');
-    this.dob.set('');
-    this.adminUsername.set('');
-    this.adminPassword.set('');
+    this.employeeFormGroup.reset();
+    this.adminFormGroup.reset();
   }
 
   async onEmployeeSubmit() {
+    if (this.employeeFormGroup.invalid) return;
+
     this.error.set(null);
     this.success.set(null);
-
-    const enteredId = this.empId().trim();
-    const enteredDob = this.dob().trim(); // Format: 'YYYY-MM-DD'
-
-    if (!enteredId || !enteredDob) {
-      this.error.set('Please fill out all required fields.');
-      return;
-    }
-
     this.loading.set(true);
+
+    const enteredId = this.employeeFormGroup.value.empId || '';
+    const enteredDob = this.employeeFormGroup.value.dob || '';
+
     try {
       await this.rrApi.login({ empId: enteredId, dob: enteredDob });
       this.success.set('Login successful! Redirecting...');
@@ -88,18 +89,15 @@ export class RRLoginComponent {
   }
 
   async onAdminSubmit() {
+    if (this.adminFormGroup.invalid) return;
+
     this.error.set(null);
     this.success.set(null);
-
-    const username = this.adminUsername().trim();
-    const password = this.adminPassword().trim();
-
-    if (!username || !password) {
-      this.error.set('Please fill out all required fields.');
-      return;
-    }
-
     this.loading.set(true);
+
+    const username = this.adminFormGroup.value.adminUsername || '';
+    const password = this.adminFormGroup.value.adminPassword || '';
+
     try {
       await this.rrApi.login({ username, password });
       this.success.set('Admin login successful! Redirecting...');

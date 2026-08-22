@@ -113,7 +113,7 @@
         <section class="content-section active">
           <h2>Bookings > New Booking</h2>
 
-          <form (submit)="createBooking($event)">
+          <form [formGroup]="bookingFormGroup" (submit)="createBooking($event)">
             <div class="booking-sections">
               <!-- 1. Renter Person Details -->
               <div class="booking-card">
@@ -121,35 +121,59 @@
                 <div class="booking-content">
                   <div class="field">
                     <label>Renter First Name *</label>
-                    <input type="text" [(ngModel)]="bookingForm.renterFirstName" name="renterFirstName" required />
+                    <input type="text" formControlName="renterFirstName" />
+                    @if (bookingFormGroup.get('renterFirstName')?.touched && bookingFormGroup.get('renterFirstName')?.invalid) {
+                      <span class="error-msg" style="color:red; font-size:11px;">Letters and spaces only.</span>
+                    }
                   </div>
                   <div class="field">
                     <label>Renter Second Name *</label>
-                    <input type="text" [(ngModel)]="bookingForm.renterSecondName" name="renterSecondName" required />
+                    <input type="text" formControlName="renterSecondName" />
+                    @if (bookingFormGroup.get('renterSecondName')?.touched && bookingFormGroup.get('renterSecondName')?.invalid) {
+                      <span class="error-msg" style="color:red; font-size:11px;">Letters and spaces only.</span>
+                    }
                   </div>
                   <div class="field">
                     <label>Father Name *</label>
-                    <input type="text" [(ngModel)]="bookingForm.renterFatherName" name="renterFatherName" required />
+                    <input type="text" formControlName="renterFatherName" />
+                    @if (bookingFormGroup.get('renterFatherName')?.touched && bookingFormGroup.get('renterFatherName')?.invalid) {
+                      <span class="error-msg" style="color:red; font-size:11px;">Letters and spaces only.</span>
+                    }
                   </div>
                   <div class="field">
                     <label>Aadhar Number *</label>
-                    <input type="text" [(ngModel)]="bookingForm.renterAadhar" name="renterAadhar" required maxlength="12" />
+                    <input type="text" formControlName="renterAadhar" maxlength="12" />
+                    @if (bookingFormGroup.get('renterAadhar')?.touched && bookingFormGroup.get('renterAadhar')?.invalid) {
+                      <span class="error-msg" style="color:red; font-size:11px;">Must be exactly 12 digits.</span>
+                    }
                   </div>
                   <div class="field">
                     <label>Driving License Number *</label>
-                    <input type="text" [(ngModel)]="bookingForm.renterDL" name="renterDL" required maxlength="16" />
+                    <input type="text" formControlName="renterDL" maxlength="16" />
+                    @if (bookingFormGroup.get('renterDL')?.touched && bookingFormGroup.get('renterDL')?.invalid) {
+                      <span class="error-msg" style="color:red; font-size:11px;">Must be exactly 16 chars alphanumeric.</span>
+                    }
                   </div>
                   <div class="field">
                     <label>Phone Number *</label>
-                    <input type="text" [(ngModel)]="bookingForm.renterPhone" name="renterPhone" required maxlength="10" />
+                    <input type="text" formControlName="renterPhone" maxlength="10" />
+                    @if (bookingFormGroup.get('renterPhone')?.touched && bookingFormGroup.get('renterPhone')?.invalid) {
+                      <span class="error-msg" style="color:red; font-size:11px;">Must be exactly 10 digits.</span>
+                    }
                   </div>
                   <div class="field">
                     <label>Alternative Phone Number</label>
-                    <input type="text" [(ngModel)]="bookingForm.renterAltPhone" name="renterAltPhone" maxlength="10" />
+                    <input type="text" formControlName="renterAltPhone" maxlength="10" />
+                    @if (bookingFormGroup.get('renterAltPhone')?.touched && bookingFormGroup.get('renterAltPhone')?.invalid) {
+                      <span class="error-msg" style="color:red; font-size:11px;">Must be 10 digits.</span>
+                    }
                   </div>
                   <div class="field full-width">
                     <label>Address *</label>
-                    <textarea [(ngModel)]="bookingForm.renterAddress" name="renterAddress" required></textarea>
+                    <textarea formControlName="renterAddress"></textarea>
+                    @if (bookingFormGroup.get('renterAddress')?.touched && bookingFormGroup.get('renterAddress')?.invalid) {
+                      <span class="error-msg" style="color:red; font-size:11px;">Address is required.</span>
+                    }
                   </div>
                 </div>
               </div>
@@ -160,35 +184,59 @@
                 <div class="booking-content">
                   <div class="field">
                     <label>Guarantee First Name *</label>
-                    <input type="text" [(ngModel)]="bookingForm.guarFirstName" name="guarFirstName" required />
+                    <input type="text" formControlName="guarFirstName" />
+                    @if (bookingFormGroup.get('guarFirstName')?.touched && bookingFormGroup.get('guarFirstName')?.invalid) {
+                      <span class="error-msg" style="color:red; font-size:11px;">Letters and spaces only.</span>
+                    }
                   </div>
                   <div class="field">
                     <label>Guarantee Second Name *</label>
-                    <input type="text" [(ngModel)]="bookingForm.guarSecondName" name="guarSecondName" required />
+                    <input type="text" formControlName="guarSecondName" />
+                    @if (bookingFormGroup.get('guarSecondName')?.touched && bookingFormGroup.get('guarSecondName')?.invalid) {
+                      <span class="error-msg" style="color:red; font-size:11px;">Letters and spaces only.</span>
+                    }
                   </div>
                   <div class="field">
                     <label>Guarantee Father Name *</label>
-                    <input type="text" [(ngModel)]="bookingForm.guarFatherName" name="guarFatherName" required />
+                    <input type="text" formControlName="guarFatherName" />
+                    @if (bookingFormGroup.get('guarFatherName')?.touched && bookingFormGroup.get('guarFatherName')?.invalid) {
+                      <span class="error-msg" style="color:red; font-size:11px;">Letters and spaces only.</span>
+                    }
                   </div>
                   <div class="field">
                     <label>Aadhar Number (optional)</label>
-                    <input type="text" [(ngModel)]="bookingForm.guarAadhar" name="guarAadhar" maxlength="12" />
+                    <input type="text" formControlName="guarAadhar" maxlength="12" />
+                    @if (bookingFormGroup.get('guarAadhar')?.touched && bookingFormGroup.get('guarAadhar')?.invalid) {
+                      <span class="error-msg" style="color:red; font-size:11px;">Must be 12 digits.</span>
+                    }
                   </div>
                   <div class="field">
                     <label>Driving License Number (optional)</label>
-                    <input type="text" [(ngModel)]="bookingForm.guarDL" name="guarDL" maxlength="16" />
+                    <input type="text" formControlName="guarDL" maxlength="16" />
+                    @if (bookingFormGroup.get('guarDL')?.touched && bookingFormGroup.get('guarDL')?.invalid) {
+                      <span class="error-msg" style="color:red; font-size:11px;">Must be 16 chars alphanumeric.</span>
+                    }
                   </div>
                   <div class="field">
                     <label>Phone Number *</label>
-                    <input type="text" [(ngModel)]="bookingForm.guarPhone" name="guarPhone" required maxlength="10" />
+                    <input type="text" formControlName="guarPhone" maxlength="10" />
+                    @if (bookingFormGroup.get('guarPhone')?.touched && bookingFormGroup.get('guarPhone')?.invalid) {
+                      <span class="error-msg" style="color:red; font-size:11px;">Must be 10 digits.</span>
+                    }
                   </div>
                   <div class="field">
                     <label>Alternative Phone Number</label>
-                    <input type="text" [(ngModel)]="bookingForm.guarAltPhone" name="guarAltPhone" maxlength="10" />
+                    <input type="text" formControlName="guarAltPhone" maxlength="10" />
+                    @if (bookingFormGroup.get('guarAltPhone')?.touched && bookingFormGroup.get('guarAltPhone')?.invalid) {
+                      <span class="error-msg" style="color:red; font-size:11px;">Must be 10 digits.</span>
+                    }
                   </div>
                   <div class="field full-width">
                     <label>Address *</label>
-                    <textarea [(ngModel)]="bookingForm.guarAddress" name="guarAddress" required></textarea>
+                    <textarea formControlName="guarAddress"></textarea>
+                    @if (bookingFormGroup.get('guarAddress')?.touched && bookingFormGroup.get('guarAddress')?.invalid) {
+                      <span class="error-msg" style="color:red; font-size:11px;">Address is required.</span>
+                    }
                   </div>
                 </div>
               </div>
@@ -199,7 +247,7 @@
                 <div class="booking-content">
                   <div class="field">
                     <label>Select Vehicle *</label>
-                    <select [(ngModel)]="selectedVehicleRegNo" name="vehicleSelect" (change)="onVehicleSelectChange()" required>
+                    <select formControlName="vehicleRegNo" (change)="onVehicleSelectChange()">
                       <option value="">-- Select Available Vehicle --</option>
                       @for (v of vehicles(); track v.regNo) {
                         @if (v.status === 'available') {
@@ -210,11 +258,14 @@
                   </div>
                   <div class="field">
                     <label>Pickup Date & Time *</label>
-                    <input type="datetime-local" [(ngModel)]="bookingForm.pickupDateTime" name="pickupDateTime" (change)="calculateReturnDate()" required />
+                    <input type="datetime-local" formControlName="pickupDateTime" (change)="calculateReturnDate()" />
+                    @if (bookingFormGroup.get('pickupDateTime')?.touched && bookingFormGroup.get('pickupDateTime')?.invalid) {
+                      <span class="error-msg" style="color:red; font-size:11px;">Pickup date is required.</span>
+                    }
                   </div>
                   <div class="field">
                     <label>Duration Days *</label>
-                    <select [(ngModel)]="bookingForm.durationDays" name="durationDays" (change)="calculateReturnDate()" required>
+                    <select formControlName="durationDays" (change)="calculateReturnDate()">
                       <option value="0">0 days</option>
                       @for (day of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]; track day) {
                         <option [value]="day">{{ day }} day{{ day > 1 ? 's' : '' }}</option>
@@ -223,7 +274,7 @@
                   </div>
                   <div class="field">
                     <label>Duration Hours *</label>
-                    <select [(ngModel)]="bookingForm.durationHours" name="durationHours" (change)="calculateReturnDate()" required>
+                    <select formControlName="durationHours" (change)="calculateReturnDate()">
                       <option value="0">0 hours</option>
                       @for (hour of [1,2,3,4,5,6,7,8,9,10,11,12]; track hour) {
                         <option [value]="hour">{{ hour }} hour{{ hour > 1 ? 's' : '' }}</option>
@@ -232,11 +283,11 @@
                   </div>
                   <div class="field">
                     <label>Return Date & Time (Auto)</label>
-                    <input type="datetime-local" [(ngModel)]="bookingForm.returnDateTime" name="returnDateTime" readonly />
+                    <input type="datetime-local" formControlName="returnDateTime" readonly />
                   </div>
                   <div class="field">
                     <label>Total KM Limit (Auto)</label>
-                    <input type="text" [(ngModel)]="bookingForm.totalKmLimit" name="totalKmLimit" readonly />
+                    <input type="text" formControlName="totalKmLimit" readonly />
                   </div>
                   <div class="field">
                     <label>Odometer Pickup Reading (Auto)</label>
@@ -244,15 +295,15 @@
                   </div>
                   <div class="field">
                     <label>Travel Purpose</label>
-                    <input type="text" [(ngModel)]="bookingForm.travelPurpose" name="travelPurpose" placeholder="e.g. Vacation" />
+                    <input type="text" formControlName="travelPurpose" placeholder="e.g. Vacation" />
                   </div>
                   <div class="field">
                     <label>Travel From</label>
-                    <input type="text" [(ngModel)]="bookingForm.travelFrom" name="travelFrom" placeholder="Kakinada" />
+                    <input type="text" formControlName="travelFrom" placeholder="Kakinada" />
                   </div>
                   <div class="field">
                     <label>Travel To</label>
-                    <input type="text" [(ngModel)]="bookingForm.travelTo" name="travelTo" placeholder="Hyderabad" />
+                    <input type="text" formControlName="travelTo" placeholder="Hyderabad" />
                   </div>
                 </div>
               </div>
@@ -262,46 +313,46 @@
                 <h3>Security Deposit Details</h3>
                 <div class="booking-content">
                   <div class="field full-width" style="flex-direction: row; gap: 20px;">
-                    <label><input type="radio" [(ngModel)]="bookingForm.depositType" name="depositType" value="none" /> None</label>
-                    <label><input type="radio" [(ngModel)]="bookingForm.depositType" name="depositType" value="bike" /> Two Wheeler</label>
-                    <label><input type="radio" [(ngModel)]="bookingForm.depositType" name="depositType" value="cash" /> Cash Deposit</label>
-                    <label><input type="radio" [(ngModel)]="bookingForm.depositType" name="depositType" value="other" /> Other Item</label>
+                    <label><input type="radio" formControlName="depositType" value="none" /> None</label>
+                    <label><input type="radio" formControlName="depositType" value="bike" /> Two Wheeler</label>
+                    <label><input type="radio" formControlName="depositType" value="cash" /> Cash Deposit</label>
+                    <label><input type="radio" formControlName="depositType" value="other" /> Other Item</label>
                   </div>
 
-                  @if (bookingForm.depositType === 'bike') {
+                  @if (bookingFormGroup.get('depositType')?.value === 'bike') {
                     <div class="field">
                       <label>Bike Registration Number *</label>
-                      <input type="text" [(ngModel)]="bookingForm.bikeRegNo" name="bikeRegNo" required />
+                      <input type="text" formControlName="bikeRegNo" />
                     </div>
                     <div class="field">
                       <label>Bike Manufacturer *</label>
-                      <input type="text" [(ngModel)]="bookingForm.bikeManufacturer" name="bikeManufacturer" required />
+                      <input type="text" formControlName="bikeManufacturer" />
                     </div>
                     <div class="field">
                       <label>Bike Model *</label>
-                      <input type="text" [(ngModel)]="bookingForm.bikeModel" name="bikeModel" required />
+                      <input type="text" formControlName="bikeModel" />
                     </div>
                     <div class="field">
                       <label>Bike Owner *</label>
-                      <input type="text" [(ngModel)]="bookingForm.bikeOwner" name="bikeOwner" required />
+                      <input type="text" formControlName="bikeOwner" />
                     </div>
                   }
 
-                  @if (bookingForm.depositType === 'cash') {
+                  @if (bookingFormGroup.get('depositType')?.value === 'cash') {
                     <div class="field">
                       <label>Cash Deposit Amount (Rs.) *</label>
-                      <input type="number" [(ngModel)]="bookingForm.cashAmount" name="cashAmount" required />
+                      <input type="number" formControlName="cashAmount" />
                     </div>
                   }
 
-                  @if (bookingForm.depositType === 'other') {
+                  @if (bookingFormGroup.get('depositType')?.value === 'other') {
                     <div class="field">
                       <label>Item Name *</label>
-                      <input type="text" [(ngModel)]="bookingForm.otherItemName" name="otherItemName" required />
+                      <input type="text" formControlName="otherItemName" />
                     </div>
                     <div class="field">
                       <label>Item Value (Rs.) *</label>
-                      <input type="number" [(ngModel)]="bookingForm.otherItemValue" name="otherItemValue" required />
+                      <input type="number" formControlName="otherItemValue" />
                     </div>
                   }
                 </div>
@@ -313,34 +364,37 @@
                 <div class="booking-content">
                   <div class="field">
                     <label>Total Rental Amount (Rs. Auto)</label>
-                    <input type="text" [(ngModel)]="bookingForm.totalRentalAmount" name="totalRentalAmount" (change)="recalculateFinalAmount()" readonly />
+                    <input type="text" formControlName="totalRentalAmount" readonly />
                   </div>
                   <div class="field">
                     <label>Discount</label>
-                    <input type="number" [(ngModel)]="bookingForm.discount" name="discount" (input)="recalculateFinalAmount()" />
+                    <input type="number" formControlName="discount" (input)="recalculateFinalAmount()" />
                   </div>
                   <div class="field">
                     <label>Discount Type</label>
-                    <select [(ngModel)]="bookingForm.discountType" name="discountType" (change)="recalculateFinalAmount()">
+                    <select formControlName="discountType" (change)="recalculateFinalAmount()">
                       <option value="rupee">Rupee (Rs.)</option>
                       <option value="percentage">Percentage (%)</option>
                     </select>
                   </div>
                   <div class="field">
                     <label>Final Rental Amount (Rs. Auto)</label>
-                    <input type="text" [(ngModel)]="bookingForm.finalRentalAmount" name="finalRentalAmount" readonly />
+                    <input type="text" formControlName="finalRentalAmount" readonly />
                   </div>
                   <div class="field">
                     <label>Advance Amount Paid (Rs.) *</label>
-                    <input type="number" [(ngModel)]="bookingForm.amountPaid" name="amountPaid" (input)="recalculateFinalAmount()" required />
+                    <input type="number" formControlName="amountPaid" (input)="recalculateFinalAmount()" />
+                    @if (bookingFormGroup.get('amountPaid')?.touched && bookingFormGroup.get('amountPaid')?.invalid) {
+                      <span class="error-msg" style="color:red; font-size:11px;">Must be positive number.</span>
+                    }
                   </div>
                   <div class="field">
                     <label>Balance Pending Amount (Rs. Auto)</label>
-                    <input type="text" [(ngModel)]="bookingForm.pendingAmount" name="pendingAmount" readonly />
+                    <input type="text" formControlName="pendingAmount" readonly />
                   </div>
                   <div class="field">
                     <label>Payment Mode</label>
-                    <select [(ngModel)]="bookingForm.paymentMode" name="paymentMode">
+                    <select formControlName="paymentMode">
                       <option value="Cash">Cash</option>
                       <option value="Online">Online / UPI</option>
                       <option value="Card">Credit/Debit Card</option>
@@ -357,8 +411,8 @@
                 </div>
 
                 <div style="margin-top: 24px; display: flex; gap: 16px;">
-                  <button type="submit" class="action-btn success">Create Booking & Save</button>
-                  <button type="button" class="action-btn" (click)="printAgreementPDFFromForm()">Print Agreement PDF</button>
+                  <button type="submit" class="action-btn success" [disabled]="bookingFormGroup.invalid">Create Booking & Save</button>
+                  <button type="button" class="action-btn" [disabled]="bookingFormGroup.invalid" (click)="printAgreementPDFFromForm()">Print Agreement PDF</button>
                   <button type="button" class="action-btn danger" (click)="resetBookingForm()">Reset</button>
                 </div>
               </div>
@@ -439,48 +493,69 @@
         <section class="content-section active">
           <h2>Vehicles > Add / Modify Vehicle</h2>
 
-          <form (submit)="saveVehicle($event)">
+          <form [formGroup]="vehicleFormGroup" (submit)="saveVehicle($event)">
             <div class="booking-card">
               <h3>Vehicle Metadata</h3>
               <div class="booking-content">
                 <div class="field">
                   <label>Registration Number *</label>
-                  <input type="text" [(ngModel)]="vehicleForm.regNo" name="regNo" [disabled]="editingVehicleMode()" required />
+                  <input type="text" formControlName="regNo" [disabled]="editingVehicleMode()" />
+                  @if (vehicleFormGroup.get('regNo')?.touched && vehicleFormGroup.get('regNo')?.invalid) {
+                    <span class="error-msg" style="color:red; font-size:11px;">Plate number is required.</span>
+                  }
                 </div>
                 <div class="field">
                   <label>Vehicle Name *</label>
-                  <input type="text" [(ngModel)]="vehicleForm.name" name="name" required />
+                  <input type="text" formControlName="name" />
+                  @if (vehicleFormGroup.get('name')?.touched && vehicleFormGroup.get('name')?.invalid) {
+                    <span class="error-msg" style="color:red; font-size:11px;">Vehicle name is required.</span>
+                  }
                 </div>
                 <div class="field">
                   <label>Manufacturer *</label>
-                  <input type="text" [(ngModel)]="vehicleForm.manufacturer" name="manufacturer" required />
+                  <input type="text" formControlName="manufacturer" />
+                  @if (vehicleFormGroup.get('manufacturer')?.touched && vehicleFormGroup.get('manufacturer')?.invalid) {
+                    <span class="error-msg" style="color:red; font-size:11px;">Manufacturer is required.</span>
+                  }
                 </div>
                 <div class="field">
                   <label>Model (YYYY-MM) *</label>
-                  <input type="month" [(ngModel)]="vehicleForm.model" name="model" required />
+                  <input type="month" formControlName="model" />
+                  @if (vehicleFormGroup.get('model')?.touched && vehicleFormGroup.get('model')?.invalid) {
+                    <span class="error-msg" style="color:red; font-size:11px;">Use format YYYY-MM.</span>
+                  }
                 </div>
                 <div class="field">
                   <label>Seating Capacity *</label>
-                  <select [(ngModel)]="vehicleForm.seating" name="seating" required>
+                  <select formControlName="seating">
                     <option value="5">5 Seater</option>
                     <option value="7">7 Seater</option>
                   </select>
                 </div>
                 <div class="field">
                   <label>Odometer Reading (KM) *</label>
-                  <input type="number" [(ngModel)]="vehicleForm.odometer" name="odometer" required />
+                  <input type="number" formControlName="odometer" />
+                  @if (vehicleFormGroup.get('odometer')?.touched && vehicleFormGroup.get('odometer')?.invalid) {
+                    <span class="error-msg" style="color:red; font-size:11px;">Must be positive number.</span>
+                  }
                 </div>
                 <div class="field">
                   <label>Vehicle Type *</label>
-                  <input type="text" [(ngModel)]="vehicleForm.type" name="type" placeholder="e.g. SUV, Sedan" required />
+                  <input type="text" formControlName="type" placeholder="e.g. SUV, Sedan" />
+                  @if (vehicleFormGroup.get('type')?.touched && vehicleFormGroup.get('type')?.invalid) {
+                    <span class="error-msg" style="color:red; font-size:11px;">Vehicle type is required.</span>
+                  }
                 </div>
                 <div class="field">
                   <label>Color *</label>
-                  <input type="text" [(ngModel)]="vehicleForm.color" name="color" required />
+                  <input type="text" formControlName="color" />
+                  @if (vehicleFormGroup.get('color')?.touched && vehicleFormGroup.get('color')?.invalid) {
+                    <span class="error-msg" style="color:red; font-size:11px;">Color is required.</span>
+                  }
                 </div>
                 <div class="field">
                   <label>Fuel Type *</label>
-                  <select [(ngModel)]="vehicleForm.fuelType" name="fuelType" required>
+                  <select formControlName="fuelType">
                     <option value="Petrol">Petrol</option>
                     <option value="Diesel">Diesel</option>
                     <option value="Electric">Electric</option>
@@ -489,23 +564,35 @@
                 </div>
                 <div class="field">
                   <label>Engine Number *</label>
-                  <input type="text" [(ngModel)]="vehicleForm.engineNo" name="engineNo" required />
+                  <input type="text" formControlName="engineNo" />
+                  @if (vehicleFormGroup.get('engineNo')?.touched && vehicleFormGroup.get('engineNo')?.invalid) {
+                    <span class="error-msg" style="color:red; font-size:11px;">Engine number is required.</span>
+                  }
                 </div>
                 <div class="field">
                   <label>Chassis Number *</label>
-                  <input type="text" [(ngModel)]="vehicleForm.chassisNo" name="chassisNo" required />
+                  <input type="text" formControlName="chassisNo" />
+                  @if (vehicleFormGroup.get('chassisNo')?.touched && vehicleFormGroup.get('chassisNo')?.invalid) {
+                    <span class="error-msg" style="color:red; font-size:11px;">Chassis number is required.</span>
+                  }
                 </div>
                 <div class="field">
                   <label>Insurance Expiry Date *</label>
-                  <input type="date" [(ngModel)]="vehicleForm.insuranceExpiry" name="insuranceExpiry" required />
+                  <input type="date" formControlName="insuranceExpiry" />
+                  @if (vehicleFormGroup.get('insuranceExpiry')?.touched && vehicleFormGroup.get('insuranceExpiry')?.invalid) {
+                    <span class="error-msg" style="color:red; font-size:11px;">Expiry date is required.</span>
+                  }
                 </div>
                 <div class="field">
                   <label>Pollution Expiry Date *</label>
-                  <input type="date" [(ngModel)]="vehicleForm.pollutionExpiry" name="pollutionExpiry" required />
+                  <input type="date" formControlName="pollutionExpiry" />
+                  @if (vehicleFormGroup.get('pollutionExpiry')?.touched && vehicleFormGroup.get('pollutionExpiry')?.invalid) {
+                    <span class="error-msg" style="color:red; font-size:11px;">Expiry date is required.</span>
+                  }
                 </div>
                 <div class="field">
                   <label>Status *</label>
-                  <select [(ngModel)]="vehicleForm.status" name="status" required>
+                  <select formControlName="status">
                     <option value="available">Available</option>
                     <option value="maintenance">Maintenance / Service</option>
                     <option value="contract">In Corporate Contract</option>
@@ -514,57 +601,68 @@
               </div>
             </div>
 
-            <div class="booking-card" style="margin-top: 24px;">
+            <div class="booking-card" style="margin-top: 24px;" formGroupName="pricing">
               <h3>Pricing Slabs & Fees</h3>
               <div class="booking-content">
-                <div class="field">
+                <div class="field" formGroupName="h23">
                   <label>24 Hours Rent (Rs.) *</label>
-                  <input type="number" [(ngModel)]="vehicleForm.pricing.h23.price" name="p23" required />
+                  <input type="number" formControlName="price" />
                 </div>
-                <div class="field">
+                <div class="field" formGroupName="h23">
                   <label>24 Hours KM Limit *</label>
-                  <input type="number" [(ngModel)]="vehicleForm.pricing.h23.km" name="k23" required />
+                  <input type="number" formControlName="km" />
                 </div>
-                <div class="field">
+                <div class="field" formGroupName="h11">
                   <label>12 Hours Rent (Rs.) *</label>
-                  <input type="number" [(ngModel)]="vehicleForm.pricing.h11.price" name="p11" required />
+                  <input type="number" formControlName="price" />
                 </div>
-                <div class="field">
+                <div class="field" formGroupName="h11">
                   <label>12 Hours KM Limit *</label>
-                  <input type="number" [(ngModel)]="vehicleForm.pricing.h11.km" name="k11" required />
+                  <input type="number" formControlName="km" />
                 </div>
-                <div class="field">
+                <div class="field" formGroupName="h3">
                   <label>4 Hours Rent (Rs.) *</label>
-                  <input type="number" [(ngModel)]="vehicleForm.pricing.h3.price" name="p3" required />
+                  <input type="number" formControlName="price" />
                 </div>
-                <div class="field">
+                <div class="field" formGroupName="h3">
                   <label>4 Hours KM Limit *</label>
-                  <input type="number" [(ngModel)]="vehicleForm.pricing.h3.km" name="k3" required />
+                  <input type="number" formControlName="km" />
                 </div>
-                <div class="field">
+                <div class="field" formGroupName="h1">
                   <label>1 Hour Rent (Rs.) *</label>
-                  <input type="number" [(ngModel)]="vehicleForm.pricing.h1.price" name="p1" required />
+                  <input type="number" formControlName="price" />
                 </div>
-                <div class="field">
+                <div class="field" formGroupName="h1">
                   <label>1 Hour KM Limit *</label>
-                  <input type="number" [(ngModel)]="vehicleForm.pricing.h1.km" name="k1" required />
+                  <input type="number" formControlName="km" />
                 </div>
+              </div>
+            </div>
+
+            <div class="booking-card" style="margin-top: 24px;">
+              <div class="booking-content">
                 <div class="field">
                   <label>Extra KM Price (Rs./KM) *</label>
-                  <input type="number" [(ngModel)]="vehicleForm.extraKmPrice" name="extraKmPrice" required />
+                  <input type="number" formControlName="extraKmPrice" />
+                  @if (vehicleFormGroup.get('extraKmPrice')?.touched && vehicleFormGroup.get('extraKmPrice')?.invalid) {
+                    <span class="error-msg" style="color:red; font-size:11px;">Required.</span>
+                  }
                 </div>
                 <div class="field">
                   <label>Extra Hour Price (Rs./Hour) *</label>
-                  <input type="number" [(ngModel)]="vehicleForm.extraHourPrice" name="extraHourPrice" required />
+                  <input type="number" formControlName="extraHourPrice" />
+                  @if (vehicleFormGroup.get('extraHourPrice')?.touched && vehicleFormGroup.get('extraHourPrice')?.invalid) {
+                    <span class="error-msg" style="color:red; font-size:11px;">Required.</span>
+                  }
                 </div>
                 <div class="field full-width">
                   <label>Vehicle Image URL (Default fallback will be used if empty)</label>
-                  <input type="text" [(ngModel)]="vehicleImageInputUrl" name="vehicleImageUrl" placeholder="e.g. assets/rr/baleno.png" />
+                  <input type="text" [(ngModel)]="vehicleImageInputUrl" [ngModelOptions]="{standalone: true}" placeholder="e.g. assets/rr/baleno.png" />
                 </div>
               </div>
 
               <div style="margin-top: 24px; display: flex; gap: 16px;">
-                <button type="submit" class="action-btn success">
+                <button type="submit" class="action-btn success" [disabled]="vehicleFormGroup.invalid">
                   {{ editingVehicleMode() ? 'Update Vehicle' : 'Add Vehicle' }}
                 </button>
                 <button type="button" class="action-btn" (click)="resetVehicleForm()">Reset / Cancel</button>
@@ -627,61 +725,88 @@
         <section class="content-section active">
           <h2>Employees > {{ editingEmployeeMode() ? 'Modify Employee' : 'Add New Employee' }}</h2>
 
-          <form (submit)="saveEmployee($event)">
+          <form [formGroup]="employeeFormGroup" (submit)="saveEmployee($event)">
             <div class="booking-card">
               <h3>Employee Personal & Account Details</h3>
               <div class="booking-content">
                 <div class="field">
                   <label>First Name *</label>
-                  <input type="text" [(ngModel)]="employeeForm.firstName" name="empFirstName" required />
+                  <input type="text" formControlName="firstName" />
+                  @if (employeeFormGroup.get('firstName')?.touched && employeeFormGroup.get('firstName')?.invalid) {
+                    <span class="error-msg" style="color:red; font-size:11px;">Letters only.</span>
+                  }
                 </div>
                 <div class="field">
                   <label>Last Name *</label>
-                  <input type="text" [(ngModel)]="employeeForm.lastName" name="empLastName" required />
+                  <input type="text" formControlName="lastName" />
+                  @if (employeeFormGroup.get('lastName')?.touched && employeeFormGroup.get('lastName')?.invalid) {
+                    <span class="error-msg" style="color:red; font-size:11px;">Letters only.</span>
+                  }
                 </div>
                 <div class="field">
                   <label>Date of Birth *</label>
-                  <input type="date" [(ngModel)]="employeeForm.dob" name="empDOB" required />
+                  <input type="date" formControlName="dob" />
+                  @if (employeeFormGroup.get('dob')?.touched && employeeFormGroup.get('dob')?.invalid) {
+                    <span class="error-msg" style="color:red; font-size:11px;">DOB is required.</span>
+                  }
                 </div>
                 <div class="field">
                   <label>Phone Number *</label>
-                  <input type="text" [(ngModel)]="employeeForm.phone" name="empPhone" required maxlength="10" />
+                  <input type="text" formControlName="phone" maxlength="10" />
+                  @if (employeeFormGroup.get('phone')?.touched && employeeFormGroup.get('phone')?.invalid) {
+                    <span class="error-msg" style="color:red; font-size:11px;">Must be 10 digits.</span>
+                  }
                 </div>
                 <div class="field">
                   <label>Alternative Phone Number</label>
-                  <input type="text" [(ngModel)]="employeeForm.altPhone" name="empAltPhone" maxlength="10" />
+                  <input type="text" formControlName="altPhone" maxlength="10" />
+                  @if (employeeFormGroup.get('altPhone')?.touched && employeeFormGroup.get('altPhone')?.invalid) {
+                    <span class="error-msg" style="color:red; font-size:11px;">Must be 10 digits.</span>
+                  }
                 </div>
                 <div class="field">
                   <label>Email Address *</label>
-                  <input type="email" [(ngModel)]="employeeForm.email" name="empEmail" required />
+                  <input type="email" formControlName="email" />
+                  @if (employeeFormGroup.get('email')?.touched && employeeFormGroup.get('email')?.invalid) {
+                    <span class="error-msg" style="color:red; font-size:11px;">Please enter valid email address.</span>
+                  }
                 </div>
                 <div class="field">
                   <label>Aadhar Number *</label>
-                  <input type="text" [(ngModel)]="employeeForm.aadhar" name="empAadhar" required maxlength="12" />
+                  <input type="text" formControlName="aadhar" maxlength="12" />
+                  @if (employeeFormGroup.get('aadhar')?.touched && employeeFormGroup.get('aadhar')?.invalid) {
+                    <span class="error-msg" style="color:red; font-size:11px;">Must be 12 digits.</span>
+                  }
                 </div>
                 <div class="field">
                   <label>Driving License Number *</label>
-                  <input type="text" [(ngModel)]="employeeForm.dl" name="empDL" required maxlength="16" />
+                  <input type="text" formControlName="dl" maxlength="16" />
+                  @if (employeeFormGroup.get('dl')?.touched && employeeFormGroup.get('dl')?.invalid) {
+                    <span class="error-msg" style="color:red; font-size:11px;">Must be 16 characters.</span>
+                  }
                 </div>
                 <div class="field">
                   <label>Role *</label>
-                  <select [(ngModel)]="employeeForm.role" name="empRole" required>
+                  <select formControlName="role">
                     <option value="employee">Employee</option>
                     <option value="admin">Admin</option>
                   </select>
                 </div>
                 <div class="field" style="flex-direction: row; align-items: center; gap: 10px; margin-top: 20px;">
-                  <input type="checkbox" [(ngModel)]="employeeForm.allowLogin" name="empAllowLogin" id="empAllowLogin" />
+                  <input type="checkbox" formControlName="allowLogin" id="empAllowLogin" />
                   <label for="empAllowLogin" style="cursor: pointer;">Allow Login to Dashboard</label>
                 </div>
                 <div class="field full-width">
                   <label>Address *</label>
-                  <textarea [(ngModel)]="employeeForm.address" name="empAddress" required></textarea>
+                  <textarea formControlName="address"></textarea>
+                  @if (employeeFormGroup.get('address')?.touched && employeeFormGroup.get('address')?.invalid) {
+                    <span class="error-msg" style="color:red; font-size:11px;">Address is required.</span>
+                  }
                 </div>
               </div>
 
               <div style="margin-top: 24px; display: flex; gap: 16px;">
-                <button type="submit" class="action-btn success">
+                <button type="submit" class="action-btn success" [disabled]="employeeFormGroup.invalid">
                   {{ editingEmployeeMode() ? 'Update Account' : 'Register Account' }}
                 </button>
                 <button type="button" class="action-btn" (click)="resetEmployeeForm()">Cancel</button>
@@ -739,8 +864,8 @@
           <h2>System Activity Logs</h2>
 
           <div class="log-filter-bar">
-            <label>From: <input type="date" [(ngModel)]="logFilterFrom" name="logFrom" /></label>
-            <label>To: <input type="date" [(ngModel)]="logFilterTo" name="logTo" /></label>
+            <label>From: <input type="date" [(ngModel)]="logFilterFrom" [ngModelOptions]="{standalone: true}" /></label>
+            <label>To: <input type="date" [(ngModel)]="logFilterTo" [ngModelOptions]="{standalone: true}" /></label>
             <button class="action-btn" (click)="loadActivityLogs()">Get Logs</button>
             <button class="action-btn" (click)="clearLogFilters()">Clear Filters & Display All</button>
           </div>
@@ -810,7 +935,7 @@
         </div>
 
         <div style="margin-top: 24px; display: flex; gap: 12px; justify-content: flex-end;">
-          <button class="action-btn success" (click)="submitEndBooking()">Finalize & Close Booking</button>
+          <button class="action-btn success" [disabled]="!endBookingFields.odometerEnd" (click)="submitEndBooking()">Finalize & Close Booking</button>
           <button class="action-btn danger" (click)="closeEndBookingPopup()">Cancel</button>
         </div>
       </div>
@@ -824,67 +949,69 @@
         <button class="close-popup-btn" (click)="closeModifyBookingPopup()">×</button>
         <h3>Modify Booking - ID: {{ selectedBookingToModify()?.id }}</h3>
 
-        <div class="booking-content" style="margin-top: 20px; gap: 16px;">
-          <div class="field">
-            <label>Pickup Date & Time</label>
-            <input type="datetime-local" [(ngModel)]="selectedBookingToModify()!.pickupDateTime" (change)="calculateModifyReturnDate()" />
+        <form [formGroup]="modifyBookingFormGroup" (submit)="submitModifyBooking()">
+          <div class="booking-content" style="margin-top: 20px; gap: 16px;">
+            <div class="field">
+              <label>Pickup Date & Time</label>
+              <input type="datetime-local" formControlName="pickupDateTime" (change)="calculateModifyReturnDate()" />
+            </div>
+            <div class="field">
+              <label>Duration Days</label>
+              <select formControlName="durationDays" (change)="calculateModifyReturnDate()">
+                <option value="0">0 days</option>
+                @for (day of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]; track day) {
+                  <option [value]="day">{{ day }} day{{ day > 1 ? 's' : '' }}</option>
+                }
+              </select>
+            </div>
+            <div class="field">
+              <label>Duration Hours</label>
+              <select formControlName="durationHours" (change)="calculateModifyReturnDate()">
+                <option value="0">0 hours</option>
+                @for (hour of [1,2,3,4,5,6,7,8,9,10,11,12]; track hour) {
+                  <option [value]="hour">{{ hour }} hour{{ hour > 1 ? 's' : '' }}</option>
+                }
+              </select>
+            </div>
+            <div class="field">
+              <label>Return Date & Time (Auto)</label>
+              <input type="datetime-local" formControlName="returnDateTime" readonly />
+            </div>
+            <div class="field">
+              <label>Total Rental Amount (Rs. Auto)</label>
+              <input type="text" formControlName="totalRentalAmount" readonly />
+            </div>
+            <div class="field">
+              <label>Discount Amount</label>
+              <input type="number" formControlName="discount" (input)="recalculateModifyFinalAmount()" />
+            </div>
+            <div class="field">
+              <label>Discount Type</label>
+              <select formControlName="discountType" (change)="recalculateModifyFinalAmount()">
+                <option value="rupee">Rupee (Rs.)</option>
+                <option value="percentage">Percentage (%)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Final Rental Amount (Rs. Auto)</label>
+              <input type="text" formControlName="finalRentalAmount" readonly />
+            </div>
+            <div class="field">
+              <label>Amount Already Paid (Rs.)</label>
+              <input type="number" formControlName="amountPaid" (input)="recalculateModifyFinalAmount()" />
+            </div>
+            <div class="field">
+              <label>Balance Pending Amount (Rs. Auto)</label>
+              <input type="text" formControlName="pendingAmount" readonly />
+            </div>
           </div>
-          <div class="field">
-            <label>Duration Days</label>
-            <select [(ngModel)]="selectedBookingToModify()!.durationDays" (change)="calculateModifyReturnDate()">
-              <option value="0">0 days</option>
-              @for (day of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]; track day) {
-                <option [value]="day">{{ day }} day{{ day > 1 ? 's' : '' }}</option>
-              }
-            </select>
-          </div>
-          <div class="field">
-            <label>Duration Hours</label>
-            <select [(ngModel)]="selectedBookingToModify()!.durationHours" (change)="calculateModifyReturnDate()">
-              <option value="0">0 hours</option>
-              @for (hour of [1,2,3,4,5,6,7,8,9,10,11,12]; track hour) {
-                <option [value]="hour">{{ hour }} hour{{ hour > 1 ? 's' : '' }}</option>
-              }
-            </select>
-          </div>
-          <div class="field">
-            <label>Return Date & Time (Auto)</label>
-            <input type="datetime-local" [(ngModel)]="selectedBookingToModify()!.returnDateTime" readonly />
-          </div>
-          <div class="field">
-            <label>Total Rental Amount (Rs. Auto)</label>
-            <input type="text" [(ngModel)]="selectedBookingToModify()!.totalRentalAmount" readonly />
-          </div>
-          <div class="field">
-            <label>Discount Amount</label>
-            <input type="number" [(ngModel)]="selectedBookingToModify()!.discount" (input)="recalculateModifyFinalAmount()" />
-          </div>
-          <div class="field">
-            <label>Discount Type</label>
-            <select [(ngModel)]="selectedBookingToModify()!.discountType" (change)="recalculateModifyFinalAmount()">
-              <option value="rupee">Rupee (Rs.)</option>
-              <option value="percentage">Percentage (%)</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>Final Rental Amount (Rs. Auto)</label>
-            <input type="text" [(ngModel)]="selectedBookingToModify()!.finalRentalAmount" readonly />
-          </div>
-          <div class="field">
-            <label>Amount Already Paid (Rs.)</label>
-            <input type="number" [(ngModel)]="selectedBookingToModify()!.amountPaid" (input)="recalculateModifyFinalAmount()" />
-          </div>
-          <div class="field">
-            <label>Balance Pending Amount (Rs. Auto)</label>
-            <input type="text" [(ngModel)]="selectedBookingToModify()!.pendingAmount" readonly />
-          </div>
-        </div>
 
-        <div style="margin-top: 24px; display: flex; gap: 12px; justify-content: flex-end;">
-          <button class="action-btn success" (click)="submitModifyBooking()">Save Changes</button>
-          <button class="action-btn" (click)="printAgreementPDFFromObject(selectedBookingToModify())">Print Agreement PDF</button>
-          <button class="action-btn danger" (click)="closeModifyBookingPopup()">Cancel</button>
-        </div>
+          <div style="margin-top: 24px; display: flex; gap: 12px; justify-content: flex-end;">
+            <button type="submit" class="action-btn success" [disabled]="modifyBookingFormGroup.invalid">Save Changes</button>
+            <button type="button" class="action-btn" [disabled]="modifyBookingFormGroup.invalid" (click)="printAgreementPDFFromObject(modifyBookingFormGroup.value)">Print Agreement PDF</button>
+            <button type="button" class="action-btn danger" (click)="closeModifyBookingPopup()">Cancel</button>
+          </div>
+        </form>
       </div>
     </div>
   }

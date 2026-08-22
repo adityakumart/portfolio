@@ -1,15 +1,44 @@
 /* -----------------------------------------------------------
-   GLOBAL & SHARED STYLES FOR RAM & RAM CAR RENTALS
+   THEME STYLES (LIGHT/DARK VARIABLES) FOR RAM & RAM CAR RENTALS
 ----------------------------------------------------------- */
+
+:root {
+  --rr-bg: #F5F7FA;
+  --rr-text: #0A1A2F;
+  --rr-card-bg: #ffffff;
+  --rr-border-color: #e2e8f0;
+  --rr-header-bg: #0A1A2F;
+  --rr-header-text: #ffffff;
+  --rr-card-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  --rr-card-hover-shadow: 0 8px 25px rgba(0,0,0,0.1);
+  --rr-text-muted: #64748b;
+  --rr-btn-bg: #142e4f;
+  --rr-btn-hover-bg: #1f3b63;
+}
+
+:host-context(.dark-theme), body.dark-theme {
+  --rr-bg: #0f172a;
+  --rr-text: #f8fafc;
+  --rr-card-bg: #1e293b;
+  --rr-border-color: #334155;
+  --rr-header-bg: #020617;
+  --rr-header-text: #f8fafc;
+  --rr-card-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  --rr-card-hover-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  --rr-text-muted: #94a3b8;
+  --rr-btn-bg: #020617;
+  --rr-btn-hover-bg: #1e293b;
+}
 
 .rr-wrapper {
   margin: 0;
   font-family: 'Inter', sans-serif;
-  background: #F5F7FA;
-  color: #0A1A2F;
+  background: var(--rr-bg);
+  color: var(--rr-text);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  transition: background 0.3s, color 0.3s;
 
   html {
     scroll-behavior: smooth;
@@ -17,21 +46,22 @@
 
   /* HEADER */
   header {
-    background: #0A1A2F;
+    background: var(--rr-header-bg);
     padding: 20px 40px;
-    color: white;
+    color: var(--rr-header-text);
     display: flex;
     justify-content: space-between;
     align-items: center;
     box-sizing: border-box;
     width: 100%;
+    transition: background 0.3s;
   }
 
   header h2 {
     font-family: 'Montserrat', sans-serif;
     margin: 0;
     font-size: 20px;
-    color: #ffffff;
+    color: var(--rr-header-text);
   }
 
   nav {
@@ -41,7 +71,7 @@
   }
 
   nav a {
-    color: white;
+    color: var(--rr-header-text);
     text-decoration: none;
     font-weight: 500;
     cursor: pointer;
@@ -63,7 +93,7 @@
   .hamburger span {
     height: 3px;
     width: 25px;
-    background: white;
+    background: var(--rr-header-text);
     margin: 4px 0;
     border-radius: 5px;
   }
@@ -71,12 +101,12 @@
   .mobile-menu {
     display: none;
     flex-direction: column;
-    background: #0A1A2F;
+    background: var(--rr-header-bg);
     padding: 20px;
   }
 
   .mobile-menu a {
-    color: white;
+    color: var(--rr-header-text);
     padding: 10px 0;
     text-decoration: none;
     border-bottom: 1px solid rgba(255,255,255,0.2);
@@ -125,7 +155,7 @@
   }
 
   .service-btn {
-    background: #142e4f;
+    background: var(--rr-btn-bg);
     color: white;
     padding: 20px;
     border-radius: 8px;
@@ -138,7 +168,7 @@
 
     &:hover {
       transform: translateY(-2px);
-      background: #1a3c66;
+      background: var(--rr-btn-hover-bg);
     }
   }
 
@@ -176,7 +206,7 @@
       font-size: 22px;
       margin-top: 30px;
       margin-bottom: 20px;
-      color: #0b1c33;
+      color: var(--rr-text);
     }
   }
 
@@ -190,20 +220,20 @@
 
   .car-card {
     width: 180px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--rr-border-color);
     border-radius: 8px;
     padding: 12px;
-    background-color: #fff;
+    background-color: var(--rr-card-bg);
     cursor: pointer;
-    transition: box-shadow 0.2s, transform 0.2s;
+    transition: all 0.2s;
     display: flex;
     flex-direction: column;
     align-items: center;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    box-shadow: var(--rr-card-shadow);
 
     &:hover {
       transform: translateY(-3px);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      box-shadow: var(--rr-card-hover-shadow);
     }
   }
 
@@ -223,7 +253,7 @@
 
   .car-subtitle {
     font-size: 12px;
-    color: #666;
+    color: var(--rr-text-muted);
     margin-bottom: 2px;
     text-align: center;
   }
@@ -231,12 +261,13 @@
   /* ABOUT */
   .about {
     padding: 40px;
-    background: #fff;
+    background: var(--rr-card-bg);
     text-align: center;
     max-width: 800px;
     margin: 0 auto 40px auto;
     border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    box-shadow: var(--rr-card-shadow);
+    transition: all 0.3s;
 
     h2 {
       font-family: 'Montserrat', sans-serif;
@@ -247,14 +278,14 @@
     p {
       line-height: 1.6;
       font-size: 15px;
-      color: #334155;
+      color: var(--rr-text);
     }
   } 
 
   /* CONTACT */
   .contact {
     padding: 60px 40px;
-    background: #F5F7FA;
+    background: var(--rr-bg);
     text-align: center;
 
     h2 {
@@ -265,7 +296,7 @@
 
     p {
       font-size: 15px;
-      color: #64748b;
+      color: var(--rr-text-muted);
       margin-bottom: 30px;
     }
   }
@@ -282,13 +313,13 @@
   }
 
   .contact-item {
-    background: white;
+    background: var(--rr-card-bg);
     padding: 24px;
     border-radius: 10px;
     width: 280px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    box-shadow: var(--rr-card-shadow);
     box-sizing: border-box;
-    transition: transform 0.2s;
+    transition: transform 0.2s, background-color 0.3s;
 
     &:hover {
       transform: translateY(-3px);
@@ -299,7 +330,7 @@
     display: block;
     margin-bottom: 8px;
     font-size: 18px;
-    color: #0F172A;
+    color: var(--rr-text);
   }
 
   .contact-icon-img {
@@ -311,12 +342,13 @@
 
   /* FOOTER */
   footer {
-    background: #0A1A2F;
+    background: var(--rr-header-bg);
     text-align: center;
-    color: white;
+    color: var(--rr-header-text);
     padding: 15px 0;
     font-size: 14px;
     margin-top: auto;
+    transition: background 0.3s;
   }
 
   /* LOGIN PAGE styling */
@@ -325,18 +357,19 @@
     justify-content: center;
     align-items: center;
     padding: 60px 20px;
-    background: #F5F7FA;
+    background: var(--rr-bg);
     flex-grow: 1;
   }
 
   .login-box {
-    background: white;
+    background: var(--rr-card-bg);
     width: 420px;
     padding: 40px;
     border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    box-shadow: var(--rr-card-shadow);
     text-align: center;
     box-sizing: border-box;
+    transition: all 0.3s;
   }
 
   .login-tabs {
@@ -349,18 +382,18 @@
   .tab {
     flex: 1;
     padding: 12px;
-    background: #e2e8f0;
+    background: var(--rr-bg);
     border: none;
     cursor: pointer;
     font-weight: 600;
     border-radius: 6px;
     transition: all 0.3s;
     font-size: 14px;
-    color: #475569;
+    color: var(--rr-text-muted);
   }
 
   .tab.active {
-    background: #0A1A2F;
-    color: white;
+    background: var(--rr-header-bg);
+    color: var(--rr-header-text);
   }
 }
