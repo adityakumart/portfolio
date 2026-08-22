@@ -119,62 +119,69 @@
               <div class="booking-card">
                 <h3>Renter Person Details</h3>
                 <div class="booking-content">
-                  <div class="field">
-                    <label>Renter First Name *</label>
-                    <input type="text" formControlName="renterFirstName" />
-                    @if (bookingFormGroup.get('renterFirstName')?.touched && bookingFormGroup.get('renterFirstName')?.invalid) {
-                      <span class="error-msg" style="color:red; font-size:11px;">Letters and spaces only.</span>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Renter First Name</mat-label>
+                    <input matInput formControlName="renterFirstName" />
+                    @if (bookingFormGroup.get('renterFirstName')?.invalid && bookingFormGroup.get('renterFirstName')?.touched) {
+                      <mat-error>First name is required (letters only).</mat-error>
                     }
-                  </div>
-                  <div class="field">
-                    <label>Renter Second Name *</label>
-                    <input type="text" formControlName="renterSecondName" />
-                    @if (bookingFormGroup.get('renterSecondName')?.touched && bookingFormGroup.get('renterSecondName')?.invalid) {
-                      <span class="error-msg" style="color:red; font-size:11px;">Letters and spaces only.</span>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Renter Second Name</mat-label>
+                    <input matInput formControlName="renterSecondName" />
+                    @if (bookingFormGroup.get('renterSecondName')?.invalid && bookingFormGroup.get('renterSecondName')?.touched) {
+                      <mat-error>Second name is required (letters only).</mat-error>
                     }
-                  </div>
-                  <div class="field">
-                    <label>Father Name *</label>
-                    <input type="text" formControlName="renterFatherName" />
-                    @if (bookingFormGroup.get('renterFatherName')?.touched && bookingFormGroup.get('renterFatherName')?.invalid) {
-                      <span class="error-msg" style="color:red; font-size:11px;">Letters and spaces only.</span>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Father Name</mat-label>
+                    <input matInput formControlName="renterFatherName" />
+                    @if (bookingFormGroup.get('renterFatherName')?.invalid && bookingFormGroup.get('renterFatherName')?.touched) {
+                      <mat-error>Father name is required (letters only).</mat-error>
                     }
-                  </div>
-                  <div class="field">
-                    <label>Aadhar Number *</label>
-                    <input type="text" formControlName="renterAadhar" maxlength="12" />
-                    @if (bookingFormGroup.get('renterAadhar')?.touched && bookingFormGroup.get('renterAadhar')?.invalid) {
-                      <span class="error-msg" style="color:red; font-size:11px;">Must be exactly 12 digits.</span>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Aadhar Number</mat-label>
+                    <input matInput formControlName="renterAadhar" maxlength="12" />
+                    @if (bookingFormGroup.get('renterAadhar')?.invalid && bookingFormGroup.get('renterAadhar')?.touched) {
+                      <mat-error>Must be 12 digits.</mat-error>
                     }
-                  </div>
-                  <div class="field">
-                    <label>Driving License Number *</label>
-                    <input type="text" formControlName="renterDL" maxlength="16" />
-                    @if (bookingFormGroup.get('renterDL')?.touched && bookingFormGroup.get('renterDL')?.invalid) {
-                      <span class="error-msg" style="color:red; font-size:11px;">Must be exactly 16 chars alphanumeric.</span>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Driving License Number</mat-label>
+                    <input matInput formControlName="renterDL" maxlength="16" />
+                    @if (bookingFormGroup.get('renterDL')?.invalid && bookingFormGroup.get('renterDL')?.touched) {
+                      <mat-error>Must be 16 chars.</mat-error>
                     }
-                  </div>
-                  <div class="field">
-                    <label>Phone Number *</label>
-                    <input type="text" formControlName="renterPhone" maxlength="10" />
-                    @if (bookingFormGroup.get('renterPhone')?.touched && bookingFormGroup.get('renterPhone')?.invalid) {
-                      <span class="error-msg" style="color:red; font-size:11px;">Must be exactly 10 digits.</span>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Phone Number</mat-label>
+                    <input matInput formControlName="renterPhone" maxlength="10" />
+                    @if (bookingFormGroup.get('renterPhone')?.invalid && bookingFormGroup.get('renterPhone')?.touched) {
+                      <mat-error>Must be 10 digits.</mat-error>
                     }
-                  </div>
-                  <div class="field">
-                    <label>Alternative Phone Number</label>
-                    <input type="text" formControlName="renterAltPhone" maxlength="10" />
-                    @if (bookingFormGroup.get('renterAltPhone')?.touched && bookingFormGroup.get('renterAltPhone')?.invalid) {
-                      <span class="error-msg" style="color:red; font-size:11px;">Must be 10 digits.</span>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Alternative Phone Number</mat-label>
+                    <input matInput formControlName="renterAltPhone" maxlength="10" />
+                    @if (bookingFormGroup.get('renterAltPhone')?.invalid && bookingFormGroup.get('renterAltPhone')?.touched) {
+                      <mat-error>Must be 10 digits.</mat-error>
                     }
-                  </div>
-                  <div class="field full-width">
-                    <label>Address *</label>
-                    <textarea formControlName="renterAddress"></textarea>
-                    @if (bookingFormGroup.get('renterAddress')?.touched && bookingFormGroup.get('renterAddress')?.invalid) {
-                      <span class="error-msg" style="color:red; font-size:11px;">Address is required.</span>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Address</mat-label>
+                    <textarea matInput formControlName="renterAddress" rows="2"></textarea>
+                    @if (bookingFormGroup.get('renterAddress')?.invalid && bookingFormGroup.get('renterAddress')?.touched) {
+                      <mat-error>Address is required.</mat-error>
                     }
-                  </div>
+                  </mat-form-field>
                 </div>
               </div>
 
@@ -182,62 +189,69 @@
               <div class="booking-card">
                 <h3>Guarantee Person Details</h3>
                 <div class="booking-content">
-                  <div class="field">
-                    <label>Guarantee First Name *</label>
-                    <input type="text" formControlName="guarFirstName" />
-                    @if (bookingFormGroup.get('guarFirstName')?.touched && bookingFormGroup.get('guarFirstName')?.invalid) {
-                      <span class="error-msg" style="color:red; font-size:11px;">Letters and spaces only.</span>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Guarantee First Name</mat-label>
+                    <input matInput formControlName="guarFirstName" />
+                    @if (bookingFormGroup.get('guarFirstName')?.invalid && bookingFormGroup.get('guarFirstName')?.touched) {
+                      <mat-error>First name is required (letters only).</mat-error>
                     }
-                  </div>
-                  <div class="field">
-                    <label>Guarantee Second Name *</label>
-                    <input type="text" formControlName="guarSecondName" />
-                    @if (bookingFormGroup.get('guarSecondName')?.touched && bookingFormGroup.get('guarSecondName')?.invalid) {
-                      <span class="error-msg" style="color:red; font-size:11px;">Letters and spaces only.</span>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Guarantee Second Name</mat-label>
+                    <input matInput formControlName="guarSecondName" />
+                    @if (bookingFormGroup.get('guarSecondName')?.invalid && bookingFormGroup.get('guarSecondName')?.touched) {
+                      <mat-error>Second name is required (letters only).</mat-error>
                     }
-                  </div>
-                  <div class="field">
-                    <label>Guarantee Father Name *</label>
-                    <input type="text" formControlName="guarFatherName" />
-                    @if (bookingFormGroup.get('guarFatherName')?.touched && bookingFormGroup.get('guarFatherName')?.invalid) {
-                      <span class="error-msg" style="color:red; font-size:11px;">Letters and spaces only.</span>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Guarantee Father Name</mat-label>
+                    <input matInput formControlName="guarFatherName" />
+                    @if (bookingFormGroup.get('guarFatherName')?.invalid && bookingFormGroup.get('guarFatherName')?.touched) {
+                      <mat-error>Father name is required (letters only).</mat-error>
                     }
-                  </div>
-                  <div class="field">
-                    <label>Aadhar Number (optional)</label>
-                    <input type="text" formControlName="guarAadhar" maxlength="12" />
-                    @if (bookingFormGroup.get('guarAadhar')?.touched && bookingFormGroup.get('guarAadhar')?.invalid) {
-                      <span class="error-msg" style="color:red; font-size:11px;">Must be 12 digits.</span>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Aadhar Number (optional)</mat-label>
+                    <input matInput formControlName="guarAadhar" maxlength="12" />
+                    @if (bookingFormGroup.get('guarAadhar')?.invalid && bookingFormGroup.get('guarAadhar')?.touched) {
+                      <mat-error>Must be 12 digits.</mat-error>
                     }
-                  </div>
-                  <div class="field">
-                    <label>Driving License Number (optional)</label>
-                    <input type="text" formControlName="guarDL" maxlength="16" />
-                    @if (bookingFormGroup.get('guarDL')?.touched && bookingFormGroup.get('guarDL')?.invalid) {
-                      <span class="error-msg" style="color:red; font-size:11px;">Must be 16 chars alphanumeric.</span>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Driving License Number (optional)</mat-label>
+                    <input matInput formControlName="guarDL" maxlength="16" />
+                    @if (bookingFormGroup.get('guarDL')?.invalid && bookingFormGroup.get('guarDL')?.touched) {
+                      <mat-error>Must be 16 chars.</mat-error>
                     }
-                  </div>
-                  <div class="field">
-                    <label>Phone Number *</label>
-                    <input type="text" formControlName="guarPhone" maxlength="10" />
-                    @if (bookingFormGroup.get('guarPhone')?.touched && bookingFormGroup.get('guarPhone')?.invalid) {
-                      <span class="error-msg" style="color:red; font-size:11px;">Must be 10 digits.</span>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Phone Number</mat-label>
+                    <input matInput formControlName="guarPhone" maxlength="10" />
+                    @if (bookingFormGroup.get('guarPhone')?.invalid && bookingFormGroup.get('guarPhone')?.touched) {
+                      <mat-error>Must be 10 digits.</mat-error>
                     }
-                  </div>
-                  <div class="field">
-                    <label>Alternative Phone Number</label>
-                    <input type="text" formControlName="guarAltPhone" maxlength="10" />
-                    @if (bookingFormGroup.get('guarAltPhone')?.touched && bookingFormGroup.get('guarAltPhone')?.invalid) {
-                      <span class="error-msg" style="color:red; font-size:11px;">Must be 10 digits.</span>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Alternative Phone Number</mat-label>
+                    <input matInput formControlName="guarAltPhone" maxlength="10" />
+                    @if (bookingFormGroup.get('guarAltPhone')?.invalid && bookingFormGroup.get('guarAltPhone')?.touched) {
+                      <mat-error>Must be 10 digits.</mat-error>
                     }
-                  </div>
-                  <div class="field full-width">
-                    <label>Address *</label>
-                    <textarea formControlName="guarAddress"></textarea>
-                    @if (bookingFormGroup.get('guarAddress')?.touched && bookingFormGroup.get('guarAddress')?.invalid) {
-                      <span class="error-msg" style="color:red; font-size:11px;">Address is required.</span>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Address</mat-label>
+                    <textarea matInput formControlName="guarAddress" rows="2"></textarea>
+                    @if (bookingFormGroup.get('guarAddress')?.invalid && bookingFormGroup.get('guarAddress')?.touched) {
+                      <mat-error>Address is required.</mat-error>
                     }
-                  </div>
+                  </mat-form-field>
                 </div>
               </div>
 
@@ -245,115 +259,129 @@
               <div class="booking-card">
                 <h3>Travel Details</h3>
                 <div class="booking-content">
-                  <div class="field">
-                    <label>Select Vehicle *</label>
-                    <select formControlName="vehicleRegNo" (change)="onVehicleSelectChange()">
-                      <option value="">-- Select Available Vehicle --</option>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Select Vehicle</mat-label>
+                    <mat-select formControlName="vehicleRegNo" (selectionChange)="onVehicleSelectChange()">
+                      <mat-option value="">-- Select Available --</mat-option>
                       @for (v of vehicles(); track v.regNo) {
                         @if (v.status === 'available') {
-                          <option [value]="v.regNo">{{ v.manufacturer }} {{ v.name }} ({{ v.regNo }})</option>
+                          <mat-option [value]="v.regNo">{{ v.manufacturer }} {{ v.name }} ({{ v.regNo }})</mat-option>
                         }
                       }
-                    </select>
-                  </div>
-                  <div class="field">
-                    <label>Pickup Date & Time *</label>
-                    <input type="datetime-local" formControlName="pickupDateTime" (change)="calculateReturnDate()" />
-                    @if (bookingFormGroup.get('pickupDateTime')?.touched && bookingFormGroup.get('pickupDateTime')?.invalid) {
-                      <span class="error-msg" style="color:red; font-size:11px;">Pickup date is required.</span>
+                    </mat-select>
+                    @if (bookingFormGroup.get('vehicleRegNo')?.invalid && bookingFormGroup.get('vehicleRegNo')?.touched) {
+                      <mat-error>Vehicle is required.</mat-error>
                     }
-                  </div>
-                  <div class="field">
-                    <label>Duration Days *</label>
-                    <select formControlName="durationDays" (change)="calculateReturnDate()">
-                      <option value="0">0 days</option>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Pickup Date & Time</mat-label>
+                    <input matInput type="datetime-local" formControlName="pickupDateTime" (change)="calculateReturnDate()" />
+                    @if (bookingFormGroup.get('pickupDateTime')?.invalid && bookingFormGroup.get('pickupDateTime')?.touched) {
+                      <mat-error>Required.</mat-error>
+                    }
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Duration Days</mat-label>
+                    <mat-select formControlName="durationDays" (selectionChange)="calculateReturnDate()">
+                      <mat-option value="0">0 days</mat-option>
                       @for (day of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]; track day) {
-                        <option [value]="day">{{ day }} day{{ day > 1 ? 's' : '' }}</option>
+                        <mat-option [value]="'' + day">{{ day }} day{{ day > 1 ? 's' : '' }}</mat-option>
                       }
-                    </select>
-                  </div>
-                  <div class="field">
-                    <label>Duration Hours *</label>
-                    <select formControlName="durationHours" (change)="calculateReturnDate()">
-                      <option value="0">0 hours</option>
+                    </mat-select>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Duration Hours</mat-label>
+                    <mat-select formControlName="durationHours" (selectionChange)="calculateReturnDate()">
+                      <mat-option value="0">0 hours</mat-option>
                       @for (hour of [1,2,3,4,5,6,7,8,9,10,11,12]; track hour) {
-                        <option [value]="hour">{{ hour }} hour{{ hour > 1 ? 's' : '' }}</option>
+                        <mat-option [value]="'' + hour">{{ hour }} hour{{ hour > 1 ? 's' : '' }}</mat-option>
                       }
-                    </select>
-                  </div>
-                  <div class="field">
-                    <label>Return Date & Time (Auto)</label>
-                    <input type="datetime-local" formControlName="returnDateTime" readonly />
-                  </div>
-                  <div class="field">
-                    <label>Total KM Limit (Auto)</label>
-                    <input type="text" formControlName="totalKmLimit" readonly />
-                  </div>
-                  <div class="field">
-                    <label>Odometer Pickup Reading (Auto)</label>
-                    <input type="text" [value]="selectedVehicle()?.odometer || ''" readonly disabled />
-                  </div>
-                  <div class="field">
-                    <label>Travel Purpose</label>
-                    <input type="text" formControlName="travelPurpose" placeholder="e.g. Vacation" />
-                  </div>
-                  <div class="field">
-                    <label>Travel From</label>
-                    <input type="text" formControlName="travelFrom" placeholder="Kakinada" />
-                  </div>
-                  <div class="field">
-                    <label>Travel To</label>
-                    <input type="text" formControlName="travelTo" placeholder="Hyderabad" />
-                  </div>
+                    </mat-select>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Return Date & Time (Auto)</mat-label>
+                    <input matInput type="datetime-local" formControlName="returnDateTime" readonly />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Total KM Limit (Auto)</mat-label>
+                    <input matInput formControlName="totalKmLimit" readonly />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Odometer Pickup Reading (Auto)</mat-label>
+                    <input matInput [value]="selectedVehicle()?.odometer || ''" readonly disabled />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Travel Purpose</mat-label>
+                    <input matInput formControlName="travelPurpose" placeholder="e.g. Vacation" />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Travel From</mat-label>
+                    <input matInput formControlName="travelFrom" placeholder="Kakinada" />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Travel To</mat-label>
+                    <input matInput formControlName="travelTo" placeholder="Hyderabad" />
+                  </mat-form-field>
                 </div>
               </div>
 
               <!-- 4. Security Deposit -->
               <div class="booking-card">
                 <h3>Security Deposit Details</h3>
-                <div class="booking-content">
-                  <div class="field full-width" style="flex-direction: row; gap: 20px;">
-                    <label><input type="radio" formControlName="depositType" value="none" /> None</label>
-                    <label><input type="radio" formControlName="depositType" value="bike" /> Two Wheeler</label>
-                    <label><input type="radio" formControlName="depositType" value="cash" /> Cash Deposit</label>
-                    <label><input type="radio" formControlName="depositType" value="other" /> Other Item</label>
-                  </div>
+                <div style="margin-bottom: 20px;">
+                  <mat-radio-group formControlName="depositType" class="booking-content" style="grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px;">
+                    <mat-radio-button value="none">None</mat-radio-button>
+                    <mat-radio-button value="bike">Two Wheeler</mat-radio-button>
+                    <mat-radio-button value="cash">Cash Deposit</mat-radio-button>
+                    <mat-radio-button value="other">Other Item</mat-radio-button>
+                  </mat-radio-group>
+                </div>
 
+                <div class="booking-content">
                   @if (bookingFormGroup.get('depositType')?.value === 'bike') {
-                    <div class="field">
-                      <label>Bike Registration Number *</label>
-                      <input type="text" formControlName="bikeRegNo" />
-                    </div>
-                    <div class="field">
-                      <label>Bike Manufacturer *</label>
-                      <input type="text" formControlName="bikeManufacturer" />
-                    </div>
-                    <div class="field">
-                      <label>Bike Model *</label>
-                      <input type="text" formControlName="bikeModel" />
-                    </div>
-                    <div class="field">
-                      <label>Bike Owner *</label>
-                      <input type="text" formControlName="bikeOwner" />
-                    </div>
+                    <mat-form-field appearance="outline">
+                      <mat-label>Bike Registration Number</mat-label>
+                      <input matInput formControlName="bikeRegNo" />
+                    </mat-form-field>
+                    <mat-form-field appearance="outline">
+                      <mat-label>Bike Manufacturer</mat-label>
+                      <input matInput formControlName="bikeManufacturer" />
+                    </mat-form-field>
+                    <mat-form-field appearance="outline">
+                      <mat-label>Bike Model</mat-label>
+                      <input matInput formControlName="bikeModel" />
+                    </mat-form-field>
+                    <mat-form-field appearance="outline">
+                      <mat-label>Bike Owner</mat-label>
+                      <input matInput formControlName="bikeOwner" />
+                    </mat-form-field>
                   }
 
                   @if (bookingFormGroup.get('depositType')?.value === 'cash') {
-                    <div class="field">
-                      <label>Cash Deposit Amount (Rs.) *</label>
-                      <input type="number" formControlName="cashAmount" />
-                    </div>
+                    <mat-form-field appearance="outline">
+                      <mat-label>Cash Deposit Amount (Rs.)</mat-label>
+                      <input matInput type="number" formControlName="cashAmount" />
+                    </mat-form-field>
                   }
 
                   @if (bookingFormGroup.get('depositType')?.value === 'other') {
-                    <div class="field">
-                      <label>Item Name *</label>
-                      <input type="text" formControlName="otherItemName" />
-                    </div>
-                    <div class="field">
-                      <label>Item Value (Rs.) *</label>
-                      <input type="number" formControlName="otherItemValue" />
-                    </div>
+                    <mat-form-field appearance="outline">
+                      <mat-label>Item Name</mat-label>
+                      <input matInput formControlName="otherItemName" />
+                    </mat-form-field>
+                    <mat-form-field appearance="outline">
+                      <mat-label>Item Value (Rs.)</mat-label>
+                      <input matInput type="number" formControlName="otherItemValue" />
+                    </mat-form-field>
                   }
                 </div>
               </div>
@@ -362,52 +390,60 @@
               <div class="booking-card">
                 <h3>Financials</h3>
                 <div class="booking-content">
-                  <div class="field">
-                    <label>Total Rental Amount (Rs. Auto)</label>
-                    <input type="text" formControlName="totalRentalAmount" readonly />
-                  </div>
-                  <div class="field">
-                    <label>Discount</label>
-                    <input type="number" formControlName="discount" (input)="recalculateFinalAmount()" />
-                  </div>
-                  <div class="field">
-                    <label>Discount Type</label>
-                    <select formControlName="discountType" (change)="recalculateFinalAmount()">
-                      <option value="rupee">Rupee (Rs.)</option>
-                      <option value="percentage">Percentage (%)</option>
-                    </select>
-                  </div>
-                  <div class="field">
-                    <label>Final Rental Amount (Rs. Auto)</label>
-                    <input type="text" formControlName="finalRentalAmount" readonly />
-                  </div>
-                  <div class="field">
-                    <label>Advance Amount Paid (Rs.) *</label>
-                    <input type="number" formControlName="amountPaid" (input)="recalculateFinalAmount()" />
-                    @if (bookingFormGroup.get('amountPaid')?.touched && bookingFormGroup.get('amountPaid')?.invalid) {
-                      <span class="error-msg" style="color:red; font-size:11px;">Must be positive number.</span>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Total Rental Amount (Rs. Auto)</mat-label>
+                    <input matInput formControlName="totalRentalAmount" readonly />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Discount</mat-label>
+                    <input matInput type="number" formControlName="discount" (input)="recalculateFinalAmount()" />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Discount Type</mat-label>
+                    <mat-select formControlName="discountType" (selectionChange)="recalculateFinalAmount()">
+                      <mat-option value="rupee">Rupee (Rs.)</mat-option>
+                      <mat-option value="percentage">Percentage (%)</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Final Rental Amount (Rs. Auto)</mat-label>
+                    <input matInput formControlName="finalRentalAmount" readonly />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Advance Amount Paid (Rs.)</mat-label>
+                    <input matInput type="number" formControlName="amountPaid" (input)="recalculateFinalAmount()" />
+                    @if (bookingFormGroup.get('amountPaid')?.invalid && bookingFormGroup.get('amountPaid')?.touched) {
+                      <mat-error>Must be positive number.</mat-error>
                     }
-                  </div>
-                  <div class="field">
-                    <label>Balance Pending Amount (Rs. Auto)</label>
-                    <input type="text" formControlName="pendingAmount" readonly />
-                  </div>
-                  <div class="field">
-                    <label>Payment Mode</label>
-                    <select formControlName="paymentMode">
-                      <option value="Cash">Cash</option>
-                      <option value="Online">Online / UPI</option>
-                      <option value="Card">Credit/Debit Card</option>
-                    </select>
-                  </div>
-                  <div class="field">
-                    <label>Extra KM Price (Info)</label>
-                    <input type="text" [value]="selectedVehicle() ? 'Rs. ' + selectedVehicle()?.extraKmPrice + ' per km' : '—'" readonly disabled />
-                  </div>
-                  <div class="field">
-                    <label>Extra Hour Price (Info)</label>
-                    <input type="text" [value]="selectedVehicle() ? 'Rs. ' + selectedVehicle()?.extraHourPrice + ' per hour' : '—'" readonly disabled />
-                  </div>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Balance Pending Amount (Rs. Auto)</mat-label>
+                    <input matInput formControlName="pendingAmount" readonly />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Payment Mode</mat-label>
+                    <mat-select formControlName="paymentMode">
+                      <mat-option value="Cash">Cash</mat-option>
+                      <mat-option value="Online">Online / UPI</mat-option>
+                      <mat-option value="Card">Credit/Debit Card</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Extra KM Price (Info)</mat-label>
+                    <input matInput [value]="selectedVehicle() ? 'Rs. ' + selectedVehicle()?.extraKmPrice + ' per km' : '—'" readonly disabled />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Extra Hour Price (Info)</mat-label>
+                    <input matInput [value]="selectedVehicle() ? 'Rs. ' + selectedVehicle()?.extraHourPrice + ' per hour' : '—'" readonly disabled />
+                  </mat-form-field>
                 </div>
 
                 <div style="margin-top: 24px; display: flex; gap: 16px;">
@@ -497,168 +533,194 @@
             <div class="booking-card">
               <h3>Vehicle Metadata</h3>
               <div class="booking-content">
-                <div class="field">
-                  <label>Registration Number *</label>
-                  <input type="text" formControlName="regNo" [disabled]="editingVehicleMode()" />
-                  @if (vehicleFormGroup.get('regNo')?.touched && vehicleFormGroup.get('regNo')?.invalid) {
-                    <span class="error-msg" style="color:red; font-size:11px;">Plate number is required.</span>
+                <mat-form-field appearance="outline">
+                  <mat-label>Registration Number</mat-label>
+                  <input matInput formControlName="regNo" [readonly]="editingVehicleMode()" />
+                  @if (vehicleFormGroup.get('regNo')?.invalid && vehicleFormGroup.get('regNo')?.touched) {
+                    <mat-error>Alphanumeric registration plate is required.</mat-error>
                   }
-                </div>
-                <div class="field">
-                  <label>Vehicle Name *</label>
-                  <input type="text" formControlName="name" />
-                  @if (vehicleFormGroup.get('name')?.touched && vehicleFormGroup.get('name')?.invalid) {
-                    <span class="error-msg" style="color:red; font-size:11px;">Vehicle name is required.</span>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Vehicle Name</mat-label>
+                  <input matInput formControlName="name" />
+                  @if (vehicleFormGroup.get('name')?.invalid && vehicleFormGroup.get('name')?.touched) {
+                    <mat-error>Name is required.</mat-error>
                   }
-                </div>
-                <div class="field">
-                  <label>Manufacturer *</label>
-                  <input type="text" formControlName="manufacturer" />
-                  @if (vehicleFormGroup.get('manufacturer')?.touched && vehicleFormGroup.get('manufacturer')?.invalid) {
-                    <span class="error-msg" style="color:red; font-size:11px;">Manufacturer is required.</span>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Manufacturer</mat-label>
+                  <input matInput formControlName="manufacturer" />
+                  @if (vehicleFormGroup.get('manufacturer')?.invalid && vehicleFormGroup.get('manufacturer')?.touched) {
+                    <mat-error>Manufacturer is required.</mat-error>
                   }
-                </div>
-                <div class="field">
-                  <label>Model (YYYY-MM) *</label>
-                  <input type="month" formControlName="model" />
-                  @if (vehicleFormGroup.get('model')?.touched && vehicleFormGroup.get('model')?.invalid) {
-                    <span class="error-msg" style="color:red; font-size:11px;">Use format YYYY-MM.</span>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Model (YYYY-MM)</mat-label>
+                  <input matInput type="month" formControlName="model" />
+                  @if (vehicleFormGroup.get('model')?.invalid && vehicleFormGroup.get('model')?.touched) {
+                    <mat-error>Required.</mat-error>
                   }
-                </div>
-                <div class="field">
-                  <label>Seating Capacity *</label>
-                  <select formControlName="seating">
-                    <option value="5">5 Seater</option>
-                    <option value="7">7 Seater</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label>Odometer Reading (KM) *</label>
-                  <input type="number" formControlName="odometer" />
-                  @if (vehicleFormGroup.get('odometer')?.touched && vehicleFormGroup.get('odometer')?.invalid) {
-                    <span class="error-msg" style="color:red; font-size:11px;">Must be positive number.</span>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Seating Capacity</mat-label>
+                  <mat-select formControlName="seating">
+                    <mat-option value="5">5 Seater</mat-option>
+                    <mat-option value="7">7 Seater</mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Odometer Reading (KM)</mat-label>
+                  <input matInput type="number" formControlName="odometer" />
+                  @if (vehicleFormGroup.get('odometer')?.invalid && vehicleFormGroup.get('odometer')?.touched) {
+                    <mat-error>Must be positive number.</mat-error>
                   }
-                </div>
-                <div class="field">
-                  <label>Vehicle Type *</label>
-                  <input type="text" formControlName="type" placeholder="e.g. SUV, Sedan" />
-                  @if (vehicleFormGroup.get('type')?.touched && vehicleFormGroup.get('type')?.invalid) {
-                    <span class="error-msg" style="color:red; font-size:11px;">Vehicle type is required.</span>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Vehicle Type</mat-label>
+                  <input matInput formControlName="type" placeholder="e.g. SUV, Sedan" />
+                  @if (vehicleFormGroup.get('type')?.invalid && vehicleFormGroup.get('type')?.touched) {
+                    <mat-error>Type is required.</mat-error>
                   }
-                </div>
-                <div class="field">
-                  <label>Color *</label>
-                  <input type="text" formControlName="color" />
-                  @if (vehicleFormGroup.get('color')?.touched && vehicleFormGroup.get('color')?.invalid) {
-                    <span class="error-msg" style="color:red; font-size:11px;">Color is required.</span>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Color</mat-label>
+                  <input matInput formControlName="color" />
+                  @if (vehicleFormGroup.get('color')?.invalid && vehicleFormGroup.get('color')?.touched) {
+                    <mat-error>Color is required.</mat-error>
                   }
-                </div>
-                <div class="field">
-                  <label>Fuel Type *</label>
-                  <select formControlName="fuelType">
-                    <option value="Petrol">Petrol</option>
-                    <option value="Diesel">Diesel</option>
-                    <option value="Electric">Electric</option>
-                    <option value="CNG">CNG</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label>Engine Number *</label>
-                  <input type="text" formControlName="engineNo" />
-                  @if (vehicleFormGroup.get('engineNo')?.touched && vehicleFormGroup.get('engineNo')?.invalid) {
-                    <span class="error-msg" style="color:red; font-size:11px;">Engine number is required.</span>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Fuel Type</mat-label>
+                  <mat-select formControlName="fuelType">
+                    <mat-option value="Petrol">Petrol</mat-option>
+                    <mat-option value="Diesel">Diesel</mat-option>
+                    <mat-option value="Electric">Electric</mat-option>
+                    <mat-option value="CNG">CNG</mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Engine Number</mat-label>
+                  <input matInput formControlName="engineNo" />
+                  @if (vehicleFormGroup.get('engineNo')?.invalid && vehicleFormGroup.get('engineNo')?.touched) {
+                    <mat-error>Engine number is required.</mat-error>
                   }
-                </div>
-                <div class="field">
-                  <label>Chassis Number *</label>
-                  <input type="text" formControlName="chassisNo" />
-                  @if (vehicleFormGroup.get('chassisNo')?.touched && vehicleFormGroup.get('chassisNo')?.invalid) {
-                    <span class="error-msg" style="color:red; font-size:11px;">Chassis number is required.</span>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Chassis Number</mat-label>
+                  <input matInput formControlName="chassisNo" />
+                  @if (vehicleFormGroup.get('chassisNo')?.invalid && vehicleFormGroup.get('chassisNo')?.touched) {
+                    <mat-error>Chassis number is required.</mat-error>
                   }
-                </div>
-                <div class="field">
-                  <label>Insurance Expiry Date *</label>
-                  <input type="date" formControlName="insuranceExpiry" />
-                  @if (vehicleFormGroup.get('insuranceExpiry')?.touched && vehicleFormGroup.get('insuranceExpiry')?.invalid) {
-                    <span class="error-msg" style="color:red; font-size:11px;">Expiry date is required.</span>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Insurance Expiry Date</mat-label>
+                  <input matInput type="date" formControlName="insuranceExpiry" />
+                  @if (vehicleFormGroup.get('insuranceExpiry')?.invalid && vehicleFormGroup.get('insuranceExpiry')?.touched) {
+                    <mat-error>Insurance date is required.</mat-error>
                   }
-                </div>
-                <div class="field">
-                  <label>Pollution Expiry Date *</label>
-                  <input type="date" formControlName="pollutionExpiry" />
-                  @if (vehicleFormGroup.get('pollutionExpiry')?.touched && vehicleFormGroup.get('pollutionExpiry')?.invalid) {
-                    <span class="error-msg" style="color:red; font-size:11px;">Expiry date is required.</span>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Pollution Expiry Date</mat-label>
+                  <input matInput type="date" formControlName="pollutionExpiry" />
+                  @if (vehicleFormGroup.get('pollutionExpiry')?.invalid && vehicleFormGroup.get('pollutionExpiry')?.touched) {
+                    <mat-error>Pollution date is required.</mat-error>
                   }
-                </div>
-                <div class="field">
-                  <label>Status *</label>
-                  <select formControlName="status">
-                    <option value="available">Available</option>
-                    <option value="maintenance">Maintenance / Service</option>
-                    <option value="contract">In Corporate Contract</option>
-                  </select>
-                </div>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Status</mat-label>
+                  <mat-select formControlName="status">
+                    <mat-option value="available">Available</mat-option>
+                    <mat-option value="maintenance">Maintenance / Service</mat-option>
+                    <mat-option value="contract">In Corporate Contract</mat-option>
+                  </mat-select>
+                </mat-form-field>
               </div>
             </div>
 
             <div class="booking-card" style="margin-top: 24px;" formGroupName="pricing">
               <h3>Pricing Slabs & Fees</h3>
               <div class="booking-content">
-                <div class="field" formGroupName="h23">
-                  <label>24 Hours Rent (Rs.) *</label>
-                  <input type="number" formControlName="price" />
+                <div formGroupName="h23" style="display:contents;">
+                  <mat-form-field appearance="outline">
+                    <mat-label>24 Hours Rent (Rs.)</mat-label>
+                    <input matInput type="number" formControlName="price" />
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>24 Hours KM Limit</mat-label>
+                    <input matInput type="number" formControlName="km" />
+                  </mat-form-field>
                 </div>
-                <div class="field" formGroupName="h23">
-                  <label>24 Hours KM Limit *</label>
-                  <input type="number" formControlName="km" />
+
+                <div formGroupName="h11" style="display:contents;">
+                  <mat-form-field appearance="outline">
+                    <mat-label>12 Hours Rent (Rs.)</mat-label>
+                    <input matInput type="number" formControlName="price" />
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>12 Hours KM Limit</mat-label>
+                    <input matInput type="number" formControlName="km" />
+                  </mat-form-field>
                 </div>
-                <div class="field" formGroupName="h11">
-                  <label>12 Hours Rent (Rs.) *</label>
-                  <input type="number" formControlName="price" />
+
+                <div formGroupName="h3" style="display:contents;">
+                  <mat-form-field appearance="outline">
+                    <mat-label>4 Hours Rent (Rs.)</mat-label>
+                    <input matInput type="number" formControlName="price" />
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>4 Hours KM Limit</mat-label>
+                    <input matInput type="number" formControlName="km" />
+                  </mat-form-field>
                 </div>
-                <div class="field" formGroupName="h11">
-                  <label>12 Hours KM Limit *</label>
-                  <input type="number" formControlName="km" />
-                </div>
-                <div class="field" formGroupName="h3">
-                  <label>4 Hours Rent (Rs.) *</label>
-                  <input type="number" formControlName="price" />
-                </div>
-                <div class="field" formGroupName="h3">
-                  <label>4 Hours KM Limit *</label>
-                  <input type="number" formControlName="km" />
-                </div>
-                <div class="field" formGroupName="h1">
-                  <label>1 Hour Rent (Rs.) *</label>
-                  <input type="number" formControlName="price" />
-                </div>
-                <div class="field" formGroupName="h1">
-                  <label>1 Hour KM Limit *</label>
-                  <input type="number" formControlName="km" />
+
+                <div formGroupName="h1" style="display:contents;">
+                  <mat-form-field appearance="outline">
+                    <mat-label>1 Hour Rent (Rs.)</mat-label>
+                    <input matInput type="number" formControlName="price" />
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>1 Hour KM Limit</mat-label>
+                    <input matInput type="number" formControlName="km" />
+                  </mat-form-field>
                 </div>
               </div>
             </div>
 
             <div class="booking-card" style="margin-top: 24px;">
               <div class="booking-content">
-                <div class="field">
-                  <label>Extra KM Price (Rs./KM) *</label>
-                  <input type="number" formControlName="extraKmPrice" />
-                  @if (vehicleFormGroup.get('extraKmPrice')?.touched && vehicleFormGroup.get('extraKmPrice')?.invalid) {
-                    <span class="error-msg" style="color:red; font-size:11px;">Required.</span>
+                <mat-form-field appearance="outline">
+                  <mat-label>Extra KM Price (Rs./KM)</mat-label>
+                  <input matInput type="number" formControlName="extraKmPrice" />
+                  @if (vehicleFormGroup.get('extraKmPrice')?.invalid && vehicleFormGroup.get('extraKmPrice')?.touched) {
+                    <mat-error>Required.</mat-error>
                   }
-                </div>
-                <div class="field">
-                  <label>Extra Hour Price (Rs./Hour) *</label>
-                  <input type="number" formControlName="extraHourPrice" />
-                  @if (vehicleFormGroup.get('extraHourPrice')?.touched && vehicleFormGroup.get('extraHourPrice')?.invalid) {
-                    <span class="error-msg" style="color:red; font-size:11px;">Required.</span>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Extra Hour Price (Rs./Hour)</mat-label>
+                  <input matInput type="number" formControlName="extraHourPrice" />
+                  @if (vehicleFormGroup.get('extraHourPrice')?.invalid && vehicleFormGroup.get('extraHourPrice')?.touched) {
+                    <mat-error>Required.</mat-error>
                   }
-                </div>
-                <div class="field full-width">
-                  <label>Vehicle Image URL (Default fallback will be used if empty)</label>
-                  <input type="text" [(ngModel)]="vehicleImageInputUrl" [ngModelOptions]="{standalone: true}" placeholder="e.g. assets/rr/baleno.png" />
-                </div>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Vehicle Image URL (Default fallback will be used if empty)</mat-label>
+                  <input matInput [(ngModel)]="vehicleImageInputUrl" [ngModelOptions]="{standalone: true}" placeholder="e.g. assets/rr/baleno.png" />
+                </mat-form-field>
               </div>
 
               <div style="margin-top: 24px; display: flex; gap: 16px;">
@@ -729,80 +791,89 @@
             <div class="booking-card">
               <h3>Employee Personal & Account Details</h3>
               <div class="booking-content">
-                <div class="field">
-                  <label>First Name *</label>
-                  <input type="text" formControlName="firstName" />
-                  @if (employeeFormGroup.get('firstName')?.touched && employeeFormGroup.get('firstName')?.invalid) {
-                    <span class="error-msg" style="color:red; font-size:11px;">Letters only.</span>
+                <mat-form-field appearance="outline">
+                  <mat-label>First Name</mat-label>
+                  <input matInput formControlName="firstName" />
+                  @if (employeeFormGroup.get('firstName')?.invalid && employeeFormGroup.get('firstName')?.touched) {
+                    <mat-error>Required (letters only).</mat-error>
                   }
-                </div>
-                <div class="field">
-                  <label>Last Name *</label>
-                  <input type="text" formControlName="lastName" />
-                  @if (employeeFormGroup.get('lastName')?.touched && employeeFormGroup.get('lastName')?.invalid) {
-                    <span class="error-msg" style="color:red; font-size:11px;">Letters only.</span>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Last Name</mat-label>
+                  <input matInput formControlName="lastName" />
+                  @if (employeeFormGroup.get('lastName')?.invalid && employeeFormGroup.get('lastName')?.touched) {
+                    <mat-error>Required (letters only).</mat-error>
                   }
-                </div>
-                <div class="field">
-                  <label>Date of Birth *</label>
-                  <input type="date" formControlName="dob" />
-                  @if (employeeFormGroup.get('dob')?.touched && employeeFormGroup.get('dob')?.invalid) {
-                    <span class="error-msg" style="color:red; font-size:11px;">DOB is required.</span>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Date of Birth</mat-label>
+                  <input matInput type="date" formControlName="dob" />
+                  @if (employeeFormGroup.get('dob')?.invalid && employeeFormGroup.get('dob')?.touched) {
+                    <mat-error>Required.</mat-error>
                   }
-                </div>
-                <div class="field">
-                  <label>Phone Number *</label>
-                  <input type="text" formControlName="phone" maxlength="10" />
-                  @if (employeeFormGroup.get('phone')?.touched && employeeFormGroup.get('phone')?.invalid) {
-                    <span class="error-msg" style="color:red; font-size:11px;">Must be 10 digits.</span>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Phone Number</mat-label>
+                  <input matInput formControlName="phone" maxlength="10" />
+                  @if (employeeFormGroup.get('phone')?.invalid && employeeFormGroup.get('phone')?.touched) {
+                    <mat-error>Must be 10 digits.</mat-error>
                   }
-                </div>
-                <div class="field">
-                  <label>Alternative Phone Number</label>
-                  <input type="text" formControlName="altPhone" maxlength="10" />
-                  @if (employeeFormGroup.get('altPhone')?.touched && employeeFormGroup.get('altPhone')?.invalid) {
-                    <span class="error-msg" style="color:red; font-size:11px;">Must be 10 digits.</span>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Alternative Phone Number</mat-label>
+                  <input matInput formControlName="altPhone" maxlength="10" />
+                  @if (employeeFormGroup.get('altPhone')?.invalid && employeeFormGroup.get('altPhone')?.touched) {
+                    <mat-error>Must be 10 digits.</mat-error>
                   }
-                </div>
-                <div class="field">
-                  <label>Email Address *</label>
-                  <input type="email" formControlName="email" />
-                  @if (employeeFormGroup.get('email')?.touched && employeeFormGroup.get('email')?.invalid) {
-                    <span class="error-msg" style="color:red; font-size:11px;">Please enter valid email address.</span>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Email Address</mat-label>
+                  <input matInput type="email" formControlName="email" />
+                  @if (employeeFormGroup.get('email')?.invalid && employeeFormGroup.get('email')?.touched) {
+                    <mat-error>Please enter valid email.</mat-error>
                   }
-                </div>
-                <div class="field">
-                  <label>Aadhar Number *</label>
-                  <input type="text" formControlName="aadhar" maxlength="12" />
-                  @if (employeeFormGroup.get('aadhar')?.touched && employeeFormGroup.get('aadhar')?.invalid) {
-                    <span class="error-msg" style="color:red; font-size:11px;">Must be 12 digits.</span>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Aadhar Number</mat-label>
+                  <input matInput formControlName="aadhar" maxlength="12" />
+                  @if (employeeFormGroup.get('aadhar')?.invalid && employeeFormGroup.get('aadhar')?.touched) {
+                    <mat-error>Must be exactly 12 digits.</mat-error>
                   }
-                </div>
-                <div class="field">
-                  <label>Driving License Number *</label>
-                  <input type="text" formControlName="dl" maxlength="16" />
-                  @if (employeeFormGroup.get('dl')?.touched && employeeFormGroup.get('dl')?.invalid) {
-                    <span class="error-msg" style="color:red; font-size:11px;">Must be 16 characters.</span>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Driving License Number</mat-label>
+                  <input matInput formControlName="dl" maxlength="16" />
+                  @if (employeeFormGroup.get('dl')?.invalid && employeeFormGroup.get('dl')?.touched) {
+                    <mat-error>Must be exactly 16 characters.</mat-error>
                   }
-                </div>
-                <div class="field">
-                  <label>Role *</label>
-                  <select formControlName="role">
-                    <option value="employee">Employee</option>
-                    <option value="admin">Admin</option>
-                  </select>
-                </div>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Role</mat-label>
+                  <mat-select formControlName="role">
+                    <mat-option value="employee">Employee</mat-option>
+                    <mat-option value="admin">Admin</mat-option>
+                  </mat-select>
+                </mat-form-field>
+
                 <div class="field" style="flex-direction: row; align-items: center; gap: 10px; margin-top: 20px;">
-                  <input type="checkbox" formControlName="allowLogin" id="empAllowLogin" />
-                  <label for="empAllowLogin" style="cursor: pointer;">Allow Login to Dashboard</label>
+                  <mat-checkbox formControlName="allowLogin" id="empAllowLogin">Allow Login to Dashboard</mat-checkbox>
                 </div>
-                <div class="field full-width">
-                  <label>Address *</label>
-                  <textarea formControlName="address"></textarea>
-                  @if (employeeFormGroup.get('address')?.touched && employeeFormGroup.get('address')?.invalid) {
-                    <span class="error-msg" style="color:red; font-size:11px;">Address is required.</span>
+
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Address</mat-label>
+                  <textarea matInput formControlName="address" rows="2"></textarea>
+                  @if (employeeFormGroup.get('address')?.invalid && employeeFormGroup.get('address')?.touched) {
+                    <mat-error>Address is required.</mat-error>
                   }
-                </div>
+                </mat-form-field>
               </div>
 
               <div style="margin-top: 24px; display: flex; gap: 16px;">
@@ -864,8 +935,14 @@
           <h2>System Activity Logs</h2>
 
           <div class="log-filter-bar">
-            <label>From: <input type="date" [(ngModel)]="logFilterFrom" [ngModelOptions]="{standalone: true}" /></label>
-            <label>To: <input type="date" [(ngModel)]="logFilterTo" [ngModelOptions]="{standalone: true}" /></label>
+            <mat-form-field appearance="outline" style="width:160px; margin-bottom: 0;">
+              <mat-label>From Date</mat-label>
+              <input matInput type="date" [(ngModel)]="logFilterFrom" [ngModelOptions]="{standalone: true}" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" style="width:160px; margin-bottom: 0;">
+              <mat-label>To Date</mat-label>
+              <input matInput type="date" [(ngModel)]="logFilterTo" [ngModelOptions]="{standalone: true}" />
+            </mat-form-field>
             <button class="action-btn" (click)="loadActivityLogs()">Get Logs</button>
             <button class="action-btn" (click)="clearLogFilters()">Clear Filters & Display All</button>
           </div>
@@ -891,46 +968,25 @@
         <h3>End Rental Booking - ID: {{ selectedBookingToEnd()?.id }}</h3>
 
         <div class="booking-content" style="grid-template-columns: 1fr; gap: 16px; margin-top: 20px;">
-          <div class="field">
-            <label>Vehicle: {{ selectedBookingToEnd()?.vehicleManufacturer }} {{ selectedBookingToEnd()?.vehicleName }} ({{ selectedBookingToEnd()?.vehicleRegNo }})</label>
+          <div>
+            <p><strong>Vehicle:</strong> {{ selectedBookingToEnd()?.vehicleManufacturer }} {{ selectedBookingToEnd()?.vehicleName }} ({{ selectedBookingToEnd()?.vehicleRegNo }})</p>
+            <p><strong>Odometer Pickup Reading:</strong> {{ selectedBookingToEnd()?.vehicleOdometerStart }} KM</p>
           </div>
-          <div class="field">
-            <label>Odometer Pickup Reading: {{ selectedBookingToEnd()?.vehicleOdometerStart }} KM</label>
+          <mat-form-field appearance="outline">
+            <mat-label>Odometer Return Reading (KM) *</mat-label>
+            <input matInput type="number" [(ngModel)]="endBookingFields.odometerEnd" (input)="calculateEndBookingFees()" required />
+          </mat-form-field>
+          <div class="field" style="flex-direction: row; align-items: center; gap: 10px; margin-bottom: 12px;">
+            <mat-checkbox [(ngModel)]="endBookingFields.cleanlinessFine" (change)="calculateEndBookingFees()" id="cleanlinessFine">Apply Cleanliness Fee (Rs. 500)</mat-checkbox>
           </div>
-          <div class="field">
-            <label>Odometer Return Reading (KM) *</label>
-            <input type="number" [(ngModel)]="endBookingFields.odometerEnd" (input)="calculateEndBookingFees()" required />
-          </div>
-          <div class="field">
-            <label>Extra Kilometers Travelled: {{ endBookingFields.extraKms }} KM</label>
-          </div>
-          <div class="field">
-            <label>Extra Kilometers Charge: Rs. {{ endBookingFields.extraKmFee }}</label>
-          </div>
-          <div class="field">
-            <label>Extra Hours Latency: {{ endBookingFields.extraHours }} Hours</label>
-          </div>
-          <div class="field">
-            <label>Extra Hours Charge: Rs. {{ endBookingFields.extraHourFee }}</label>
-          </div>
-          <div class="field" style="flex-direction: row; align-items: center; gap: 10px;">
-            <input type="checkbox" [(ngModel)]="endBookingFields.cleanlinessFine" id="cleanlinessFine" (change)="calculateEndBookingFees()" />
-            <label for="cleanlinessFine">Apply Cleanliness Fee (Rs. 500)</label>
-          </div>
-          <div class="field">
-            <label>Original Rent Amount: Rs. {{ selectedBookingToEnd()?.finalRentalAmount }}</label>
-          </div>
-          <div class="field">
-            <label>Additional Fees Total: Rs. {{ endBookingFields.totalAdditionalFees }}</label>
-          </div>
-          <div class="field">
-            <label>Total Final Payable: Rs. {{ endBookingFields.finalTotalPayable }}</label>
-          </div>
-          <div class="field">
-            <label>Advance Amount Already Paid: Rs. {{ selectedBookingToEnd()?.amountPaid }}</label>
-          </div>
-          <div class="field">
-            <label>Net Balance Due (To Pay/Refund): Rs. {{ endBookingFields.balancePending }}</label>
+          <div>
+            <p><strong>Extra Kilometers Travelled:</strong> {{ endBookingFields.extraKms }} KM (Charge: Rs. {{ endBookingFields.extraKmFee }})</p>
+            <p><strong>Extra Hours Latency:</strong> {{ endBookingFields.extraHours }} Hours (Charge: Rs. {{ endBookingFields.extraHourFee }})</p>
+            <p><strong>Original Rent Amount:</strong> Rs. {{ selectedBookingToEnd()?.finalRentalAmount }}</p>
+            <p><strong>Additional Fees Total:</strong> Rs. {{ endBookingFields.totalAdditionalFees }}</p>
+            <p><strong>Total Final Payable:</strong> Rs. {{ endBookingFields.finalTotalPayable }}</p>
+            <p><strong>Advance Amount Paid:</strong> Rs. {{ selectedBookingToEnd()?.amountPaid }}</p>
+            <p style="font-size: 16px;"><strong>Net Balance Due: Rs. {{ endBookingFields.balancePending }}</strong></p>
           </div>
         </div>
 
@@ -951,59 +1007,68 @@
 
         <form [formGroup]="modifyBookingFormGroup" (submit)="submitModifyBooking()">
           <div class="booking-content" style="margin-top: 20px; gap: 16px;">
-            <div class="field">
-              <label>Pickup Date & Time</label>
-              <input type="datetime-local" formControlName="pickupDateTime" (change)="calculateModifyReturnDate()" />
-            </div>
-            <div class="field">
-              <label>Duration Days</label>
-              <select formControlName="durationDays" (change)="calculateModifyReturnDate()">
-                <option value="0">0 days</option>
+            <mat-form-field appearance="outline">
+              <mat-label>Pickup Date & Time</mat-label>
+              <input matInput type="datetime-local" formControlName="pickupDateTime" (change)="calculateModifyReturnDate()" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Duration Days</mat-label>
+              <mat-select formControlName="durationDays" (selectionChange)="calculateModifyReturnDate()">
+                <mat-option value="0">0 days</mat-option>
                 @for (day of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]; track day) {
-                  <option [value]="day">{{ day }} day{{ day > 1 ? 's' : '' }}</option>
+                  <mat-option [value]="'' + day">{{ day }} day{{ day > 1 ? 's' : '' }}</mat-option>
                 }
-              </select>
-            </div>
-            <div class="field">
-              <label>Duration Hours</label>
-              <select formControlName="durationHours" (change)="calculateModifyReturnDate()">
-                <option value="0">0 hours</option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Duration Hours</mat-label>
+              <mat-select formControlName="durationHours" (selectionChange)="calculateModifyReturnDate()">
+                <mat-option value="0">0 hours</mat-option>
                 @for (hour of [1,2,3,4,5,6,7,8,9,10,11,12]; track hour) {
-                  <option [value]="hour">{{ hour }} hour{{ hour > 1 ? 's' : '' }}</option>
+                  <mat-option [value]="'' + hour">{{ hour }} hour{{ hour > 1 ? 's' : '' }}</mat-option>
                 }
-              </select>
-            </div>
-            <div class="field">
-              <label>Return Date & Time (Auto)</label>
-              <input type="datetime-local" formControlName="returnDateTime" readonly />
-            </div>
-            <div class="field">
-              <label>Total Rental Amount (Rs. Auto)</label>
-              <input type="text" formControlName="totalRentalAmount" readonly />
-            </div>
-            <div class="field">
-              <label>Discount Amount</label>
-              <input type="number" formControlName="discount" (input)="recalculateModifyFinalAmount()" />
-            </div>
-            <div class="field">
-              <label>Discount Type</label>
-              <select formControlName="discountType" (change)="recalculateModifyFinalAmount()">
-                <option value="rupee">Rupee (Rs.)</option>
-                <option value="percentage">Percentage (%)</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Final Rental Amount (Rs. Auto)</label>
-              <input type="text" formControlName="finalRentalAmount" readonly />
-            </div>
-            <div class="field">
-              <label>Amount Already Paid (Rs.)</label>
-              <input type="number" formControlName="amountPaid" (input)="recalculateModifyFinalAmount()" />
-            </div>
-            <div class="field">
-              <label>Balance Pending Amount (Rs. Auto)</label>
-              <input type="text" formControlName="pendingAmount" readonly />
-            </div>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Return Date & Time (Auto)</mat-label>
+              <input matInput type="datetime-local" formControlName="returnDateTime" readonly />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Total Rental Amount (Rs. Auto)</mat-label>
+              <input matInput formControlName="totalRentalAmount" readonly />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Discount Amount</mat-label>
+              <input matInput type="number" formControlName="discount" (input)="recalculateModifyFinalAmount()" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Discount Type</mat-label>
+              <mat-select formControlName="discountType" (selectionChange)="recalculateModifyFinalAmount()">
+                <mat-option value="rupee">Rupee (Rs.)</mat-option>
+                <mat-option value="percentage">Percentage (%)</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Final Rental Amount (Rs. Auto)</mat-label>
+              <input matInput formControlName="finalRentalAmount" readonly />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Amount Already Paid (Rs.)</mat-label>
+              <input matInput type="number" formControlName="amountPaid" (input)="recalculateModifyFinalAmount()" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Balance Pending Amount (Rs. Auto)</mat-label>
+              <input matInput formControlName="pendingAmount" readonly />
+            </mat-form-field>
           </div>
 
           <div style="margin-top: 24px; display: flex; gap: 12px; justify-content: flex-end;">
@@ -1061,22 +1126,22 @@
         <h3>Your Profile Information</h3>
 
         <div class="booking-content" style="grid-template-columns: 1fr; gap: 16px; margin-top: 20px;">
-          <div class="field">
-            <label>ID</label>
-            <input type="text" [value]="currentUser()?.id" readonly disabled />
-          </div>
-          <div class="field">
-            <label>Name</label>
-            <input type="text" [value]="currentUser()?.firstName + ' ' + currentUser()?.lastName" readonly disabled />
-          </div>
-          <div class="field">
-            <label>Email Address</label>
-            <input type="text" [value]="currentUser()?.email" readonly disabled />
-          </div>
-          <div class="field">
-            <label>Role</label>
-            <input type="text" [value]="currentUser()?.role | uppercase" readonly disabled />
-          </div>
+          <mat-form-field appearance="outline">
+            <mat-label>ID</mat-label>
+            <input matInput [value]="currentUser()?.id" readonly disabled />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Name</mat-label>
+            <input matInput [value]="currentUser()?.firstName + ' ' + currentUser()?.lastName" readonly disabled />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Email Address</mat-label>
+            <input matInput [value]="currentUser()?.email" readonly disabled />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Role</mat-label>
+            <input matInput [value]="currentUser()?.role | uppercase" readonly disabled />
+          </mat-form-field>
         </div>
 
         <div style="margin-top: 24px; display: flex; justify-content: flex-end;">

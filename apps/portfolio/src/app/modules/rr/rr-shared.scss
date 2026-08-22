@@ -2,33 +2,7 @@
    THEME STYLES (LIGHT/DARK VARIABLES) FOR RAM & RAM CAR RENTALS
 ----------------------------------------------------------- */
 
-:root {
-  --rr-bg: #F5F7FA;
-  --rr-text: #0A1A2F;
-  --rr-card-bg: #ffffff;
-  --rr-border-color: #e2e8f0;
-  --rr-header-bg: #0A1A2F;
-  --rr-header-text: #ffffff;
-  --rr-card-shadow: 0 4px 15px rgba(0,0,0,0.05);
-  --rr-card-hover-shadow: 0 8px 25px rgba(0,0,0,0.1);
-  --rr-text-muted: #64748b;
-  --rr-btn-bg: #142e4f;
-  --rr-btn-hover-bg: #1f3b63;
-}
 
-:host-context(.dark-theme), body.dark-theme {
-  --rr-bg: #0f172a;
-  --rr-text: #f8fafc;
-  --rr-card-bg: #1e293b;
-  --rr-border-color: #334155;
-  --rr-header-bg: #020617;
-  --rr-header-text: #f8fafc;
-  --rr-card-shadow: 0 4px 20px rgba(0,0,0,0.25);
-  --rr-card-hover-shadow: 0 8px 30px rgba(0,0,0,0.4);
-  --rr-text-muted: #94a3b8;
-  --rr-btn-bg: #020617;
-  --rr-btn-hover-bg: #1e293b;
-}
 
 .rr-wrapper {
   margin: 0;

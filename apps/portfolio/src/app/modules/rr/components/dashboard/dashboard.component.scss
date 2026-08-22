@@ -1,33 +1,35 @@
 /* -----------------------------------------------------------
-   GLOBAL DASHBOARD - PORTED FROM original dashboard.css
+   GLOBAL DASHBOARD - THEMED WITH CSS CUSTOM PROPERTIES
 ----------------------------------------------------------- */
 
 .dashboard-wrapper {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: #F5F7FA;
-  color: #0A1A2F;
+  background: var(--rr-bg);
+  color: var(--rr-text);
   font-family: 'Inter', sans-serif;
   box-sizing: border-box;
+  transition: background 0.3s, color 0.3s;
 
   .app-header {
-    background: #0A1A2F;
+    background: var(--rr-header-bg);
     padding: 16px 32px;
-    color: white;
+    color: var(--rr-header-text);
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-size: 14px;
     box-sizing: border-box;
     width: 100%;
+    transition: background 0.3s;
   }
 
   .app-title {
     margin: 0;
     font-family: 'Montserrat', sans-serif;
     font-size: 20px;
-    color: #ffffff;
+    color: var(--rr-header-text);
   }
 
   .profile-container {
@@ -37,18 +39,18 @@
   .profile-button {
     cursor: pointer;
     padding: 8px 16px;
-    background: #142e4f;
+    background: var(--rr-btn-bg);
     border-radius: 6px;
     display: flex;
     align-items: center;
     gap: 8px;
-    color: white;
+    color: var(--rr-header-text);
     font-weight: 500;
     font-size: 13px;
     transition: background 0.2s;
 
     &:hover {
-      background: #1f3b63;
+      background: var(--rr-btn-hover-bg);
     }
   }
 
@@ -56,30 +58,32 @@
     position: absolute;
     right: 0;
     top: 48px;
-    background: white;
+    background: var(--rr-card-bg);
     border-radius: 6px;
     width: 180px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: var(--rr-card-shadow);
     z-index: 1000;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--rr-border-color);
+    transition: background-color 0.3s, border-color 0.3s;
   }
 
   .profile-dropdown .dropdown-item {
     padding: 12px;
     cursor: pointer;
-    color: #0f172a;
+    color: var(--rr-text);
     font-weight: 500;
     font-size: 13px;
     text-align: left;
+    transition: background 0.2s, color 0.2s;
 
     &:hover {
-      background: #f1f5f9;
+      background: var(--rr-bg);
     }
 
     &.logout {
       color: #ef4444;
       font-weight: 600;
-      border-top: 1px solid #e2e8f0;
+      border-top: 1px solid var(--rr-border-color);
     }
   }
 
@@ -93,11 +97,12 @@
   /* SIDEBAR */
   .sidebar {
     width: 220px;
-    background: #0A1A2F;
-    color: white;
+    background: var(--rr-header-bg);
+    color: var(--rr-header-text);
     padding: 20px;
     font-size: 13px;
     box-sizing: border-box;
+    transition: background 0.3s;
   }
 
   .menu {
@@ -114,13 +119,13 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 4px;
-    transition: background 0.3s;
+    transition: background 0.3s, color 0.3s;
     font-size: 13px;
     margin-bottom: 4px;
     font-weight: 500;
 
     &:hover {
-      background: #1f2e45;
+      background: var(--rr-btn-hover-bg);
     }
 
     &.active-menu {
@@ -141,17 +146,17 @@
     padding: 8px 12px;
     cursor: pointer;
     border-radius: 6px;
-    transition: background 0.3s;
+    transition: background 0.3s, color 0.3s;
     font-size: 12px;
-    color: #cbd5e1;
+    color: var(--rr-text-muted);
     margin-bottom: 2px;
     display: block;
     width: 100%;
     box-sizing: border-box;
 
     &:hover {
-      background: #1f2e45;
-      color: #ffffff;
+      background: var(--rr-btn-hover-bg);
+      color: var(--rr-header-text);
     }
 
     &.active-sub {
@@ -183,7 +188,7 @@
     font-size: 24px;
     margin-top: 0;
     margin-bottom: 24px;
-    color: #0f172a;
+    color: var(--rr-text);
   }
 
   h3 {
@@ -191,7 +196,7 @@
     font-size: 18px;
     margin-top: 0;
     margin-bottom: 16px;
-    color: #1e293b;
+    color: var(--rr-text);
   }
 
   /* DASHBOARD STATS */
@@ -203,15 +208,16 @@
   }
 
   .status-section {
-    background: white;
+    background: var(--rr-card-bg);
     padding: 20px;
     border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    box-shadow: var(--rr-card-shadow);
+    transition: background-color 0.3s, box-shadow 0.3s;
 
     h3 {
       font-size: 14px;
       text-transform: uppercase;
-      color: #64748b;
+      color: var(--rr-text-muted);
       margin-bottom: 12px;
       font-weight: 600;
     }
@@ -219,7 +225,7 @@
     .count-display {
       font-size: 36px;
       font-weight: 800;
-      color: #0f172a;
+      color: var(--rr-text);
     }
   }
 
@@ -233,21 +239,21 @@
 
   .vehicle-card {
     width: 180px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--rr-border-color);
     border-radius: 10px;
     padding: 12px;
-    background-color: #fff;
+    background-color: var(--rr-card-bg);
     cursor: pointer;
     transition: all 0.2s;
     display: flex;
     flex-direction: column;
     align-items: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    box-shadow: var(--rr-card-shadow);
     box-sizing: border-box;
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      box-shadow: var(--rr-card-hover-shadow);
     }
 
     img {
@@ -262,23 +268,25 @@
       font-size: 13px;
       margin-bottom: 4px;
       text-align: center;
+      color: var(--rr-text);
     }
 
     .veh-subtitle {
       font-size: 11px;
-      color: #64748b;
+      color: var(--rr-text-muted);
       margin-bottom: 2px;
     }
   }
 
   /* TABLES */
   .table-container {
-    background: white;
+    background: var(--rr-card-bg);
     border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    box-shadow: var(--rr-card-shadow);
     overflow-x: auto;
     margin-bottom: 30px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--rr-border-color);
+    transition: background-color 0.3s, border-color 0.3s;
   }
 
   table {
@@ -289,20 +297,22 @@
   }
 
   th {
-    background: #0f172a;
-    color: white;
+    background: var(--rr-header-bg);
+    color: var(--rr-header-text);
     padding: 14px 16px;
     font-weight: 600;
+    transition: background 0.3s, color 0.3s;
   }
 
   td {
     padding: 12px 16px;
-    border-bottom: 1px solid #e2e8f0;
-    color: #334155;
+    border-bottom: 1px solid var(--rr-border-color);
+    color: var(--rr-text);
+    transition: border-color 0.3s, color 0.3s;
   }
 
   tr:hover td {
-    background: #f8fafc;
+    background: var(--rr-bg);
   }
 
   .badge {
@@ -328,11 +338,12 @@
   }
 
   .booking-card {
-    background: white;
+    background: var(--rr-card-bg);
     border-radius: 12px;
     padding: 24px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    border: 1px solid #e2e8f0;
+    box-shadow: var(--rr-card-shadow);
+    border: 1px solid var(--rr-border-color);
+    transition: background-color 0.3s, border-color 0.3s;
   }
 
   .booking-content {
@@ -353,16 +364,18 @@
     label {
       font-size: 12px;
       font-weight: 600;
-      color: #475569;
+      color: var(--rr-text);
     }
 
     input, select, textarea {
       padding: 10px 12px;
-      border: 1px solid #cbd5e1;
+      border: 1px solid var(--rr-border-color);
       border-radius: 6px;
       font-size: 13px;
       outline: none;
-      transition: border-color 0.2s;
+      background: var(--rr-card-bg);
+      color: var(--rr-text);
+      transition: border-color 0.2s, background-color 0.3s, color 0.3s;
 
       &:focus {
         border-color: #00bfa5;
@@ -378,27 +391,35 @@
   /* BUTTONS */
   .action-btn {
     padding: 10px 20px;
-    background: #0f172a;
-    color: white;
+    background: var(--rr-btn-bg);
+    color: var(--rr-header-text);
     border: none;
     border-radius: 6px;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: background 0.2s, color 0.2s;
     font-size: 13px;
 
     &:hover {
-      background: #1e293b;
+      background: var(--rr-btn-hover-bg);
     }
 
     &.danger {
       background: #ef4444;
+      color: white;
       &:hover { background: #dc2626; }
     }
 
     &.success {
       background: #10b981;
+      color: white;
       &:hover { background: #059669; }
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: var(--rr-text-muted);
     }
   }
 
@@ -417,16 +438,18 @@
   }
 
   .popup-box {
-    background: white;
+    background: var(--rr-card-bg);
+    color: var(--rr-text);
     width: 90%;
     max-width: 600px;
     max-height: 90vh;
     overflow-y: auto;
     border-radius: 12px;
     padding: 28px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     position: relative;
     box-sizing: border-box;
+    transition: background-color 0.3s, color 0.3s;
 
     .close-popup-btn {
       position: absolute;
@@ -436,10 +459,10 @@
       border: none;
       font-size: 20px;
       cursor: pointer;
-      color: #64748b;
+      color: var(--rr-text-muted);
 
       &:hover {
-        color: #0f172a;
+        color: var(--rr-text);
       }
     }
   }
@@ -449,47 +472,51 @@
     display: flex;
     gap: 16px;
     align-items: center;
-    background: white;
+    background: var(--rr-card-bg);
     padding: 16px 20px;
     border-radius: 10px;
     margin-bottom: 20px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+    box-shadow: var(--rr-card-shadow);
     flex-wrap: wrap;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--rr-border-color);
+    transition: background-color 0.3s, border-color 0.3s;
 
     label {
       font-weight: 600;
       font-size: 13px;
-      color: #475569;
+      color: var(--rr-text);
       display: flex;
       align-items: center;
       gap: 6px;
 
       input {
         padding: 6px 10px;
-        border: 1px solid #cbd5e1;
+        border: 1px solid var(--rr-border-color);
         border-radius: 4px;
         font-size: 12px;
+        background: var(--rr-card-bg);
+        color: var(--rr-text);
       }
     }
   }
 
   .logs-scroll {
-    background: white;
+    background: var(--rr-card-bg);
     border-radius: 10px;
     padding: 16px 20px;
     max-height: 400px;
     overflow-y: auto;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.04);
-    border: 1px solid #e2e8f0;
+    box-shadow: var(--rr-card-shadow);
+    border: 1px solid var(--rr-border-color);
     line-height: 1.6;
     font-family: monospace;
     font-size: 12px;
+    transition: background-color 0.3s, border-color 0.3s;
 
     div {
       padding: 6px 0;
-      border-bottom: 1px solid #f1f5f9;
-      color: #334155;
+      border-bottom: 1px solid var(--rr-border-color);
+      color: var(--rr-text);
     }
   }
 }

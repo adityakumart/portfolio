@@ -39,6 +39,19 @@
   --c-primary-color: #146ef6;
   --c-secondary-color: #cacacc;
 
+  /* Car Rentals Light Theme Variables */
+  --rr-bg: #F5F7FA;
+  --rr-text: #0A1A2F;
+  --rr-card-bg: #ffffff;
+  --rr-border-color: #cbd5e1;
+  --rr-header-bg: #0A1A2F;
+  --rr-header-text: #ffffff;
+  --rr-card-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  --rr-card-hover-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  --rr-text-muted: #64748b;
+  --rr-btn-bg: #142e4f;
+  --rr-btn-hover-bg: #1f3b63;
+
   /* Material 3 Compatibility / Fallback Variables */
   --mat-sys-primary: var(--c-primary-color);
   --mat-sys-primary-container: var(--portPaleBlue);
@@ -78,6 +91,19 @@
   --portBlack: #e0e0e0;
   --c-primary-color: #4a90e2;
   --c-secondary-color: #4a4a4c;
+
+  /* Car Rentals Dark Theme Variables */
+  --rr-bg: #0f172a;
+  --rr-text: #f8fafc;
+  --rr-card-bg: #1e293b;
+  --rr-border-color: #334155;
+  --rr-header-bg: #020617;
+  --rr-header-text: #f8fafc;
+  --rr-card-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  --rr-card-hover-shadow: 0 8px 30px rgba(0,0,0,0.5);
+  --rr-text-muted: #94a3b8;
+  --rr-btn-bg: #020617;
+  --rr-btn-hover-bg: #1e293b;
 
   /* Material 3 Compatibility / Fallback Variables */
   --mat-sys-primary: var(--c-primary-color);
