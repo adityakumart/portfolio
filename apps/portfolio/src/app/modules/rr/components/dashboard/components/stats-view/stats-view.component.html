@@ -1,0 +1,36 @@
+<h2>Dashboard</h2>
+
+<div id="vehicle-status-dashboard">
+  <div class="status-section">
+    <h3>Vehicles Available</h3>
+    <div class="count-display">{{ getVehicleCount('available') }}</div>
+  </div>
+  <div class="status-section">
+    <h3>Vehicles in Booking</h3>
+    <div class="count-display">{{ getVehicleCount('in_booking') }}</div>
+  </div>
+  <div class="status-section">
+    <h3>Vehicles in Service</h3>
+    <div class="count-display">{{ getVehicleCount('maintenance') }}</div>
+  </div>
+  <div class="status-section">
+    <h3>Vehicles in Contract</h3>
+    <div class="count-display">{{ getVehicleCount('contract') }}</div>
+  </div>
+</div>
+
+<h3>Available Vehicles Slabs</h3>
+<div class="vehicle-grid">
+  @for (v of vehicles(); track v.regNo) {
+    @if (v.status === 'available') {
+      <div class="vehicle-card">
+        <img [src]="getVehicleImage(v)" alt="Vehicle Image" />
+        <div class="veh-title">{{ v.manufacturer }} {{ v.name }}</div>
+        <div class="veh-subtitle">No: {{ v.regNo }}</div>
+        <div class="veh-subtitle">{{ v.seating }} Seater ({{ v.fuelType | uppercase }})</div>
+      </div>
+    }
+  } @empty {
+    <p>No available vehicles in fleet.</p>
+  }
+</div>

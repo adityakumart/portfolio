@@ -1,0 +1,153 @@
+<h2>Employees > List</h2>
+
+<div style="margin-bottom: 20px;">
+  <button mat-raised-button color="primary" class="action-btn success" (click)="openAddEmployeeModal()">
+    <mat-icon>add</mat-icon> Register New Employee
+  </button>
+</div>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr>
+        <th>Employee ID</th>
+        <th>Name</th>
+        <th>Role</th>
+        <th>Date of Birth</th>
+        <th>Phone</th>
+        <th>Email</th>
+        <th>Login Allowed</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (emp of employees(); track emp.id) {
+        <tr>
+          <td>{{ emp.id }}</td>
+          <td>{{ emp.firstName }} {{ emp.lastName }}</td>
+          <td>{{ emp.role | uppercase }}</td>
+          <td>{{ emp.dob }}</td>
+          <td>{{ emp.phone }}</td>
+          <td>{{ emp.email }}</td>
+          <td>
+            <span class="badge" [class]="emp.allowLogin ? 'status-completed' : 'status-cancelled'">
+              {{ emp.allowLogin ? 'Yes' : 'No' }}
+            </span>
+          </td>
+          <td>
+            <button class="action-btn" style="padding: 6px 12px; font-size: 11px;" (click)="openEditEmployeeModal(emp)">Edit</button>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="8" style="text-align: center;">No employees found.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<!-- POPUP: ADD/MODIFY EMPLOYEE DIALOG TEMPLATE -->
+<ng-template #employeeFormDialog>
+  <h3 mat-dialog-title>{{ editingEmployeeMode() ? 'Modify Employee - ID: ' + employeeFormGroup.value.id : 'Register New Employee' }}</h3>
+  <mat-dialog-content style="max-height: 70vh; overflow-y: auto;">
+    <form [formGroup]="employeeFormGroup">
+      <div style="padding-right: 8px;">
+        <div class="booking-card">
+          <h3>Employee Personal & Account Details</h3>
+          <div class="booking-content">
+            <mat-form-field appearance="outline">
+              <mat-label>First Name</mat-label>
+              <input matInput formControlName="firstName" />
+              @if (employeeFormGroup.get('firstName')?.invalid && employeeFormGroup.get('firstName')?.touched) {
+                <mat-error>Required (letters only).</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Last Name</mat-label>
+              <input matInput formControlName="lastName" />
+              @if (employeeFormGroup.get('lastName')?.invalid && employeeFormGroup.get('lastName')?.touched) {
+                <mat-error>Required (letters only).</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Date of Birth</mat-label>
+              <input matInput type="date" formControlName="dob" />
+              @if (employeeFormGroup.get('dob')?.invalid && employeeFormGroup.get('dob')?.touched) {
+                <mat-error>Required.</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Phone Number</mat-label>
+              <input matInput formControlName="phone" maxlength="10" />
+              @if (employeeFormGroup.get('phone')?.invalid && employeeFormGroup.get('phone')?.touched) {
+                <mat-error>Must be 10 digits.</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Alternative Phone Number</mat-label>
+              <input matInput formControlName="altPhone" maxlength="10" />
+              @if (employeeFormGroup.get('altPhone')?.invalid && employeeFormGroup.get('altPhone')?.touched) {
+                <mat-error>Must be 10 digits.</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Email Address</mat-label>
+              <input matInput type="email" formControlName="email" />
+              @if (employeeFormGroup.get('email')?.invalid && employeeFormGroup.get('email')?.touched) {
+                <mat-error>Please enter valid email.</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Aadhar Number</mat-label>
+              <input matInput formControlName="aadhar" maxlength="12" />
+              @if (employeeFormGroup.get('aadhar')?.invalid && employeeFormGroup.get('aadhar')?.touched) {
+                <mat-error>Must be exactly 12 digits.</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Driving License Number</mat-label>
+              <input matInput formControlName="dl" maxlength="16" />
+              @if (employeeFormGroup.get('dl')?.invalid && employeeFormGroup.get('dl')?.touched) {
+                <mat-error>Must be exactly 16 characters.</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Role</mat-label>
+              <mat-select formControlName="role">
+                <mat-option value="employee">Employee</mat-option>
+                <mat-option value="admin">Admin</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <div class="field" style="flex-direction: row; align-items: center; gap: 10px; margin-top: 20px;">
+              <mat-checkbox formControlName="allowLogin" id="empAllowLogin">Allow Login to Dashboard</mat-checkbox>
+            </div>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Address</mat-label>
+              <textarea matInput formControlName="address" rows="2"></textarea>
+              @if (employeeFormGroup.get('address')?.invalid && employeeFormGroup.get('address')?.touched) {
+                <mat-error>Address is required.</mat-error>
+              }
+            </mat-form-field>
+          </div>
+        </div>
+      </div>
+    </form>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end" style="margin-top: 16px; padding: 12px 24px;">
+    <button mat-raised-button color="primary" class="action-btn success" style="margin-right: 12px;" [disabled]="employeeFormGroup.invalid" (click)="saveEmployee($event)">
+      {{ editingEmployeeMode() ? 'Update Account' : 'Register Account' }}
+    </button>
+    <button mat-button color="warn" (click)="closeEmployeeFormModal()">Cancel</button>
+  </mat-dialog-actions>
+</ng-template>

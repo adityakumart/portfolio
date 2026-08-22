@@ -1,0 +1,22 @@
+<h2>System Activity Logs</h2>
+
+<div class="log-filter-bar">
+  <mat-form-field appearance="outline" style="width:160px; margin-bottom: 0;">
+    <mat-label>From Date</mat-label>
+    <input matInput type="date" [(ngModel)]="logFilterFrom" />
+  </mat-form-field>
+  <mat-form-field appearance="outline" style="width:160px; margin-bottom: 0;">
+    <mat-label>To Date</mat-label>
+    <input matInput type="date" [(ngModel)]="logFilterTo" />
+  </mat-form-field>
+  <button class="action-btn" (click)="loadActivityLogs()">Get Logs</button>
+  <button class="action-btn" (click)="clearLogFilters()">Clear Filters & Display All</button>
+</div>
+
+<div class="logs-scroll">
+  @for (log of logs(); track log._id) {
+    <div>{{ log.time }} — {{ log.role | uppercase }} {{ log.performedBy }} — {{ log.action }}</div>
+  } @empty {
+    <p>No activity logs found matching the criteria.</p>
+  }
+</div>
