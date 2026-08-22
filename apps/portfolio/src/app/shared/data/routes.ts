@@ -300,6 +300,16 @@ export const appRoutingList: AppRouteConfig[] = [
         (m) => m.UserRoutingModule,
       ),
   },
+  {
+    path: 'rr',
+    link: '/rr',
+    label: 'Car Rentals',
+    icon: 'directions_car',
+    loadChildren: () =>
+      import('../../modules/rr/rr-routing.module').then(
+        (m) => m.RRRoutingModule,
+      ),
+  },
 ];
 
 /**

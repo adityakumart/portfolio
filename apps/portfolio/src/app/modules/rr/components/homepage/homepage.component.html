@@ -1,0 +1,130 @@
+<div class="rr-wrapper">
+  <!-- Header -->
+  <header>
+    <h2>Ram & Ram's Car Rentals and Travels</h2>
+    <nav>
+      <a href="#about">About us</a>
+      <a href="#contact">Contact us</a>
+      <a routerLink="/rr/login">Login</a>
+    </nav>
+    <div class="hamburger" (click)="toggleMobileMenu()">
+      <span></span><span></span><span></span>
+    </div>
+  </header>
+
+  <div class="mobile-menu" [style.display]="mobileMenuOpen() ? 'flex' : 'none'">
+    <a href="#about" (click)="toggleMobileMenu()">About us</a>
+    <a href="#contact" (click)="toggleMobileMenu()">Contact us</a>
+    <a routerLink="/rr/login" (click)="toggleMobileMenu()">Login</a>
+  </div>
+
+  <!-- Hero -->
+  <section class="hero">
+    <h1>Reliable Car Rentals & Travel Services</h1>
+    <p>Professional, comfortable and affordable travel solutions for every journey</p>
+  </section>
+
+  <!-- Our Services -->
+  <section class="services">
+    <h2>Our Services</h2>
+    <div class="service-grid">
+      <div class="service-btn" data-text="Drive at your own pace">Self Drive Cars</div>
+      <div class="service-btn" data-text="Explore local attractions">Local Sight Seeing</div>
+      <div class="service-btn" data-text="Convenient drop & pickup">Outstations Drop & Pick up</div>
+      <div class="service-btn" data-text="Custom travel packages">Package tours</div>
+      <div class="service-btn" data-text="Corporate travel solutions">Contract & Corporate Pickups</div>
+    </div>
+  </section>
+
+  <!-- Browse by Category -->
+  <section class="browse">
+    <h2>Browse by Category</h2>
+    
+    <h3>5 Seater</h3>
+    <div class="car-grid">
+      @for (v of fiveSeaters(); track v.regNo) {
+        <div class="car-card">
+          <img [src]="getVehicleImage(v)" alt="Vehicle Image" />
+          <div class="car-title">
+            {{ v.manufacturer }} - {{ v.name }} {{ v.model ? "(" + v.model.split('-')[0] + ")" : "" }}
+          </div>
+          <div class="car-subtitle">
+            {{ v.color ? v.color + " colour" : "" }} 
+            {{ v.type ? " - " + v.type.toUpperCase() : "" }}
+          </div>
+          <div class="car-subtitle">
+            {{ v.fuelType ? v.fuelType.toUpperCase() : "" }}
+          </div>
+        </div>
+      } @empty {
+        <p>No 5-seater vehicles currently available.</p>
+      }
+    </div>
+
+    <h3>7 Seater</h3>
+    <div class="car-grid">
+      @for (v of sevenSeaters(); track v.regNo) {
+        <div class="car-card">
+          <img [src]="getVehicleImage(v)" alt="Vehicle Image" />
+          <div class="car-title">
+            {{ v.manufacturer }} - {{ v.name }} {{ v.model ? "(" + v.model.split('-')[0] + ")" : "" }}
+          </div>
+          <div class="car-subtitle">
+            {{ v.color ? v.color + " colour" : "" }} 
+            {{ v.type ? " - " + v.type.toUpperCase() : "" }}
+          </div>
+          <div class="car-subtitle">
+            {{ v.fuelType ? v.fuelType.toUpperCase() : "" }}
+          </div>
+        </div>
+      } @empty {
+        <p>No 7-seater vehicles currently available.</p>
+      }
+    </div>
+  </section>
+
+  <!-- About Us -->
+  <section class="about" id="about">
+    <h2>About Us</h2>
+    <p>Ram & Ram's Car Rentals and Travels has been serving customers with reliable, clean, and professional travel services for over a decade. We specialize in local sightseeing, outstation pickups, and corporate travel solutions. Our fleet is well-maintained and our drivers are courteous and punctual.</p>
+  </section>
+
+  <!-- Contact Us -->
+  <section class="contact" id="contact">
+    <h2>Contact Us</h2>
+    <p>If you would like to contact us, please get in touch.</p>
+
+    <div class="contact-grid">
+      <div class="contact-item">
+        <img src="assets/rr/location-icon.png" alt="Location Icon" class="contact-icon-img" />
+        <strong>Office Address</strong>
+        Sri Ram & Ram's Automotives<br>
+        Cinema road, Suryanarayana puram, Kakinada, Andhra Pradesh 533001
+      </div>
+
+      <div class="contact-item">
+        <img src="assets/rr/Phonenumber-icon.png" alt="Phone Icon" class="contact-icon-img" />
+        <strong>Phone Number</strong>
+        +91 9494873336<br>
+        +91 9494893336
+      </div>
+
+      <div class="contact-item">
+        <img src="assets/rr/Emailaddress-icon.png" alt="Email Icon" class="contact-icon-img" />
+        <strong>Email Address</strong>
+        abc@gmail.com
+      </div>
+
+      <div class="contact-item">
+        <img src="assets/rr/Web-icon.png" alt="Web Icon" class="contact-icon-img" />
+        <strong>Web</strong>
+        ramandramscarrentalsandtravels.com
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    © 2025 Ram & Ram's Car Rentals and Travels — All Rights Reserved
+  </footer>
+</div>

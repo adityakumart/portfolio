@@ -22,4 +22,22 @@ export async function connectToDatabase(): Promise<Db> {
   return db;
 }
 
-export { client };
+// Secondary connection for Ram & Ram (RR) module
+let rrDb: Db | null = null;
+const rrConnectionString = process.env['MONGODB_RR_URI'] || connectionString;
+const rrClient = rrConnectionString === connectionString ? client : new MongoClient(rrConnectionString);
+
+export async function connectToRRDatabase(): Promise<Db> {
+  if (rrDb) return rrDb;
+  if (rrConnectionString === connectionString) {
+    await client.connect();
+    rrDb = client.db('rams_cars');
+  } else {
+    await rrClient.connect();
+    rrDb = rrClient.db('rams_cars');
+  }
+  return rrDb;
+}
+
+export { client, rrClient };
+

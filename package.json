@@ -41,6 +41,8 @@
     "css-fx-layout": "^3.0.4",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.3",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
     "luxon": "^3.5.0",
     "mongodb": "^7.5.0",
     "qrcode": "^1.5.4",
