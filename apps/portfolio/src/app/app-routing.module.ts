@@ -3,13 +3,6 @@ import { RouterModule, Routes } from '@angular/router';
 
 export const AppRoutes: Routes = [
   {
-    path: 'calculator',
-    loadComponent: () =>
-      import('./modules/calculator/calculator.component').then(
-        (comp) => comp.CalculatorComponent,
-      ),
-  },
-  {
     path: 'dev-tools',
     loadChildren: () =>
       import('./modules/dev-tools/dev-tools-routing.module').then(

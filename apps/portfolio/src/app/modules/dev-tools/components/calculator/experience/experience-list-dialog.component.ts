@@ -74,7 +74,7 @@ import { UserExperienceRecord } from '@portfolio/shared-types';
         <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
       </table>
       @if (data.records.length === 0) {
-        <div class="p-4" style="text-align: center; color: rgba(0,0,0,0.6);">
+        <div class="p-4" style="text-align: center; color: var(--mat-sys-on-surface-variant, #666);">
           No records found.
         </div>
       }

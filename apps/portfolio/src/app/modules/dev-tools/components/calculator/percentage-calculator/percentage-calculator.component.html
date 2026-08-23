@@ -1,0 +1,42 @@
+<div class="percentage-container">
+  <mat-card class="header-card mb-4">
+    <mat-card-header class="py-3">
+      <mat-card-title>Percentage Difference Calculator</mat-card-title>
+      <mat-card-subtitle>Calculate percentage increase or difference between two values</mat-card-subtitle>
+    </mat-card-header>
+  </mat-card>
+
+  <mat-card class="content-card">
+    <mat-card-content class="pt-4">
+      <div data-layout="row" data-layout-gap="8px">
+        <mat-form-field appearance="outline">
+          <mat-label>Initial Value</mat-label>
+          <input
+            matInput
+            type="number"
+            [ngModel]="initialValue()"
+            (ngModelChange)="initialValue.set($event)"
+            name="initialValue"
+          />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Final Value</mat-label>
+          <input
+            matInput
+            type="number"
+            [ngModel]="finalValue()"
+            (ngModelChange)="finalValue.set($event)"
+            name="finalValue"
+          />
+        </mat-form-field>
+      </div>
+
+      @if (percentageIncrease()) {
+        <div class="result-box mt-3 p-3">
+          <strong>Percentage Difference:</strong> {{ percentageIncrease() }} %
+        </div>
+      }
+    </mat-card-content>
+  </mat-card>
+</div>

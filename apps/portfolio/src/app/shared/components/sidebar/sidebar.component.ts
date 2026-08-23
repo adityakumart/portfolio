@@ -72,7 +72,6 @@ export class SidebarComponent {
   menuItems = computed<SidebarItem[]>(() => {
     return [
       { label: 'Home', icon: 'home', link: '/' },
-      { label: 'Calculator', icon: 'calculate', link: '/calculator' },
       {
         label: 'Dev Tools',
         icon: 'code',
@@ -113,6 +112,7 @@ export class SidebarComponent {
   // Mappings helper for dev tool category icons
   private getDevToolIcon(header: string): string {
     switch (header) {
+      case 'Calculator': return 'calculate';
       case 'Formatters': return 'format_align_left';
       case 'Encode/Decode': return 'vpn_key';
       case 'Converters': return 'swap_horiz';
