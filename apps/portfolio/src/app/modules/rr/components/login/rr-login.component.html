@@ -1,170 +1,216 @@
-<div class="auth-container">
-  <div class="glass-card">
-    <div class="auth-header">
-      <div class="shield-glow">
-        <mat-icon class="auth-header-icon">directions_car</mat-icon>
+<div class="split-login-container">
+  <!-- Visual Branding Panel (Left Side) -->
+  <div class="login-visual-pane">
+    <div class="visual-pane-overlay"></div>
+    <div class="pane-content">
+      <div class="pane-badge">
+        <mat-icon>security</mat-icon>
+        <span>Secure Fleet Gateway</span>
       </div>
-      <h2 class="title">Ram & Ram Car Rentals</h2>
-      <p class="subtitle">Log in to access your dashboard and fleet administration.</p>
-    </div>
-
-    <!-- Toggle Role Tabs -->
-    <div class="auth-toggle-container">
-      <button
-        type="button"
-        class="auth-toggle-btn"
-        [class.active]="selectedRole() === 'employee'"
-        (click)="setRole('employee')"
-      >
-        Employee
-      </button>
-      <button
-        type="button"
-        class="auth-toggle-btn"
-        [class.active]="selectedRole() === 'admin'"
-        (click)="setRole('admin')"
-      >
-        Admin
-      </button>
-    </div>
-
-    <!-- Feedback Banners -->
-    @if (error()) {
-    <div class="feedback-banner error-banner">
-      <mat-icon>error_outline</mat-icon>
-      <span>{{ error() }}</span>
-    </div>
-    } @if (success()) {
-    <div class="feedback-banner success-banner">
-      <mat-icon>check_circle_outline</mat-icon>
-      <span>{{ success() }}</span>
-    </div>
-    }
-
-    <!-- Employee Login Form -->
-    @if (selectedRole() === 'employee') {
-    <form [formGroup]="employeeFormGroup" (submit)="onEmployeeSubmit()" class="auth-form">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Employee ID</mat-label>
-        <input
-          matInput
-          formControlName="empId"
-          placeholder="e.g. RRA002"
-        />
-        <mat-icon matPrefix>badge</mat-icon>
-        @if (employeeFormGroup.get('empId')?.touched && employeeFormGroup.get('empId')?.invalid) {
-          @if (employeeFormGroup.get('empId')?.errors?.['required']) {
-            <mat-error>Employee ID is required.</mat-error>
-          } @else if (employeeFormGroup.get('empId')?.errors?.['pattern']) {
-            <mat-error>Must match format 'RRA000'.</mat-error>
-          }
-        }
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Date of Birth</mat-label>
-        <input
-          matInput
-          type="date"
-          formControlName="dob"
-        />
-        <mat-icon matPrefix>calendar_today</mat-icon>
-        @if (employeeFormGroup.get('dob')?.touched && employeeFormGroup.get('dob')?.invalid) {
-          <mat-error>Date of Birth is required.</mat-error>
-        }
-      </mat-form-field>
-
-      <button
-        mat-raised-button
-        color="primary"
-        class="submit-btn"
-        type="submit"
-        [disabled]="loading() || employeeFormGroup.invalid"
-      >
-        <div class="spinner-container">
-          @if (loading()) {
-          <mat-progress-spinner
-            mode="indeterminate"
-            diameter="24"
-          ></mat-progress-spinner>
-          } @else {
-          <span>Login as Employee</span>
-          }
+      <h2>Sri Ram & Ram's<br>Administrative Command</h2>
+      <p>Authenticate to access the active fleet registry, finalize client agreement contracts, update odometer status records, and monitor employee activity logs.</p>
+      
+      <!-- Mini Quick Stats -->
+      <div class="pane-stats">
+        <div class="p-stat">
+          <span class="p-num">50+</span>
+          <span class="p-lbl">Vehicles</span>
         </div>
-      </button>
-    </form>
-    }
+        <div class="p-stat">
+          <span class="p-num">24h</span>
+          <span class="p-lbl">Desk</span>
+        </div>
+        <div class="p-stat">
+          <span class="p-num">100%</span>
+          <span class="p-lbl">Secure</span>
+        </div>
+      </div>
 
-    <!-- Admin Login Form -->
-    @if (selectedRole() === 'admin') {
-    <form [formGroup]="adminFormGroup" (submit)="onAdminSubmit()" class="auth-form">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Admin Username / Email</mat-label>
-        <input
-          matInput
-          formControlName="adminUsername"
-          placeholder="e.g. admin@rams-cars.com"
-        />
-        <mat-icon matPrefix>person</mat-icon>
-        @if (adminFormGroup.get('adminUsername')?.touched && adminFormGroup.get('adminUsername')?.invalid) {
-          <mat-error>Username/Email is required.</mat-error>
-        }
-      </mat-form-field>
+      <!-- Testimonial / Showcase Glass Panel -->
+      <div class="pane-showcase-card">
+        <div class="quote-icon">“</div>
+        <p class="quote-text">Dedicated command suite for Sri Ram & Ram Automotives. Efficiently dispatching safety, comfort, and luxury across Andhra Pradesh.</p>
+        <div class="quote-author">
+          <div class="author-dot"></div>
+          <span>Rapid Dispatch System v4.2</span>
+        </div>
+      </div>
+    </div>
+  </div>
 
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Password</mat-label>
-        <input
-          matInput
-          formControlName="adminPassword"
-          [type]="showPassword() ? 'text' : 'password'"
-          placeholder="Enter admin password"
-        />
-        <mat-icon matPrefix>lock</mat-icon>
+  <!-- Form Panel (Right Side) -->
+  <div class="login-form-pane">
+    <!-- Floating background decorative glows -->
+    <div class="auth-decor-glow auth-decor-glow-1"></div>
+    <div class="auth-decor-glow auth-decor-glow-2"></div>
+
+    <div class="glass-card">
+      <div class="auth-header">
+        <div class="shield-glow">
+          <mat-icon class="auth-header-icon">directions_car</mat-icon>
+        </div>
+        <h2 class="title">RoadReady Portal</h2>
+        <p class="subtitle">Log in to administer active bookings and fleet operations.</p>
+      </div>
+
+      <!-- Toggle Role Tabs -->
+      <div class="auth-toggle-container">
         <button
           type="button"
-          mat-icon-button
-          matSuffix
-          (click)="showPassword.set(!showPassword())"
-          [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+          class="auth-toggle-btn"
+          [class.active]="selectedRole() === 'employee'"
+          (click)="setRole('employee')"
         >
-          <mat-icon>
-            {{ showPassword() ? 'visibility_off' : 'visibility' }}
-          </mat-icon>
+          Employee Desk
         </button>
-        @if (adminFormGroup.get('adminPassword')?.touched && adminFormGroup.get('adminPassword')?.invalid) {
-          @if (adminFormGroup.get('adminPassword')?.errors?.['required']) {
-            <mat-error>Password is required.</mat-error>
-          } @else if (adminFormGroup.get('adminPassword')?.errors?.['minlength']) {
-            <mat-error>Password must be at least 4 characters.</mat-error>
-          }
-        }
-      </mat-form-field>
+        <button
+          type="button"
+          class="auth-toggle-btn"
+          [class.active]="selectedRole() === 'admin'"
+          (click)="setRole('admin')"
+        >
+          Admin Command
+        </button>
+      </div>
 
-      <button
-        mat-raised-button
-        color="primary"
-        class="submit-btn"
-        type="submit"
-        [disabled]="loading() || adminFormGroup.invalid"
-      >
-        <div class="spinner-container">
-          @if (loading()) {
-          <mat-progress-spinner
-            mode="indeterminate"
-            diameter="24"
-          ></mat-progress-spinner>
-          } @else {
-          <span>Login as Admin</span>
-          }
+      <!-- Feedback Banners -->
+      @if (error()) {
+        <div class="feedback-banner error-banner">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ error() }}</span>
         </div>
-      </button>
-    </form>
-    }
+      } @if (success()) {
+        <div class="feedback-banner success-banner">
+          <mat-icon>check_circle_outline</mat-icon>
+          <span>{{ success() }}</span>
+        </div>
+      }
 
-    <div class="home-link-container">
-      <a routerLink="/rr/home" class="home-link">
-        <mat-icon>arrow_back</mat-icon> Back to Homepage
-      </a>
+      <!-- Employee Login Form -->
+      @if (selectedRole() === 'employee') {
+        <form [formGroup]="employeeFormGroup" (submit)="onEmployeeSubmit()" class="auth-form">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Employee ID</mat-label>
+            <input
+              matInput
+              formControlName="empId"
+              placeholder="e.g. RRA002"
+            />
+            <mat-icon matPrefix>badge</mat-icon>
+            @if (employeeFormGroup.get('empId')?.touched && employeeFormGroup.get('empId')?.invalid) {
+              @if (employeeFormGroup.get('empId')?.errors?.['required']) {
+                <mat-error>Employee ID is required.</mat-error>
+              } @else if (employeeFormGroup.get('empId')?.errors?.['pattern']) {
+                <mat-error>Must match format 'RRA000'.</mat-error>
+              }
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Date of Birth</mat-label>
+            <input
+              matInput
+              type="date"
+              formControlName="dob"
+            />
+            <mat-icon matPrefix>calendar_today</mat-icon>
+            @if (employeeFormGroup.get('dob')?.touched && employeeFormGroup.get('dob')?.invalid) {
+              <mat-error>Date of Birth is required.</mat-error>
+            }
+          </mat-form-field>
+
+          <button
+            mat-raised-button
+            color="primary"
+            class="submit-btn"
+            type="submit"
+            [disabled]="loading() || employeeFormGroup.invalid"
+          >
+            <div class="spinner-container">
+              @if (loading()) {
+                <mat-progress-spinner
+                  mode="indeterminate"
+                  diameter="24"
+                ></mat-progress-spinner>
+              } @else {
+                <span>Authorize Desk Session</span>
+              }
+            </div>
+          </button>
+        </form>
+      }
+
+      <!-- Admin Login Form -->
+      @if (selectedRole() === 'admin') {
+        <form [formGroup]="adminFormGroup" (submit)="onAdminSubmit()" class="auth-form">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Admin Email / ID</mat-label>
+            <input
+              matInput
+              formControlName="adminUsername"
+              placeholder="e.g. admin@rams-cars.com"
+            />
+            <mat-icon matPrefix>person</mat-icon>
+            @if (adminFormGroup.get('adminUsername')?.touched && adminFormGroup.get('adminUsername')?.invalid) {
+              <mat-error>Username/Email is required.</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Password</mat-label>
+            <input
+              matInput
+              formControlName="adminPassword"
+              [type]="showPassword() ? 'text' : 'password'"
+              placeholder="Enter password"
+            />
+            <mat-icon matPrefix>lock</mat-icon>
+            <button
+              type="button"
+              mat-icon-button
+              matSuffix
+              (click)="showPassword.set(!showPassword())"
+              [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+            >
+              <mat-icon>
+                {{ showPassword() ? 'visibility_off' : 'visibility' }}
+              </mat-icon>
+            </button>
+            @if (adminFormGroup.get('adminPassword')?.touched && adminFormGroup.get('adminPassword')?.invalid) {
+              @if (adminFormGroup.get('adminPassword')?.errors?.['required']) {
+                <mat-error>Password is required.</mat-error>
+              } @else if (adminFormGroup.get('adminPassword')?.errors?.['minlength']) {
+                <mat-error>Password must be at least 4 characters.</mat-error>
+              }
+            }
+          </mat-form-field>
+
+          <button
+            mat-raised-button
+            color="primary"
+            class="submit-btn"
+            type="submit"
+            [disabled]="loading() || adminFormGroup.invalid"
+          >
+            <div class="spinner-container">
+              @if (loading()) {
+                <mat-progress-spinner
+                  mode="indeterminate"
+                  diameter="24"
+                ></mat-progress-spinner>
+              } @else {
+                <span>Establish Admin Session</span>
+              }
+            </div>
+          </button>
+        </form>
+      }
+
+      <div class="home-link-container">
+        <a routerLink="/rr/home" class="home-link">
+          <mat-icon>arrow_back</mat-icon> Back to Public Portal
+        </a>
+      </div>
     </div>
   </div>
 </div>

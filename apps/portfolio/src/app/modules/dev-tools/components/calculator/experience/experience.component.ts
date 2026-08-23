@@ -24,11 +24,12 @@ import { ExperienceService } from './experience.service';
 import { UserExperienceRecord } from '@portfolio/shared-types';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { ErrorMessageComponent } from '../../../shared/components/error-message.component';
+import { ErrorMessageComponent } from '../../../../../shared/components/error-message.component';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ExperienceListDialogComponent } from './experience-list-dialog.component';
-import { CommonMaterialModule } from '../../../shared/Material/common-material.module';
+import { CommonMaterialModule } from '../../../../../shared/Material/common-material.module';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatCardModule } from '@angular/material/card';
 
 @Component({
   selector: 'app-experience',
@@ -49,6 +50,7 @@ import { MatDividerModule } from '@angular/material/divider';
     MatDialogModule,
     CommonMaterialModule,
     MatDividerModule,
+    MatCardModule,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

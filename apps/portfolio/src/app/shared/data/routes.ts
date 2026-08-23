@@ -39,6 +39,38 @@ export interface AppRouteConfig {
  */
 export const devToolsRoutingList: ToolGroupConfig[] = [
   {
+    header: 'Calculator',
+    tools: [
+      {
+        name: 'Percentage Calculator',
+        path: 'calculator/percentage',
+        link: '/dev-tools/calculator/percentage',
+        loadComponent: () =>
+          import(
+            '../../modules/dev-tools/components/calculator/percentage-calculator/percentage-calculator.component'
+          ).then((m) => m.PercentageCalculatorComponent),
+      },
+      {
+        name: 'Experience',
+        path: 'calculator/experience',
+        link: '/dev-tools/calculator/experience',
+        loadComponent: () =>
+          import(
+            '../../modules/dev-tools/components/calculator/experience/experience.component'
+          ).then((m) => m.ExperienceComponent),
+      },
+      {
+        name: 'Timezone Converter',
+        path: 'calculator/timezone-converter',
+        link: '/dev-tools/calculator/timezone-converter',
+        loadComponent: () =>
+          import(
+            '../../modules/dev-tools/components/calculator/timezone-converter/timezone-converter.component'
+          ).then((m) => m.TimezoneConverterComponent),
+      },
+    ],
+  },
+  {
     header: 'Formatters',
     tools: [
       {
@@ -270,16 +302,6 @@ export const appRoutingList: AppRouteConfig[] = [
     loadComponent: () =>
       import('../../modules/portfolio/portfolio.component').then(
         (m) => m.PortfolioComponent,
-      ),
-  },
-  {
-    path: 'calculator',
-    link: '/calculator',
-    label: 'Calculator',
-    icon: 'calculate',
-    loadComponent: () =>
-      import('../../modules/calculator/calculator.component').then(
-        (m) => m.CalculatorComponent,
       ),
   },
   {

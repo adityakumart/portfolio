@@ -1,21 +1,34 @@
 <div class="dashboard-wrapper">
   <!-- Header -->
   <header class="app-header">
-    <h2 class="app-title">Ram & Ram's Car Rentals and Travels</h2>
+    <div class="header-brand" routerLink="/rr/home">
+      <mat-icon class="brand-icon">directions_car</mat-icon>
+      <h2 class="app-title">RoadReady Command</h2>
+    </div>
 
     <div class="profile-container">
       <div (click)="toggleProfileDropdown()" class="profile-button">
+        <mat-icon>account_circle</mat-icon>
         <span>{{ currentUser()?.firstName }} {{ currentUser()?.lastName }} ({{ currentUser()?.role | uppercase }})</span>
         <span class="arrow">▼</span>
       </div>
 
       @if (profileDropdownOpen()) {
-        <div class="profile-dropdown" style="display: block;">
-          <div class="dropdown-item" (click)="showProfilePopup()">View Profile</div>
+        <div class="profile-dropdown">
+          <div class="dropdown-item" (click)="showProfilePopup()">
+            <mat-icon>person</mat-icon>
+            <span>View Profile</span>
+          </div>
           @if (isAdmin()) {
-            <div class="dropdown-item" [routerLink]="['/rr/activity-logs']" (click)="profileDropdownOpen.set(false)">Activity Logs</div>
+            <div class="dropdown-item" [routerLink]="['/rr/activity-logs']" (click)="profileDropdownOpen.set(false)">
+              <mat-icon>history_toggle_off</mat-icon>
+              <span>Activity Logs</span>
+            </div>
           }
-          <div class="dropdown-item logout" (click)="logout()">Logout</div>
+          <div class="dropdown-item logout" (click)="logout()">
+            <mat-icon>logout</mat-icon>
+            <span>Logout</span>
+          </div>
         </div>
       }
     </div>
@@ -24,36 +37,62 @@
   <div class="admin-layout">
     <!-- Sidebar -->
     <aside class="sidebar">
+      <div class="sidebar-brand">
+        <mat-icon>admin_panel_settings</mat-icon>
+        <span>Control Desk</span>
+      </div>
+      
       <ul class="menu">
         <li class="menu-item" [routerLink]="['/rr/dashboard']" routerLinkActive="active-menu" [routerLinkActiveOptions]="{exact: true}">
-          Dashboard
+          <div class="menu-item-content">
+            <mat-icon>dashboard</mat-icon>
+            <span>Overview</span>
+          </div>
         </li>
 
-        <li class="menu-item">
+        <li class="menu-item header-item">
           <strong>Bookings</strong>
-          <ul class="submenu" style="display: block;">
-            <li class="submenu-item" [routerLink]="['/rr/booking/list']" routerLinkActive="active-sub">Active Rentals</li>
+          <ul class="submenu">
+            <li class="submenu-item" [routerLink]="['/rr/booking/list']" routerLinkActive="active-sub">
+              <div class="menu-item-content">
+                <mat-icon>event_note</mat-icon>
+                <span>Active Rentals</span>
+              </div>
+            </li>
           </ul>
         </li>
 
-        <li class="menu-item">
+        <li class="menu-item header-item">
           <strong>Vehicles</strong>
-          <ul class="submenu" style="display: block;">
-            <li class="submenu-item" [routerLink]="['/rr/vehicle/list']" routerLinkActive="active-sub">Vehicles List</li>
+          <ul class="submenu">
+            <li class="submenu-item" [routerLink]="['/rr/vehicle/list']" routerLinkActive="active-sub">
+              <div class="menu-item-content">
+                <mat-icon>directions_car</mat-icon>
+                <span>Vehicles List</span>
+              </div>
+            </li>
           </ul>
         </li>
 
         @if (isAdmin()) {
-          <li class="menu-item">
-            <strong>Employees</strong>
-            <ul class="submenu" style="display: block;">
-              <li class="submenu-item" [routerLink]="['/rr/employee/list']" routerLinkActive="active-sub">Employee List</li>
+          <li class="menu-item header-item">
+            <strong>Staff Control</strong>
+            <ul class="submenu">
+              <li class="submenu-item" [routerLink]="['/rr/employee/list']" routerLinkActive="active-sub">
+                <div class="menu-item-content">
+                  <mat-icon>badge</mat-icon>
+                  <span>Employee List</span>
+                </div>
+              </li>
             </ul>
           </li>
         }
 
         <li class="menu-item" [routerLink]="['/rr/history']" routerLinkActive="active-menu">
-          History
+          <div class="menu-item-content">
+            <mat-icon>history</mat-icon>
+            <span>Historical Logs</span>
+          </div>
         </li>
       </ul>
     </aside>
@@ -66,29 +105,29 @@
 
   <!-- POPUP: VIEW PROFILE POPUP -->
   <ng-template #profileInfoDialog>
-    <h3 mat-dialog-title>Your Profile Information</h3>
+    <h3 mat-dialog-title>Desk Agent Profile</h3>
     <mat-dialog-content>
-      <div class="booking-content" style="grid-template-columns: 1fr; gap: 16px; margin-top: 10px;">
+      <div class="booking-content" style="grid-template-columns: 1fr; gap: 20px; margin-top: 15px;">
         <div class="field">
-          <label>ID</label>
+          <label>Agent Identifier</label>
           <input type="text" [value]="currentUser()?.id" readonly disabled />
         </div>
         <div class="field">
-          <label>Name</label>
+          <label>Full Legal Name</label>
           <input type="text" [value]="currentUser()?.firstName + ' ' + currentUser()?.lastName" readonly disabled />
         </div>
         <div class="field">
-          <label>Email Address</label>
+          <label>Registered Email Address</label>
           <input type="text" [value]="currentUser()?.email" readonly disabled />
         </div>
         <div class="field">
-          <label>Role</label>
+          <label>Authorized System Role</label>
           <input type="text" [value]="currentUser()?.role | uppercase" readonly disabled />
         </div>
       </div>
     </mat-dialog-content>
-    <mat-dialog-actions align="end" style="margin-top: 16px; padding-bottom: 8px;">
-      <button mat-button class="action-btn" (click)="closeProfilePopup()">Close</button>
+    <mat-dialog-actions align="end" style="margin-top: 20px; padding-bottom: 8px;">
+      <button mat-raised-button class="action-btn" (click)="closeProfilePopup()">Dismiss</button>
     </mat-dialog-actions>
   </ng-template>
 

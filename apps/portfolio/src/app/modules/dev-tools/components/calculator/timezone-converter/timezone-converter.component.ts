@@ -1,4 +1,9 @@
-import { Component, signal, ChangeDetectionStrategy, inject } from '@angular/core';
+import {
+  Component,
+  signal,
+  ChangeDetectionStrategy,
+  inject,
+} from '@angular/core';
 import { provideNativeDateAdapter } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -12,13 +17,18 @@ import { MatInputModule } from '@angular/material/input';
 import { MatTimepickerModule } from '@angular/material/timepicker';
 import { DateTime } from 'luxon';
 import { MatSelectModule } from '@angular/material/select';
-import { TimeZoneInterface, TimeZonesList } from '../../../../shared/data/timeszones';
+import {
+  TimeZoneInterface,
+  TimeZonesList,
+} from '../../../../../../shared/data/timeszones';
 import { MatButtonModule } from '@angular/material/button';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 import { AsyncPipe } from '@angular/common';
-import { ToastrService } from '../../../shared/services/toaster.service';
+import { ToastrService } from '../../../../../shared/services/toaster.service';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-timezone-converter',
@@ -33,6 +43,8 @@ import { ToastrService } from '../../../shared/services/toaster.service';
     MatButtonModule,
     MatAutocompleteModule,
     AsyncPipe,
+    MatCardModule,
+    MatIconModule,
   ],
   providers: [provideNativeDateAdapter()],
   templateUrl: './timezone-converter.component.html',
@@ -92,11 +104,11 @@ export class TimezoneConverterComponent {
 
   calculate = () => {
     this.formattedDate.set('');
-    let fromZone = this.timeZones.find(
+    const fromZone = this.timeZones.find(
       (zone) =>
         zone.abbr + ' - ' + zone.text === this.timeForm.value.fromTimeZone,
     )?.utc[0];
-    let toZone = this.timeZones.find(
+    const toZone = this.timeZones.find(
       (zone) =>
         zone.abbr + ' - ' + zone.text === this.timeForm.value.toTimeZone,
     )?.utc[0];
@@ -118,11 +130,11 @@ export class TimezoneConverterComponent {
       return;
     }
 
-    let time = DateTime.fromFormat(
+    const time = DateTime.fromFormat(
       this.timeForm.value.fromTime.toTimeString().substring(0, 5),
       'HH:mm',
     );
-    let fromDate = DateTime.fromJSDate(this.timeForm.value.fromDate as Date, {
+    const fromDate = DateTime.fromJSDate(this.timeForm.value.fromDate as Date, {
       zone: fromZone,
     }).set({
       hour: time.hour,

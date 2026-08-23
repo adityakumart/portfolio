@@ -1,130 +1,250 @@
 <div class="rr-wrapper">
+  <!-- Glow Bubbles -->
+  <div class="glow-bubble glow-bubble-1"></div>
+  <div class="glow-bubble glow-bubble-2"></div>
+
   <!-- Header -->
   <header>
-    <h2>Ram & Ram's Car Rentals and Travels</h2>
+    <div class="logo-area">
+      <mat-icon class="logo-icon">directions_car</mat-icon>
+      <h2>RoadReady Rentals</h2>
+    </div>
     <nav>
-      <a href="#about">About us</a>
-      <a href="#contact">Contact us</a>
-      <a routerLink="/rr/login">Login</a>
+      <a href="#services">Services</a>
+      <a href="#browse">Browse Fleet</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+      <a routerLink="/rr/login" class="nav-login-btn">
+        <span>Admin Login</span>
+        <mat-icon>arrow_right_alt</mat-icon>
+      </a>
     </nav>
     <div class="hamburger" (click)="toggleMobileMenu()">
       <span></span><span></span><span></span>
     </div>
   </header>
 
+  <!-- Mobile Menu -->
   <div class="mobile-menu" [style.display]="mobileMenuOpen() ? 'flex' : 'none'">
+    <a href="#services" (click)="toggleMobileMenu()">Services</a>
+    <a href="#browse" (click)="toggleMobileMenu()">Browse Fleet</a>
     <a href="#about" (click)="toggleMobileMenu()">About us</a>
     <a href="#contact" (click)="toggleMobileMenu()">Contact us</a>
-    <a routerLink="/rr/login" (click)="toggleMobileMenu()">Login</a>
+    <a routerLink="/rr/login" (click)="toggleMobileMenu()" class="mobile-login-link">Admin Login</a>
   </div>
 
-  <!-- Hero -->
+  <!-- Hero Section -->
   <section class="hero">
-    <h1>Reliable Car Rentals & Travel Services</h1>
-    <p>Professional, comfortable and affordable travel solutions for every journey</p>
-  </section>
-
-  <!-- Our Services -->
-  <section class="services">
-    <h2>Our Services</h2>
-    <div class="service-grid">
-      <div class="service-btn" data-text="Drive at your own pace">Self Drive Cars</div>
-      <div class="service-btn" data-text="Explore local attractions">Local Sight Seeing</div>
-      <div class="service-btn" data-text="Convenient drop & pickup">Outstations Drop & Pick up</div>
-      <div class="service-btn" data-text="Custom travel packages">Package tours</div>
-      <div class="service-btn" data-text="Corporate travel solutions">Contract & Corporate Pickups</div>
+    <div class="hero-container">
+      <div class="hero-badge">
+        <span class="badge-dot"></span>
+        <span>Premium Car Rentals & Tours</span>
+      </div>
+      <h1>Uncompromising Comfort for Every Journey</h1>
+      <p>Experience seamless travels with Kakinada's premier car rental fleet. Tailored corporate solutions, local sightseeing, and self-drive luxury.</p>
+      <div class="hero-actions">
+        <a href="#browse" class="hero-primary-btn">Explore Fleet</a>
+        <a href="#contact" class="hero-secondary-btn">Book Consultation</a>
+      </div>
     </div>
   </section>
 
-  <!-- Browse by Category -->
-  <section class="browse">
-    <h2>Browse by Category</h2>
+  <!-- Services Section -->
+  <section class="services" id="services">
+    <div class="section-header">
+      <span class="section-tagline">Capabilities</span>
+      <h2>Our Premium Services</h2>
+      <p class="section-desc">Designed to cover all your travel requirements with absolute safety, luxury, and reliability.</p>
+    </div>
+    <div class="service-grid">
+      <div class="service-btn" data-text="Drive at your own pace with unlimited control.">
+        <div class="service-icon-wrapper">
+          <mat-icon>key</mat-icon>
+        </div>
+        <h3>Self Drive Cars</h3>
+        <p class="service-card-desc">Flexible self-drive solutions with well-maintained hatchbacks, sedans, and SUVs.</p>
+      </div>
+
+      <div class="service-btn" data-text="Explore city attractions with professional guides.">
+        <div class="service-icon-wrapper">
+          <mat-icon>map</mat-icon>
+        </div>
+        <h3>Local Sight Seeing</h3>
+        <p class="service-card-desc">Uncover local treasures with customizable day trips and travel assistance.</p>
+      </div>
+
+      <div class="service-btn" data-text="Safe and convenient one-way/roundout journeys.">
+        <div class="service-icon-wrapper">
+          <mat-icon>flight_takeoff</mat-icon>
+        </div>
+        <h3>Outstations Pickups</h3>
+        <p class="service-card-desc">Reliable airport drops, terminal connections, and outstation travels.</p>
+      </div>
+
+      <div class="service-btn" data-text="Bespoke travel packages for holidays and events.">
+        <div class="service-icon-wrapper">
+          <mat-icon>card_giftcard</mat-icon>
+        </div>
+        <h3>Package Tours</h3>
+        <p class="service-card-desc">Enjoy unified hotel pairings, route guides, and custom family tour packages.</p>
+      </div>
+
+      <div class="service-btn" data-text="Long-term corporate contracts and executive transit.">
+        <div class="service-icon-wrapper">
+          <mat-icon>business</mat-icon>
+        </div>
+        <h3>Corporate Transits</h3>
+        <p class="service-card-desc">Elevated employee transit, client commute solutions, and executive leasing.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Browse Fleet Section -->
+  <section class="browse" id="browse">
+    <div class="section-header">
+      <span class="section-tagline">Our Fleet</span>
+      <h2>Browse by Category</h2>
+      <p class="section-desc">Select from our wide selection of fully inspected, cleaned, and road-ready vehicles.</p>
+    </div>
     
-    <h3>5 Seater</h3>
+    <h3>5 Seater Comforts</h3>
     <div class="car-grid">
       @for (v of fiveSeaters(); track v.regNo) {
         <div class="car-card">
-          <img [src]="getVehicleImage(v)" alt="Vehicle Image" />
-          <div class="car-title">
-            {{ v.manufacturer }} - {{ v.name }} {{ v.model ? "(" + v.model.split('-')[0] + ")" : "" }}
+          <div class="card-image-holder">
+            <img [src]="getVehicleImage(v)" alt="Vehicle Image" />
+            <span class="card-status-pill">Active</span>
           </div>
-          <div class="car-subtitle">
-            {{ v.color ? v.color + " colour" : "" }} 
-            {{ v.type ? " - " + v.type.toUpperCase() : "" }}
-          </div>
-          <div class="car-subtitle">
-            {{ v.fuelType ? v.fuelType.toUpperCase() : "" }}
+          <div class="car-details">
+            <div class="car-title">
+              {{ v.manufacturer }} {{ v.name }}
+            </div>
+            <div class="car-specs">
+              <span class="spec-tag"><mat-icon>palette</mat-icon> {{ v.color || 'Premium' }}</span>
+              <span class="spec-tag"><mat-icon>local_gas_station</mat-icon> {{ v.fuelType || 'Petrol' }}</span>
+            </div>
+            <div class="car-action-row">
+              <span class="type-tag">{{ v.type || 'Sedan' }}</span>
+              <div class="card-btn-arrow"><mat-icon>arrow_forward</mat-icon></div>
+            </div>
           </div>
         </div>
       } @empty {
-        <p>No 5-seater vehicles currently available.</p>
+        <div class="empty-fleet-card">
+          <mat-icon>no_sim</mat-icon>
+          <p>No 5-seater vehicles currently available in our active fleet.</p>
+        </div>
       }
     </div>
 
-    <h3>7 Seater</h3>
+    <h3>7 Seater Explorers</h3>
     <div class="car-grid">
       @for (v of sevenSeaters(); track v.regNo) {
         <div class="car-card">
-          <img [src]="getVehicleImage(v)" alt="Vehicle Image" />
-          <div class="car-title">
-            {{ v.manufacturer }} - {{ v.name }} {{ v.model ? "(" + v.model.split('-')[0] + ")" : "" }}
+          <div class="card-image-holder">
+            <img [src]="getVehicleImage(v)" alt="Vehicle Image" />
+            <span class="card-status-pill">Active</span>
           </div>
-          <div class="car-subtitle">
-            {{ v.color ? v.color + " colour" : "" }} 
-            {{ v.type ? " - " + v.type.toUpperCase() : "" }}
-          </div>
-          <div class="car-subtitle">
-            {{ v.fuelType ? v.fuelType.toUpperCase() : "" }}
+          <div class="car-details">
+            <div class="car-title">
+              {{ v.manufacturer }} {{ v.name }}
+            </div>
+            <div class="car-specs">
+              <span class="spec-tag"><mat-icon>palette</mat-icon> {{ v.color || 'Premium' }}</span>
+              <span class="spec-tag"><mat-icon>local_gas_station</mat-icon> {{ v.fuelType || 'Diesel' }}</span>
+            </div>
+            <div class="car-action-row">
+              <span class="type-tag">{{ v.type || 'SUV' }}</span>
+              <div class="card-btn-arrow"><mat-icon>arrow_forward</mat-icon></div>
+            </div>
           </div>
         </div>
       } @empty {
-        <p>No 7-seater vehicles currently available.</p>
+        <div class="empty-fleet-card">
+          <mat-icon>no_sim</mat-icon>
+          <p>No 7-seater vehicles currently available in our active fleet.</p>
+        </div>
       }
     </div>
   </section>
 
-  <!-- About Us -->
+  <!-- About Us Section -->
   <section class="about" id="about">
-    <h2>About Us</h2>
-    <p>Ram & Ram's Car Rentals and Travels has been serving customers with reliable, clean, and professional travel services for over a decade. We specialize in local sightseeing, outstation pickups, and corporate travel solutions. Our fleet is well-maintained and our drivers are courteous and punctual.</p>
+    <div class="about-grid">
+      <div class="about-text">
+        <span class="section-tagline">Who We Are</span>
+        <h2>Over a Decade of Travel Excellence</h2>
+        <p>RoadReady Rentals (Sri Ram & Ram's Automotives) has been Suryanarayana Puram's most trusted travel facilitator for over ten years. We bridge the gap between premium passenger fleet availability and pocket-friendly consumer bookings.</p>
+        <p>Our commitment remains absolute: well-maintained models, verified professional drivers, punctual pickups, and complete billing transparency. From quick commutes to outstation holidays, we make every trip an experience in comfort.</p>
+      </div>
+      <div class="about-stats-card">
+        <div class="stat-box">
+          <div class="stat-num">10+</div>
+          <div class="stat-lbl">Years Experience</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">50+</div>
+          <div class="stat-lbl">Fleet Vehicles</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">15k+</div>
+          <div class="stat-lbl">Happy Bookings</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">100%</div>
+          <div class="stat-lbl">Safe Rides</div>
+        </div>
+      </div>
+    </div>
   </section>
 
-  <!-- Contact Us -->
+  <!-- Contact Us Section -->
   <section class="contact" id="contact">
-    <h2>Contact Us</h2>
-    <p>If you would like to contact us, please get in touch.</p>
+    <div class="section-header">
+      <span class="section-tagline">Get In Touch</span>
+      <h2>Connect With Our Desk</h2>
+      <p class="section-desc">Our booking desk is open 24/7. Reach out to schedule a custom trip or lease a vehicle.</p>
+    </div>
 
     <div class="contact-grid">
       <div class="contact-item">
-        <img src="assets/rr/location-icon.png" alt="Location Icon" class="contact-icon-img" />
+        <div class="contact-icon-box">
+          <mat-icon>place</mat-icon>
+        </div>
         <strong>Office Address</strong>
-        Sri Ram & Ram's Automotives<br>
-        Cinema road, Suryanarayana puram, Kakinada, Andhra Pradesh 533001
+        <p>Sri Ram & Ram's Automotives<br>Cinema road, Suryanarayana puram, Kakinada, AP 533001</p>
       </div>
 
       <div class="contact-item">
-        <img src="assets/rr/Phonenumber-icon.png" alt="Phone Icon" class="contact-icon-img" />
-        <strong>Phone Number</strong>
-        +91 9494873336<br>
-        +91 9494893336
+        <div class="contact-icon-box">
+          <mat-icon>phone</mat-icon>
+        </div>
+        <strong>Phone Desk</strong>
+        <p>+91 9494873336<br>+91 9494893336</p>
       </div>
 
       <div class="contact-item">
-        <img src="assets/rr/Emailaddress-icon.png" alt="Email Icon" class="contact-icon-img" />
-        <strong>Email Address</strong>
-        abc@gmail.com
+        <div class="contact-icon-box">
+          <mat-icon>email</mat-icon>
+        </div>
+        <strong>Email Enquiries</strong>
+        <p>abc@gmail.com<br>support@roadready.com</p>
       </div>
 
       <div class="contact-item">
-        <img src="assets/rr/Web-icon.png" alt="Web Icon" class="contact-icon-img" />
-        <strong>Web</strong>
-        ramandramscarrentalsandtravels.com
+        <div class="contact-icon-box">
+          <mat-icon>language</mat-icon>
+        </div>
+        <strong>Web Portal</strong>
+        <p>ramandramscarrentals.com<br>roadreadyrentals.com</p>
       </div>
     </div>
   </section>
 
   <!-- Footer -->
   <footer>
-    © 2025 Ram & Ram's Car Rentals and Travels — All Rights Reserved
+    <div class="footer-container">
+      <p>© 2026 Sri Ram & Ram's RoadReady Rentals — Built for Ultimate Comfort and Speed</p>
+    </div>
   </footer>
 </div>

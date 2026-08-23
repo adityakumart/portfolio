@@ -11,7 +11,7 @@ const routes: Routes = [
       {
         path: '',
         pathMatch: 'full',
-        redirectTo: 'formatters/json' // Default redirect to the first tool
+        redirectTo: 'calculator/percentage' // Default redirect to the first tool
       },
       ...buildDevToolsChildRoutes(devToolsRoutingList)
     ]
