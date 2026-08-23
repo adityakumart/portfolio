@@ -19,6 +19,7 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../modules/user/services/auth';
 import { ThemeService } from '../../../theme.service';
 import { devToolsRoutingList } from '../../data/routes';
+import { RRApiService } from '../../../modules/rr/services/rr-api.service';
 
 export interface SidebarItem {
   label: string;
@@ -49,6 +50,7 @@ export class SidebarComponent {
   private router = inject(Router);
   private authService = inject(AuthService);
   private themeService = inject(ThemeService);
+  private rrApiService = inject(RRApiService);
 
   // Core state Signals
   isCollapsed = signal<boolean>(false);
@@ -70,7 +72,10 @@ export class SidebarComponent {
 
   // Menu items list mapping the whole app
   menuItems = computed<SidebarItem[]>(() => {
-    return [
+    const user = this.currentUser();
+    const rrUser = this.rrApiService.currentUser();
+
+    const items: SidebarItem[] = [
       { label: 'Home', icon: 'home', link: '/' },
       {
         label: 'Dev Tools',
@@ -84,8 +89,10 @@ export class SidebarComponent {
           })),
         })),
       },
+    ];
 
-      {
+    if (user) {
+      items.push({
         label: 'User Hub',
         icon: 'account_circle',
         children: [
@@ -93,8 +100,17 @@ export class SidebarComponent {
           { label: 'AI Assistant', link: '/user/ai', icon: 'chat' },
           { label: 'File Manager', link: '/user/files', icon: 'folder_shared' },
         ],
-      },
-      {
+      });
+    } else {
+      items.push({
+        label: 'User Login',
+        link: '/user/login',
+        icon: 'login',
+      });
+    }
+
+    if (rrUser) {
+      items.push({
         label: 'Car Rentals',
         icon: 'directions_car',
         children: [
@@ -105,8 +121,16 @@ export class SidebarComponent {
           { label: 'Employee List', link: '/rr/employee/list', icon: 'people' },
           { label: 'History Logs', link: '/rr/history', icon: 'history' },
         ],
-      },
-    ];
+      });
+    } else {
+      items.push({
+        label: 'Car Rental Login',
+        link: '/rr/login',
+        icon: 'login',
+      });
+    }
+
+    return items;
   });
 
   // Mappings helper for dev tool category icons
