@@ -10,9 +10,7 @@
       </div>
     </div>
     <div class="count-display">{{ getVehicleCount('available') }}</div>
-    <div class="stat-progress-bar">
-      <div class="progress-fill fill-available" [style.width]="'100%'"></div>
-    </div>
+    <div class="stat-desc">Operational Fleet Capacity</div>
   </mat-card>
 
   <!-- In Booking Card -->
@@ -24,9 +22,7 @@
       </div>
     </div>
     <div class="count-display">{{ getVehicleCount('in_booking') }}</div>
-    <div class="stat-progress-bar">
-      <div class="progress-fill fill-rented" [style.width]="'100%'"></div>
-    </div>
+    <div class="stat-desc">Active Customer Commutes</div>
   </mat-card>
 
   <!-- Maintenance Card -->
@@ -38,9 +34,7 @@
       </div>
     </div>
     <div class="count-display">{{ getVehicleCount('maintenance') }}</div>
-    <div class="stat-progress-bar">
-      <div class="progress-fill fill-maintenance" [style.width]="'100%'"></div>
-    </div>
+    <div class="stat-desc">Routine Servicing & Repairs</div>
   </mat-card>
 
   <!-- Contract Card -->
@@ -52,26 +46,41 @@
       </div>
     </div>
     <div class="count-display">{{ getVehicleCount('contract') }}</div>
-    <div class="stat-progress-bar">
-      <div class="progress-fill fill-contract" [style.width]="'100%'"></div>
-    </div>
+    <div class="stat-desc">Long-term Leased Contracts</div>
   </mat-card>
 </div>
 
-<h3>RoadReady Available Slabs</h3>
-<div class="vehicle-grid">
+<h3>RoadReady Available Fleet Slabs</h3>
+<div class="fleet-showcase-list">
   @for (v of vehicles(); track v.regNo) {
     @if (v.status === 'available') {
-      <mat-card class="vehicle-card">
-        <div class="card-img-container">
+      <mat-card class="fleet-list-item">
+        <div class="item-visual">
           <img [src]="getVehicleImage(v)" alt="Vehicle Image" />
-          <span class="active-status-badge">Available</span>
         </div>
-        <div class="veh-title">{{ v.manufacturer }} {{ v.name }}</div>
-        <div class="veh-subtitle reg-no">No: {{ v.regNo }}</div>
-        <div class="veh-specs">
-          <span class="spec-badge"><mat-icon>airline_seat_recline_normal</mat-icon> {{ v.seating }} Seats</span>
-          <span class="spec-badge"><mat-icon>local_gas_station</mat-icon> {{ v.fuelType | uppercase }}</span>
+        <div class="item-info">
+          <h4 class="veh-name">{{ v.manufacturer }} {{ v.name }}</h4>
+          <span class="veh-plate">Plate No: {{ v.regNo }}</span>
+        </div>
+        <div class="item-specs">
+          <span class="spec-pill">
+            <mat-icon>airline_seat_recline_normal</mat-icon>
+            <span>{{ v.seating }} Seats</span>
+          </span>
+          <span class="spec-pill">
+            <mat-icon>local_gas_station</mat-icon>
+            <span>{{ v.fuelType | uppercase }}</span>
+          </span>
+          <span class="spec-pill">
+            <mat-icon>commute</mat-icon>
+            <span>{{ v.type || 'SEDAN' | uppercase }}</span>
+          </span>
+        </div>
+        <div class="item-status">
+          <span class="badge status-available">Ready to Rent</span>
+        </div>
+        <div class="item-action">
+          <mat-icon class="chevron">chevron_right</mat-icon>
         </div>
       </mat-card>
     }

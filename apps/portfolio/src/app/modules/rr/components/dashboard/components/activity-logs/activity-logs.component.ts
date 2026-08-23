@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { RRApiService } from '../../../../services/rr-api.service';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-rr-activity-logs',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatFormFieldModule, MatInputModule],
+  imports: [CommonModule, FormsModule, MatFormFieldModule, MatInputModule, MatIconModule],
   templateUrl: './activity-logs.component.html',
   styleUrl: './activity-logs.component.scss'
 })

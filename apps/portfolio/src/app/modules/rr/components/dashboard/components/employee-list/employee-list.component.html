@@ -1,6 +1,6 @@
-<h2>Employees > List</h2>
+<h2>Employees > Staff Registry</h2>
 
-<div style="margin-bottom: 20px;">
+<div style="margin-bottom: 24px;">
   <button mat-raised-button color="primary" class="action-btn success" (click)="openAddEmployeeModal()">
     <mat-icon>add</mat-icon> Register New Employee
   </button>
@@ -23,24 +23,34 @@
     <tbody>
       @for (emp of employees(); track emp.id) {
         <tr>
-          <td>{{ emp.id }}</td>
+          <td><span style="font-family: monospace; font-weight: 700; color: var(--rr-accent);">{{ emp.id }}</span></td>
           <td>{{ emp.firstName }} {{ emp.lastName }}</td>
-          <td>{{ emp.role | uppercase }}</td>
+          <td>
+            <span class="badge" [class]="emp.role === 'admin' ? 'status-active' : 'status-available'">
+              {{ emp.role | uppercase }}
+            </span>
+          </td>
           <td>{{ emp.dob }}</td>
           <td>{{ emp.phone }}</td>
           <td>{{ emp.email }}</td>
           <td>
             <span class="badge" [class]="emp.allowLogin ? 'status-completed' : 'status-cancelled'">
-              {{ emp.allowLogin ? 'Yes' : 'No' }}
+              {{ emp.allowLogin ? 'Allowed' : 'Revoked' }}
             </span>
           </td>
           <td>
-            <button class="action-btn" style="padding: 6px 12px; font-size: 11px;" (click)="openEditEmployeeModal(emp)">Edit</button>
+            <button class="action-btn" style="padding: 6px 12px; font-size: 11px;" (click)="openEditEmployeeModal(emp)">
+              <mat-icon style="font-size: 14px; width: 14px; height: 14px; vertical-align: middle;">edit</mat-icon>
+              <span>Edit</span>
+            </button>
           </td>
         </tr>
       } @empty {
         <tr>
-          <td colspan="8" style="text-align: center;">No employees found.</td>
+          <td colspan="8" style="text-align: center; color: var(--rr-text-muted); padding: 32px 0;">
+            <mat-icon style="font-size: 32px; width: 32px; height: 32px; color: var(--rr-text-muted); display: block; margin: 0 auto 8px auto;">people</mat-icon>
+            <span>No registered employees found.</span>
+          </td>
         </tr>
       }
     </tbody>
@@ -49,13 +59,19 @@
 
 <!-- POPUP: ADD/MODIFY EMPLOYEE DIALOG TEMPLATE -->
 <ng-template #employeeFormDialog>
-  <h3 mat-dialog-title>{{ editingEmployeeMode() ? 'Modify Employee - ID: ' + employeeFormGroup.value.id : 'Register New Employee' }}</h3>
+  <h3 mat-dialog-title>
+    <mat-icon style="vertical-align: middle; margin-right: 6px;">badge</mat-icon>
+    <span>{{ editingEmployeeMode() ? 'Modify Staff Account' : 'Register New Staff Account' }}</span>
+  </h3>
   <mat-dialog-content style="max-height: 70vh; overflow-y: auto;">
     <form [formGroup]="employeeFormGroup">
       <div style="padding-right: 8px;">
         <div class="booking-card">
-          <h3>Employee Personal & Account Details</h3>
-          <div class="booking-content">
+          <h3>
+            <mat-icon style="vertical-align: middle; margin-right: 6px;">contact_mail</mat-icon>
+            <span>Employee Personal & Account Details</span>
+          </h3>
+          <div class="booking-content" style="margin-top: 15px;">
             <mat-form-field appearance="outline">
               <mat-label>First Name</mat-label>
               <input matInput formControlName="firstName" />
@@ -89,7 +105,7 @@
             </mat-form-field>
 
             <mat-form-field appearance="outline">
-              <mat-label>Alternative Phone Number</mat-label>
+              <mat-label>Alternative Phone</mat-label>
               <input matInput formControlName="altPhone" maxlength="10" />
               @if (employeeFormGroup.get('altPhone')?.invalid && employeeFormGroup.get('altPhone')?.touched) {
                 <mat-error>Must be 10 digits.</mat-error>
@@ -121,19 +137,19 @@
             </mat-form-field>
 
             <mat-form-field appearance="outline">
-              <mat-label>Role</mat-label>
+              <mat-label>System Access Role</mat-label>
               <mat-select formControlName="role">
-                <mat-option value="employee">Employee</mat-option>
-                <mat-option value="admin">Admin</mat-option>
+                <mat-option value="employee">Employee Agent</mat-option>
+                <mat-option value="admin">System Administrator</mat-option>
               </mat-select>
             </mat-form-field>
 
-            <div class="field" style="flex-direction: row; align-items: center; gap: 10px; margin-top: 20px;">
-              <mat-checkbox formControlName="allowLogin" id="empAllowLogin">Allow Login to Dashboard</mat-checkbox>
+            <div class="field" style="flex-direction: row; align-items: center; gap: 10px; margin-top: 15px;">
+              <mat-checkbox formControlName="allowLogin" id="empAllowLogin">Allow Dashboard Login</mat-checkbox>
             </div>
 
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Address</mat-label>
+              <mat-label>Residential Address</mat-label>
               <textarea matInput formControlName="address" rows="2"></textarea>
               @if (employeeFormGroup.get('address')?.invalid && employeeFormGroup.get('address')?.touched) {
                 <mat-error>Address is required.</mat-error>
@@ -144,9 +160,10 @@
       </div>
     </form>
   </mat-dialog-content>
-  <mat-dialog-actions align="end" style="margin-top: 16px; padding: 12px 24px;">
+  <mat-dialog-actions align="end" style="margin-top: 20px; padding: 12px 24px;">
     <button mat-raised-button color="primary" class="action-btn success" style="margin-right: 12px;" [disabled]="employeeFormGroup.invalid" (click)="saveEmployee($event)">
-      {{ editingEmployeeMode() ? 'Update Account' : 'Register Account' }}
+      <mat-icon>check</mat-icon>
+      <span>{{ editingEmployeeMode() ? 'Save Changes' : 'Register Account' }}</span>
     </button>
     <button mat-button color="warn" (click)="closeEmployeeFormModal()">Cancel</button>
   </mat-dialog-actions>

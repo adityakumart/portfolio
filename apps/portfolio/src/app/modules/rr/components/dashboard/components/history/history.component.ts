@@ -1,11 +1,12 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RRApiService } from '../../../../services/rr-api.service';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-rr-history',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, MatIconModule],
   templateUrl: './history.component.html',
   styleUrl: './history.component.scss'
 })
