@@ -27,6 +27,7 @@ import { appRoutingList } from './shared/data/routes';
 import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
 import { AuthService } from './modules/user/services/auth';
 import { ProfileMenuComponent } from './shared/components/profile-menu/profile-menu.component';
+import { SidebarComponent } from './shared/components/sidebar/sidebar.component';
 
 
 @Component({
@@ -34,15 +35,7 @@ import { ProfileMenuComponent } from './shared/components/profile-menu/profile-m
   standalone: true,
   imports: [
     RouterOutlet,
-    RouterLink,
-    RouterLinkActive,
-    MatToolbarModule,
-    MatIconModule,
-    MatButtonModule,
-    MatSidenavModule,
-    MatTooltipModule,
-    MatMenuModule,
-    ProfileMenuComponent,
+    SidebarComponent,
   ],
   templateUrl: './app.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,

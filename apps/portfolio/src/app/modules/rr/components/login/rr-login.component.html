@@ -43,21 +43,21 @@
 
     <!-- Employee Login Form -->
     @if (selectedRole() === 'employee') {
-    <form (submit)="onEmployeeSubmit()" class="auth-form" #empForm="ngForm">
+    <form [formGroup]="employeeFormGroup" (submit)="onEmployeeSubmit()" class="auth-form">
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Employee ID</mat-label>
         <input
           matInput
-          [ngModel]="empId()"
-          (ngModelChange)="empId.set($event)"
-          name="empId"
-          required
+          formControlName="empId"
           placeholder="e.g. RRA002"
-          #empIdInput="ngModel"
         />
         <mat-icon matPrefix>badge</mat-icon>
-        @if (empIdInput.invalid && (empIdInput.dirty || empIdInput.touched)) {
-        <mat-error>Employee ID is required.</mat-error>
+        @if (employeeFormGroup.get('empId')?.touched && employeeFormGroup.get('empId')?.invalid) {
+          @if (employeeFormGroup.get('empId')?.errors?.['required']) {
+            <mat-error>Employee ID is required.</mat-error>
+          } @else if (employeeFormGroup.get('empId')?.errors?.['pattern']) {
+            <mat-error>Must match format 'RRA000'.</mat-error>
+          }
         }
       </mat-form-field>
 
@@ -66,15 +66,11 @@
         <input
           matInput
           type="date"
-          [ngModel]="dob()"
-          (ngModelChange)="dob.set($event)"
-          name="dob"
-          required
-          #dobInput="ngModel"
+          formControlName="dob"
         />
         <mat-icon matPrefix>calendar_today</mat-icon>
-        @if (dobInput.invalid && (dobInput.dirty || dobInput.touched)) {
-        <mat-error>Date of Birth is required.</mat-error>
+        @if (employeeFormGroup.get('dob')?.touched && employeeFormGroup.get('dob')?.invalid) {
+          <mat-error>Date of Birth is required.</mat-error>
         }
       </mat-form-field>
 
@@ -83,7 +79,7 @@
         color="primary"
         class="submit-btn"
         type="submit"
-        [disabled]="loading() || empForm.invalid"
+        [disabled]="loading() || employeeFormGroup.invalid"
       >
         <div class="spinner-container">
           @if (loading()) {
@@ -101,21 +97,17 @@
 
     <!-- Admin Login Form -->
     @if (selectedRole() === 'admin') {
-    <form (submit)="onAdminSubmit()" class="auth-form" #adminForm="ngForm">
+    <form [formGroup]="adminFormGroup" (submit)="onAdminSubmit()" class="auth-form">
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Admin Username / Email</mat-label>
         <input
           matInput
-          [ngModel]="adminUsername()"
-          (ngModelChange)="adminUsername.set($event)"
-          name="adminUsername"
-          required
+          formControlName="adminUsername"
           placeholder="e.g. admin@rams-cars.com"
-          #adminUsernameInput="ngModel"
         />
         <mat-icon matPrefix>person</mat-icon>
-        @if (adminUsernameInput.invalid && (adminUsernameInput.dirty || adminUsernameInput.touched)) {
-        <mat-error>Username/Email is required.</mat-error>
+        @if (adminFormGroup.get('adminUsername')?.touched && adminFormGroup.get('adminUsername')?.invalid) {
+          <mat-error>Username/Email is required.</mat-error>
         }
       </mat-form-field>
 
@@ -123,13 +115,9 @@
         <mat-label>Password</mat-label>
         <input
           matInput
-          [ngModel]="adminPassword()"
-          (ngModelChange)="adminPassword.set($event)"
-          name="adminPassword"
+          formControlName="adminPassword"
           [type]="showPassword() ? 'text' : 'password'"
-          required
           placeholder="Enter admin password"
-          #adminPasswordInput="ngModel"
         />
         <mat-icon matPrefix>lock</mat-icon>
         <button
@@ -143,8 +131,12 @@
             {{ showPassword() ? 'visibility_off' : 'visibility' }}
           </mat-icon>
         </button>
-        @if (adminPasswordInput.invalid && (adminPasswordInput.dirty || adminPasswordInput.touched)) {
-        <mat-error>Password is required.</mat-error>
+        @if (adminFormGroup.get('adminPassword')?.touched && adminFormGroup.get('adminPassword')?.invalid) {
+          @if (adminFormGroup.get('adminPassword')?.errors?.['required']) {
+            <mat-error>Password is required.</mat-error>
+          } @else if (adminFormGroup.get('adminPassword')?.errors?.['minlength']) {
+            <mat-error>Password must be at least 4 characters.</mat-error>
+          }
         }
       </mat-form-field>
 
@@ -153,7 +145,7 @@
         color="primary"
         class="submit-btn"
         type="submit"
-        [disabled]="loading() || adminForm.invalid"
+        [disabled]="loading() || adminFormGroup.invalid"
       >
         <div class="spinner-container">
           @if (loading()) {

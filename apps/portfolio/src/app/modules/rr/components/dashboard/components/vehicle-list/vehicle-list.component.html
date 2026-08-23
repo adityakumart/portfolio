@@ -1,0 +1,258 @@
+<h2>Vehicles > Fleet list</h2>
+
+@if (isAdmin()) {
+  <div style="margin-bottom: 20px;">
+    <button mat-raised-button color="primary" class="action-btn success" (click)="openAddVehicleModal()">
+      <mat-icon>add</mat-icon> Add New Vehicle
+    </button>
+  </div>
+}
+
+<div class="vehicle-grid">
+  @for (v of vehicles(); track v.regNo) {
+    <div class="vehicle-card" (click)="viewVehicleDetails(v)">
+      <img [src]="getVehicleImage(v)" alt="Vehicle Image" />
+      <div class="veh-title">{{ v.manufacturer }} {{ v.name }}</div>
+      <div class="veh-subtitle">No: {{ v.regNo }}</div>
+      <span class="badge" [class]="'status-' + v.status">{{ v.status }}</span>
+    </div>
+  } @empty {
+    <p>No vehicles registered in fleet.</p>
+  }
+</div>
+
+<!-- POPUP 1: VEHICLE DETAILS DIALOG TEMPLATE -->
+<ng-template #vehicleDetailsDialog>
+  <h3 mat-dialog-title>Vehicle Details - No: {{ selectedVehicleDetails()?.regNo }}</h3>
+  <mat-dialog-content>
+    <div class="booking-content" style="grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 10px;">
+      <div>
+        <img [src]="getVehicleImage(selectedVehicleDetails())" alt="Vehicle Image" style="width: 100%; max-height: 150px; object-fit: contain; margin-bottom: 12px;" />
+        <p><strong>Status:</strong> <span class="badge" [class]="'status-' + selectedVehicleDetails()?.status">{{ selectedVehicleDetails()?.status }}</span></p>
+      </div>
+      <div>
+        <p><strong>Name:</strong> {{ selectedVehicleDetails()?.manufacturer }} {{ selectedVehicleDetails()?.name }}</p>
+        <p><strong>Model:</strong> {{ selectedVehicleDetails()?.model }}</p>
+        <p><strong>Seating:</strong> {{ selectedVehicleDetails()?.seating }} Seater</p>
+        <p><strong>Fuel:</strong> {{ selectedVehicleDetails()?.fuelType }}</p>
+        <p><strong>Type:</strong> {{ selectedVehicleDetails()?.type }}</p>
+        <p><strong>Odometer:</strong> {{ selectedVehicleDetails()?.odometer }} KM</p>
+        <p><strong>Engine No:</strong> {{ selectedVehicleDetails()?.engineNo }}</p>
+        <p><strong>Chassis No:</strong> {{ selectedVehicleDetails()?.chassisNo }}</p>
+        <p><strong>Insurance Expiry:</strong> {{ selectedVehicleDetails()?.insuranceExpiry }}</p>
+        <p><strong>Pollution Expiry:</strong> {{ selectedVehicleDetails()?.pollutionExpiry }}</p>
+      </div>
+    </div>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end" style="margin-top: 16px; padding: 12px 24px;">
+    @if (isAdmin()) {
+      <button mat-raised-button color="primary" class="action-btn" style="margin-right: 12px;" (click)="openEditVehicleModal()">Modify / Edit</button>
+      <button mat-raised-button color="warn" class="action-btn danger" style="margin-right: 12px;" (click)="deleteVehicle(selectedVehicleDetails()?.regNo!)">Delete Vehicle</button>
+    }
+    <button mat-button (click)="closeVehicleDetailsPopup()">Close</button>
+  </mat-dialog-actions>
+</ng-template>
+
+<!-- POPUP 2: ADD/MODIFY VEHICLE FORM DIALOG TEMPLATE -->
+<ng-template #vehicleFormDialog>
+  <h3 mat-dialog-title>{{ editingVehicleMode() ? 'Modify Vehicle - No: ' + selectedVehicleDetails()?.regNo : 'Add New Vehicle' }}</h3>
+  <mat-dialog-content style="max-height: 70vh; overflow-y: auto;">
+    <form [formGroup]="vehicleFormGroup">
+      <div style="padding-right: 8px;">
+        <div class="booking-card">
+          <h3>Vehicle Metadata</h3>
+          <div class="booking-content">
+            <mat-form-field appearance="outline">
+              <mat-label>Registration Number</mat-label>
+              <input matInput formControlName="regNo" [readonly]="editingVehicleMode()" />
+              @if (vehicleFormGroup.get('regNo')?.invalid && vehicleFormGroup.get('regNo')?.touched) {
+                <mat-error>Plate number is required.</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Vehicle Name</mat-label>
+              <input matInput formControlName="name" />
+              @if (vehicleFormGroup.get('name')?.invalid && vehicleFormGroup.get('name')?.touched) {
+                <mat-error>Name is required.</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Manufacturer</mat-label>
+              <input matInput formControlName="manufacturer" />
+              @if (vehicleFormGroup.get('manufacturer')?.invalid && vehicleFormGroup.get('manufacturer')?.touched) {
+                <mat-error>Manufacturer is required.</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Model (YYYY-MM)</mat-label>
+              <input matInput type="month" formControlName="model" />
+              @if (vehicleFormGroup.get('model')?.invalid && vehicleFormGroup.get('model')?.touched) {
+                <mat-error>Required.</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Seating Capacity</mat-label>
+              <mat-select formControlName="seating">
+                <mat-option value="5">5 Seater</mat-option>
+                <mat-option value="7">7 Seater</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Odometer Reading (KM)</mat-label>
+              <input matInput type="number" formControlName="odometer" />
+              @if (vehicleFormGroup.get('odometer')?.invalid && vehicleFormGroup.get('odometer')?.touched) {
+                <mat-error>Must be positive number.</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Vehicle Type</mat-label>
+              <input matInput formControlName="type" placeholder="e.g. SUV, Sedan" />
+              @if (vehicleFormGroup.get('type')?.invalid && vehicleFormGroup.get('type')?.touched) {
+                <mat-error>Type is required.</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Color</mat-label>
+              <input matInput formControlName="color" />
+              @if (vehicleFormGroup.get('color')?.invalid && vehicleFormGroup.get('color')?.touched) {
+                <mat-error>Color is required.</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Fuel Type</mat-label>
+              <mat-select formControlName="fuelType">
+                <mat-option value="Petrol">Petrol</mat-option>
+                <mat-option value="Diesel">Diesel</mat-option>
+                <mat-option value="Electric">Electric</mat-option>
+                <mat-option value="CNG">CNG</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Engine Number</mat-label>
+              <input matInput formControlName="engineNo" />
+              @if (vehicleFormGroup.get('engineNo')?.invalid && vehicleFormGroup.get('engineNo')?.touched) {
+                <mat-error>Required.</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Chassis Number</mat-label>
+              <input matInput formControlName="chassisNo" />
+              @if (vehicleFormGroup.get('chassisNo')?.invalid && vehicleFormGroup.get('chassisNo')?.touched) {
+                <mat-error>Required.</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Insurance Expiry Date</mat-label>
+              <input matInput type="date" formControlName="insuranceExpiry" />
+              @if (vehicleFormGroup.get('insuranceExpiry')?.invalid && vehicleFormGroup.get('insuranceExpiry')?.touched) {
+                <mat-error>Required.</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Pollution Expiry Date</mat-label>
+              <input matInput type="date" formControlName="pollutionExpiry" />
+              @if (vehicleFormGroup.get('pollutionExpiry')?.invalid && vehicleFormGroup.get('pollutionExpiry')?.touched) {
+                <mat-error>Required.</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Status</mat-label>
+              <mat-select formControlName="status">
+                <mat-option value="available">Available</mat-option>
+                <mat-option value="maintenance">Maintenance / Service</mat-option>
+                <mat-option value="contract">In Corporate Contract</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <div class="booking-card" style="margin-top: 24px;" formGroupName="pricing">
+          <h3>Pricing Slabs & Fees</h3>
+          <div class="booking-content">
+            <div formGroupName="h23" style="display:contents;">
+              <mat-form-field appearance="outline">
+                <mat-label>24 Hours Rent (Rs.)</mat-label>
+                <input matInput type="number" formControlName="price" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>24 Hours KM Limit</mat-label>
+                <input matInput type="number" formControlName="km" />
+              </mat-form-field>
+            </div>
+
+            <div formGroupName="h11" style="display:contents;">
+              <mat-form-field appearance="outline">
+                <mat-label>12 Hours Rent (Rs.)</mat-label>
+                <input matInput type="number" formControlName="price" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>12 Hours KM Limit</mat-label>
+                <input matInput type="number" formControlName="km" />
+              </mat-form-field>
+            </div>
+
+            <div formGroupName="h3" style="display:contents;">
+              <mat-form-field appearance="outline">
+                <mat-label>4 Hours Rent (Rs.)</mat-label>
+                <input matInput type="number" formControlName="price" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>4 Hours KM Limit</mat-label>
+                <input matInput type="number" formControlName="km" />
+              </mat-form-field>
+            </div>
+
+            <div formGroupName="h1" style="display:contents;">
+              <mat-form-field appearance="outline">
+                <mat-label>1 Hour Rent (Rs.)</mat-label>
+                <input matInput type="number" formControlName="price" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>1 Hour KM Limit</mat-label>
+                <input matInput type="number" formControlName="km" />
+              </mat-form-field>
+            </div>
+          </div>
+        </div>
+
+        <div class="booking-card" style="margin-top: 24px;">
+          <div class="booking-content">
+            <mat-form-field appearance="outline">
+              <mat-label>Extra KM Price (Rs./KM)</mat-label>
+              <input matInput type="number" formControlName="extraKmPrice" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Extra Hour Price (Rs./Hour)</mat-label>
+              <input matInput type="number" formControlName="extraHourPrice" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Vehicle Image URL (Default fallback will be used if empty)</mat-label>
+              <input matInput [(ngModel)]="vehicleImageInputUrl" [ngModelOptions]="{standalone: true}" placeholder="e.g. assets/rr/baleno.png" />
+            </mat-form-field>
+          </div>
+        </div>
+      </div>
+    </form>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end" style="margin-top: 16px; padding: 12px 24px;">
+    <button mat-raised-button color="primary" class="action-btn success" style="margin-right: 12px;" [disabled]="vehicleFormGroup.invalid" (click)="saveVehicle($event)">
+      {{ editingVehicleMode() ? 'Update Vehicle' : 'Add Vehicle' }}
+    </button>
+    <button mat-button color="warn" (click)="closeVehicleFormModal()">Cancel</button>
+  </mat-dialog-actions>
+</ng-template>
