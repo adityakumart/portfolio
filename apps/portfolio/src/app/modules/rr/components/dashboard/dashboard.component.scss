@@ -354,7 +354,7 @@
   /* MAIN CONTENT OUTLET */
   main.main-content {
     flex: 1;
-    padding: 2.5rem;
+    padding: 3rem;
     overflow-y: auto;
     box-sizing: border-box;
     font-size: 0.9rem;
@@ -367,7 +367,7 @@
     font-weight: 800;
     letter-spacing: -0.025em;
     margin-top: 0;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
     color: var(--rr-text);
   }
 
@@ -385,8 +385,8 @@
   #vehicle-status-dashboard {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 3rem;
+    gap: 2rem;
+    margin-bottom: 3.5rem;
   }
 
   .status-section {
@@ -394,7 +394,7 @@
     backdrop-filter: var(--rr-glass-blur);
     -webkit-backdrop-filter: var(--rr-glass-blur);
     border: 1px solid var(--rr-border-color);
-    padding: 1.5rem 1.75rem;
+    padding: 1.75rem 2rem;
     border-radius: 20px;
     box-shadow: var(--rr-card-shadow);
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -614,7 +614,7 @@
   .fleet-showcase-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
     margin-bottom: 2.5rem;
   }
 
@@ -622,7 +622,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1.25rem 2rem;
+    padding: 1.5rem 2.25rem;
     border-radius: 20px;
     background: var(--rr-card-bg);
     backdrop-filter: var(--rr-glass-blur);
@@ -775,7 +775,7 @@
   th {
     background: var(--rr-header-bg);
     color: var(--rr-header-text);
-    padding: 1.15rem 1.5rem;
+    padding: 1.25rem 1.75rem;
     font-weight: 700;
     font-size: 0.8rem;
     text-transform: uppercase;
@@ -784,7 +784,7 @@
   }
 
   td {
-    padding: 1.15rem 1.5rem;
+    padding: 1.25rem 1.75rem;
     border-bottom: 1px solid var(--rr-border-color);
     color: var(--rr-text);
     font-weight: 600;
