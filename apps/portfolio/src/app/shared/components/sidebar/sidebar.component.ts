@@ -101,15 +101,7 @@ export class SidebarComponent {
           { label: 'File Manager', link: '/user/files', icon: 'folder_shared' },
         ],
       });
-    } else {
-      items.push({
-        label: 'User Login',
-        link: '/user/login',
-        icon: 'login',
-      });
-    }
-
-    if (rrUser) {
+    } else if (rrUser) {
       items.push({
         label: 'Car Rentals',
         icon: 'directions_car',
@@ -123,6 +115,11 @@ export class SidebarComponent {
         ],
       });
     } else {
+      items.push({
+        label: 'User Login',
+        link: '/user/login',
+        icon: 'login',
+      });
       items.push({
         label: 'Car Rental Login',
         link: '/rr/login',
