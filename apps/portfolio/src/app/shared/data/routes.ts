@@ -168,6 +168,15 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
             '../../modules/dev-tools/components/number-base-converter/number-base-converter.component'
           ).then((m) => m.NumberBaseConverterComponent),
       },
+      {
+        name: 'Line Splitter',
+        path: 'converters/line-splitter',
+        link: '/dev-tools/converters/line-splitter',
+        loadComponent: () =>
+          import(
+            '../../modules/dev-tools/components/line-splitter/line-splitter.component'
+          ).then((m) => m.LineSplitterComponent),
+      },
     ],
   },
   {
@@ -280,16 +289,7 @@ export const appRoutingList: AppRouteConfig[] = [
     icon: 'code_xml',
     groups: devToolsRoutingList,
   },
-  {
-    path: 'line-splitter',
-    link: '/line-splitter',
-    label: 'Line Splitter',
-    icon: 'format_list_numbered',
-    loadComponent: () =>
-      import('../../modules/line-splitter/line-splitter.component').then(
-        (m) => m.LineSplitterComponent,
-      ),
-  },
+
   {
     path: 'user',
     link: '/user',

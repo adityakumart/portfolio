@@ -23,13 +23,7 @@ export const AppRoutes: Routes = [
         (comp) => comp.FormbuilderModule,
       ),
   },
-  {
-    path: 'line-splitter',
-    loadComponent: () =>
-      import('./modules/line-splitter/line-splitter.component').then(
-        (comp) => comp.LineSplitterComponent,
-      ),
-  },
+
   {
     path: 'user',
     loadChildren: () =>

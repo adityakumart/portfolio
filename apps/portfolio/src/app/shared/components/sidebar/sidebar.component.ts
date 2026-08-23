@@ -85,7 +85,7 @@ export class SidebarComponent {
           })),
         })),
       },
-      { label: 'Line Splitter', icon: 'format_list_numbered', link: '/line-splitter' },
+
       {
         label: 'User Hub',
         icon: 'account_circle',
