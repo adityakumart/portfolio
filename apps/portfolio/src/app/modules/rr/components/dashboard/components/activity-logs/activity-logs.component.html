@@ -1,22 +1,39 @@
 <h2>System Activity Logs</h2>
 
 <div class="log-filter-bar">
-  <mat-form-field appearance="outline" style="width:160px; margin-bottom: 0;">
+  <mat-form-field appearance="outline" style="width:180px; margin-bottom: 0;">
     <mat-label>From Date</mat-label>
     <input matInput type="date" [(ngModel)]="logFilterFrom" />
   </mat-form-field>
-  <mat-form-field appearance="outline" style="width:160px; margin-bottom: 0;">
+  
+  <mat-form-field appearance="outline" style="width:180px; margin-bottom: 0;">
     <mat-label>To Date</mat-label>
     <input matInput type="date" [(ngModel)]="logFilterTo" />
   </mat-form-field>
-  <button class="action-btn" (click)="loadActivityLogs()">Get Logs</button>
-  <button class="action-btn" (click)="clearLogFilters()">Clear Filters & Display All</button>
+
+  <button class="action-btn success" (click)="loadActivityLogs()">
+    <mat-icon style="font-size: 16px; width: 16px; height: 16px; vertical-align: middle;">search</mat-icon>
+    <span>Get Logs</span>
+  </button>
+  <button class="action-btn" (click)="clearLogFilters()">
+    <mat-icon style="font-size: 16px; width: 16px; height: 16px; vertical-align: middle;">clear_all</mat-icon>
+    <span>Clear Filters & Display All</span>
+  </button>
 </div>
 
 <div class="logs-scroll">
   @for (log of logs(); track log._id) {
-    <div>{{ log.time }} — {{ log.role | uppercase }} {{ log.performedBy }} — {{ log.action }}</div>
+    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+      <span style="color: var(--rr-accent); font-weight: 700;">[{{ log.time }}]</span>
+      <span class="badge" [class]="log.role === 'admin' ? 'status-active' : 'status-available'" style="padding: 2px 8px; font-size: 10px;">{{ log.role | uppercase }}</span>
+      <span style="font-weight: 700; color: var(--rr-text);">{{ log.performedBy }}</span>
+      <span style="color: var(--rr-text-muted);">—</span>
+      <span style="color: var(--rr-text); font-weight: 550;">{{ log.action }}</span>
+    </div>
   } @empty {
-    <p>No activity logs found matching the criteria.</p>
+    <div style="text-align: center; color: var(--rr-text-muted); padding: 24px 0;">
+      <mat-icon style="font-size: 32px; width: 32px; height: 32px; display: block; margin: 0 auto 8px auto;">sync_problem</mat-icon>
+      <p style="margin: 0;">No activity logs found matching the criteria.</p>
+    </div>
   }
 </div>

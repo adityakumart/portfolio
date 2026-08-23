@@ -1,7 +1,7 @@
-<h2>Vehicles > Fleet list</h2>
+<h2>Vehicles > Fleet List Registry</h2>
 
 @if (isAdmin()) {
-  <div style="margin-bottom: 20px;">
+  <div style="margin-bottom: 24px;">
     <button mat-raised-button color="primary" class="action-btn success" (click)="openAddVehicleModal()">
       <mat-icon>add</mat-icon> Add New Vehicle
     </button>
@@ -10,44 +10,59 @@
 
 <div class="vehicle-grid">
   @for (v of vehicles(); track v.regNo) {
-    <div class="vehicle-card" (click)="viewVehicleDetails(v)">
-      <img [src]="getVehicleImage(v)" alt="Vehicle Image" />
+    <mat-card class="vehicle-card" (click)="viewVehicleDetails(v)">
+      <div class="card-img-container">
+        <img [src]="getVehicleImage(v)" alt="Vehicle Image" />
+        <span class="active-status-badge badge status-{{ v.status }}">{{ v.status | uppercase }}</span>
+      </div>
       <div class="veh-title">{{ v.manufacturer }} {{ v.name }}</div>
-      <div class="veh-subtitle">No: {{ v.regNo }}</div>
-      <span class="badge" [class]="'status-' + v.status">{{ v.status }}</span>
-    </div>
+      <div class="veh-subtitle reg-no">No: {{ v.regNo }}</div>
+      <div class="veh-specs">
+        <span class="spec-badge"><mat-icon>airline_seat_recline_normal</mat-icon> {{ v.seating }} Seats</span>
+        <span class="spec-badge"><mat-icon>local_gas_station</mat-icon> {{ v.fuelType | uppercase }}</span>
+      </div>
+    </mat-card>
   } @empty {
-    <p>No vehicles registered in fleet.</p>
+    <div class="empty-fleet-card">
+      <mat-icon>no_sim</mat-icon>
+      <p>No vehicles registered in fleet.</p>
+    </div>
   }
 </div>
 
 <!-- POPUP 1: VEHICLE DETAILS DIALOG TEMPLATE -->
 <ng-template #vehicleDetailsDialog>
-  <h3 mat-dialog-title>Vehicle Details - No: {{ selectedVehicleDetails()?.regNo }}</h3>
+  <h3 mat-dialog-title>Fleet Registry Details</h3>
   <mat-dialog-content>
-    <div class="booking-content" style="grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 10px;">
-      <div>
-        <img [src]="getVehicleImage(selectedVehicleDetails())" alt="Vehicle Image" style="width: 100%; max-height: 150px; object-fit: contain; margin-bottom: 12px;" />
-        <p><strong>Status:</strong> <span class="badge" [class]="'status-' + selectedVehicleDetails()?.status">{{ selectedVehicleDetails()?.status }}</span></p>
+    <div class="booking-content" style="grid-template-columns: 0.8fr 1.2fr; gap: 24px; margin-top: 15px;">
+      <div style="text-align: center; background: rgba(0,0,0,0.02); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid var(--rr-border-color);">
+        <img [src]="getVehicleImage(selectedVehicleDetails())" alt="Vehicle Image" style="width: 100%; max-height: 150px; object-fit: contain; margin-bottom: 16px;" />
+        <p style="margin: 0;"><strong>Active Status:</strong></p>
+        <span class="badge status-{{ selectedVehicleDetails()?.status }}" style="margin-top: 6px;">{{ selectedVehicleDetails()?.status | uppercase }}</span>
       </div>
-      <div>
-        <p><strong>Name:</strong> {{ selectedVehicleDetails()?.manufacturer }} {{ selectedVehicleDetails()?.name }}</p>
-        <p><strong>Model:</strong> {{ selectedVehicleDetails()?.model }}</p>
-        <p><strong>Seating:</strong> {{ selectedVehicleDetails()?.seating }} Seater</p>
-        <p><strong>Fuel:</strong> {{ selectedVehicleDetails()?.fuelType }}</p>
-        <p><strong>Type:</strong> {{ selectedVehicleDetails()?.type }}</p>
-        <p><strong>Odometer:</strong> {{ selectedVehicleDetails()?.odometer }} KM</p>
-        <p><strong>Engine No:</strong> {{ selectedVehicleDetails()?.engineNo }}</p>
-        <p><strong>Chassis No:</strong> {{ selectedVehicleDetails()?.chassisNo }}</p>
-        <p><strong>Insurance Expiry:</strong> {{ selectedVehicleDetails()?.insuranceExpiry }}</p>
-        <p><strong>Pollution Expiry:</strong> {{ selectedVehicleDetails()?.pollutionExpiry }}</p>
+      <div style="line-height: 1.8;">
+        <p style="margin: 0 0 8px 0; font-size: 1.1rem; font-weight: 800; font-family: 'Montserrat', sans-serif;">{{ selectedVehicleDetails()?.manufacturer }} {{ selectedVehicleDetails()?.name }}</p>
+        <p style="margin: 0 0 6px 0;"><strong>Plate Number:</strong> {{ selectedVehicleDetails()?.regNo }}</p>
+        <p style="margin: 0 0 6px 0;"><strong>Model Release:</strong> {{ selectedVehicleDetails()?.model }}</p>
+        <p style="margin: 0 0 6px 0;"><strong>Seating Configuration:</strong> {{ selectedVehicleDetails()?.seating }} Seater</p>
+        <p style="margin: 0 0 6px 0;"><strong>Fuel Type Option:</strong> {{ selectedVehicleDetails()?.fuelType }}</p>
+        <p style="margin: 0 0 6px 0;"><strong>Engine Classification:</strong> {{ selectedVehicleDetails()?.type }}</p>
+        <p style="margin: 0 0 6px 0;"><strong>Odometer Record:</strong> {{ selectedVehicleDetails()?.odometer }} KM</p>
+        <p style="margin: 0 0 6px 0;"><strong>Engine Serial:</strong> {{ selectedVehicleDetails()?.engineNo }}</p>
+        <p style="margin: 0 0 6px 0;"><strong>Chassis Serial:</strong> {{ selectedVehicleDetails()?.chassisNo }}</p>
+        <p style="margin: 0 0 6px 0; font-size: 0.85rem; color: var(--rr-text-muted);"><strong>Insurance Expiry:</strong> {{ selectedVehicleDetails()?.insuranceExpiry }}</p>
+        <p style="margin: 0 0 6px 0; font-size: 0.85rem; color: var(--rr-text-muted);"><strong>Pollution Expiry:</strong> {{ selectedVehicleDetails()?.pollutionExpiry }}</p>
       </div>
     </div>
   </mat-dialog-content>
-  <mat-dialog-actions align="end" style="margin-top: 16px; padding: 12px 24px;">
+  <mat-dialog-actions align="end" style="margin-top: 20px; padding: 12px 24px;">
     @if (isAdmin()) {
-      <button mat-raised-button color="primary" class="action-btn" style="margin-right: 12px;" (click)="openEditVehicleModal()">Modify / Edit</button>
-      <button mat-raised-button color="warn" class="action-btn danger" style="margin-right: 12px;" (click)="deleteVehicle(selectedVehicleDetails()?.regNo!)">Delete Vehicle</button>
+      <button mat-raised-button color="primary" class="action-btn" style="margin-right: 12px;" (click)="openEditVehicleModal()">
+        <mat-icon>edit</mat-icon> Modify
+      </button>
+      <button mat-raised-button color="warn" class="action-btn danger" style="margin-right: 12px;" (click)="deleteVehicle(selectedVehicleDetails()?.regNo!)">
+        <mat-icon>delete</mat-icon> Delete
+      </button>
     }
     <button mat-button (click)="closeVehicleDetailsPopup()">Close</button>
   </mat-dialog-actions>
@@ -55,15 +70,21 @@
 
 <!-- POPUP 2: ADD/MODIFY VEHICLE FORM DIALOG TEMPLATE -->
 <ng-template #vehicleFormDialog>
-  <h3 mat-dialog-title>{{ editingVehicleMode() ? 'Modify Vehicle - No: ' + selectedVehicleDetails()?.regNo : 'Add New Vehicle' }}</h3>
+  <h3 mat-dialog-title>
+    <mat-icon style="vertical-align: middle; margin-right: 6px;">commute</mat-icon>
+    <span>{{ editingVehicleMode() ? 'Modify Vehicle Details' : 'Register New Fleet Vehicle' }}</span>
+  </h3>
   <mat-dialog-content style="max-height: 70vh; overflow-y: auto;">
     <form [formGroup]="vehicleFormGroup">
       <div style="padding-right: 8px;">
         <div class="booking-card">
-          <h3>Vehicle Metadata</h3>
-          <div class="booking-content">
+          <h3>
+            <mat-icon style="vertical-align: middle; margin-right: 6px;">info</mat-icon>
+            <span>Vehicle Metadata Specifications</span>
+          </h3>
+          <div class="booking-content" style="margin-top: 15px;">
             <mat-form-field appearance="outline">
-              <mat-label>Registration Number</mat-label>
+              <mat-label>Registration Plate Number</mat-label>
               <input matInput formControlName="regNo" [readonly]="editingVehicleMode()" />
               @if (vehicleFormGroup.get('regNo')?.invalid && vehicleFormGroup.get('regNo')?.touched) {
                 <mat-error>Plate number is required.</mat-error>
@@ -71,7 +92,7 @@
             </mat-form-field>
 
             <mat-form-field appearance="outline">
-              <mat-label>Vehicle Name</mat-label>
+              <mat-label>Vehicle Model Name</mat-label>
               <input matInput formControlName="name" />
               @if (vehicleFormGroup.get('name')?.invalid && vehicleFormGroup.get('name')?.touched) {
                 <mat-error>Name is required.</mat-error>
@@ -79,7 +100,7 @@
             </mat-form-field>
 
             <mat-form-field appearance="outline">
-              <mat-label>Manufacturer</mat-label>
+              <mat-label>Manufacturer Name</mat-label>
               <input matInput formControlName="manufacturer" />
               @if (vehicleFormGroup.get('manufacturer')?.invalid && vehicleFormGroup.get('manufacturer')?.touched) {
                 <mat-error>Manufacturer is required.</mat-error>
@@ -87,7 +108,7 @@
             </mat-form-field>
 
             <mat-form-field appearance="outline">
-              <mat-label>Model (YYYY-MM)</mat-label>
+              <mat-label>Release Model (YYYY-MM)</mat-label>
               <input matInput type="month" formControlName="model" />
               @if (vehicleFormGroup.get('model')?.invalid && vehicleFormGroup.get('model')?.touched) {
                 <mat-error>Required.</mat-error>
@@ -97,13 +118,13 @@
             <mat-form-field appearance="outline">
               <mat-label>Seating Capacity</mat-label>
               <mat-select formControlName="seating">
-                <mat-option value="5">5 Seater</mat-option>
-                <mat-option value="7">7 Seater</mat-option>
+                <mat-option value="5">5 Seater Comfort</mat-option>
+                <mat-option value="7">7 Seater Explorer</mat-option>
               </mat-select>
             </mat-form-field>
 
             <mat-form-field appearance="outline">
-              <mat-label>Odometer Reading (KM)</mat-label>
+              <mat-label>Initial Odometer (KM)</mat-label>
               <input matInput type="number" formControlName="odometer" />
               @if (vehicleFormGroup.get('odometer')?.invalid && vehicleFormGroup.get('odometer')?.touched) {
                 <mat-error>Must be positive number.</mat-error>
@@ -127,7 +148,7 @@
             </mat-form-field>
 
             <mat-form-field appearance="outline">
-              <mat-label>Fuel Type</mat-label>
+              <mat-label>Fuel Configuration</mat-label>
               <mat-select formControlName="fuelType">
                 <mat-option value="Petrol">Petrol</mat-option>
                 <mat-option value="Diesel">Diesel</mat-option>
@@ -137,7 +158,7 @@
             </mat-form-field>
 
             <mat-form-field appearance="outline">
-              <mat-label>Engine Number</mat-label>
+              <mat-label>Engine Serial</mat-label>
               <input matInput formControlName="engineNo" />
               @if (vehicleFormGroup.get('engineNo')?.invalid && vehicleFormGroup.get('engineNo')?.touched) {
                 <mat-error>Required.</mat-error>
@@ -145,7 +166,7 @@
             </mat-form-field>
 
             <mat-form-field appearance="outline">
-              <mat-label>Chassis Number</mat-label>
+              <mat-label>Chassis Serial</mat-label>
               <input matInput formControlName="chassisNo" />
               @if (vehicleFormGroup.get('chassisNo')?.invalid && vehicleFormGroup.get('chassisNo')?.touched) {
                 <mat-error>Required.</mat-error>
@@ -169,22 +190,25 @@
             </mat-form-field>
 
             <mat-form-field appearance="outline">
-              <mat-label>Status</mat-label>
+              <mat-label>Fleet Active Status</mat-label>
               <mat-select formControlName="status">
-                <mat-option value="available">Available</mat-option>
+                <mat-option value="available">Available for Rental</mat-option>
                 <mat-option value="maintenance">Maintenance / Service</mat-option>
-                <mat-option value="contract">In Corporate Contract</mat-option>
+                <mat-option value="contract">Corporate Contract</mat-option>
               </mat-select>
             </mat-form-field>
           </div>
         </div>
 
         <div class="booking-card" style="margin-top: 24px;" formGroupName="pricing">
-          <h3>Pricing Slabs & Fees</h3>
-          <div class="booking-content">
+          <h3>
+            <mat-icon style="vertical-align: middle; margin-right: 6px;">payments</mat-icon>
+            <span>Pricing Slabs & Rental Limits</span>
+          </h3>
+          <div class="booking-content" style="margin-top: 15px;">
             <div formGroupName="h23" style="display:contents;">
               <mat-form-field appearance="outline">
-                <mat-label>24 Hours Rent (Rs.)</mat-label>
+                <mat-label>24 Hours Rate (Rs.)</mat-label>
                 <input matInput type="number" formControlName="price" />
               </mat-form-field>
               <mat-form-field appearance="outline">
@@ -195,7 +219,7 @@
 
             <div formGroupName="h11" style="display:contents;">
               <mat-form-field appearance="outline">
-                <mat-label>12 Hours Rent (Rs.)</mat-label>
+                <mat-label>12 Hours Rate (Rs.)</mat-label>
                 <input matInput type="number" formControlName="price" />
               </mat-form-field>
               <mat-form-field appearance="outline">
@@ -206,7 +230,7 @@
 
             <div formGroupName="h3" style="display:contents;">
               <mat-form-field appearance="outline">
-                <mat-label>4 Hours Rent (Rs.)</mat-label>
+                <mat-label>4 Hours Rate (Rs.)</mat-label>
                 <input matInput type="number" formControlName="price" />
               </mat-form-field>
               <mat-form-field appearance="outline">
@@ -217,7 +241,7 @@
 
             <div formGroupName="h1" style="display:contents;">
               <mat-form-field appearance="outline">
-                <mat-label>1 Hour Rent (Rs.)</mat-label>
+                <mat-label>1 Hour Rate (Rs.)</mat-label>
                 <input matInput type="number" formControlName="price" />
               </mat-form-field>
               <mat-form-field appearance="outline">
@@ -229,7 +253,11 @@
         </div>
 
         <div class="booking-card" style="margin-top: 24px;">
-          <div class="booking-content">
+          <h3>
+            <mat-icon style="vertical-align: middle; margin-right: 6px;">more_horiz</mat-icon>
+            <span>Additional Overruns & Assets</span>
+          </h3>
+          <div class="booking-content" style="margin-top: 15px;">
             <mat-form-field appearance="outline">
               <mat-label>Extra KM Price (Rs./KM)</mat-label>
               <input matInput type="number" formControlName="extraKmPrice" />
@@ -241,7 +269,7 @@
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Vehicle Image URL (Default fallback will be used if empty)</mat-label>
+              <mat-label>Vehicle Asset Image URL (Fallback matches default assets)</mat-label>
               <input matInput [(ngModel)]="vehicleImageInputUrl" [ngModelOptions]="{standalone: true}" placeholder="e.g. assets/rr/baleno.png" />
             </mat-form-field>
           </div>
@@ -249,9 +277,10 @@
       </div>
     </form>
   </mat-dialog-content>
-  <mat-dialog-actions align="end" style="margin-top: 16px; padding: 12px 24px;">
+  <mat-dialog-actions align="end" style="margin-top: 20px; padding: 12px 24px;">
     <button mat-raised-button color="primary" class="action-btn success" style="margin-right: 12px;" [disabled]="vehicleFormGroup.invalid" (click)="saveVehicle($event)">
-      {{ editingVehicleMode() ? 'Update Vehicle' : 'Add Vehicle' }}
+      <mat-icon>check</mat-icon>
+      <span>{{ editingVehicleMode() ? 'Update Vehicle' : 'Register Vehicle' }}</span>
     </button>
     <button mat-button color="warn" (click)="closeVehicleFormModal()">Cancel</button>
   </mat-dialog-actions>
