@@ -2,11 +2,12 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { RRApiService } from '../../services/rr-api.service';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-rr-homepage',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, MatIconModule],
   templateUrl: './homepage.component.html',
   styleUrl: './homepage.component.scss',
 })

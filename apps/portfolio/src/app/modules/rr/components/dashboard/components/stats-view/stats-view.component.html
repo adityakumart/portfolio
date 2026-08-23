@@ -1,36 +1,84 @@
-<h2>Dashboard</h2>
+<h2>Overview Dashboard</h2>
 
 <div id="vehicle-status-dashboard">
-  <div class="status-section">
-    <h3>Vehicles Available</h3>
+  <!-- Available Card -->
+  <mat-card class="status-section stat-card-available">
+    <div class="stat-header">
+      <h3>Available Fleet</h3>
+      <div class="stat-icon-bg bg-available">
+        <mat-icon>check_circle</mat-icon>
+      </div>
+    </div>
     <div class="count-display">{{ getVehicleCount('available') }}</div>
-  </div>
-  <div class="status-section">
-    <h3>Vehicles in Booking</h3>
+    <div class="stat-progress-bar">
+      <div class="progress-fill fill-available" [style.width]="'100%'"></div>
+    </div>
+  </mat-card>
+
+  <!-- In Booking Card -->
+  <mat-card class="status-section stat-card-rented">
+    <div class="stat-header">
+      <h3>Active Bookings</h3>
+      <div class="stat-icon-bg bg-rented">
+        <mat-icon>key</mat-icon>
+      </div>
+    </div>
     <div class="count-display">{{ getVehicleCount('in_booking') }}</div>
-  </div>
-  <div class="status-section">
-    <h3>Vehicles in Service</h3>
+    <div class="stat-progress-bar">
+      <div class="progress-fill fill-rented" [style.width]="'100%'"></div>
+    </div>
+  </mat-card>
+
+  <!-- Maintenance Card -->
+  <mat-card class="status-section stat-card-maintenance">
+    <div class="stat-header">
+      <h3>In Service</h3>
+      <div class="stat-icon-bg bg-maintenance">
+        <mat-icon>handyman</mat-icon>
+      </div>
+    </div>
     <div class="count-display">{{ getVehicleCount('maintenance') }}</div>
-  </div>
-  <div class="status-section">
-    <h3>Vehicles in Contract</h3>
+    <div class="stat-progress-bar">
+      <div class="progress-fill fill-maintenance" [style.width]="'100%'"></div>
+    </div>
+  </mat-card>
+
+  <!-- Contract Card -->
+  <mat-card class="status-section stat-card-contract">
+    <div class="stat-header">
+      <h3>Corporate Leased</h3>
+      <div class="stat-icon-bg bg-contract">
+        <mat-icon>description</mat-icon>
+      </div>
+    </div>
     <div class="count-display">{{ getVehicleCount('contract') }}</div>
-  </div>
+    <div class="stat-progress-bar">
+      <div class="progress-fill fill-contract" [style.width]="'100%'"></div>
+    </div>
+  </mat-card>
 </div>
 
-<h3>Available Vehicles Slabs</h3>
+<h3>RoadReady Available Slabs</h3>
 <div class="vehicle-grid">
   @for (v of vehicles(); track v.regNo) {
     @if (v.status === 'available') {
-      <div class="vehicle-card">
-        <img [src]="getVehicleImage(v)" alt="Vehicle Image" />
+      <mat-card class="vehicle-card">
+        <div class="card-img-container">
+          <img [src]="getVehicleImage(v)" alt="Vehicle Image" />
+          <span class="active-status-badge">Available</span>
+        </div>
         <div class="veh-title">{{ v.manufacturer }} {{ v.name }}</div>
-        <div class="veh-subtitle">No: {{ v.regNo }}</div>
-        <div class="veh-subtitle">{{ v.seating }} Seater ({{ v.fuelType | uppercase }})</div>
-      </div>
+        <div class="veh-subtitle reg-no">No: {{ v.regNo }}</div>
+        <div class="veh-specs">
+          <span class="spec-badge"><mat-icon>airline_seat_recline_normal</mat-icon> {{ v.seating }} Seats</span>
+          <span class="spec-badge"><mat-icon>local_gas_station</mat-icon> {{ v.fuelType | uppercase }}</span>
+        </div>
+      </mat-card>
     }
   } @empty {
-    <p>No available vehicles in fleet.</p>
+    <div class="empty-fleet-card">
+      <mat-icon>no_sim</mat-icon>
+      <p>No available vehicles in the active fleet registry.</p>
+    </div>
   }
 </div>
