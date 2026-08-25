@@ -132,10 +132,6 @@
           <div class="header-role">{{ userRole() }}</div>
           <hr class="menu-divider" />
         </div>
-        <button mat-menu-item [routerLink]="['/user']">
-          <mat-icon>person</mat-icon>
-          <span>User Center</span>
-        </button>
         <button mat-menu-item (click)="onLogout()">
           <mat-icon>logout</mat-icon>
           <span>Sign Out</span>
