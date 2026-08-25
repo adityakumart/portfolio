@@ -73,7 +73,7 @@ export class SidebarComponent {
     const rrUser = this.rrApiService.currentUser();
 
     const items: SidebarItem[] = [
-      { label: 'Home', icon: 'work', link: '/' },
+      { label: 'Portfolio', icon: 'bolt', link: '/' },
       {
         label: 'Dev Tools',
         icon: 'code',
@@ -120,7 +120,11 @@ export class SidebarComponent {
             link: '/user/rr/vehicle/list',
             icon: 'directions_car',
           },
-          { label: 'Employee List', link: '/user/rr/employee/list', icon: 'people' },
+          {
+            label: 'Employee List',
+            link: '/user/rr/employee/list',
+            icon: 'people',
+          },
           { label: 'History Logs', link: '/user/rr/history', icon: 'history' },
         ],
       });

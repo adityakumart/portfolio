@@ -28,13 +28,10 @@ import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
 import { AuthService } from './modules/user/services/auth';
 import { ProfileMenuComponent } from './shared/components/profile-menu/profile-menu.component';
 
-
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [
-    RouterOutlet,
-  ],
+  imports: [RouterOutlet],
   templateUrl: './app.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './app.component.scss',
@@ -57,7 +54,6 @@ export class AppComponent {
   private themeService = inject(ThemeService);
   private router = inject(Router);
   private authService = inject(AuthService);
-
 
   readonly isDarkMode = computed(() => this.themeService.theme() === 'dark');
 
@@ -85,13 +81,13 @@ export class AppComponent {
       filter((event): event is NavigationEnd => event instanceof NavigationEnd),
       map((event) => {
         const urlWithoutQueryParams = event.urlAfterRedirects.split('?')[0];
-        
+
         // Check top-level routes first
         const activeRoute = this.routingList.find(
           (route) => route.link === urlWithoutQueryParams,
         );
         if (activeRoute) {
-          return activeRoute.label === 'Home' ? '' : activeRoute.label;
+          return activeRoute.label === 'Portfolio' ? '' : activeRoute.label;
         }
 
         // Check nested groups (like Dev Tools categories)
