@@ -32,6 +32,14 @@ export class RRDashboardComponent implements OnInit {
   currentUser = computed(() => this.rrApi.currentUser());
   isAdmin = computed(() => this.currentUser()?.role === 'admin');
 
+  getInitials(): string {
+    const user = this.currentUser();
+    if (!user) return 'RR';
+    const f = user.firstName ? user.firstName.substring(0, 1) : '';
+    const l = user.lastName ? user.lastName.substring(0, 1) : '';
+    return (f + l).toUpperCase() || 'RR';
+  }
+
   // Shell UI State
   profileDropdownOpen = signal<boolean>(false);
 
