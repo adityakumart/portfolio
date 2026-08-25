@@ -15,6 +15,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatListModule } from '@angular/material/list';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../modules/user/services/auth';
 import { ThemeService } from '../../../theme.service';
@@ -40,6 +42,8 @@ export interface SidebarItem {
     MatInputModule,
     MatTooltipModule,
     MatMenuModule,
+    MatSidenavModule,
+    MatListModule,
     FormsModule,
   ],
   templateUrl: './sidebar.component.html',
@@ -53,7 +57,7 @@ export class SidebarComponent {
   private rrApiService = inject(RRApiService);
 
   // Core state Signals
-  isCollapsed = signal<boolean>(false);
+  isCollapsed = signal<boolean>(true);
   searchValue = signal<string>('');
   expandedItems = signal<Set<string>>(new Set());
 
@@ -65,9 +69,9 @@ export class SidebarComponent {
   currentUrl = toSignal(
     this.router.events.pipe(
       filter((e): e is NavigationEnd => e instanceof NavigationEnd),
-      map((e) => e.urlAfterRedirects)
+      map((e) => e.urlAfterRedirects),
     ),
-    { initialValue: this.router.url }
+    { initialValue: this.router.url },
   );
 
   // Menu items list mapping the whole app
@@ -76,7 +80,7 @@ export class SidebarComponent {
     const rrUser = this.rrApiService.currentUser();
 
     const items: SidebarItem[] = [
-      { label: 'Home', icon: 'home', link: '/' },
+      { label: 'Home', icon: 'work', link: '/' },
       {
         label: 'Dev Tools',
         icon: 'code',
@@ -93,7 +97,7 @@ export class SidebarComponent {
 
     if (user) {
       items.push({
-        label: 'User Hub',
+        label: 'User',
         icon: 'account_circle',
         children: [
           { label: 'Profile', link: '/user', icon: 'person' },
@@ -106,24 +110,36 @@ export class SidebarComponent {
         label: 'Car Rentals',
         icon: 'directions_car',
         children: [
-          { label: 'Homepage', link: '/rr/home', icon: 'home' },
-          { label: 'Dashboard Summary', link: '/rr/dashboard', icon: 'analytics' },
-          { label: 'Active Rentals', link: '/rr/booking/list', icon: 'assignment' },
-          { label: 'Vehicles List', link: '/rr/vehicle/list', icon: 'directions_car' },
-          { label: 'Employee List', link: '/rr/employee/list', icon: 'people' },
-          { label: 'History Logs', link: '/rr/history', icon: 'history' },
+          { label: 'Homepage', link: '/user/rr/home', icon: 'home' },
+          {
+            label: 'Dashboard Summary',
+            link: '/user/rr/dashboard',
+            icon: 'analytics',
+          },
+          {
+            label: 'Active Rentals',
+            link: '/user/rr/booking/list',
+            icon: 'assignment',
+          },
+          {
+            label: 'Vehicles List',
+            link: '/user/rr/vehicle/list',
+            icon: 'directions_car',
+          },
+          { label: 'Employee List', link: '/user/rr/employee/list', icon: 'people' },
+          { label: 'History Logs', link: '/user/rr/history', icon: 'history' },
         ],
       });
     } else {
       items.push({
         label: 'User Login',
         link: '/user/login',
-        icon: 'login',
+        icon: 'account_circle',
       });
       items.push({
         label: 'Car Rental Login',
-        link: '/rr/login',
-        icon: 'login',
+        link: '/user/rr/login',
+        icon: 'directions_car',
       });
     }
 
@@ -133,12 +149,18 @@ export class SidebarComponent {
   // Mappings helper for dev tool category icons
   private getDevToolIcon(header: string): string {
     switch (header) {
-      case 'Calculator': return 'calculate';
-      case 'Formatters': return 'format_align_left';
-      case 'Encode/Decode': return 'vpn_key';
-      case 'Converters': return 'swap_horiz';
-      case 'Generator': return 'build';
-      default: return 'code';
+      case 'Calculator':
+        return 'calculate';
+      case 'Formatters':
+        return 'format_align_left';
+      case 'Encode/Decode':
+        return 'vpn_key';
+      case 'Converters':
+        return 'swap_horiz';
+      case 'Generator':
+        return 'build';
+      default:
+        return 'code';
     }
   }
 
@@ -260,7 +282,7 @@ export class SidebarComponent {
     if (!user) return 'GS';
     const first = (user.first_name || '').charAt(0).toUpperCase();
     const last = (user.last_name || '').charAt(0).toUpperCase();
-    return (first + last) || 'US';
+    return first + last || 'US';
   });
 
   async onLogout(): Promise<void> {

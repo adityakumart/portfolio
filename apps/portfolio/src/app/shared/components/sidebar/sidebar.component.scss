@@ -33,11 +33,9 @@ $transition-spring: cubic-bezier(0.25, 1.1, 0.4, 1);
 $transition-duration: 500ms;
 
 .app-layout {
-  display: flex;
-  flex-direction: row;
   width: 100vw;
   height: 100vh;
-  overflow: hidden;
+  background-color: transparent !important;
 }
 
 // ----------------------------------------
@@ -49,11 +47,12 @@ $transition-duration: 500ms;
   width: 260px;
   min-width: 260px;
   height: 100%;
-  background-color: var(--sb-bg);
-  border-right: 1px solid var(--sb-border);
+  background-color: var(--sb-bg) !important;
+  border-right: 1px solid var(--sb-border) !important;
   padding: 16px;
   box-sizing: border-box;
   z-index: 10;
+  overflow: hidden !important;
   transition: width $transition-duration $transition-spring,
               min-width $transition-duration $transition-spring,
               padding $transition-duration $transition-spring,

@@ -44,7 +44,7 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
       {
         name: 'Percentage Calculator',
         path: 'calculator/percentage',
-        link: '/dev-tools/calculator/percentage',
+        link: '/user/dev-tools/calculator/percentage',
         loadComponent: () =>
           import(
             '../../modules/dev-tools/components/calculator/percentage-calculator/percentage-calculator.component'
@@ -53,7 +53,7 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
       {
         name: 'Experience',
         path: 'calculator/experience',
-        link: '/dev-tools/calculator/experience',
+        link: '/user/dev-tools/calculator/experience',
         loadComponent: () =>
           import(
             '../../modules/dev-tools/components/calculator/experience/experience.component'
@@ -62,7 +62,7 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
       {
         name: 'Timezone Converter',
         path: 'calculator/timezone-converter',
-        link: '/dev-tools/calculator/timezone-converter',
+        link: '/user/dev-tools/calculator/timezone-converter',
         loadComponent: () =>
           import(
             '../../modules/dev-tools/components/calculator/timezone-converter/timezone-converter.component'
@@ -76,7 +76,7 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
       {
         name: 'JSON',
         path: 'formatters/json',
-        link: '/dev-tools/formatters/json',
+        link: '/user/dev-tools/formatters/json',
         loadComponent: () =>
           import(
             '../../modules/dev-tools/components/json-formatter/json-formatter.component'
@@ -85,7 +85,7 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
       {
         name: 'HTML',
         path: 'formatters/html',
-        link: '/dev-tools/formatters/html',
+        link: '/user/dev-tools/formatters/html',
         loadComponent: () =>
           import(
             '../../modules/dev-tools/components/code-formatter/html-formatter/html-formatter.component'
@@ -94,7 +94,7 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
       {
         name: 'CSS',
         path: 'formatters/css',
-        link: '/dev-tools/formatters/css',
+        link: '/user/dev-tools/formatters/css',
         loadComponent: () =>
           import(
             '../../modules/dev-tools/components/code-formatter/css-formatter/css-formatter.component'
@@ -103,7 +103,7 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
       {
         name: 'JS',
         path: 'formatters/js',
-        link: '/dev-tools/formatters/js',
+        link: '/user/dev-tools/formatters/js',
         loadComponent: () =>
           import(
             '../../modules/dev-tools/components/code-formatter/js-formatter/js-formatter.component'
@@ -117,7 +117,7 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
       {
         name: 'Base64',
         path: 'encode-decode/base64',
-        link: '/dev-tools/encode-decode/base64',
+        link: '/user/dev-tools/encode-decode/base64',
         loadComponent: () =>
           import(
             '../../modules/dev-tools/components/base64-converter/base64-converter.component'
@@ -126,7 +126,7 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
       {
         name: 'MD5',
         path: 'encode-decode/md5',
-        link: '/dev-tools/encode-decode/md5',
+        link: '/user/dev-tools/encode-decode/md5',
         loadComponent: () =>
           import(
             '../../modules/dev-tools/components/encoder-hash-tools/encoder-hash-tools.component'
@@ -135,7 +135,7 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
       {
         name: 'SHA256',
         path: 'encode-decode/sha256',
-        link: '/dev-tools/encode-decode/sha256',
+        link: '/user/dev-tools/encode-decode/sha256',
         loadComponent: () =>
           import(
             '../../modules/dev-tools/components/encoder-hash-tools/encoder-hash-tools.component'
@@ -144,7 +144,7 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
       {
         name: 'JWT',
         path: 'encode-decode/jwt',
-        link: '/dev-tools/encode-decode/jwt',
+        link: '/user/dev-tools/encode-decode/jwt',
         loadComponent: () =>
           import(
             '../../modules/dev-tools/components/jwt-decoder/jwt-decoder.component'
@@ -153,7 +153,7 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
       {
         name: 'URL',
         path: 'encode-decode/url',
-        link: '/dev-tools/encode-decode/url',
+        link: '/user/dev-tools/encode-decode/url',
         loadComponent: () =>
           import(
             '../../modules/dev-tools/components/encoder-hash-tools/encoder-hash-tools.component'
@@ -167,7 +167,7 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
       {
         name: 'JSON to CSV',
         path: 'converters/json-to-csv-ts-schema',
-        link: '/dev-tools/converters/json-to-csv-ts-schema',
+        link: '/user/dev-tools/converters/json-to-csv-ts-schema',
         loadComponent: () =>
           import(
             '../../modules/dev-tools/components/json-csv-converter/json-csv-converter.component'
@@ -176,7 +176,7 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
       {
         name: 'JSON to TypeScript',
         path: 'converters/json-to-typescript',
-        link: '/dev-tools/converters/json-to-typescript',
+        link: '/user/dev-tools/converters/json-to-typescript',
         loadComponent: () =>
           import(
             '../../modules/dev-tools/components/json-to-typescript/json-to-typescript.component'
@@ -185,7 +185,7 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
       {
         name: 'Query String',
         path: 'converters/query-string',
-        link: '/dev-tools/converters/query-string',
+        link: '/user/dev-tools/converters/query-string',
         loadComponent: () =>
           import(
             '../../modules/dev-tools/components/query-string-converter/query-string-converter.component'
@@ -194,7 +194,7 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
       {
         name: 'Number Base',
         path: 'converters/number-base',
-        link: '/dev-tools/converters/number-base',
+        link: '/user/dev-tools/converters/number-base',
         loadComponent: () =>
           import(
             '../../modules/dev-tools/components/number-base-converter/number-base-converter.component'
@@ -203,7 +203,7 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
       {
         name: 'Line Splitter',
         path: 'converters/line-splitter',
-        link: '/dev-tools/converters/line-splitter',
+        link: '/user/dev-tools/converters/line-splitter',
         loadComponent: () =>
           import(
             '../../modules/dev-tools/components/line-splitter/line-splitter.component'
@@ -217,7 +217,7 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
       {
         name: 'Regex',
         path: 'generator/regex',
-        link: '/dev-tools/generator/regex',
+        link: '/user/dev-tools/generator/regex',
         loadComponent: () =>
           import(
             '../../modules/dev-tools/components/regex-tester/regex-tester.component'
@@ -226,7 +226,7 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
       {
         name: 'QR',
         path: 'generator/qr',
-        link: '/dev-tools/generator/qr',
+        link: '/user/dev-tools/generator/qr',
         loadComponent: () =>
           import(
             '../../modules/dev-tools/components/qr-code-generator/qr-code-generator.component'
@@ -235,7 +235,7 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
       {
         name: 'Array',
         path: 'generator/array',
-        link: '/dev-tools/generator/array',
+        link: '/user/dev-tools/generator/array',
         loadComponent: () =>
           import(
             '../../modules/dev-tools/components/random-generator/random-generator.component'
@@ -244,7 +244,7 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
       {
         name: 'Number',
         path: 'generator/number',
-        link: '/dev-tools/generator/number',
+        link: '/user/dev-tools/generator/number',
         loadComponent: () =>
           import(
             '../../modules/dev-tools/components/random-generator/random-generator.component'
@@ -253,7 +253,7 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
       {
         name: 'Objects',
         path: 'generator/objects',
-        link: '/dev-tools/generator/objects',
+        link: '/user/dev-tools/generator/objects',
         loadComponent: () =>
           import(
             '../../modules/dev-tools/components/random-generator/random-generator.component'
@@ -262,7 +262,7 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
       {
         name: 'UUID',
         path: 'generator/uuid',
-        link: '/dev-tools/generator/uuid',
+        link: '/user/dev-tools/generator/uuid',
         loadComponent: () =>
           import(
             '../../modules/dev-tools/components/random-generator/random-generator.component'
@@ -271,7 +271,7 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
       {
         name: 'Password',
         path: 'generator/password',
-        link: '/dev-tools/generator/password',
+        link: '/user/dev-tools/generator/password',
         loadComponent: () =>
           import(
             '../../modules/dev-tools/components/random-generator/random-generator.component'
@@ -280,7 +280,7 @@ export const devToolsRoutingList: ToolGroupConfig[] = [
       {
         name: 'Hash',
         path: 'generator/hash',
-        link: '/dev-tools/generator/hash',
+        link: '/user/dev-tools/generator/hash',
         loadComponent: () =>
           import(
             '../../modules/dev-tools/components/random-generator/random-generator.component'
@@ -306,7 +306,7 @@ export const appRoutingList: AppRouteConfig[] = [
   },
   {
     path: 'dev-tools',
-    link: '/dev-tools',
+    link: '/user/dev-tools',
     label: 'Dev Tools',
     icon: 'code_xml',
     groups: devToolsRoutingList,
@@ -324,7 +324,7 @@ export const appRoutingList: AppRouteConfig[] = [
   },
   {
     path: 'rr',
-    link: '/rr',
+    link: '/user/rr',
     label: 'Car Rentals',
     icon: 'directions_car',
     loadChildren: () =>

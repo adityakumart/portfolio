@@ -1,7 +1,7 @@
 <div class="dashboard-wrapper">
   <!-- Header -->
   <header class="app-header">
-    <div class="header-brand" routerLink="/rr/home">
+    <div class="header-brand" routerLink="/user/rr/home">
       <mat-icon class="brand-icon">directions_car</mat-icon>
       <h2 class="app-title">RoadReady Command</h2>
     </div>
@@ -20,7 +20,7 @@
             <span>View Profile</span>
           </div>
           @if (isAdmin()) {
-            <div class="dropdown-item" [routerLink]="['/rr/activity-logs']" (click)="profileDropdownOpen.set(false)">
+            <div class="dropdown-item" [routerLink]="['/user/rr/activity-logs']" (click)="profileDropdownOpen.set(false)">
               <mat-icon>history_toggle_off</mat-icon>
               <span>Activity Logs</span>
             </div>
@@ -43,7 +43,7 @@
       </div>
       
       <ul class="menu">
-        <li class="menu-item" [routerLink]="['/rr/dashboard']" routerLinkActive="active-menu" [routerLinkActiveOptions]="{exact: true}">
+        <li class="menu-item" [routerLink]="['/user/rr/dashboard']" routerLinkActive="active-menu" [routerLinkActiveOptions]="{exact: true}">
           <div class="menu-item-content">
             <mat-icon>dashboard</mat-icon>
             <span>Overview</span>
@@ -53,7 +53,7 @@
         <li class="menu-item header-item">
           <strong>Bookings</strong>
           <ul class="submenu">
-            <li class="submenu-item" [routerLink]="['/rr/booking/list']" routerLinkActive="active-sub">
+            <li class="submenu-item" [routerLink]="['/user/rr/booking/list']" routerLinkActive="active-sub">
               <div class="menu-item-content">
                 <mat-icon>event_note</mat-icon>
                 <span>Active Rentals</span>
@@ -65,7 +65,7 @@
         <li class="menu-item header-item">
           <strong>Vehicles</strong>
           <ul class="submenu">
-            <li class="submenu-item" [routerLink]="['/rr/vehicle/list']" routerLinkActive="active-sub">
+            <li class="submenu-item" [routerLink]="['/user/rr/vehicle/list']" routerLinkActive="active-sub">
               <div class="menu-item-content">
                 <mat-icon>directions_car</mat-icon>
                 <span>Vehicles List</span>
@@ -78,7 +78,7 @@
           <li class="menu-item header-item">
             <strong>Staff Control</strong>
             <ul class="submenu">
-              <li class="submenu-item" [routerLink]="['/rr/employee/list']" routerLinkActive="active-sub">
+              <li class="submenu-item" [routerLink]="['/user/rr/employee/list']" routerLinkActive="active-sub">
                 <div class="menu-item-content">
                   <mat-icon>badge</mat-icon>
                   <span>Employee List</span>
@@ -88,7 +88,7 @@
           </li>
         }
 
-        <li class="menu-item" [routerLink]="['/rr/history']" routerLinkActive="active-menu">
+        <li class="menu-item" [routerLink]="['/user/rr/history']" routerLinkActive="active-menu">
           <div class="menu-item-content">
             <mat-icon>history</mat-icon>
             <span>Historical Logs</span>

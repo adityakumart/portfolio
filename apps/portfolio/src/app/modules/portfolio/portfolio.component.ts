@@ -15,6 +15,9 @@ import { PortfolioRoutingModule } from './portfolio-routing.module';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { RouterLink } from '@angular/router';
 
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Subject } from 'rxjs';
@@ -40,6 +43,9 @@ import { AwardsComponent } from './sub-components/awards/awards.component';
     MatChipsModule,
     MatTooltipModule,
     MatExpansionModule,
+    MatIconModule,
+    MatButtonModule,
+    RouterLink,
     HeroComponent,
     SummaryComponent,
     ExperienceComponent,

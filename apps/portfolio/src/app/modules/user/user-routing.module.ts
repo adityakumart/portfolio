@@ -50,6 +50,25 @@ const routes: Routes = [
         // Block access if the user is unauthenticated
         canActivate: [authGuard],
       },
+      {
+        path: 'dev-tools',
+        loadChildren: () =>
+          import('../dev-tools/dev-tools-routing.module').then(
+            (m) => m.DevToolsRoutingModule,
+          ),
+      },
+      {
+        path: 'formbuilder',
+        loadChildren: () =>
+          import('../formbuilder/formbuilder.module').then(
+            (comp) => comp.FormbuilderModule,
+          ),
+      },
+      {
+        path: 'rr',
+        loadChildren: () =>
+          import('../rr/rr.module').then((m) => m.RRModule),
+      },
     ],
   },
 ];

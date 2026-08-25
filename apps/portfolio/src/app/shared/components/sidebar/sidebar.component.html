@@ -1,6 +1,6 @@
-<div class="app-layout">
+<mat-sidenav-container class="app-layout">
   <!-- Single Collapsible Sidebar -->
-  <aside class="single-sidebar" [class.collapsed]="isCollapsed()">
+  <mat-sidenav mode="side" opened [disableClose]="true" class="single-sidebar" [class.collapsed]="isCollapsed()">
     <!-- Header -->
     <div class="sidebar-header">
       @if (!isCollapsed()) {
@@ -53,7 +53,7 @@
 
     <!-- Menu Scroller -->
     <div class="menu-scroller" [class.collapsed]="isCollapsed()">
-      <div class="menu-items-list">
+      <mat-nav-list class="menu-items-list">
         @for (item of filteredMenuItems(); track item.label) {
           <div class="menu-item-block">
             <!-- Level 0: Top Menu Row -->
@@ -126,7 +126,7 @@
             }
           </div>
         }
-      </div>
+      </mat-nav-list>
     </div>
 
     <!-- Footer Settings & Account -->
@@ -187,10 +187,10 @@
         </button>
       </mat-menu>
     </div>
-  </aside>
+  </mat-sidenav>
 
   <!-- Main View Area -->
-  <main class="app-main-viewport">
+  <mat-sidenav-content class="app-main-viewport">
     <ng-content></ng-content>
-  </main>
-</div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

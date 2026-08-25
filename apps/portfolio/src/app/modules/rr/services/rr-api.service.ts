@@ -95,7 +95,7 @@ export class RRApiService {
   // Auth Logout
   logout() {
     this.clearSession();
-    this.router.navigate(['/rr/login']);
+    this.router.navigate(['/user/rr/login']);
   }
 
   // Vehicles

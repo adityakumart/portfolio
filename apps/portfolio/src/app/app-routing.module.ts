@@ -3,21 +3,6 @@ import { RouterModule, Routes } from '@angular/router';
 
 export const AppRoutes: Routes = [
   {
-    path: 'dev-tools',
-    loadChildren: () =>
-      import('./modules/dev-tools/dev-tools-routing.module').then(
-        (m) => m.DevToolsRoutingModule,
-      ),
-  },
-  {
-    path: 'formbuilder',
-    loadChildren: () =>
-      import('./modules/formbuilder/formbuilder.module').then(
-        (comp) => comp.FormbuilderModule,
-      ),
-  },
-
-  {
     path: 'user',
     loadChildren: () =>
       import('./modules/user/user-routing.module').then(
@@ -25,11 +10,24 @@ export const AppRoutes: Routes = [
       ),
   },
   {
+    path: 'dev-tools',
+    redirectTo: 'user/dev-tools',
+    pathMatch: 'prefix',
+  },
+  {
+    path: 'formbuilder',
+    redirectTo: 'user/formbuilder',
+    pathMatch: 'prefix',
+  },
+  {
     path: 'rr',
-    loadChildren: () =>
-      import('./modules/rr/rr.module').then(
-        (m) => m.RRModule,
-      ),
+    redirectTo: 'user/rr',
+    pathMatch: 'prefix',
+  },
+  {
+    path: 'portfolio',
+    redirectTo: '',
+    pathMatch: 'prefix',
   },
   {
     path: '',
@@ -37,6 +35,10 @@ export const AppRoutes: Routes = [
       import('./modules/portfolio/portfolio.component').then(
         (m) => m.PortfolioComponent,
       ),
+  },
+  {
+    path: '**',
+    redirectTo: '',
   },
 ];
 

@@ -37,7 +37,7 @@ export class RRDashboardComponent implements OnInit {
 
   ngOnInit() {
     if (!this.rrApi.currentUser()) {
-      this.router.navigate(['/rr/login']);
+      this.router.navigate(['/user/rr/login']);
     }
   }
 
