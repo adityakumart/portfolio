@@ -27,9 +27,12 @@ export const AppRoutes: Routes = [
   {
     path: 'rr',
     loadChildren: () =>
-      import('./modules/rr/rr.module').then(
-        (m) => m.RRModule,
-      ),
+      import('./modules/rr/rr.module').then((m) => m.RRModule),
+  },
+  {
+    path: 'portfolio',
+    redirectTo: '',
+    pathMatch: 'prefix',
   },
   {
     path: '',
