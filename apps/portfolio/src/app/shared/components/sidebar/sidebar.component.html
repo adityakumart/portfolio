@@ -38,7 +38,9 @@
               class="menu-row"
               [class.active]="isItemActive(item)"
               (click)="onItemClick(item)"
-              [matTooltip]="item.children && item.children.length > 0 ? '' : item.label"
+              [matTooltip]="
+                item.children && item.children.length > 0 ? '' : item.label
+              "
               matTooltipPosition="right"
             >
               @if (item.icon) {
