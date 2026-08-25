@@ -297,8 +297,8 @@ export const appRoutingList: AppRouteConfig[] = [
   {
     path: '',
     link: '/',
-    label: 'Home',
-    icon: 'home',
+    label: 'Portfolio',
+    icon: 'bolt',
     loadComponent: () =>
       import('../../modules/portfolio/portfolio.component').then(
         (m) => m.PortfolioComponent,
