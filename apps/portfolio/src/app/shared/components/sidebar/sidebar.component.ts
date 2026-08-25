@@ -11,13 +11,10 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map } from 'rxjs/operators';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
-import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../modules/user/services/auth';
 import { ThemeService } from '../../../theme.service';
 import { devToolsRoutingList } from '../../data/routes';
@@ -38,13 +35,10 @@ export interface SidebarItem {
     RouterLink,
     MatIconModule,
     MatButtonModule,
-    MatFormFieldModule,
-    MatInputModule,
     MatTooltipModule,
     MatMenuModule,
     MatSidenavModule,
     MatListModule,
-    FormsModule,
   ],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss',
@@ -56,10 +50,9 @@ export class SidebarComponent {
   private themeService = inject(ThemeService);
   private rrApiService = inject(RRApiService);
 
-  // Core state Signals
-  isCollapsed = signal<boolean>(true);
-  searchValue = signal<string>('');
-  expandedItems = signal<Set<string>>(new Set());
+  // Active hover tracking signals for fly-out panel visibility control
+  activeLevel0Item = signal<SidebarItem | null>(null);
+  activeLevel1Item = signal<SidebarItem | null>(null);
 
   // User and Theme state
   currentUser = computed(() => this.authService.currentUser());
@@ -90,6 +83,7 @@ export class SidebarComponent {
           children: group.tools.map((tool) => ({
             label: tool.name,
             link: tool.link,
+            icon: 'chevron_right',
           })),
         })),
       },
@@ -164,53 +158,6 @@ export class SidebarComponent {
     }
   }
 
-  // Filter sections by search text reactively (handles nested array structures)
-  filteredMenuItems = computed(() => {
-    const items = this.menuItems();
-    const query = this.searchValue().trim().toLowerCase();
-
-    if (!query) return items;
-
-    const filterItem = (item: SidebarItem): SidebarItem | null => {
-      const labelMatches = item.label.toLowerCase().includes(query);
-
-      if (item.children) {
-        const filteredChildren = item.children
-          .map((child) => filterItem(child))
-          .filter((c): c is SidebarItem => c !== null);
-
-        if (filteredChildren.length > 0) {
-          return { ...item, children: filteredChildren };
-        }
-      }
-
-      if (labelMatches) {
-        return { ...item };
-      }
-
-      return null;
-    };
-
-    return items
-      .map((item) => filterItem(item))
-      .filter((item): item is SidebarItem => item !== null);
-  });
-
-  // Accordion checks and triggers
-  isExpanded(item: SidebarItem): boolean {
-    return this.expandedItems().has(item.label);
-  }
-
-  toggleExpanded(item: SidebarItem): void {
-    const set = new Set(this.expandedItems());
-    if (set.has(item.label)) {
-      set.delete(item.label);
-    } else {
-      set.add(item.label);
-    }
-    this.expandedItems.set(set);
-  }
-
   // Check if item is active based on url
   isItemActive(item: SidebarItem): boolean {
     const url = this.currentUrl().split('?')[0];
@@ -239,29 +186,16 @@ export class SidebarComponent {
 
   // Handle clicking items
   onItemClick(item: SidebarItem): void {
-    if (item.children && item.children.length > 0) {
-      if (this.isCollapsed()) {
-        // Smart behavior: If collapsed, expand the sidebar and open the accordion category
-        this.isCollapsed.set(false);
-        const set = new Set(this.expandedItems());
-        set.add(item.label);
-        this.expandedItems.set(set);
-      } else {
-        // Otherwise, toggle the accordion state normally
-        this.toggleExpanded(item);
-      }
-    } else if (item.link) {
-      // If it is a direct menu item, navigate directly without expanding the sidebar
+    if (item.link) {
       this.router.navigateByUrl(item.link);
+      // Close all submenus immediately on click
+      this.activeLevel0Item.set(null);
+      this.activeLevel1Item.set(null);
     }
   }
 
   toggleTheme(): void {
     this.themeService.toggleTheme();
-  }
-
-  toggleCollapse(): void {
-    this.isCollapsed.update((v) => !v);
   }
 
   // Computed values for active user profile display
