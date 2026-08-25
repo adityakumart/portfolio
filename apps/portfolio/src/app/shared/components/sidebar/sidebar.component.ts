@@ -15,6 +15,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatListModule } from '@angular/material/list';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../modules/user/services/auth';
 import { ThemeService } from '../../../theme.service';
@@ -40,6 +42,8 @@ export interface SidebarItem {
     MatInputModule,
     MatTooltipModule,
     MatMenuModule,
+    MatSidenavModule,
+    MatListModule,
     FormsModule,
   ],
   templateUrl: './sidebar.component.html',
@@ -106,24 +110,24 @@ export class SidebarComponent {
         label: 'Car Rentals',
         icon: 'directions_car',
         children: [
-          { label: 'Homepage', link: '/rr/home', icon: 'home' },
+          { label: 'Homepage', link: '/user/rr/home', icon: 'home' },
           {
             label: 'Dashboard Summary',
-            link: '/rr/dashboard',
+            link: '/user/rr/dashboard',
             icon: 'analytics',
           },
           {
             label: 'Active Rentals',
-            link: '/rr/booking/list',
+            link: '/user/rr/booking/list',
             icon: 'assignment',
           },
           {
             label: 'Vehicles List',
-            link: '/rr/vehicle/list',
+            link: '/user/rr/vehicle/list',
             icon: 'directions_car',
           },
-          { label: 'Employee List', link: '/rr/employee/list', icon: 'people' },
-          { label: 'History Logs', link: '/rr/history', icon: 'history' },
+          { label: 'Employee List', link: '/user/rr/employee/list', icon: 'people' },
+          { label: 'History Logs', link: '/user/rr/history', icon: 'history' },
         ],
       });
     } else {
@@ -134,7 +138,7 @@ export class SidebarComponent {
       });
       items.push({
         label: 'Car Rental Login',
-        link: '/rr/login',
+        link: '/user/rr/login',
         icon: 'directions_car',
       });
     }

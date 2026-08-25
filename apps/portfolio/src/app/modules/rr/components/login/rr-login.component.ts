@@ -51,7 +51,7 @@ export class RRLoginComponent {
     effect(() => {
       const user = this.rrApi.currentUser();
       if (user) {
-        this.router.navigate(['/rr/dashboard']);
+        this.router.navigate(['/user/rr/dashboard']);
       }
     });
   }
@@ -78,7 +78,7 @@ export class RRLoginComponent {
       await this.rrApi.login({ empId: enteredId, dob: enteredDob });
       this.success.set('Login successful! Redirecting...');
       setTimeout(() => {
-        this.router.navigate(['/rr/dashboard']);
+        this.router.navigate(['/user/rr/dashboard']);
       }, 1000);
     } catch (err: any) {
       console.error('Employee login error:', err);
@@ -102,7 +102,7 @@ export class RRLoginComponent {
       await this.rrApi.login({ username, password });
       this.success.set('Admin login successful! Redirecting...');
       setTimeout(() => {
-        this.router.navigate(['/rr/dashboard']);
+        this.router.navigate(['/user/rr/dashboard']);
       }, 1000);
     } catch (err: any) {
       console.error('Admin login error:', err);

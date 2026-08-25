@@ -1,4 +1,14 @@
 <div class="portfolio-page-wrapper">
+  <button
+    mat-icon-button
+    class="gateway-bolt"
+    routerLink="/user"
+    matTooltip="Enter Dashboard"
+    matTooltipPosition="left"
+  >
+    <mat-icon>bolt</mat-icon>
+  </button>
+  
   <div class="header">
     <app-hero [resume]="resume()"></app-hero>
     <app-summary [resume]="resume()"></app-summary>
