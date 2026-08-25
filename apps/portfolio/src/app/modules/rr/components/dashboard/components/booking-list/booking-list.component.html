@@ -1,65 +1,135 @@
-<h2>Bookings > Active Rentals Desk</h2>
-
-<div style="margin-bottom: 24px;">
-  <button mat-raised-button color="primary" class="action-btn success" (click)="openNewBookingModal()">
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 16px;">
+  <div>
+    <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--rr-accent); font-weight: 800; margin-bottom: 6px; display: inline-flex; align-items: center; gap: 6px;">
+      <mat-icon style="font-size: 14px; width: 14px; height: 14px;">event_note</mat-icon>
+      <span>Bookings &bull; Active Rentals Desk</span>
+    </div>
+    <h2 style="margin: 0; font-size: 1.85rem; font-weight: 800; font-family: 'Montserrat', sans-serif; color: var(--rr-text);">Active Rentals</h2>
+  </div>
+  <button mat-raised-button color="primary" class="action-btn success" style="padding: 10px 20px; border-radius: 12px;" (click)="openNewBookingModal()">
     <mat-icon>add</mat-icon> Create New Booking
   </button>
 </div>
 
 <div class="table-container">
-  <table>
-    <thead>
-      <tr>
-        <th>Booking ID</th>
-        <th>Customer Name</th>
-        <th>Vehicle</th>
-        <th>Pickup</th>
-        <th>Return</th>
-        <th>Rent Amount</th>
-        <th>Paid</th>
-        <th>Balance</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (b of activeBookings(); track b.id) {
-        <tr>
-          <td><span style="font-family: monospace; font-weight: 700; color: var(--rr-accent);">{{ b.id }}</span></td>
-          <td>{{ b.renterFirstName }} {{ b.renterSecondName }}</td>
-          <td>
-            <div style="font-weight: 700;">{{ b.vehicleManufacturer }} {{ b.vehicleName }}</div>
-            <div style="font-size: 11px; color: var(--rr-text-muted); font-family: monospace;">{{ b.vehicleRegNo }}</div>
-          </td>
-          <td>{{ b.pickupDateTime | date:'short' }}</td>
-          <td>{{ b.returnDateTime | date:'short' }}</td>
-          <td>Rs. {{ b.finalRentalAmount }}</td>
-          <td>Rs. {{ b.amountPaid }}</td>
-          <td>
-            <span [style.color]="b.pendingAmount > 0 ? '#ef4444' : '#10b981'" style="font-weight: 700;">
-              Rs. {{ b.pendingAmount }}
-            </span>
-          </td>
-          <td>
-            <button class="action-btn success" style="padding: 6px 12px; margin-right: 8px; font-size: 11px;" (click)="openEndBookingPopup(b)">
-              <mat-icon style="font-size: 14px; width: 14px; height: 14px; vertical-align: middle;">event_busy</mat-icon>
-              <span>End</span>
-            </button>
-            <button class="action-btn" style="padding: 6px 12px; font-size: 11px;" (click)="openModifyBookingPopup(b)">
-              <mat-icon style="font-size: 14px; width: 14px; height: 14px; vertical-align: middle;">edit</mat-icon>
-              <span>Modify</span>
-            </button>
-          </td>
-        </tr>
-      } @empty {
-        <tr>
-          <td colspan="9" style="text-align: center; color: var(--rr-text-muted); padding: 32px 0;">
-            <mat-icon style="font-size: 32px; width: 32px; height: 32px; color: var(--rr-text-muted); display: block; margin: 0 auto 8px auto;">info</mat-icon>
-            <span>No active bookings found in the database.</span>
-          </td>
-        </tr>
-      }
-    </tbody>
+  <table mat-table [dataSource]="dataSource">
+
+    <!-- Booking ID Column -->
+    <ng-container matColumnDef="id">
+      <th mat-header-cell *matHeaderCellDef> Booking ID </th>
+      <td mat-cell *matCellDef="let b">
+        <span style="font-family: monospace; font-weight: 700; color: var(--rr-accent); font-size: 0.95rem;">{{ b.id }}</span>
+      </td>
+    </ng-container>
+
+    <!-- Customer Name Column -->
+    <ng-container matColumnDef="renterName">
+      <th mat-header-cell *matHeaderCellDef> Customer Name </th>
+      <td mat-cell *matCellDef="let b">
+        <div style="font-weight: 700; color: var(--rr-text);">{{ b.renterFirstName }} {{ b.renterSecondName }}</div>
+        <div style="font-size: 11px; color: var(--rr-text-muted); margin-top: 2px;">
+          {{ b.renterPhone }}
+        </div>
+      </td>
+    </ng-container>
+
+    <!-- Vehicle Details Column -->
+    <ng-container matColumnDef="vehicleDetails">
+      <th mat-header-cell *matHeaderCellDef> Vehicle Details </th>
+      <td mat-cell *matCellDef="let b">
+        <div style="font-weight: 700; color: var(--rr-text);">
+          {{ b.vehicleManufacturer }} {{ b.vehicleName }}
+        </div>
+        <div style="font-size: 11px; color: var(--rr-text-muted); font-family: monospace; margin-top: 1px;">
+          {{ b.vehicleRegNo }}
+        </div>
+      </td>
+    </ng-container>
+
+    <!-- Pickup Schedule Column -->
+    <ng-container matColumnDef="pickupDateTime">
+      <th mat-header-cell *matHeaderCellDef> Pickup Schedule </th>
+      <td mat-cell *matCellDef="let b">
+        <div style="font-size: 0.85rem; font-weight: 600; color: var(--rr-text);">
+          {{ b.pickupDateTime | date:'mediumDate' }}
+        </div>
+        <div style="font-size: 0.75rem; color: var(--rr-text-muted); margin-top: 1px;">
+          {{ b.pickupDateTime | date:'shortTime' }}
+        </div>
+      </td>
+    </ng-container>
+
+    <!-- Expected Return Column -->
+    <ng-container matColumnDef="returnDateTime">
+      <th mat-header-cell *matHeaderCellDef> Expected Return </th>
+      <td mat-cell *matCellDef="let b">
+        <div style="font-size: 0.85rem; font-weight: 600; color: var(--rr-text);">
+          {{ b.returnDateTime | date:'mediumDate' }}
+        </div>
+        <div style="font-size: 0.75rem; color: var(--rr-text-muted); margin-top: 1px;">
+          {{ b.returnDateTime | date:'shortTime' }}
+        </div>
+      </td>
+    </ng-container>
+
+    <!-- Rent Amount Column -->
+    <ng-container matColumnDef="finalRentalAmount">
+      <th mat-header-cell *matHeaderCellDef> Rent Amount </th>
+      <td mat-cell *matCellDef="let b">
+        <span style="font-family: monospace; font-weight: 700; font-size: 0.9rem;">₹{{ b.finalRentalAmount }}</span>
+      </td>
+    </ng-container>
+
+    <!-- Paid Column -->
+    <ng-container matColumnDef="amountPaid">
+      <th mat-header-cell *matHeaderCellDef> Paid </th>
+      <td mat-cell *matCellDef="let b">
+        <span style="font-family: monospace; font-weight: 700; font-size: 0.9rem; color: var(--rr-text-muted);">₹{{ b.amountPaid }}</span>
+      </td>
+    </ng-container>
+
+    <!-- Balance Due Column -->
+    <ng-container matColumnDef="pendingAmount">
+      <th mat-header-cell *matHeaderCellDef> Balance Due </th>
+      <td mat-cell *matCellDef="let b">
+        @if (b.pendingAmount > 0) {
+          <span class="badge status-maintenance" style="font-family: monospace; font-weight: 800; border-radius: 8px; padding: 4px 10px; font-size: 0.75rem;">
+            ₹{{ b.pendingAmount }}
+          </span>
+        } @else {
+          <span class="badge status-available" style="font-weight: 800; border-radius: 8px; padding: 4px 10px; font-size: 0.75rem;">
+            Paid
+          </span>
+        }
+      </td>
+    </ng-container>
+
+    <!-- Actions Column -->
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef style="text-align: center;"> Actions </th>
+      <td mat-cell *matCellDef="let b" style="text-align: center; white-space: nowrap;">
+        <button mat-icon-button class="action-btn success" style="margin-right: 8px; border-radius: 50%;" [matTooltip]="'End Rental'" (click)="openEndBookingPopup(b)">
+          <mat-icon style="font-size: 18px; width: 18px; height: 18px; vertical-align: middle;">event_busy</mat-icon>
+        </button>
+        <button mat-icon-button class="action-btn" style="border-radius: 50%;" [matTooltip]="'Modify Details'" (click)="openModifyBookingPopup(b)">
+          <mat-icon style="font-size: 18px; width: 18px; height: 18px; vertical-align: middle;">edit</mat-icon>
+        </button>
+      </td>
+    </ng-container>
+
+    <!-- Table Rows -->
+    <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+    <!-- Empty Row -->
+    <tr class="mat-row" *matNoDataRow>
+      <td class="mat-cell" colspan="9" style="text-align: center; color: var(--rr-text-muted); padding: 48px 0;">
+        <mat-icon style="font-size: 40px; width: 40px; height: 40px; color: var(--rr-text-muted); display: block; margin: 0 auto 12px auto;">info</mat-icon>
+        <span style="font-weight: 600; font-size: 0.95rem;">No active bookings found in the database.</span>
+      </td>
+    </tr>
   </table>
+  <mat-paginator [pageSize]="10" [pageSizeOptions]="[5, 10, 20]" style="background: transparent; color: var(--rr-text);" showFirstLastButtons></mat-paginator>
 </div>
 
 <!-- POPUP 1: NEW BOOKING DIALOG TEMPLATE -->
@@ -401,7 +471,7 @@
       <mat-icon>check</mat-icon>
       <span>Create Booking</span>
     </button>
-    <button mat-button class="action-btn" style="margin-right: 12px;" [disabled]="bookingFormGroup.invalid" (click)="printAgreementPDFFromForm()">
+    <button mat-stroked-button class="action-btn" style="margin-right: 12px;" [disabled]="bookingFormGroup.invalid" (click)="printAgreementPDFFromForm()">
       <mat-icon>picture_as_pdf</mat-icon>
       <span>Print Agreement PDF</span>
     </button>
@@ -527,7 +597,7 @@
       <mat-icon>save</mat-icon>
       <span>Save Changes</span>
     </button>
-    <button mat-button class="action-btn" style="margin-right: 12px;" [disabled]="modifyBookingFormGroup.invalid" (click)="printAgreementPDFFromObject(modifyBookingFormGroup.value)">
+    <button mat-stroked-button class="action-btn" style="margin-right: 12px;" [disabled]="modifyBookingFormGroup.invalid" (click)="printAgreementPDFFromObject(modifyBookingFormGroup.value)">
       <mat-icon>picture_as_pdf</mat-icon>
       <span>Print Agreement PDF</span>
     </button>

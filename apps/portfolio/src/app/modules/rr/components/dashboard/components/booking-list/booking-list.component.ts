@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed, ViewChild, TemplateRef } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ViewChild, TemplateRef, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
 import { RRApiService } from '../../../../services/rr-api.service';
@@ -14,6 +14,9 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatTableModule, MatTableDataSource } from '@angular/material/table';
+import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-rr-booking-list',
@@ -30,7 +33,10 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
     MatCheckboxModule,
     MatButtonModule,
     MatIconModule,
-    MatDialogModule
+    MatDialogModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatTooltipModule
   ],
   templateUrl: './booking-list.component.html',
   styleUrl: './booking-list.component.scss'
@@ -43,6 +49,30 @@ export class RRBookingListComponent implements OnInit {
   @ViewChild('newBookingDialog') newBookingDialog!: TemplateRef<any>;
   @ViewChild('modifyBookingDialog') modifyBookingDialog!: TemplateRef<any>;
   @ViewChild('endBookingDialog') endBookingDialog!: TemplateRef<any>;
+
+  // MatTable Configuration
+  dataSource = new MatTableDataSource<any>([]);
+  displayedColumns: string[] = [
+    'id',
+    'renterName',
+    'vehicleDetails',
+    'pickupDateTime',
+    'returnDateTime',
+    'finalRentalAmount',
+    'amountPaid',
+    'pendingAmount',
+    'actions'
+  ];
+
+  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
+    this.dataSource.paginator = paginator;
+  }
+
+  constructor() {
+    effect(() => {
+      this.dataSource.data = this.activeBookings();
+    });
+  }
 
   // Collections data
   bookings = signal<any[]>([]);

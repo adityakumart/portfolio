@@ -1,1 +1,38 @@
 /* Styles for RRBookingListComponent */
+
+.table-container {
+  height: calc(100vh - 300px) !important;
+  min-height: 250px !important;
+  overflow: auto !important;
+  display: flex;
+  flex-direction: column;
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+}
+
+/* Make headers sticky and set solid background based on active theme */
+:host {
+  display: block;
+}
+
+::ng-deep {
+  .mat-mdc-header-row {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 10 !important;
+    background: #ffffff !important; /* Default light theme background */
+  }
+
+  .dark-theme {
+    .mat-mdc-header-row {
+      background: #111827 !important; /* Solid dark theme background (rgba(17,24,39) card bg) */
+    }
+  }
+
+  .mat-mdc-header-cell {
+    background: inherit !important;
+  }
+}
