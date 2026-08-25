@@ -3,8 +3,8 @@
 .table-card-wrapper {
   display: flex;
   flex-direction: column;
-  max-height: calc(100vh - 300px) !important;
-  min-height: 180px !important;
+  height: calc(100vh - 300px) !important;
+  min-height: 250px !important;
   background: var(--rr-card-bg);
   backdrop-filter: var(--rr-glass-blur);
   -webkit-backdrop-filter: var(--rr-glass-blur);
