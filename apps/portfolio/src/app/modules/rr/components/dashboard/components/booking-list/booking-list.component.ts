@@ -1,6 +1,21 @@
-import { Component, OnInit, inject, signal, computed, ViewChild, TemplateRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  inject,
+  signal,
+  computed,
+  ViewChild,
+  TemplateRef,
+  effect,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
+import {
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+  FormsModule,
+} from '@angular/forms';
 import { RRApiService } from '../../../../services/rr-api.service';
 import { jsPDF } from 'jspdf';
 
@@ -14,6 +29,9 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatTableModule, MatTableDataSource } from '@angular/material/table';
+import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-rr-booking-list',
@@ -30,10 +48,13 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
     MatCheckboxModule,
     MatButtonModule,
     MatIconModule,
-    MatDialogModule
+    MatDialogModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatTooltipModule,
   ],
   templateUrl: './booking-list.component.html',
-  styleUrl: './booking-list.component.scss'
+  styleUrl: './booking-list.component.scss',
 })
 export class RRBookingListComponent implements OnInit {
   private rrApi = inject(RRApiService);
@@ -43,6 +64,29 @@ export class RRBookingListComponent implements OnInit {
   @ViewChild('newBookingDialog') newBookingDialog!: TemplateRef<any>;
   @ViewChild('modifyBookingDialog') modifyBookingDialog!: TemplateRef<any>;
   @ViewChild('endBookingDialog') endBookingDialog!: TemplateRef<any>;
+
+  // MatTable Configuration
+  dataSource = new MatTableDataSource<any>([]);
+  displayedColumns: string[] = [
+    'vehicleDetails',
+    'renterName',
+    'pickupDateTime',
+    'returnDateTime',
+    'finalRentalAmount',
+    'amountPaid',
+    'pendingAmount',
+    'actions',
+  ];
+
+  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
+    this.dataSource.paginator = paginator;
+  }
+
+  constructor() {
+    effect(() => {
+      this.dataSource.data = this.activeBookings();
+    });
+  }
 
   // Collections data
   bookings = signal<any[]>([]);
@@ -66,11 +110,11 @@ export class RRBookingListComponent implements OnInit {
     cleanlinessFine: false,
     totalAdditionalFees: 0,
     finalTotalPayable: 0,
-    balancePending: 0
+    balancePending: 0,
   };
 
   activeBookings = computed(() =>
-    this.bookings().filter((b) => b.status === 'active')
+    this.bookings().filter((b) => b.status === 'active'),
   );
 
   ngOnInit() {
@@ -90,19 +134,46 @@ export class RRBookingListComponent implements OnInit {
       extraHourPrice: [''],
 
       // Renter
-      renterFirstName: ['', [Validators.required, Validators.pattern(/^[A-Za-z ]+$/)]],
-      renterSecondName: ['', [Validators.required, Validators.pattern(/^[A-Za-z ]+$/)]],
-      renterFatherName: ['', [Validators.required, Validators.pattern(/^[A-Za-z ]+$/)]],
-      renterAadhar: ['', [Validators.required, Validators.pattern(/^[0-9]{12}$/)]],
-      renterDL: ['', [Validators.required, Validators.pattern(/^[A-Za-z0-9]{16}$/)]],
-      renterPhone: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
+      renterFirstName: [
+        '',
+        [Validators.required, Validators.pattern(/^[A-Za-z ]+$/)],
+      ],
+      renterSecondName: [
+        '',
+        [Validators.required, Validators.pattern(/^[A-Za-z ]+$/)],
+      ],
+      renterFatherName: [
+        '',
+        [Validators.required, Validators.pattern(/^[A-Za-z ]+$/)],
+      ],
+      renterAadhar: [
+        '',
+        [Validators.required, Validators.pattern(/^[0-9]{12}$/)],
+      ],
+      renterDL: [
+        '',
+        [Validators.required, Validators.pattern(/^[A-Za-z0-9]{16}$/)],
+      ],
+      renterPhone: [
+        '',
+        [Validators.required, Validators.pattern(/^[0-9]{10}$/)],
+      ],
       renterAltPhone: ['', [Validators.pattern(/^[0-9]{10}$/)]],
       renterAddress: ['', Validators.required],
 
       // Guarantee
-      guarFirstName: ['', [Validators.required, Validators.pattern(/^[A-Za-z ]+$/)]],
-      guarSecondName: ['', [Validators.required, Validators.pattern(/^[A-Za-z ]+$/)]],
-      guarFatherName: ['', [Validators.required, Validators.pattern(/^[A-Za-z ]+$/)]],
+      guarFirstName: [
+        '',
+        [Validators.required, Validators.pattern(/^[A-Za-z ]+$/)],
+      ],
+      guarSecondName: [
+        '',
+        [Validators.required, Validators.pattern(/^[A-Za-z ]+$/)],
+      ],
+      guarFatherName: [
+        '',
+        [Validators.required, Validators.pattern(/^[A-Za-z ]+$/)],
+      ],
       guarAadhar: ['', [Validators.pattern(/^[0-9]{12}$/)]],
       guarDL: ['', [Validators.pattern(/^[A-Za-z0-9]{16}$/)]],
       guarPhone: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
@@ -138,10 +209,10 @@ export class RRBookingListComponent implements OnInit {
       pendingAmount: ['0'],
       paymentMode: ['Cash'],
       amountByUser: ['0'],
-      status: ['active']
+      status: ['active'],
     });
 
-    this.bookingFormGroup.get('depositType')?.valueChanges.subscribe(type => {
+    this.bookingFormGroup.get('depositType')?.valueChanges.subscribe((type) => {
       this.updateDepositValidators(type);
     });
 
@@ -157,34 +228,49 @@ export class RRBookingListComponent implements OnInit {
       finalRentalAmount: ['0'],
       amountPaid: ['0', [Validators.required, Validators.min(0)]],
       pendingAmount: ['0'],
-      totalKmLimit: ['0']
+      totalKmLimit: ['0'],
     });
   }
 
   private updateDepositValidators(type: string) {
-    const bikeControls = ['bikeRegNo', 'bikeManufacturer', 'bikeModel', 'bikeOwner'];
+    const bikeControls = [
+      'bikeRegNo',
+      'bikeManufacturer',
+      'bikeModel',
+      'bikeOwner',
+    ];
     const cashControls = ['cashAmount'];
     const otherControls = ['otherItemName', 'otherItemValue'];
 
-    [...bikeControls, ...cashControls, ...otherControls].forEach(name => {
+    [...bikeControls, ...cashControls, ...otherControls].forEach((name) => {
       this.bookingFormGroup.get(name)?.clearValidators();
-      this.bookingFormGroup.get(name)?.updateValueAndValidity({ emitEvent: false });
+      this.bookingFormGroup
+        .get(name)
+        ?.updateValueAndValidity({ emitEvent: false });
     });
 
     if (type === 'bike') {
-      bikeControls.forEach(name => {
+      bikeControls.forEach((name) => {
         this.bookingFormGroup.get(name)?.setValidators([Validators.required]);
-        this.bookingFormGroup.get(name)?.updateValueAndValidity({ emitEvent: false });
+        this.bookingFormGroup
+          .get(name)
+          ?.updateValueAndValidity({ emitEvent: false });
       });
     } else if (type === 'cash') {
-      cashControls.forEach(name => {
-        this.bookingFormGroup.get(name)?.setValidators([Validators.required, Validators.min(0)]);
-        this.bookingFormGroup.get(name)?.updateValueAndValidity({ emitEvent: false });
+      cashControls.forEach((name) => {
+        this.bookingFormGroup
+          .get(name)
+          ?.setValidators([Validators.required, Validators.min(0)]);
+        this.bookingFormGroup
+          .get(name)
+          ?.updateValueAndValidity({ emitEvent: false });
       });
     } else if (type === 'other') {
-      otherControls.forEach(name => {
+      otherControls.forEach((name) => {
         this.bookingFormGroup.get(name)?.setValidators([Validators.required]);
-        this.bookingFormGroup.get(name)?.updateValueAndValidity({ emitEvent: false });
+        this.bookingFormGroup
+          .get(name)
+          ?.updateValueAndValidity({ emitEvent: false });
       });
     }
   }
@@ -214,7 +300,7 @@ export class RRBookingListComponent implements OnInit {
     this.dialog.open(this.newBookingDialog, {
       width: '900px',
       maxWidth: '95vw',
-      maxHeight: '90vh'
+      maxHeight: '90vh',
     });
   }
 
@@ -235,7 +321,7 @@ export class RRBookingListComponent implements OnInit {
         vehicleModel: selected.model,
         vehicleOdometerStart: selected.odometer,
         extraKmPrice: selected.extraKmPrice,
-        extraHourPrice: selected.extraHourPrice
+        extraHourPrice: selected.extraHourPrice,
       });
     } else {
       this.bookingFormGroup.patchValue({
@@ -244,7 +330,7 @@ export class RRBookingListComponent implements OnInit {
         vehicleModel: '',
         vehicleOdometerStart: '',
         extraKmPrice: '',
-        extraHourPrice: ''
+        extraHourPrice: '',
       });
     }
 
@@ -253,14 +339,18 @@ export class RRBookingListComponent implements OnInit {
 
   calculateReturnDate() {
     const pickupVal = this.bookingFormGroup.get('pickupDateTime')?.value;
-    const days = parseInt(this.bookingFormGroup.get('durationDays')?.value || '0', 10) || 0;
-    const hours = parseInt(this.bookingFormGroup.get('durationHours')?.value || '0', 10) || 0;
+    const days =
+      parseInt(this.bookingFormGroup.get('durationDays')?.value || '0', 10) ||
+      0;
+    const hours =
+      parseInt(this.bookingFormGroup.get('durationHours')?.value || '0', 10) ||
+      0;
 
     if (!pickupVal || (days === 0 && hours === 0)) {
       this.bookingFormGroup.patchValue({
         returnDateTime: '',
         totalRentalAmount: '0',
-        totalKmLimit: '0'
+        totalKmLimit: '0',
       });
       this.recalculateFinalAmount();
       return;
@@ -283,7 +373,7 @@ export class RRBookingListComponent implements OnInit {
     const minute = String(end.getMinutes()).padStart(2, '0');
 
     this.bookingFormGroup.patchValue({
-      returnDateTime: `${year}-${month}-${day}T${hour}:${minute}`
+      returnDateTime: `${year}-${month}-${day}T${hour}:${minute}`,
     });
 
     this.calculateTotalRent();
@@ -299,7 +389,7 @@ export class RRBookingListComponent implements OnInit {
     if (end <= start) {
       this.bookingFormGroup.patchValue({
         totalRentalAmount: '0',
-        totalKmLimit: '0'
+        totalKmLimit: '0',
       });
       this.recalculateFinalAmount();
       return;
@@ -313,7 +403,7 @@ export class RRBookingListComponent implements OnInit {
 
     this.bookingFormGroup.patchValue({
       totalRentalAmount: String(rent),
-      totalKmLimit: String(kmLimit)
+      totalKmLimit: String(kmLimit),
     });
 
     this.recalculateFinalAmount();
@@ -325,8 +415,8 @@ export class RRBookingListComponent implements OnInit {
 
     const p23 = Number(pricing.h23?.price || 0);
     const p11 = Number(pricing.h11?.price || 0);
-    const p3  = Number(pricing.h3?.price || 0);
-    const p1  = Number(pricing.h1?.price || 0);
+    const p3 = Number(pricing.h3?.price || 0);
+    const p1 = Number(pricing.h1?.price || 0);
 
     if (remaining >= 24) {
       const count = Math.floor(remaining / 24);
@@ -356,8 +446,8 @@ export class RRBookingListComponent implements OnInit {
 
     const km23 = Number(pricing.h23?.km || 0);
     const km11 = Number(pricing.h11?.km || 0);
-    const km3  = Number(pricing.h3?.km || 0);
-    const km1  = Number(pricing.h1?.km || 0);
+    const km3 = Number(pricing.h3?.km || 0);
+    const km1 = Number(pricing.h1?.km || 0);
 
     if (remaining >= 24) {
       const count = Math.floor(remaining / 24);
@@ -382,8 +472,10 @@ export class RRBookingListComponent implements OnInit {
   }
 
   recalculateFinalAmount() {
-    const total = Number(this.bookingFormGroup.get('totalRentalAmount')?.value) || 0;
-    const discountVal = Number(this.bookingFormGroup.get('discount')?.value) || 0;
+    const total =
+      Number(this.bookingFormGroup.get('totalRentalAmount')?.value) || 0;
+    const discountVal =
+      Number(this.bookingFormGroup.get('discount')?.value) || 0;
     const paid = Number(this.bookingFormGroup.get('amountPaid')?.value) || 0;
     const discountType = this.bookingFormGroup.get('discountType')?.value;
 
@@ -398,7 +490,7 @@ export class RRBookingListComponent implements OnInit {
 
     this.bookingFormGroup.patchValue({
       finalRentalAmount: String(Math.max(0, finalRent)),
-      pendingAmount: String(Math.max(0, finalRent - paid))
+      pendingAmount: String(Math.max(0, finalRent - paid)),
     });
   }
 
@@ -417,7 +509,7 @@ export class RRBookingListComponent implements OnInit {
         pendingAmount: '0',
         paymentMode: 'Cash',
         amountByUser: '0',
-        status: 'active'
+        status: 'active',
       });
     }
   }
@@ -450,11 +542,11 @@ export class RRBookingListComponent implements OnInit {
       cleanlinessFine: false,
       totalAdditionalFees: 0,
       finalTotalPayable: Number(booking.finalRentalAmount),
-      balancePending: Number(booking.pendingAmount)
+      balancePending: Number(booking.pendingAmount),
     };
     this.dialog.open(this.endBookingDialog, {
       width: '600px',
-      maxWidth: '90vw'
+      maxWidth: '90vw',
     });
   }
 
@@ -534,9 +626,13 @@ export class RRBookingListComponent implements OnInit {
 
       await this.rrApi.updateBooking(booking.id, patch);
 
-      const vehicle = this.vehicles().find(v => v.regNo === booking.vehicleRegNo);
+      const vehicle = this.vehicles().find(
+        (v) => v.regNo === booking.vehicleRegNo,
+      );
       if (vehicle) {
-        await this.rrApi.updateVehicle(vehicle.regNo, { odometer: String(endOdo) });
+        await this.rrApi.updateVehicle(vehicle.regNo, {
+          odometer: String(endOdo),
+        });
       }
 
       alert('Booking finalized and closed.');
@@ -564,12 +660,12 @@ export class RRBookingListComponent implements OnInit {
       finalRentalAmount: booking.finalRentalAmount,
       amountPaid: booking.amountPaid || '0',
       pendingAmount: booking.pendingAmount || '0',
-      totalKmLimit: booking.totalKmLimit
+      totalKmLimit: booking.totalKmLimit,
     });
     this.dialog.open(this.modifyBookingDialog, {
       width: '800px',
       maxWidth: '95vw',
-      maxHeight: '90vh'
+      maxHeight: '90vh',
     });
   }
 
@@ -580,14 +676,22 @@ export class RRBookingListComponent implements OnInit {
 
   calculateModifyReturnDate() {
     const pickupVal = this.modifyBookingFormGroup.get('pickupDateTime')?.value;
-    const days = parseInt(this.modifyBookingFormGroup.get('durationDays')?.value || '0', 10) || 0;
-    const hours = parseInt(this.modifyBookingFormGroup.get('durationHours')?.value || '0', 10) || 0;
+    const days =
+      parseInt(
+        this.modifyBookingFormGroup.get('durationDays')?.value || '0',
+        10,
+      ) || 0;
+    const hours =
+      parseInt(
+        this.modifyBookingFormGroup.get('durationHours')?.value || '0',
+        10,
+      ) || 0;
 
     if (!pickupVal || (days === 0 && hours === 0)) {
       this.modifyBookingFormGroup.patchValue({
         returnDateTime: '',
         totalRentalAmount: '0',
-        totalKmLimit: '0'
+        totalKmLimit: '0',
       });
       this.recalculateModifyFinalAmount();
       return;
@@ -610,11 +714,13 @@ export class RRBookingListComponent implements OnInit {
     const minute = String(end.getMinutes()).padStart(2, '0');
 
     this.modifyBookingFormGroup.patchValue({
-      returnDateTime: `${year}-${month}-${day}T${hour}:${minute}`
+      returnDateTime: `${year}-${month}-${day}T${hour}:${minute}`,
     });
 
     const booking = this.selectedBookingToModify();
-    const selected = this.vehicles().find((v) => v.regNo === booking.vehicleRegNo);
+    const selected = this.vehicles().find(
+      (v) => v.regNo === booking.vehicleRegNo,
+    );
     if (selected) {
       const diffMs = end.getTime() - start.getTime();
       const totalHours = diffMs / (1000 * 60 * 60);
@@ -624,7 +730,7 @@ export class RRBookingListComponent implements OnInit {
 
       this.modifyBookingFormGroup.patchValue({
         totalRentalAmount: String(rent),
-        totalKmLimit: String(kmLimit)
+        totalKmLimit: String(kmLimit),
       });
     }
 
@@ -632,9 +738,12 @@ export class RRBookingListComponent implements OnInit {
   }
 
   recalculateModifyFinalAmount() {
-    const total = Number(this.modifyBookingFormGroup.get('totalRentalAmount')?.value) || 0;
-    const discountVal = Number(this.modifyBookingFormGroup.get('discount')?.value) || 0;
-    const paid = Number(this.modifyBookingFormGroup.get('amountPaid')?.value) || 0;
+    const total =
+      Number(this.modifyBookingFormGroup.get('totalRentalAmount')?.value) || 0;
+    const discountVal =
+      Number(this.modifyBookingFormGroup.get('discount')?.value) || 0;
+    const paid =
+      Number(this.modifyBookingFormGroup.get('amountPaid')?.value) || 0;
     const discountType = this.modifyBookingFormGroup.get('discountType')?.value;
 
     let finalRent = total;
@@ -648,7 +757,7 @@ export class RRBookingListComponent implements OnInit {
 
     this.modifyBookingFormGroup.patchValue({
       finalRentalAmount: String(Math.max(0, finalRent)),
-      pendingAmount: String(Math.max(0, finalRent - paid))
+      pendingAmount: String(Math.max(0, finalRent - paid)),
     });
   }
 
@@ -660,7 +769,7 @@ export class RRBookingListComponent implements OnInit {
       const originalBooking = this.selectedBookingToModify();
       const updated = {
         ...originalBooking,
-        ...this.modifyBookingFormGroup.value
+        ...this.modifyBookingFormGroup.value,
       };
 
       await this.rrApi.updateBooking(id, updated);
@@ -707,7 +816,7 @@ export class RRBookingListComponent implements OnInit {
       paymentMode: val.paymentMode,
       travelFrom: val.travelFrom || '____',
       travelTo: val.travelTo || '____',
-      vehicleOdometerStart: val.vehicleOdometerStart || '____'
+      vehicleOdometerStart: val.vehicleOdometerStart || '____',
     };
 
     this.printAgreementPDFFromObject(bObj);
@@ -718,7 +827,7 @@ export class RRBookingListComponent implements OnInit {
 
     const doc = new jsPDF({
       unit: 'mm',
-      format: [216, 356]
+      format: [216, 356],
     });
 
     let y = 15;
@@ -731,14 +840,14 @@ export class RRBookingListComponent implements OnInit {
     y += 7;
 
     doc.setFontSize(15);
-    const title2 = "RENTAL AGREEMENT";
+    const title2 = 'RENTAL AGREEMENT';
     doc.text(title2, (pageWidth - doc.getTextWidth(title2)) / 2, y);
     y += 10;
 
     doc.setFontSize(12);
     doc.setFont('Helvetica', 'bold');
-    doc.text("Renter Person Details:", 15, y);
-    doc.text("Rented Vehicle Details:", 115, y);
+    doc.text('Renter Person Details:', 15, y);
+    doc.text('Rented Vehicle Details:', 115, y);
     y += 7;
 
     doc.setFontSize(11);
@@ -747,7 +856,7 @@ export class RRBookingListComponent implements OnInit {
     const leftX = 15;
     const rightX = 115;
 
-    let depositValue = "None";
+    let depositValue = 'None';
     if (b.depositType === 'bike') {
       depositValue = `${b.bikeManufacturer || ''} - ${b.bikeModel || ''} (${b.bikeRegNo || ''})`;
     } else if (b.depositType === 'cash') {
@@ -757,14 +866,34 @@ export class RRBookingListComponent implements OnInit {
     }
 
     const renterPairs = [
-      ["Name", (b.renterFirstName || '') + " " + (b.renterSecondName || ''), "Vehicle Reg No", b.vehicleRegNo],
-      ["Father Name", b.renterFatherName, "Vehicle Model", b.vehicleName],
-      ["Alternate Phone", b.renterAltPhone || '-', "Pickup Date & Time", b.pickupDateTime],
-      ["Aadhar Number", b.renterAadhar, "Odometer Reading", b.vehicleOdometerStart],
-      ["Driving License", b.renterDL, "Return Date & Time", b.returnDateTime],
-      ["Contact Number", b.renterPhone, "Rental Amount", `Rs. ${b.totalRentalAmount}`],
-      ["Address", b.renterAddress, "Security Deposit", depositValue],
-      ["Payment Mode", b.paymentMode, "", ""]
+      [
+        'Name',
+        (b.renterFirstName || '') + ' ' + (b.renterSecondName || ''),
+        'Vehicle Reg No',
+        b.vehicleRegNo,
+      ],
+      ['Father Name', b.renterFatherName, 'Vehicle Model', b.vehicleName],
+      [
+        'Alternate Phone',
+        b.renterAltPhone || '-',
+        'Pickup Date & Time',
+        b.pickupDateTime,
+      ],
+      [
+        'Aadhar Number',
+        b.renterAadhar,
+        'Odometer Reading',
+        b.vehicleOdometerStart,
+      ],
+      ['Driving License', b.renterDL, 'Return Date & Time', b.returnDateTime],
+      [
+        'Contact Number',
+        b.renterPhone,
+        'Rental Amount',
+        `Rs. ${b.totalRentalAmount}`,
+      ],
+      ['Address', b.renterAddress, 'Security Deposit', depositValue],
+      ['Payment Mode', b.paymentMode, '', ''],
     ];
 
     renterPairs.forEach(([label1, val1, label2, val2]) => {
@@ -786,54 +915,63 @@ export class RRBookingListComponent implements OnInit {
 
     doc.setFontSize(12);
     doc.setFont('Helvetica', 'bold');
-    doc.text("Guarantee Person Details:", 15, y);
+    doc.text('Guarantee Person Details:', 15, y);
     y += 7;
 
     doc.setFontSize(11);
     doc.setFont('Helvetica', 'normal');
-    doc.text(`Name: ${(b.guarFirstName || '')} ${(b.guarSecondName || '')}`, leftX, y);
+    doc.text(
+      `Name: ${b.guarFirstName || ''} ${b.guarSecondName || ''}`,
+      leftX,
+      y,
+    );
     doc.text(`Father Name: ${b.guarFatherName || ''}`, rightX, y);
     y += 5.5;
     doc.text(`Address: ${b.guarAddress || ''}`, 15, y);
     y += 10;
 
-    const pickupDate = b.pickupDateTime ? b.pickupDateTime.split('T')[0] : '____';
-    const returnDate = b.returnDateTime ? b.returnDateTime.split('T')[0] : '____';
+    const pickupDate = b.pickupDateTime
+      ? b.pickupDateTime.split('T')[0]
+      : '____';
+    const returnDate = b.returnDateTime
+      ? b.returnDateTime.split('T')[0]
+      : '____';
     const fullParagraph = `For my (Renter) need I hired your above-mentioned Vehicle for Self-Drive/Driver Assisted Car/Vehicle bearing registration number ${b.vehicleRegNo} from Dt. ${pickupDate} To Dt. ${returnDate} to travel from ${b.travelFrom} to ${b.travelTo}.`;
 
     doc.text(fullParagraph, 15, y, { maxWidth: 185, lineHeightFactor: 1.35 });
     const splitParagraph = doc.splitTextToSize(fullParagraph, 185);
     y += splitParagraph.length * 5.5 + 4;
 
-    const paraRest = "On my own assurance I will use the above-mentioned vehicle, I shall not use the vehicle for any illegal activities and also solely responsible for causing accidents or causing any damage to the vehicle. " +
-      "I will not give the vehicle to anyone other than myself without your permission. In case if any I am responsible for any actions taken by you, if I violate the Terms & Conditions mentioned in this Agreement. " +
+    const paraRest =
+      'On my own assurance I will use the above-mentioned vehicle, I shall not use the vehicle for any illegal activities and also solely responsible for causing accidents or causing any damage to the vehicle. ' +
+      'I will not give the vehicle to anyone other than myself without your permission. In case if any I am responsible for any actions taken by you, if I violate the Terms & Conditions mentioned in this Agreement. ' +
       "I can resolve them at my own expense. If any damage occurred to the vehicle, I'm responsible for that and I can resolve with my own expenses. Neither you (Owner of vehicle) nor your vehicle has any responsibility for the Illegal activities as stated above. " +
-      "If any of my actions cause damage to you or your vehicle for that I am agreeing to compensate for the damage.";
-    
+      'If any of my actions cause damage to you or your vehicle for that I am agreeing to compensate for the damage.';
+
     doc.text(paraRest, 15, y, { maxWidth: 185, lineHeightFactor: 1.35 });
     const splitRest = doc.splitTextToSize(paraRest, 185);
     y += splitRest.length * 5.5 + 8;
 
     doc.setFontSize(12);
     doc.setFont('Helvetica', 'bold');
-    doc.text("Terms & Conditions:", 15, y);
+    doc.text('Terms & Conditions:', 15, y);
     y += 7;
 
     doc.setFontSize(10);
     doc.setFont('Helvetica', 'normal');
     const terms = [
-      "No Insurance is claimed or paid, in case of any damage to vehicle I (Renter) bear the complete amount.",
-      "I (Renter) is/am responsible for Half Clutch Failure.",
-      "I (Renter) agree to any action on my Safety Deposit in case of any damages.",
-      "I (Renter) agree that I am responsible for any Criminal / Legal Police Charges / Cases during rental period.",
-      "I (Renter) agree to pay rent everyday if any damage to the vehicle untill the completion of the repair/damage.",
-      "I (Renter) agree that Half-day booking must be done before 9AM and should be returned by 9PM same-day.",
-      "Wrong Fuel: I take full responsibility for any engine failures due to wrong fuel type filled in the vehicle."
+      'No Insurance is claimed or paid, in case of any damage to vehicle I (Renter) bear the complete amount.',
+      'I (Renter) is/am responsible for Half Clutch Failure.',
+      'I (Renter) agree to any action on my Safety Deposit in case of any damages.',
+      'I (Renter) agree that I am responsible for any Criminal / Legal Police Charges / Cases during rental period.',
+      'I (Renter) agree to pay rent everyday if any damage to the vehicle untill the completion of the repair/damage.',
+      'I (Renter) agree that Half-day booking must be done before 9AM and should be returned by 9PM same-day.',
+      'Wrong Fuel: I take full responsibility for any engine failures due to wrong fuel type filled in the vehicle.',
     ];
 
-    terms.forEach(t => {
-      doc.text("• " + t, 18, y, { maxWidth: 185, lineHeightFactor: 1.35 });
-      const splitT = doc.splitTextToSize("• " + t, 185);
+    terms.forEach((t) => {
+      doc.text('• ' + t, 18, y, { maxWidth: 185, lineHeightFactor: 1.35 });
+      const splitT = doc.splitTextToSize('• ' + t, 185);
       y += splitT.length * 5.5;
     });
 
@@ -841,7 +979,7 @@ export class RRBookingListComponent implements OnInit {
 
     doc.setFontSize(11);
     doc.setFont('Helvetica', 'bold');
-    doc.text("Extra Fee Charged Slabs:", 15, y);
+    doc.text('Extra Fee Charged Slabs:', 15, y);
     y += 6;
 
     doc.setFont('Helvetica', 'normal');
@@ -849,12 +987,16 @@ export class RRBookingListComponent implements OnInit {
     y += 5.5;
     doc.text(`• Extra Kilometer Fee: Rs. ${b.extraKmPrice}/- per km`, 18, y);
     y += 5.5;
-    doc.text(`• Cleanliness Fee: Rs. 500 to Rs. 1000 in case of dirty vehicle returns`, 18, y);
+    doc.text(
+      `• Cleanliness Fee: Rs. 500 to Rs. 1000 in case of dirty vehicle returns`,
+      18,
+      y,
+    );
     y += 10;
 
     const yy = doc.internal.pageSize.getHeight() - 25;
-    doc.text("Renter Signature: _______________________", 15, yy);
-    doc.text("Authorized Representative: _______________________", 115, yy);
+    doc.text('Renter Signature: _______________________', 15, yy);
+    doc.text('Authorized Representative: _______________________', 115, yy);
 
     doc.save(`Agreement_${b.id}.pdf`);
   }
