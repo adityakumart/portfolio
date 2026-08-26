@@ -104,31 +104,45 @@ export async function handleGetViewUrl(req: AuthenticatedRequest, res: Response)
 
 /**
  * POST /api/files/upload
- * Generates a PUT Presigned URL (or local mock URL) for secure client-side uploading
+ * Handles direct binary stream upload from the client and saves it to R2 or local mock storage
  */
-export async function handleGetUploadUrl(req: AuthenticatedRequest, res: Response): Promise<void> {
+export async function handleUploadFile(req: AuthenticatedRequest, res: Response): Promise<void> {
   try {
     const userId = req.userId;
-    const { key } = req.body;
+    const key = String(req.query['key'] || '');
     if (!userId) {
       res.status(401).json({ error: 'Unauthorized' });
       return;
     }
     if (!key) {
-      res.status(400).json({ error: 'Bad Request', message: 'Body parameter "key" is required.' });
+      res.status(400).json({ error: 'Bad Request', message: 'Query parameter "key" is required.' });
       return;
     }
 
     const fullKey = `users/${userId}/${key}`;
-    const hostUrl = req.protocol + '://' + req.get('host');
-    const url = await R2Service.getUploadUrl(fullKey, hostUrl);
+    const contentType = req.headers['content-type'] || 'application/octet-stream';
 
-    res.status(200).json({ url });
+    const chunks: Buffer[] = [];
+    req.on('data', (chunk) => {
+      chunks.push(chunk);
+    });
+
+    req.on('end', async () => {
+      const buffer = Buffer.concat(chunks);
+      try {
+        await R2Service.uploadObject(fullKey, buffer, contentType);
+        res.status(200).json({ success: true, message: 'Uploaded successfully' });
+      } catch (err: any) {
+        console.error('Direct file upload storage error:', err);
+        res.status(500).json({ error: 'Internal Server Error', message: err.message });
+      }
+    });
   } catch (error: any) {
-    console.error('Get upload-url error:', error);
+    console.error('Direct file upload controller error:', error);
     res.status(500).json({ error: 'Internal Server Error', message: error.message });
   }
 }
+
 
 /**
  * POST /api/files/create-folder

@@ -122,6 +122,28 @@ export class R2Service {
   }
 
   /**
+   * Uploads file buffer directly to Cloudflare R2 / S3 or writes to mock storage.
+   */
+  static async uploadObject(
+    key: string,
+    buffer: Buffer,
+    contentType: string,
+  ): Promise<void> {
+    if (isR2Configured && s3Client) {
+      const command = new PutObjectCommand({
+        Bucket: bucketName,
+        Key: key,
+        Body: buffer,
+        ContentType: contentType,
+      });
+      await s3Client.send(command);
+    } else {
+      this.writeMockFile(key, buffer);
+    }
+  }
+
+
+  /**
    * Helper to write file content to mock storage (for the mock PUT route).
    */
   static writeMockFile(key: string, buffer: Buffer): void {
