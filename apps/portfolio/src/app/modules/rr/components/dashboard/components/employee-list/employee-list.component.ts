@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, ViewChild, TemplateRef } from '@angular/core';
+import { Component, OnInit, inject, signal, ViewChild, TemplateRef, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RRApiService } from '../../../../services/rr-api.service';
@@ -13,6 +13,9 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatTableModule, MatTableDataSource } from '@angular/material/table';
+import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-rr-employee-list',
@@ -28,7 +31,10 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
     MatCheckboxModule,
     MatButtonModule,
     MatIconModule,
-    MatDialogModule
+    MatDialogModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatTooltipModule
   ],
   templateUrl: './employee-list.component.html',
   styleUrl: './employee-list.component.scss'
@@ -39,6 +45,29 @@ export class RREmployeeListComponent implements OnInit {
   private dialog = inject(MatDialog);
 
   @ViewChild('employeeFormDialog') employeeFormDialog!: TemplateRef<any>;
+
+  // MatTable Configuration
+  dataSource = new MatTableDataSource<any>([]);
+  displayedColumns: string[] = [
+    'id',
+    'name',
+    'role',
+    'dob',
+    'phone',
+    'email',
+    'allowLogin',
+    'actions',
+  ];
+
+  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
+    this.dataSource.paginator = paginator;
+  }
+
+  constructor() {
+    effect(() => {
+      this.dataSource.data = this.employees();
+    });
+  }
 
   // Collections data
   employees = signal<any[]>([]);

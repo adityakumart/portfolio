@@ -1,60 +1,98 @@
-<h2>Employees > Staff Registry</h2>
-
-<div style="margin-bottom: 24px;">
-  <button mat-raised-button color="primary" class="action-btn success" (click)="openAddEmployeeModal()">
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 16px;">
+  <div>
+    <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--rr-accent); font-weight: 800; margin-bottom: 6px; display: inline-flex; align-items: center; gap: 6px;">
+      <mat-icon style="font-size: 14px; width: 14px; height: 14px;">people</mat-icon>
+      <span>Employees &bull; Staff Registry</span>
+    </div>
+    <h2 style="margin: 0; font-size: 1.85rem; font-weight: 800; font-family: 'Montserrat', sans-serif; color: var(--rr-text);">Staff Registry</h2>
+  </div>
+  <button mat-raised-button color="primary" class="action-btn success" style="padding: 10px 20px; border-radius: 12px;" (click)="openAddEmployeeModal()">
     <mat-icon>add</mat-icon> Register New Employee
   </button>
 </div>
 
-<div class="table-container">
-  <table>
-    <thead>
-      <tr>
-        <th>Employee ID</th>
-        <th>Name</th>
-        <th>Role</th>
-        <th>Date of Birth</th>
-        <th>Phone</th>
-        <th>Email</th>
-        <th>Login Allowed</th>
-        <th>Actions</th>
+<div class="table-card-wrapper">
+  <div class="table-container">
+    <table mat-table [dataSource]="dataSource">
+
+      <!-- Employee ID Column -->
+      <ng-container matColumnDef="id">
+        <th mat-header-cell *matHeaderCellDef> Employee ID </th>
+        <td mat-cell *matCellDef="let emp">
+          <span style="font-family: monospace; font-weight: 700; color: var(--rr-accent);">{{ emp.id }}</span>
+        </td>
+      </ng-container>
+
+      <!-- Name Column -->
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef> Name </th>
+        <td mat-cell *matCellDef="let emp">
+          <div style="font-weight: 700; color: var(--rr-text);">{{ emp.firstName }} {{ emp.lastName }}</div>
+        </td>
+      </ng-container>
+
+      <!-- Role Column -->
+      <ng-container matColumnDef="role">
+        <th mat-header-cell *matHeaderCellDef> Role </th>
+        <td mat-cell *matCellDef="let emp">
+          <span class="badge" [class]="emp.role === 'admin' ? 'status-active' : 'status-available'">
+            {{ emp.role | uppercase }}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- Date of Birth Column -->
+      <ng-container matColumnDef="dob">
+        <th mat-header-cell *matHeaderCellDef> Date of Birth </th>
+        <td mat-cell *matCellDef="let emp"> {{ emp.dob }} </td>
+      </ng-container>
+
+      <!-- Phone Column -->
+      <ng-container matColumnDef="phone">
+        <th mat-header-cell *matHeaderCellDef> Phone </th>
+        <td mat-cell *matCellDef="let emp"> {{ emp.phone }} </td>
+      </ng-container>
+
+      <!-- Email Column -->
+      <ng-container matColumnDef="email">
+        <th mat-header-cell *matHeaderCellDef> Email </th>
+        <td mat-cell *matCellDef="let emp"> {{ emp.email }} </td>
+      </ng-container>
+
+      <!-- Login Allowed Column -->
+      <ng-container matColumnDef="allowLogin">
+        <th mat-header-cell *matHeaderCellDef> Login Allowed </th>
+        <td mat-cell *matCellDef="let emp">
+          <span class="badge" [class]="emp.allowLogin ? 'status-completed' : 'status-cancelled'">
+            {{ emp.allowLogin ? 'Allowed' : 'Revoked' }}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- Actions Column -->
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef style="text-align: center;"> Actions </th>
+        <td mat-cell *matCellDef="let emp" style="text-align: center; white-space: nowrap;">
+          <button mat-icon-button class="action-btn" style="border-radius: 50%;" [matTooltip]="'Modify Details'" (click)="openEditEmployeeModal(emp)">
+            <mat-icon style="font-size: 18px; width: 18px; height: 18px; vertical-align: middle;">edit</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <!-- Table Rows -->
+      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+      <!-- Empty Row -->
+      <tr class="mat-row" *matNoDataRow>
+        <td class="mat-cell" colspan="8" style="text-align: center; color: var(--rr-text-muted); padding: 48px 0;">
+          <mat-icon style="font-size: 40px; width: 40px; height: 40px; color: var(--rr-text-muted); display: block; margin: 0 auto 12px auto;">people</mat-icon>
+          <span style="font-weight: 600; font-size: 0.95rem;">No registered employees found.</span>
+        </td>
       </tr>
-    </thead>
-    <tbody>
-      @for (emp of employees(); track emp.id) {
-        <tr>
-          <td><span style="font-family: monospace; font-weight: 700; color: var(--rr-accent);">{{ emp.id }}</span></td>
-          <td>{{ emp.firstName }} {{ emp.lastName }}</td>
-          <td>
-            <span class="badge" [class]="emp.role === 'admin' ? 'status-active' : 'status-available'">
-              {{ emp.role | uppercase }}
-            </span>
-          </td>
-          <td>{{ emp.dob }}</td>
-          <td>{{ emp.phone }}</td>
-          <td>{{ emp.email }}</td>
-          <td>
-            <span class="badge" [class]="emp.allowLogin ? 'status-completed' : 'status-cancelled'">
-              {{ emp.allowLogin ? 'Allowed' : 'Revoked' }}
-            </span>
-          </td>
-          <td>
-            <button class="action-btn" style="padding: 6px 12px; font-size: 11px;" (click)="openEditEmployeeModal(emp)">
-              <mat-icon style="font-size: 14px; width: 14px; height: 14px; vertical-align: middle;">edit</mat-icon>
-              <span>Edit</span>
-            </button>
-          </td>
-        </tr>
-      } @empty {
-        <tr>
-          <td colspan="8" style="text-align: center; color: var(--rr-text-muted); padding: 32px 0;">
-            <mat-icon style="font-size: 32px; width: 32px; height: 32px; color: var(--rr-text-muted); display: block; margin: 0 auto 8px auto;">people</mat-icon>
-            <span>No registered employees found.</span>
-          </td>
-        </tr>
-      }
-    </tbody>
-  </table>
+    </table>
+  </div>
+  <mat-paginator [pageSize]="10" [pageSizeOptions]="[5, 10, 20]" style="background: transparent; color: var(--rr-text);" showFirstLastButtons></mat-paginator>
 </div>
 
 <!-- POPUP: ADD/MODIFY EMPLOYEE DIALOG TEMPLATE -->
