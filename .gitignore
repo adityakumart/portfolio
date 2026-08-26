@@ -47,10 +47,8 @@ Thumbs.db
 .nx/workspace-data
 vitest.config.*.timestamp*
 
-.env
-/apps/portfolio/.env
-/apps/portfolio-core/.env
 *.env
+*.env.prod
 
 # Auto-generated environment configurations
 /apps/portfolio/src/environments/environment.ts
