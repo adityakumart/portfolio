@@ -1,0 +1,85 @@
+<div class="preview-dialog-container glass-theme">
+  <!-- Header -->
+  <div class="dialog-header">
+    <div class="title-section">
+      <mat-icon class="file-icon">{{ getIconForType() }}</mat-icon>
+      <div class="file-info">
+        <h2 class="file-name">{{ data.node.name }}</h2>
+        <span class="file-meta">{{ formatSize(data.node.size) }} • {{ formatDate(data.node.lastModified) }}</span>
+      </div>
+    </div>
+    <button mat-icon-button (click)="dialogRef.close()" class="close-btn" aria-label="Close dialog">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Content Workspace -->
+  <mat-dialog-content class="preview-content-area">
+    <!-- Image Preview -->
+    @if (previewType === 'image') {
+      <div class="preview-wrapper image-wrapper">
+        <img [src]="data.downloadUrl" alt="{{ data.node.name }}" class="img-element" />
+      </div>
+    }
+
+    <!-- PDF Preview -->
+    @if (previewType === 'pdf') {
+      <div class="preview-wrapper iframe-wrapper">
+        <iframe [src]="safeUrl" class="iframe-element" title="PDF Preview"></iframe>
+      </div>
+    }
+
+    <!-- Audio Preview -->
+    @if (previewType === 'audio') {
+      <div class="preview-wrapper audio-wrapper">
+        <mat-icon class="audio-large-icon">volume_up</mat-icon>
+        <audio [src]="data.downloadUrl" controls class="audio-element"></audio>
+      </div>
+    }
+
+    <!-- Video Preview -->
+    @if (previewType === 'video') {
+      <div class="preview-wrapper video-wrapper">
+        <video [src]="data.downloadUrl" controls class="video-element"></video>
+      </div>
+    }
+
+    <!-- Text / Code Preview -->
+    @if (previewType === 'text') {
+      <div class="preview-wrapper text-wrapper">
+        @if (loadingText) {
+          <div class="loading-state">
+            <mat-spinner diameter="40"></mat-spinner>
+            <p>Loading text content...</p>
+          </div>
+        } @else if (textError) {
+          <div class="error-state">
+            <mat-icon class="error-icon">error_outline</mat-icon>
+            <p>Unable to load file preview. You can still download the file to view it.</p>
+          </div>
+        } @else {
+          <pre class="code-block"><code>{{ textContent }}</code></pre>
+        }
+      </div>
+    }
+
+    <!-- Unsupported Preview -->
+    @if (previewType === 'unsupported') {
+      <div class="preview-wrapper unsupported-wrapper">
+        <mat-icon class="unsupported-large-icon">insert_drive_file</mat-icon>
+        <h3>No preview available for this file type</h3>
+        <p>This file type (.{{ getExtension() }}) cannot be previewed in the browser. Please download the file to open it.</p>
+      </div>
+    }
+  </mat-dialog-content>
+
+  <!-- Footer Actions -->
+  <mat-dialog-actions align="end" class="dialog-actions">
+    <button mat-stroked-button class="action-btn" (click)="download()">
+      <mat-icon>download</mat-icon> Download
+    </button>
+    <button mat-flat-button color="primary" class="action-btn close-action-btn" (click)="dialogRef.close()">
+      Close
+    </button>
+  </mat-dialog-actions>
+</div>

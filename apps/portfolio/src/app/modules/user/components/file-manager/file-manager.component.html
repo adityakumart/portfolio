@@ -126,11 +126,11 @@
               </tr>
             }
 
-            <!-- Loop Files & Subfolders -->
+             <!-- Loop Files & Subfolders -->
             @for (node of fileService.files(); track node.path) {
               <tr 
                 class="explorer-row" 
-                (click)="node.type === 'folder' ? navigateTo(node.path) : downloadFile(node)"
+                (click)="node.type === 'folder' ? navigateTo(node.path) : previewFile(node)"
               >
                 <td class="col-name">
                   <div class="file-name-cell">
@@ -150,6 +150,9 @@
                 </td>
                 <td class="col-actions" (click)="$event.stopPropagation()">
                   @if (node.type === 'file') {
+                    <button mat-icon-button (click)="previewFile(node)" matTooltip="Preview file">
+                      <mat-icon>visibility</mat-icon>
+                    </button>
                     <button mat-icon-button (click)="downloadFile(node)" matTooltip="Download file">
                       <mat-icon>download</mat-icon>
                     </button>

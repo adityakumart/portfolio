@@ -8,8 +8,10 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { FileManagerService } from '../../services/file-manager.service';
 import { FileNode } from '@portfolio/shared-types';
+import { FilePreviewDialogComponent } from './file-preview-dialog.component';
 
 @Component({
   selector: 'app-file-manager',
@@ -24,12 +26,14 @@ import { FileNode } from '@portfolio/shared-types';
     MatProgressBarModule,
     MatTooltipModule,
     MatProgressSpinnerModule,
+    MatDialogModule,
   ],
   templateUrl: './file-manager.component.html',
   styleUrl: './file-manager.component.scss',
 })
 export class FileManagerComponent implements OnInit {
   fileService = inject(FileManagerService);
+  private dialog = inject(MatDialog);
 
   // UI State Signals
   showFolderInput = signal<boolean>(false);
@@ -73,6 +77,26 @@ export class FileManagerComponent implements OnInit {
     parts.pop();
     const parentPath = parts.length > 0 ? parts.join('/') + '/' : '';
     this.navigateTo(parentPath);
+  }
+
+  /**
+   * Opens the file preview dialog
+   */
+  async previewFile(node: FileNode): Promise<void> {
+    try {
+      const url = await this.fileService.getDownloadUrl(node.path);
+      this.dialog.open(FilePreviewDialogComponent, {
+        data: {
+          node,
+          downloadUrl: url,
+        },
+        width: '800px',
+        maxWidth: '90vw',
+        panelClass: 'glass-dialog-panel',
+      });
+    } catch (err: any) {
+      console.error('Failed to open preview dialog:', err);
+    }
   }
 
   /**
