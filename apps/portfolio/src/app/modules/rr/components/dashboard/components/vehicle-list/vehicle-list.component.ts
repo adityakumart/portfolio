@@ -13,6 +13,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-rr-vehicle-list',
@@ -29,7 +30,8 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
     MatCheckboxModule,
     MatButtonModule,
     MatIconModule,
-    MatDialogModule
+    MatDialogModule,
+    MatTooltipModule
   ],
   templateUrl: './vehicle-list.component.html',
   styleUrl: './vehicle-list.component.scss'

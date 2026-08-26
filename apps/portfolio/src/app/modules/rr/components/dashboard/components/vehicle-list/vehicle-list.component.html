@@ -1,61 +1,250 @@
-<h2>Vehicles > Fleet List Registry</h2>
-
-@if (isAdmin()) {
-  <div style="margin-bottom: 24px;">
-    <button mat-raised-button color="primary" class="action-btn success" (click)="openAddVehicleModal()">
-      <mat-icon>add</mat-icon> Add New Vehicle
-    </button>
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 16px;">
+  <div>
+    <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--rr-accent); font-weight: 800; margin-bottom: 6px; display: inline-flex; align-items: center; gap: 6px;">
+      <mat-icon style="font-size: 14px; width: 14px; height: 14px;">commute</mat-icon>
+      <span>Vehicles &bull; Fleet List Registry</span>
+    </div>
+    <h2 style="margin: 0; font-size: 1.85rem; font-weight: 800; font-family: 'Montserrat', sans-serif; color: var(--rr-text);">Fleet Registry</h2>
   </div>
-}
+  @if (isAdmin()) {
+    <button mat-raised-button color="primary" class="action-btn success" style="padding: 10px 20px; border-radius: 12px;" (click)="openAddVehicleModal()">
+      <mat-icon>add</mat-icon> Register New Vehicle
+    </button>
+  }
+</div>
 
 <div class="vehicle-grid">
   @for (v of vehicles(); track v.regNo) {
     <mat-card class="vehicle-card" (click)="viewVehicleDetails(v)">
       <div class="card-img-container">
         <img [src]="getVehicleImage(v)" alt="Vehicle Image" />
-        <span class="active-status-badge badge status-{{ v.status }}">{{ v.status | uppercase }}</span>
+        <div class="active-status-badge status-badge-{{ v.status }}">
+          <span class="status-dot"></span>
+          <span>{{ v.status | uppercase }}</span>
+        </div>
       </div>
-      <div class="veh-title">{{ v.manufacturer }} {{ v.name }}</div>
-      <div class="veh-subtitle reg-no">No: {{ v.regNo }}</div>
-      <div class="veh-specs">
-        <span class="spec-badge"><mat-icon>airline_seat_recline_normal</mat-icon> {{ v.seating }} Seats</span>
-        <span class="spec-badge"><mat-icon>local_gas_station</mat-icon> {{ v.fuelType | uppercase }}</span>
+      
+      <div class="card-content">
+        <div class="veh-type-tag">{{ v.type | uppercase }}</div>
+        <div class="veh-title">{{ v.manufacturer }} {{ v.name }}</div>
+        <div class="veh-subtitle reg-no">{{ v.regNo }}</div>
+        
+        <div class="veh-specs">
+          <span class="spec-badge" matTooltip="Capacity">
+            <mat-icon>airline_seat_recline_normal</mat-icon>
+            <span>{{ v.seating }} Seats</span>
+          </span>
+          <span class="spec-badge" matTooltip="Fuel Type">
+            <mat-icon>local_gas_station</mat-icon>
+            <span>{{ v.fuelType | uppercase }}</span>
+          </span>
+          <span class="spec-badge" matTooltip="Odometer">
+            <mat-icon>speed</mat-icon>
+            <span>{{ v.odometer }} KM</span>
+          </span>
+        </div>
       </div>
+
+      <!-- Quick Action Overlay for Admin -->
+      @if (isAdmin()) {
+        <div class="card-actions-overlay">
+          <button mat-mini-fab color="primary" class="mini-action-btn" (click)="$event.stopPropagation(); selectedVehicleDetails.set(v); openEditVehicleModal()" matTooltip="Edit Vehicle">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-mini-fab color="warn" class="mini-action-btn danger" (click)="$event.stopPropagation(); deleteVehicle(v.regNo)" matTooltip="Delete Vehicle">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      }
     </mat-card>
   } @empty {
     <div class="empty-fleet-card">
-      <mat-icon>no_sim</mat-icon>
-      <p>No vehicles registered in fleet.</p>
+      <div class="empty-icon-wrapper">
+        <mat-icon>directions_car_filled</mat-icon>
+      </div>
+      <h3>No Vehicles Registered</h3>
+      <p>There are currently no vehicles in your fleet registry database.</p>
+      @if (isAdmin()) {
+        <button mat-raised-button color="primary" class="action-btn success" (click)="openAddVehicleModal()">
+          <mat-icon>add</mat-icon> Register First Vehicle
+        </button>
+      }
     </div>
   }
 </div>
 
 <!-- POPUP 1: VEHICLE DETAILS DIALOG TEMPLATE -->
 <ng-template #vehicleDetailsDialog>
-  <h3 mat-dialog-title>Fleet Registry Details</h3>
-  <mat-dialog-content>
-    <div class="booking-content" style="grid-template-columns: 0.8fr 1.2fr; gap: 24px; margin-top: 15px;">
-      <div style="text-align: center; background: rgba(0,0,0,0.02); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid var(--rr-border-color);">
-        <img [src]="getVehicleImage(selectedVehicleDetails())" alt="Vehicle Image" style="width: 100%; max-height: 150px; object-fit: contain; margin-bottom: 16px;" />
-        <p style="margin: 0;"><strong>Active Status:</strong></p>
-        <span class="badge status-{{ selectedVehicleDetails()?.status }}" style="margin-top: 6px;">{{ selectedVehicleDetails()?.status | uppercase }}</span>
+  <div class="modal-header-wrapper">
+    <h3 mat-dialog-title class="modern-dialog-title">
+      <mat-icon>commute</mat-icon>
+      <span>Fleet Vehicle Specification Details</span>
+    </h3>
+  </div>
+  
+  <mat-dialog-content class="modern-dialog-content">
+    <div class="details-layout-grid">
+      
+      <!-- Visual Left Panel -->
+      <div class="details-visual-panel">
+        <div class="visual-card">
+          <div class="details-img-container">
+            <img [src]="getVehicleImage(selectedVehicleDetails())" alt="Vehicle Image" />
+          </div>
+          
+          <div class="status-section">
+            <span class="label">Rental Availability Status</span>
+            <div class="detail-status-badge badge-{{ selectedVehicleDetails()?.status }}">
+              <span class="status-dot"></span>
+              <span>{{ selectedVehicleDetails()?.status | uppercase }}</span>
+            </div>
+          </div>
+
+          <div class="visual-divider"></div>
+
+          <div class="quick-highlights">
+            <div class="highlight-item">
+              <mat-icon>airline_seat_recline_normal</mat-icon>
+              <div class="h-text">
+                <span class="h-val">{{ selectedVehicleDetails()?.seating }} Seats</span>
+                <span class="h-lbl">Capacity</span>
+              </div>
+            </div>
+            <div class="highlight-item">
+              <mat-icon>local_gas_station</mat-icon>
+              <div class="h-text">
+                <span class="h-val">{{ selectedVehicleDetails()?.fuelType | uppercase }}</span>
+                <span class="h-lbl">Fuel Option</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div style="line-height: 1.8;">
-        <p style="margin: 0 0 8px 0; font-size: 1.1rem; font-weight: 800; font-family: 'Montserrat', sans-serif;">{{ selectedVehicleDetails()?.manufacturer }} {{ selectedVehicleDetails()?.name }}</p>
-        <p style="margin: 0 0 6px 0;"><strong>Plate Number:</strong> {{ selectedVehicleDetails()?.regNo }}</p>
-        <p style="margin: 0 0 6px 0;"><strong>Model Release:</strong> {{ selectedVehicleDetails()?.model }}</p>
-        <p style="margin: 0 0 6px 0;"><strong>Seating Configuration:</strong> {{ selectedVehicleDetails()?.seating }} Seater</p>
-        <p style="margin: 0 0 6px 0;"><strong>Fuel Type Option:</strong> {{ selectedVehicleDetails()?.fuelType }}</p>
-        <p style="margin: 0 0 6px 0;"><strong>Engine Classification:</strong> {{ selectedVehicleDetails()?.type }}</p>
-        <p style="margin: 0 0 6px 0;"><strong>Odometer Record:</strong> {{ selectedVehicleDetails()?.odometer }} KM</p>
-        <p style="margin: 0 0 6px 0;"><strong>Engine Serial:</strong> {{ selectedVehicleDetails()?.engineNo }}</p>
-        <p style="margin: 0 0 6px 0;"><strong>Chassis Serial:</strong> {{ selectedVehicleDetails()?.chassisNo }}</p>
-        <p style="margin: 0 0 6px 0; font-size: 0.85rem; color: var(--rr-text-muted);"><strong>Insurance Expiry:</strong> {{ selectedVehicleDetails()?.insuranceExpiry }}</p>
-        <p style="margin: 0 0 6px 0; font-size: 0.85rem; color: var(--rr-text-muted);"><strong>Pollution Expiry:</strong> {{ selectedVehicleDetails()?.pollutionExpiry }}</p>
+      
+      <!-- Specifications Right Panel -->
+      <div class="details-specs-panel">
+        <div class="detail-section-title">
+          <mat-icon>info</mat-icon>
+          <span>General Specifications</span>
+        </div>
+        
+        <div class="specs-grid">
+          <div class="spec-item">
+            <span class="spec-label">Brand & Model</span>
+            <span class="spec-value">{{ selectedVehicleDetails()?.manufacturer }} {{ selectedVehicleDetails()?.name }}</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label">Year Model</span>
+            <span class="spec-value">{{ selectedVehicleDetails()?.model }}</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label">Engine Class</span>
+            <span class="spec-value">{{ selectedVehicleDetails()?.type }}</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label">Odometer Record</span>
+            <span class="spec-value">{{ selectedVehicleDetails()?.odometer }} KM</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label">Paint Color</span>
+            <span class="spec-value">{{ selectedVehicleDetails()?.color }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section-title" style="margin-top: 20px;">
+          <mat-icon>fingerprint</mat-icon>
+          <span>Registry Identifiers</span>
+        </div>
+        
+        <div class="specs-grid">
+          <div class="spec-item">
+            <span class="spec-label">Plate Number</span>
+            <span class="spec-value mono-val">{{ selectedVehicleDetails()?.regNo }}</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label">Engine Number</span>
+            <span class="spec-value mono-val">{{ selectedVehicleDetails()?.engineNo }}</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label">Chassis Serial</span>
+            <span class="spec-value mono-val">{{ selectedVehicleDetails()?.chassisNo }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section-title" style="margin-top: 20px;">
+          <mat-icon>verified_user</mat-icon>
+          <span>Compliance Expiries</span>
+        </div>
+        
+        <div class="expiries-flex">
+          <div class="expiry-pill">
+            <mat-icon>shield</mat-icon>
+            <div class="expiry-content">
+              <span class="exp-lbl">Insurance Expiry</span>
+              <span class="exp-val">{{ selectedVehicleDetails()?.insuranceExpiry || 'N/A' }}</span>
+            </div>
+          </div>
+          <div class="expiry-pill">
+            <mat-icon>eco</mat-icon>
+            <div class="expiry-content">
+              <span class="exp-lbl">Pollution Expiry</span>
+              <span class="exp-val">{{ selectedVehicleDetails()?.pollutionExpiry || 'N/A' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRICING SLABS SECTION -->
+    <div class="details-pricing-panel" style="margin-top: 24px;">
+      <div class="detail-section-title">
+        <mat-icon>payments</mat-icon>
+        <span>Pricing Slabs & Rental Overruns</span>
+      </div>
+      
+      <div class="pricing-slabs-grid">
+        <div class="slab-card">
+          <div class="slab-duration">24 Hours</div>
+          <div class="slab-price">₹{{ selectedVehicleDetails()?.pricing?.h23?.price || '0' }}</div>
+          <div class="slab-limit">{{ selectedVehicleDetails()?.pricing?.h23?.km || '0' }} KM Limit</div>
+        </div>
+        <div class="slab-card">
+          <div class="slab-duration">12 Hours</div>
+          <div class="slab-price">₹{{ selectedVehicleDetails()?.pricing?.h11?.price || '0' }}</div>
+          <div class="slab-limit">{{ selectedVehicleDetails()?.pricing?.h11?.km || '0' }} KM Limit</div>
+        </div>
+        <div class="slab-card">
+          <div class="slab-duration">4 Hours</div>
+          <div class="slab-price">₹{{ selectedVehicleDetails()?.pricing?.h3?.price || '0' }}</div>
+          <div class="slab-limit">{{ selectedVehicleDetails()?.pricing?.h3?.km || '0' }} KM Limit</div>
+        </div>
+        <div class="slab-card">
+          <div class="slab-duration">1 Hour</div>
+          <div class="slab-price">₹{{ selectedVehicleDetails()?.pricing?.h1?.price || '0' }}</div>
+          <div class="slab-limit">{{ selectedVehicleDetails()?.pricing?.h1?.km || '0' }} KM Limit</div>
+        </div>
+      </div>
+
+      <div class="overrun-rates-wrapper">
+        <div class="overrun-item">
+          <mat-icon>add_road</mat-icon>
+          <div class="overrun-desc">
+            <span class="o-val">₹{{ selectedVehicleDetails()?.extraKmPrice || '0' }} / KM</span>
+            <span class="o-lbl">Extra KM Overrun Price</span>
+          </div>
+        </div>
+        <div class="overrun-item">
+          <mat-icon>schedule</mat-icon>
+          <div class="overrun-desc">
+            <span class="o-val">₹{{ selectedVehicleDetails()?.extraHourPrice || '0' }} / HR</span>
+            <span class="o-lbl">Extra Hour Overrun Price</span>
+          </div>
+        </div>
       </div>
     </div>
   </mat-dialog-content>
-  <mat-dialog-actions align="end" style="margin-top: 20px; padding: 12px 24px;">
+  
+  <mat-dialog-actions align="end" class="modern-dialog-actions">
     @if (isAdmin()) {
       <button mat-raised-button color="primary" class="action-btn" style="margin-right: 12px;" (click)="openEditVehicleModal()">
         <mat-icon>edit</mat-icon> Modify
@@ -64,23 +253,26 @@
         <mat-icon>delete</mat-icon> Delete
       </button>
     }
-    <button mat-button (click)="closeVehicleDetailsPopup()">Close</button>
+    <button mat-button class="close-btn" (click)="closeVehicleDetailsPopup()">Close</button>
   </mat-dialog-actions>
 </ng-template>
 
 <!-- POPUP 2: ADD/MODIFY VEHICLE FORM DIALOG TEMPLATE -->
 <ng-template #vehicleFormDialog>
-  <h3 mat-dialog-title>
-    <mat-icon style="vertical-align: middle; margin-right: 6px;">commute</mat-icon>
-    <span>{{ editingVehicleMode() ? 'Modify Vehicle Details' : 'Register New Fleet Vehicle' }}</span>
-  </h3>
-  <mat-dialog-content style="max-height: 70vh; overflow-y: auto;">
+  <div class="modal-header-wrapper">
+    <h3 mat-dialog-title class="modern-dialog-title">
+      <mat-icon>commute</mat-icon>
+      <span>{{ editingVehicleMode() ? 'Modify Fleet Vehicle Metadata' : 'Register New Fleet Vehicle' }}</span>
+    </h3>
+  </div>
+  
+  <mat-dialog-content class="modern-dialog-content" style="max-height: 70vh; overflow-y: auto;">
     <form [formGroup]="vehicleFormGroup">
-      <div style="padding-right: 8px;">
+      <div style="padding-right: 4px;">
         <div class="booking-card">
           <h3>
-            <mat-icon style="vertical-align: middle; margin-right: 6px;">info</mat-icon>
-            <span>Vehicle Metadata Specifications</span>
+            <mat-icon>info</mat-icon>
+            <span>Vehicle Metadata & Specifications</span>
           </h3>
           <div class="booking-content" style="margin-top: 15px;">
             <mat-form-field appearance="outline">
@@ -202,7 +394,7 @@
 
         <div class="booking-card" style="margin-top: 24px;" formGroupName="pricing">
           <h3>
-            <mat-icon style="vertical-align: middle; margin-right: 6px;">payments</mat-icon>
+            <mat-icon>payments</mat-icon>
             <span>Pricing Slabs & Rental Limits</span>
           </h3>
           <div class="booking-content" style="margin-top: 15px;">
@@ -254,7 +446,7 @@
 
         <div class="booking-card" style="margin-top: 24px;">
           <h3>
-            <mat-icon style="vertical-align: middle; margin-right: 6px;">more_horiz</mat-icon>
+            <mat-icon>more_horiz</mat-icon>
             <span>Additional Overruns & Assets</span>
           </h3>
           <div class="booking-content" style="margin-top: 15px;">
@@ -277,11 +469,12 @@
       </div>
     </form>
   </mat-dialog-content>
-  <mat-dialog-actions align="end" style="margin-top: 20px; padding: 12px 24px;">
+  
+  <mat-dialog-actions align="end" class="modern-dialog-actions">
     <button mat-raised-button color="primary" class="action-btn success" style="margin-right: 12px;" [disabled]="vehicleFormGroup.invalid" (click)="saveVehicle($event)">
       <mat-icon>check</mat-icon>
       <span>{{ editingVehicleMode() ? 'Update Vehicle' : 'Register Vehicle' }}</span>
     </button>
-    <button mat-button color="warn" (click)="closeVehicleFormModal()">Cancel</button>
+    <button mat-button color="warn" class="close-btn" (click)="closeVehicleFormModal()">Cancel</button>
   </mat-dialog-actions>
 </ng-template>
