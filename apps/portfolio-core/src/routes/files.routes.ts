@@ -2,7 +2,7 @@ import { Router } from 'express';
 import {
   handleListFiles,
   handleGetViewUrl,
-  handleGetUploadUrl,
+  handleUploadFile,
   handleCreateFolder,
   handleMockUpload,
   handleMockDownload,
@@ -14,7 +14,7 @@ export const filesRouter = Router();
 // Secure metadata & URL generation endpoints
 filesRouter.get('/list', authenticateToken, handleListFiles);
 filesRouter.get('/view-url', authenticateToken, handleGetViewUrl);
-filesRouter.post('/upload', authenticateToken, handleGetUploadUrl);
+filesRouter.post('/upload', authenticateToken, handleUploadFile);
 filesRouter.post('/create-folder', authenticateToken, handleCreateFolder);
 
 // Publicly accessible local storage simulator endpoints (dev only)

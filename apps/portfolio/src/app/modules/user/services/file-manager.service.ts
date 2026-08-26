@@ -91,7 +91,7 @@ export class FileManagerService {
   }
 
   /**
-   * Initiates direct S3 client-side file upload using a generated presigned PUT URL
+   * Performs direct file upload to backend which uploads directly to R2 / mock storage
    */
   async uploadFile(file: File): Promise<void> {
     const targetPath = `${this.currentPath()}${file.name}`;
@@ -100,25 +100,16 @@ export class FileManagerService {
     this.error.set(null);
 
     try {
-      // 1. Get PUT presigned URL from backend
-      const presignUrl = `${environment.APIURL}/files/upload`;
-      const presignRes = await firstValueFrom(
-        this.http.post<{ url: string }>(
-          presignUrl,
-          { key: targetPath },
-          { headers: this.getHeaders() }
-        )
+      const uploadUrl = `${environment.APIURL}/files/upload?key=${encodeURIComponent(targetPath)}`;
+      
+      const uploadHeaders = this.getHeaders().set(
+        'Content-Type',
+        file.type || 'application/octet-stream'
       );
-
-      // 2. Perform direct binary upload to Cloudflare R2 / mock endpoint via PUT
-      // IMPORTANT: DO NOT send our JWT Authorization header here because S3 will reject it!
-      const uploadHeaders = new HttpHeaders({
-        'Content-Type': file.type || 'application/octet-stream',
-      });
 
       await new Promise<void>((resolve, reject) => {
         this.http
-          .put(presignRes.url, file, {
+          .post(uploadUrl, file, {
             headers: uploadHeaders,
             reportProgress: true,
             observe: 'events',
@@ -132,14 +123,14 @@ export class FileManagerService {
                 resolve();
               }
             },
-            error: (err) => {
-              console.error('Direct S3 upload failed:', err);
-              reject(new Error('Network error during file upload. Check bucket CORS config.'));
+            error: (err: any) => {
+              console.error('Backend file upload failed:', err);
+              reject(new Error(err.error?.message || 'File upload failed.'));
             },
           });
       });
 
-      // 3. Reset progress and refresh directory contents
+      // Reset progress and refresh directory contents
       this.uploadingFileName.set(null);
       this.uploadProgress.set(null);
       await this.loadDirectory(this.currentPath());
