@@ -1,1 +1,731 @@
-/* Styles for RRVehicleListComponent */
+/* Sri Ram & Ram's RoadReady Rentals - VEHICLE LIST REGISTRY STYLING */
+
+:host {
+  display: block;
+}
+
+/* VEHICLE GRID & RESPONSIVE CARDS */
+.vehicle-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.75rem;
+  padding: 4px;
+}
+
+.vehicle-card {
+  position: relative;
+  border-radius: 20px !important;
+  background: var(--rr-card-bg) !important;
+  backdrop-filter: var(--rr-glass-blur);
+  -webkit-backdrop-filter: var(--rr-glass-blur);
+  border: 1px solid var(--rr-border-color) !important;
+  box-shadow: var(--rr-card-shadow) !important;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+
+  &:hover {
+    transform: translateY(-8px);
+    border-color: var(--rr-accent) !important;
+    box-shadow: var(--rr-card-hover-shadow) !important;
+
+    .card-img-container img {
+      transform: scale(1.08) rotate(1deg);
+    }
+
+    .card-actions-overlay {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .card-img-container {
+    position: relative;
+    width: 100%;
+    height: 140px;
+    background: rgba(0, 0, 0, 0.02);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    box-sizing: border-box;
+    border-bottom: 1px solid var(--rr-border-color);
+    overflow: hidden;
+
+    :host-context(.dark-theme) & {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    img {
+      max-width: 90%;
+      max-height: 90%;
+      object-fit: contain;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Floating Status Badges */
+    .active-status-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      padding: 4px 10px;
+      border-radius: 30px;
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+      .status-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        display: inline-block;
+      }
+
+      &.status-badge-available {
+        background: rgba(16, 185, 129, 0.12);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        .status-dot {
+          background-color: #10b981;
+          box-shadow: 0 0 6px #10b981;
+        }
+      }
+
+      &.status-badge-maintenance {
+        background: rgba(239, 68, 68, 0.12);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        .status-dot {
+          background-color: #ef4444;
+          box-shadow: 0 0 6px #ef4444;
+        }
+      }
+
+      &.status-badge-contract {
+        background: rgba(59, 130, 246, 0.12);
+        color: #3b82f6;
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        .status-dot {
+          background-color: #3b82f6;
+          box-shadow: 0 0 6px #3b82f6;
+        }
+      }
+    }
+  }
+
+  .card-content {
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+
+    .veh-type-tag {
+      font-size: 0.625rem;
+      font-weight: 800;
+      color: var(--rr-accent);
+      letter-spacing: 0.1em;
+      margin-bottom: 4px;
+    }
+
+    .veh-title {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 1.05rem;
+      line-height: 1.3;
+      color: var(--rr-text);
+      margin-bottom: 4px;
+    }
+
+    .veh-subtitle {
+      font-size: 0.75rem;
+      color: var(--rr-text-muted);
+      font-weight: 600;
+      margin-bottom: 1rem;
+
+      &.reg-no {
+        font-family: 'Fira Code', monospace;
+        letter-spacing: 0.05em;
+        background: rgba(0, 0, 0, 0.03);
+        padding: 2px 6px;
+        border-radius: 4px;
+        display: inline-block;
+        width: fit-content;
+
+        :host-context(.dark-theme) & {
+          background: rgba(255, 255, 255, 0.04);
+        }
+      }
+    }
+
+    .veh-specs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: auto;
+
+      .spec-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.675rem;
+        font-weight: 700;
+        color: var(--rr-text-muted);
+        background: rgba(0, 0, 0, 0.03);
+        padding: 4px 8px;
+        border-radius: 8px;
+        border: 1px solid rgba(0, 0, 0, 0.02);
+        transition: all 0.2s ease;
+
+        :host-context(.dark-theme) & {
+          background: rgba(255, 255, 255, 0.03);
+          border-color: rgba(255, 255, 255, 0.02);
+        }
+
+        mat-icon {
+          font-size: 14px;
+          width: 14px;
+          height: 14px;
+        }
+
+        &:hover {
+          background: rgba(6, 182, 212, 0.08);
+          color: var(--rr-accent);
+        }
+      }
+    }
+  }
+
+  /* Admin Actions Overlay slide-in */
+  .card-actions-overlay {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    display: flex;
+    gap: 8px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 5;
+
+    .mini-action-btn {
+      width: 32px !important;
+      height: 32px !important;
+      min-height: 32px !important;
+      line-height: 32px !important;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15) !important;
+
+      mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
+
+      &.danger {
+        background-color: #ef4444 !important;
+        color: white !important;
+      }
+    }
+  }
+}
+
+/* EMPTY FLEET STATE */
+.empty-fleet-card {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4.5rem 2rem;
+  border-radius: 20px;
+  background: var(--rr-card-bg);
+  backdrop-filter: var(--rr-glass-blur);
+  border: 1px solid var(--rr-border-color);
+  box-shadow: var(--rr-card-shadow);
+  text-align: center;
+
+  .empty-icon-wrapper {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: rgba(6, 182, 212, 0.08);
+    color: var(--rr-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+
+    mat-icon {
+      font-size: 40px;
+      width: 40px;
+      height: 40px;
+    }
+  }
+
+  h3 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--rr-text);
+    margin: 0 0 8px 0;
+  }
+
+  p {
+    font-size: 0.9rem;
+    color: var(--rr-text-muted);
+    max-width: 400px;
+    margin: 0 0 1.5rem 0;
+  }
+}
+
+/* MODERN DIALOG STYLING & DETAILS SHEET */
+.modal-header-wrapper {
+  background: var(--rr-accent-gradient);
+  padding: 1.25rem 1.75rem;
+  margin-bottom: 0;
+
+  .modern-dialog-title {
+    margin: 0;
+    color: #ffffff !important;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.25rem;
+
+    mat-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+      color: #ffffff;
+    }
+  }
+}
+
+.modern-dialog-content {
+  padding: 1.75rem !important;
+  background: var(--rr-bg);
+  color: var(--rr-text);
+  box-sizing: border-box;
+}
+
+/* Details Popup Layout Grid */
+.details-layout-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 1.75rem;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Left Column: Visual Card Panel */
+.details-visual-panel {
+  .visual-card {
+    background: var(--rr-card-bg);
+    border: 1px solid var(--rr-border-color);
+    border-radius: 16px;
+    padding: 1.25rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+  }
+
+  .details-img-container {
+    width: 100%;
+    height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 12px;
+    padding: 8px;
+    margin-bottom: 1.25rem;
+
+    :host-context(.dark-theme) & {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+  }
+
+  .status-section {
+    text-align: center;
+    margin-bottom: 1rem;
+    width: 100%;
+
+    .label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: var(--rr-text-muted);
+      letter-spacing: 0.05em;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .detail-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 30px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+      }
+
+      &.badge-available {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.15);
+        .status-dot {
+          background-color: #10b981;
+          box-shadow: 0 0 6px #10b981;
+        }
+      }
+
+      &.badge-maintenance {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.15);
+        .status-dot {
+          background-color: #ef4444;
+          box-shadow: 0 0 6px #ef4444;
+        }
+      }
+
+      &.badge-contract {
+        background: rgba(59, 130, 246, 0.1);
+        color: #3b82f6;
+        border: 1px solid rgba(59, 130, 246, 0.15);
+        .status-dot {
+          background-color: #3b82f6;
+          box-shadow: 0 0 6px #3b82f6;
+        }
+      }
+    }
+  }
+
+  .visual-divider {
+    width: 100%;
+    height: 1px;
+    background: var(--rr-border-color);
+    margin: 1rem 0;
+  }
+
+  .quick-highlights {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    gap: 8px;
+
+    .highlight-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+        color: var(--rr-accent);
+      }
+
+      .h-text {
+        display: flex;
+        flex-direction: column;
+
+        .h-val {
+          font-size: 0.8rem;
+          font-weight: 750;
+          color: var(--rr-text);
+        }
+
+        .h-lbl {
+          font-size: 0.6rem;
+          color: var(--rr-text-muted);
+          text-transform: uppercase;
+          font-weight: 600;
+        }
+      }
+    }
+  }
+}
+
+/* Right Column: Specs Panel */
+.details-specs-panel {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.detail-section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  font-weight: 850;
+  color: var(--rr-text);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--rr-border-color);
+  padding-bottom: 6px;
+  margin-bottom: 0.75rem;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: var(--rr-accent);
+  }
+}
+
+.specs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 0.75rem 1rem;
+  margin-bottom: 1.25rem;
+
+  .spec-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    .spec-label {
+      font-size: 0.65rem;
+      color: var(--rr-text-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    .spec-value {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--rr-text);
+
+      &.mono-val {
+        font-family: 'Fira Code', monospace;
+        letter-spacing: 0.02em;
+      }
+    }
+  }
+}
+
+/* Compliance Expiry Layout */
+.expiries-flex {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+
+  .expiry-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(245, 158, 11, 0.05);
+    border: 1px solid rgba(245, 158, 11, 0.15);
+    padding: 8px 12px;
+    border-radius: 12px;
+    flex: 1 1 160px;
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+      color: #f59e0b;
+    }
+
+    .expiry-content {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+
+      .exp-lbl {
+        font-size: 0.65rem;
+        color: var(--rr-text-muted);
+        font-weight: 600;
+      }
+
+      .exp-val {
+        font-size: 0.8rem;
+        font-weight: 750;
+        color: var(--rr-text);
+      }
+    }
+  }
+}
+
+/* Pricing Slabs display details panel */
+.pricing-slabs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+
+  .slab-card {
+    background: var(--rr-card-bg);
+    border: 1px solid var(--rr-border-color);
+    padding: 10px;
+    border-radius: 12px;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+
+    &:hover {
+      border-color: var(--rr-accent);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .slab-duration {
+      font-size: 0.675rem;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: var(--rr-text-muted);
+      letter-spacing: 0.03em;
+      margin-bottom: 4px;
+    }
+
+    .slab-price {
+      font-family: 'Fira Code', monospace;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--rr-text);
+      margin-bottom: 2px;
+    }
+
+    .slab-limit {
+      font-size: 0.65rem;
+      color: var(--rr-accent);
+      font-weight: 700;
+    }
+  }
+}
+
+.overrun-rates-wrapper {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 12px;
+  border: 1px dashed var(--rr-border-color);
+
+  :host-context(.dark-theme) & {
+    background: rgba(255, 255, 255, 0.01);
+  }
+
+  .overrun-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      color: var(--rr-text-muted);
+    }
+
+    .overrun-desc {
+      display: flex;
+      flex-direction: column;
+
+      .o-val {
+        font-family: 'Fira Code', monospace;
+        font-size: 0.85rem;
+        font-weight: 750;
+        color: var(--rr-text);
+      }
+
+      .o-lbl {
+        font-size: 0.625rem;
+        color: var(--rr-text-muted);
+        font-weight: 600;
+      }
+    }
+  }
+}
+
+/* Dialog actions footer */
+.modern-dialog-actions {
+  padding: 1.25rem 1.75rem !important;
+  background: var(--rr-bg);
+  border-top: 1px solid var(--rr-border-color);
+  margin: 0 !important;
+
+  button {
+    border-radius: 10px !important;
+    font-weight: 700 !important;
+    padding: 6px 16px !important;
+  }
+
+  .close-btn {
+    color: var(--rr-text-muted) !important;
+    background: transparent !important;
+    border: 1px solid var(--rr-border-color) !important;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.03) !important;
+      color: var(--rr-text) !important;
+
+      :host-context(.dark-theme) & {
+        background: rgba(255, 255, 255, 0.03) !important;
+      }
+    }
+  }
+}
+
+/* Material form overrides for grids in modals */
+.booking-card {
+  h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    color: var(--rr-text);
+    border-bottom: 1px solid var(--rr-border-color) !important;
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+
+    mat-icon {
+      color: var(--rr-accent);
+    }
+  }
+}
+
+::ng-deep {
+  .mat-mdc-dialog-container {
+    border-radius: 24px !important;
+    overflow: hidden !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3) !important;
+  }
+}

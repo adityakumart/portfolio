@@ -1,42 +1,96 @@
-<h2>History > Finished & Cancelled Bookings</h2>
-
-<div class="table-container">
-  <table>
-    <thead>
-      <tr>
-        <th>Booking ID</th>
-        <th>Customer Name</th>
-        <th>Vehicle Details</th>
-        <th>Creation Date</th>
-        <th>Rental Billings</th>
-        <th>Final Odometer</th>
-        <th>Status</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (b of historyBookings(); track b.id) {
-        <tr>
-          <td><span style="font-family: monospace; font-weight: 700; color: var(--rr-text-muted);">{{ b.id }}</span></td>
-          <td>{{ b.renterFirstName }} {{ b.renterSecondName }}</td>
-          <td>
-            <div style="font-weight: 700;">{{ b.vehicleManufacturer }} {{ b.vehicleName }}</div>
-            <div style="font-size: 11px; color: var(--rr-text-muted); font-family: monospace;">{{ b.vehicleRegNo }}</div>
-          </td>
-          <td>{{ b.createdAt | date:'short' }}</td>
-          <td>Rs. {{ b.finalRentalAmount }}</td>
-          <td><span style="font-family: monospace; font-weight: 600;">{{ b.vehicleOdometerEnd || '—' }}</span></td>
-          <td>
-            <span class="badge" [class]="'status-' + b.status">{{ b.status | uppercase }}</span>
-          </td>
-        </tr>
-      } @empty {
-        <tr>
-          <td colspan="7" style="text-align: center; color: var(--rr-text-muted); padding: 32px 0;">
-            <mat-icon style="font-size: 32px; width: 32px; height: 32px; color: var(--rr-text-muted); display: block; margin: 0 auto 8px auto;">history</mat-icon>
-            <span>No finalized historical logs found in registries.</span>
-          </td>
-        </tr>
-      }
-    </tbody>
-  </table>
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 16px;">
+  <div>
+    <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--rr-accent); font-weight: 800; margin-bottom: 6px; display: inline-flex; align-items: center; gap: 6px;">
+      <mat-icon style="font-size: 14px; width: 14px; height: 14px;">history</mat-icon>
+      <span>History &bull; Finished & Cancelled Bookings</span>
+    </div>
+    <h2 style="margin: 0; font-size: 1.85rem; font-weight: 800; font-family: 'Montserrat', sans-serif; color: var(--rr-text);">Rental History Logs</h2>
+  </div>
 </div>
+
+@if (historyBookings().length > 0) {
+  <div class="table-card-wrapper">
+    <div class="table-container">
+      <table mat-table [dataSource]="historyBookings()" class="modern-history-table">
+        
+        <!-- Booking ID Column -->
+        <ng-container matColumnDef="id">
+          <th mat-header-cell *matHeaderCellDef> Booking ID </th>
+          <td mat-cell *matCellDef="let b">
+            <span class="booking-id-tag">{{ b.id }}</span>
+          </td>
+        </ng-container>
+
+        <!-- Customer Details Column -->
+        <ng-container matColumnDef="renterName">
+          <th mat-header-cell *matHeaderCellDef> Customer Details </th>
+          <td mat-cell *matCellDef="let b">
+            <div class="customer-name">{{ b.renterFirstName }} {{ b.renterSecondName }}</div>
+            <div class="customer-phone" style="font-size: 11px; color: var(--rr-text-muted); margin-top: 2px;">{{ b.renterPhone }}</div>
+          </td>
+        </ng-container>
+
+        <!-- Vehicle Details Column -->
+        <ng-container matColumnDef="vehicleDetails">
+          <th mat-header-cell *matHeaderCellDef> Vehicle Details </th>
+          <td mat-cell *matCellDef="let b">
+            <div class="vehicle-title">{{ b.vehicleManufacturer }} {{ b.vehicleName }}</div>
+            <div class="vehicle-reg">{{ b.vehicleRegNo }}</div>
+          </td>
+        </ng-container>
+
+        <!-- Creation Date Column -->
+        <ng-container matColumnDef="createdAt">
+          <th mat-header-cell *matHeaderCellDef> Creation Date </th>
+          <td mat-cell *matCellDef="let b">
+            <div class="creation-date">{{ b.createdAt | date:'mediumDate' }}</div>
+            <div class="creation-time">{{ b.createdAt | date:'shortTime' }}</div>
+          </td>
+        </ng-container>
+
+        <!-- Rental Billings Column -->
+        <ng-container matColumnDef="finalRentalAmount">
+          <th mat-header-cell *matHeaderCellDef> Rental Billings </th>
+          <td mat-cell *matCellDef="let b">
+            <span class="billing-amount">₹{{ b.finalRentalAmount }}</span>
+          </td>
+        </ng-container>
+
+        <!-- Final Odometer Column -->
+        <ng-container matColumnDef="vehicleOdometerEnd">
+          <th mat-header-cell *matHeaderCellDef> Final Odometer </th>
+          <td mat-cell *matCellDef="let b">
+            @if (b.vehicleOdometerEnd) {
+              <span class="odometer-end">{{ b.vehicleOdometerEnd }} KM</span>
+            } @else {
+              <span class="no-odometer">&mdash;</span>
+            }
+          </td>
+        </ng-container>
+
+        <!-- Status Column -->
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef> Status </th>
+          <td mat-cell *matCellDef="let b">
+            <div class="status-badge status-badge-{{ b.status }}">
+              <span class="status-dot"></span>
+              <span>{{ b.status | uppercase }}</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Table Row Definitions -->
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </div>
+  </div>
+} @else {
+  <div class="empty-state-card">
+    <div class="empty-icon-wrapper">
+      <mat-icon>history</mat-icon>
+    </div>
+    <h3>No History Found</h3>
+    <p>There are no completed or cancelled booking records in the fleet archive database.</p>
+  </div>
+}
