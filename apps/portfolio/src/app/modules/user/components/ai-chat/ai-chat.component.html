@@ -134,17 +134,22 @@
               </div>
               <div class="message-bubble-wrapper">
                 <div class="sender-name">{{ msg.role === 'user' ? 'You' : 'Assistant' }}</div>
-                <div class="message-bubble" [class.user-bubble]="msg.role === 'user'">
-                  <!-- Renders message content, keeps spacing -->
-                  <div class="text-content">{{ msg.text }}</div>
-                  @if (msg.text === '' && isStreaming() && $index === messages().length - 1) {
-                    <!-- Active typing placeholder -->
-                    <div class="typing-indicator">
-                      <span></span>
-                      <span></span>
-                      <span></span>
-                    </div>
-                  }
+                <div class="bubble-container">
+                  <div class="message-bubble" [class.user-bubble]="msg.role === 'user'">
+                    <!-- Renders message content, parsed as HTML -->
+                    <div class="text-content" [innerHTML]="sanitizeHtml(msg.text)"></div>
+                    @if (msg.text === '' && isStreaming() && $index === messages().length - 1) {
+                      <!-- Active typing placeholder -->
+                      <div class="typing-indicator">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                      </div>
+                    }
+                  </div>
+                  <button mat-icon-button class="copy-bubble-btn" (click)="copyToClipboard(msg.text)" title="Copy message">
+                    <mat-icon>content_copy</mat-icon>
+                  </button>
                 </div>
               </div>
             </div>

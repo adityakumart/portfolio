@@ -594,6 +594,48 @@ $workspace-bg-dark: rgba(15, 23, 42, 0.45);
       }
     }
 
+    .bubble-container {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      width: 100%;
+
+      &:hover .copy-bubble-btn {
+        opacity: 0.75;
+      }
+    }
+
+    .user-row .bubble-container {
+      flex-direction: row-reverse;
+    }
+
+    .copy-bubble-btn {
+      opacity: 0;
+      transition: opacity 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+      color: #94a3b8;
+      width: 32px;
+      height: 32px;
+      line-height: 32px;
+      flex-shrink: 0;
+      
+      ::ng-deep .mat-icon {
+        font-size: 1.1rem;
+        width: 18px;
+        height: 18px;
+      }
+
+      &:hover {
+        opacity: 1 !important;
+        background: rgba(0, 0, 0, 0.04);
+        color: #475569;
+
+        :host-context(.dark-theme) & {
+          background: rgba(255, 255, 255, 0.06);
+          color: #f8fafc;
+        }
+      }
+    }
+
     .message-bubble {
       padding: 0.85rem 1.15rem;
       border-radius: 18px;
@@ -622,8 +664,38 @@ $workspace-bg-dark: rgba(15, 23, 42, 0.45);
       }
 
       .text-content {
-        white-space: pre-wrap;
         word-break: break-word;
+
+        h3 {
+          font-size: 1.1rem;
+          font-weight: 700;
+          margin: 1rem 0 0.5rem 0;
+          color: inherit;
+        }
+
+        pre {
+          background: rgba(0, 0, 0, 0.04);
+          border-radius: 8px;
+          padding: 0.75rem 1rem;
+          margin: 0.75rem 0;
+          overflow-x: auto;
+          font-family: 'Fira Code', monospace;
+          font-size: 0.9rem;
+          border: 1px solid rgba(0, 0, 0, 0.05);
+
+          :host-context(.dark-theme) & {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+          }
+        }
+
+        code {
+          font-family: inherit;
+        }
+
+        i {
+          font-style: italic;
+        }
       }
     }
   }

@@ -1,6 +1,7 @@
 import { Component, inject, signal, computed, effect, ElementRef, ViewChild, AfterViewInit, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -25,6 +26,7 @@ export class AiChatComponent implements OnInit, AfterViewInit {
   // Inject services
   chatService = inject(AiChatService);
   authService = inject(AuthService);
+  private sanitizer = inject(DomSanitizer);
 
   // Component state (bound to service signals)
   chats = computed(() => this.chatService.chats());
@@ -171,5 +173,60 @@ export class AiChatComponent implements OnInit, AfterViewInit {
       this.promptTextarea.nativeElement.focus();
     }
     setTimeout(() => this.adjustTextareaHeight(), 0);
+  }
+
+  // Format response text with HTML tags according to user instructions
+  formatMessage(text: string): string {
+    if (!text) return '';
+
+    let html = text;
+
+    // 1. Escape HTML special characters to prevent XSS before parsing markdown tags
+    html = html
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    // 2. Block code: ```lang\ncode\n``` -> <pre><code>code</code></pre>
+    html = html.replace(/```(?:[a-zA-Z0-9]+)?\n?([\s\S]*?)\n?```/g, '<pre><code>$1</code></pre>');
+
+    // 3. Headings: ### text -> <h3>text</h3>
+    html = html.replace(/(?:^|\n)###\s+([^\n]+)/g, '\n<h3>$1</h3>');
+
+    // 4. Bold: **text** -> <strong>text</strong>
+    html = html.replace(/\*\*([^\*]+)\*\*/g, '<strong>$1</strong>');
+
+    // 5. Italic: `text` -> <i>text</i>
+    html = html.replace(/`([^`]+)`/g, '<i>$1</i>');
+
+    // 6. Convert newlines to <br>
+    html = html.replace(/\n/g, '<br>');
+
+    return html;
+  }
+
+  sanitizeHtml(text: string): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(this.formatMessage(text));
+  }
+
+  // Copy chat content to clipboard
+  copyToClipboard(text: string) {
+    if (!text) return;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).catch(err => {
+        console.error('Failed to copy text:', err);
+      });
+    } else {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+      } catch (err) {
+        console.error('Fallback copy failed:', err);
+      }
+      document.body.removeChild(textarea);
+    }
   }
 }
