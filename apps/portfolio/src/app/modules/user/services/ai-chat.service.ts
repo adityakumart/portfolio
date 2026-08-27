@@ -2,19 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { AuthService } from './auth';
 import { environment } from '../../../../environments/environment';
 
-export interface Chat {
-  id: string;
-  title: string;
-  createdAt: string;
-}
-
-export interface Message {
-  id?: string;
-  chatId: string;
-  role: 'user' | 'assistant';
-  text: string;
-  createdAt: string;
-}
+import { IChat as Chat, IMessage as Message } from '@portfolio/shared-types';
 
 @Injectable({
   providedIn: 'root',
@@ -189,7 +177,7 @@ export class AiChatService {
       this.messages.update((prev) => {
         const updated = [...prev];
         if (updated[assistantMsgIdx]) {
-          updated[assistantMsgIdx].text = `Error: ${error.message || 'Failed to generate response. Please try again.'}`;
+          updated[assistantMsgIdx].text = `An error occurred while generating the response. Please try again.`;
         }
         return updated;
       });

@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { AuthenticatedRequest } from '../types/express';
 import { connectToDatabase } from '../utils/DB/mongodb';
 import { ObjectId } from 'mongodb';
-import { IChat, IMessage } from '../models/gemini-chat.model';
+import { IChat, IMessage } from '@portfolio/shared-types';
 
 /**
  * Handle POST /api/chat/stream
@@ -207,7 +207,7 @@ export async function handleListChats(
     const formattedChats = chats.map((c) => ({
       id: c._id ? c._id.toString() : '',
       title: c.title,
-      createdAt: c.createdAt.toISOString(),
+      createdAt: new Date(c.createdAt).toISOString(),
     }));
 
     res.status(200).json(formattedChats);
@@ -285,7 +285,7 @@ export async function handleGetChatMessages(
       chatId: m.chatId.toString(),
       role: m.role === 'model' ? 'assistant' : 'user',
       text: m.text,
-      createdAt: m.createdAt.toISOString(),
+      createdAt: new Date(m.createdAt).toISOString(),
     }));
 
     res.status(200).json(formattedMessages);

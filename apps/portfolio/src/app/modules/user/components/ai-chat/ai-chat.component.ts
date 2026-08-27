@@ -144,7 +144,8 @@ export class AiChatComponent implements OnInit, AfterViewInit {
   }
 
   // Select historical chat
-  onSelectChat(chatId: string) {
+  onSelectChat(chatId: string | undefined) {
+    if (!chatId) return;
     this.chatService.selectChat(chatId);
     // On small screen mobile layout, auto-collapse sidebar on chat click
     if (window.innerWidth <= 768) {
