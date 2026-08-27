@@ -4,6 +4,10 @@ import { environment } from '../../../../environments/environment';
 
 import { IChat as Chat, IMessage as Message } from '@portfolio/shared-types';
 
+export interface LocalMessage extends Message {
+  status?: 'success' | 'error' | 'streaming';
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -14,7 +18,7 @@ export class AiChatService {
   // Signal State Strategy
   activeChatId = signal<string | null>(null);
   chats = signal<Chat[]>([]);
-  messages = signal<Message[]>([]);
+  messages = signal<LocalMessage[]>([]);
   isStreaming = signal<boolean>(false);
 
   // Fetch all historical chats
@@ -79,20 +83,22 @@ export class AiChatService {
     const currentChatId = this.activeChatId();
 
     // 1. Immediately append the user message locally
-    const userMsg: Message = {
+    const userMsg: LocalMessage = {
       role: 'user',
       text: prompt,
       chatId: currentChatId || '',
       createdAt: new Date().toISOString(),
+      status: 'success',
     };
     this.messages.update((prev) => [...prev, userMsg]);
 
     // 2. Append assistant response placeholder locally
-    const assistantMsgPlaceholder: Message = {
+    const assistantMsgPlaceholder: LocalMessage = {
       role: 'assistant',
       text: '',
       chatId: currentChatId || '',
       createdAt: new Date().toISOString(),
+      status: 'streaming',
     };
     this.messages.update((prev) => [...prev, assistantMsgPlaceholder]);
     const assistantMsgIdx = this.messages().length - 1;
@@ -185,6 +191,15 @@ export class AiChatService {
           }
         }
       }
+
+      // Mark assistant message status as success when streaming completes
+      this.messages.update((prev) => {
+        const updated = [...prev];
+        if (updated[assistantMsgIdx]) {
+          updated[assistantMsgIdx].status = 'success';
+        }
+        return updated;
+      });
     } catch (error: any) {
       console.error('Error streaming chat:', error.rawError || error);
 
@@ -192,6 +207,7 @@ export class AiChatService {
         const updated = [...prev];
         if (updated[assistantMsgIdx]) {
           updated[assistantMsgIdx].text = `An Error occurred`;
+          updated[assistantMsgIdx].status = 'error';
         }
         return updated;
       });

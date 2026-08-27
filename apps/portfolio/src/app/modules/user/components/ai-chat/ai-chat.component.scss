@@ -636,6 +636,35 @@ $workspace-bg-dark: rgba(15, 23, 42, 0.45);
       }
     }
 
+    .retry-bubble-btn {
+      color: var(--portPurple, #7c3aed);
+      opacity: 0.8;
+      transition: opacity 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+      width: 32px;
+      height: 32px;
+      line-height: 32px;
+      flex-shrink: 0;
+
+      :host-context(.dark-theme) & {
+        color: #c084fc;
+      }
+
+      ::ng-deep .mat-icon {
+        font-size: 1.1rem;
+        width: 18px;
+        height: 18px;
+      }
+
+      &:hover {
+        opacity: 1;
+        background: rgba(124, 58, 237, 0.08);
+
+        :host-context(.dark-theme) & {
+          background: rgba(168, 85, 247, 0.15);
+        }
+      }
+    }
+
     .message-bubble {
       padding: 0.85rem 1.15rem;
       border-radius: 18px;
@@ -660,6 +689,19 @@ $workspace-bg-dark: rgba(15, 23, 42, 0.45);
 
         :host-context(.dark-theme) & {
           background: $user-bubble-gradient;
+        }
+      }
+
+      &.error-bubble {
+        background: rgba(239, 68, 68, 0.08) !important;
+        border: 1px solid rgba(239, 68, 68, 0.2) !important;
+        color: #ef4444 !important;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.05) !important;
+
+        :host-context(.dark-theme) & {
+          background: rgba(239, 68, 68, 0.15) !important;
+          border: 1px solid rgba(239, 68, 68, 0.3) !important;
+          color: #fca5a5 !important;
         }
       }
 

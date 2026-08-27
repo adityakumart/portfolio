@@ -190,7 +190,8 @@ export class AiChatComponent implements OnInit, AfterViewInit {
     // 2. Block code: ```lang\ncode\n``` -> <pre><code>code</code></pre>
     html = html.replace(/```(?:[a-zA-Z0-9]+)?\n?([\s\S]*?)\n?```/g, '<pre><code>$1</code></pre>');
 
-    // 3. Headings: ### text -> <h3>text</h3>
+    // 3. Headings:
+    html = html.replace(/(?:^|\n)####\s+([^\n]+)/g, '\n<h4>$1</h4>');
     html = html.replace(/(?:^|\n)###\s+([^\n]+)/g, '\n<h3>$1</h3>');
 
     // 4. Bold: **text** -> <strong>text</strong>
@@ -228,5 +229,25 @@ export class AiChatComponent implements OnInit, AfterViewInit {
       }
       document.body.removeChild(textarea);
     }
+  }
+
+  // Retry sending a failed prompt
+  onRetry(prompt: string, errorIndex: number) {
+    if (this.isStreaming()) return;
+
+    // Clear the error bubble and the corresponding user prompt
+    this.chatService.messages.update((prev) => {
+      const updated = [...prev];
+      if (updated[errorIndex]) {
+        updated.splice(errorIndex, 1);
+      }
+      if (updated[errorIndex - 1]) {
+        updated.splice(errorIndex - 1, 1);
+      }
+      return updated;
+    });
+
+    // Resend
+    this.chatService.sendMessage(prompt);
   }
 }

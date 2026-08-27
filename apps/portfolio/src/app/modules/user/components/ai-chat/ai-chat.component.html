@@ -135,7 +135,9 @@
               <div class="message-bubble-wrapper">
                 <div class="sender-name">{{ msg.role === 'user' ? 'You' : 'Assistant' }}</div>
                 <div class="bubble-container">
-                  <div class="message-bubble" [class.user-bubble]="msg.role === 'user'">
+                  <div class="message-bubble" 
+                       [class.user-bubble]="msg.role === 'user'" 
+                       [class.error-bubble]="msg.status === 'error'">
                     <!-- Renders message content, parsed as HTML -->
                     <div class="text-content" [innerHTML]="sanitizeHtml(msg.text)"></div>
                     @if (msg.text === '' && isStreaming() && $index === messages().length - 1) {
@@ -150,6 +152,11 @@
                   <button mat-icon-button class="copy-bubble-btn" (click)="copyToClipboard(msg.text)" title="Copy message">
                     <mat-icon>content_copy</mat-icon>
                   </button>
+                  @if (msg.role === 'user' && messages()[$index + 1]?.status === 'error') {
+                    <button mat-icon-button class="retry-bubble-btn" (click)="onRetry(msg.text, $index + 1)" title="Retry prompt">
+                      <mat-icon>refresh</mat-icon>
+                    </button>
+                  }
                 </div>
               </div>
             </div>
