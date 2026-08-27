@@ -37,3 +37,21 @@ export interface GeminiResponse {
   }>;
 }
 
+export interface IChat {
+  id?: string;
+  _id?: any;
+  userId: string | any;
+  title: string;
+  createdAt: string | Date;
+}
+
+export interface IMessage {
+  id?: string;
+  _id?: any;
+  chatId: string | any;
+  role: 'user' | 'model' | 'assistant';
+  text: string;
+  createdAt: string | Date;
+}
+
+

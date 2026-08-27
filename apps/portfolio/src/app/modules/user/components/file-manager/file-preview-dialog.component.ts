@@ -1,6 +1,10 @@
-import { Component, Inject, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -16,10 +20,10 @@ import { FileNode } from '@portfolio/shared-types';
     MatDialogModule,
     MatButtonModule,
     MatIconModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
   ],
   templateUrl: './file-preview-dialog.component.html',
-  styleUrl: './file-preview-dialog.component.scss'
+  styleUrl: './file-preview-dialog.component.scss',
 })
 export class FilePreviewDialogComponent implements OnInit {
   dialogRef = inject(MatDialogRef<FilePreviewDialogComponent>);
@@ -27,14 +31,17 @@ export class FilePreviewDialogComponent implements OnInit {
   sanitizer = inject(DomSanitizer);
   http = inject(HttpClient);
 
-  previewType: 'image' | 'pdf' | 'audio' | 'video' | 'text' | 'unsupported' = 'unsupported';
+  previewType: 'image' | 'pdf' | 'audio' | 'video' | 'text' | 'unsupported' =
+    'unsupported';
   safeUrl!: SafeResourceUrl;
   textContent: string | null = null;
   loadingText = false;
   textError = false;
 
   ngOnInit() {
-    this.safeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.data.downloadUrl);
+    this.safeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
+      this.data.downloadUrl,
+    );
     this.determinePreviewType();
     if (this.previewType === 'text') {
       this.loadTextContent();
@@ -45,10 +52,31 @@ export class FilePreviewDialogComponent implements OnInit {
     const name = this.data.node.name.toLowerCase();
     const ext = name.split('.').pop() || '';
 
-    const imageExts = ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'bmp', 'ico'];
+    const imageExts = [
+      'png',
+      'jpg',
+      'jpeg',
+      'gif',
+      'svg',
+      'webp',
+      'bmp',
+      'ico',
+    ];
     const audioExts = ['mp3', 'wav', 'ogg', 'aac', 'm4a'];
     const videoExts = ['mp4', 'webm', 'ogv', 'avi'];
-    const textExts = ['txt', 'json', 'md', 'html', 'css', 'js', 'ts', 'xml', 'yaml', 'yml', 'csv'];
+    const textExts = [
+      'txt',
+      'json',
+      'md',
+      'html',
+      'css',
+      'js',
+      'ts',
+      'xml',
+      'yaml',
+      'yml',
+      'csv',
+    ];
 
     if (imageExts.includes(ext)) {
       this.previewType = 'image';
@@ -73,7 +101,9 @@ export class FilePreviewDialogComponent implements OnInit {
         // limit content length to 50KB to avoid UI freezing
         const maxLen = 50 * 1024;
         if (content.length > maxLen) {
-          this.textContent = content.substring(0, maxLen) + '\n\n... [Content Truncated due to size]';
+          this.textContent =
+            content.substring(0, maxLen) +
+            '\n\n... [Content Truncated due to size]';
         } else {
           this.textContent = content;
         }
@@ -83,7 +113,7 @@ export class FilePreviewDialogComponent implements OnInit {
         console.error('Failed to load text content for preview:', err);
         this.textError = true;
         this.loadingText = false;
-      }
+      },
     });
   }
 
@@ -93,12 +123,18 @@ export class FilePreviewDialogComponent implements OnInit {
 
   getIconForType(): string {
     switch (this.previewType) {
-      case 'image': return 'image';
-      case 'pdf': return 'picture_as_pdf';
-      case 'audio': return 'volume_up';
-      case 'video': return 'video_library';
-      case 'text': return 'description';
-      default: return 'insert_drive_file';
+      case 'image':
+        return 'image';
+      case 'pdf':
+        return 'picture_as_pdf';
+      case 'audio':
+        return 'volume_up';
+      case 'video':
+        return 'video_library';
+      case 'text':
+        return 'description';
+      default:
+        return 'insert_drive_file';
     }
   }
 
