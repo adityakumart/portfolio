@@ -1,0 +1,180 @@
+<div class="chat-container">
+  <!-- Left History Panel (Sidebar) -->
+  <aside class="sidebar" [class.collapsed]="!isSidebarOpen()">
+    <div class="sidebar-header">
+      <div class="brand">
+        <mat-icon class="brand-icon">bolt</mat-icon>
+        <span class="brand-name">AI Space</span>
+      </div>
+      <button mat-icon-button (click)="toggleSidebar()" class="toggle-btn mobile-only" title="Close sidebar">
+        <mat-icon>chevron_left</mat-icon>
+      </button>
+    </div>
+
+    <!-- New Chat Trigger Button -->
+    <div class="new-chat-container">
+      <button class="new-chat-btn" (click)="onNewChat()">
+        <mat-icon>add</mat-icon>
+        <span>New Chat</span>
+      </button>
+    </div>
+
+    <!-- History List -->
+    <div class="history-list">
+      <div class="section-title">Recent Chats</div>
+      @if (chats().length === 0) {
+        <div class="no-history">No recent chats</div>
+      } @else {
+        <div class="history-items-wrapper">
+          @for (chat of chats(); track chat.id) {
+            <button 
+              class="history-item" 
+              [class.active]="activeChatId() === chat.id" 
+              (click)="onSelectChat(chat.id)"
+            >
+              <mat-icon class="history-icon">chat_bubble_outline</mat-icon>
+              <div class="history-details">
+                <span class="history-title">{{ chat.title }}</span>
+                <span class="history-date">{{ chat.createdAt | date:'MMM d, h:mm a' }}</span>
+              </div>
+            </button>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="sidebar-footer">
+      <button mat-button class="back-profile-btn" routerLink="/user">
+        <mat-icon>arrow_back</mat-icon>
+        <span>Back to Profile</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Sidebar Toggle overlay on Mobile -->
+  @if (isSidebarOpen()) {
+    <div class="sidebar-overlay mobile-only" (click)="toggleSidebar()"></div>
+  }
+
+  <!-- Main Active Chat Workspace -->
+  <main class="chat-workspace">
+    <!-- Header -->
+    <header class="chat-header">
+      <div class="header-left">
+        <button mat-icon-button (click)="toggleSidebar()" class="toggle-sidebar-btn" aria-label="Toggle Sidebar">
+          <mat-icon>menu</mat-icon>
+        </button>
+        <div class="chat-title-info">
+          @if (activeChat()) {
+            <h2>{{ activeChat()?.title }}</h2>
+          } @else {
+            <h2>New Chat Session</h2>
+          }
+          <div class="badge">
+            <span class="dot" [class.streaming]="isStreaming()"></span>
+            <span class="text">{{ isStreaming() ? 'Generating response...' : 'Ready' }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="header-right font-controls">
+        <button mat-icon-button routerLink="/user" title="Account settings">
+          <mat-icon>account_circle</mat-icon>
+        </button>
+      </div>
+    </header>
+
+    <!-- Chat Messages Viewport -->
+    <div class="messages-viewport" #scrollContainer>
+      @if (messages().length === 0) {
+        <!-- Landing Dashboard (Empty activeChatId / New Chat) -->
+        <div class="landing-container">
+          <div class="logo-animation">
+            <div class="sparkle s1"></div>
+            <div class="sparkle s2"></div>
+            <div class="sparkle s3"></div>
+          </div>
+          <h1>How can I help you today?</h1>
+          <p class="subtitle">Interact with the AI Assistant to write, plan, code, or answer questions.</p>
+
+          <div class="suggestions-grid">
+            <button class="suggestion-card" (click)="useSuggestion('Write an async/await explanation in Javascript')">
+              <mat-icon class="card-icon text-purple">code</mat-icon>
+              <div class="card-text">
+                <div class="card-title">Code Helper</div>
+                <div class="card-desc">Explain async/await structure</div>
+              </div>
+            </button>
+            <button class="suggestion-card" (click)="useSuggestion('Draft a professional email explaining a delay')">
+              <mat-icon class="card-icon text-orange">edit</mat-icon>
+              <div class="card-text">
+                <div class="card-title">Professional Writing</div>
+                <div class="card-desc">Draft an email for a delay</div>
+              </div>
+            </button>
+            <button class="suggestion-card" (click)="useSuggestion('How do I build a premium card with glassmorphism CSS?')">
+              <mat-icon class="card-icon text-blue">palette</mat-icon>
+              <div class="card-text">
+                <div class="card-title">Styling and Design</div>
+                <div class="card-desc">Glassmorphic CSS template</div>
+              </div>
+            </button>
+          </div>
+        </div>
+      } @else {
+        <!-- Render Bubble Lists -->
+        <div class="message-list">
+          @for (msg of messages(); track $index) {
+            <div class="message-row" [class.user-row]="msg.role === 'user'">
+              <div class="avatar" [class.assistant-avatar]="msg.role !== 'user'">
+                @if (msg.role === 'user') {
+                  {{ userInitials() }}
+                } @else {
+                  <mat-icon>smart_toy</mat-icon>
+                }
+              </div>
+              <div class="message-bubble-wrapper">
+                <div class="sender-name">{{ msg.role === 'user' ? 'You' : 'Assistant' }}</div>
+                <div class="message-bubble" [class.user-bubble]="msg.role === 'user'">
+                  <!-- Renders message content, keeps spacing -->
+                  <div class="text-content">{{ msg.text }}</div>
+                  @if (msg.text === '' && isStreaming() && $index === messages().length - 1) {
+                    <!-- Active typing placeholder -->
+                    <div class="typing-indicator">
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Input Panel -->
+    <div class="input-panel">
+      <div class="textarea-wrapper" [class.disabled]="isStreaming()">
+        <textarea
+          #promptTextarea
+          placeholder="Ask AI Assistant..."
+          (input)="onPromptInput($event)"
+          (keydown)="onKeyDown($event)"
+          [disabled]="isStreaming()"
+          rows="1"
+        ></textarea>
+        <button 
+          class="send-btn" 
+          [class.active]="currentPrompt().trim().length > 0 && !isStreaming()"
+          [disabled]="currentPrompt().trim().length === 0 || isStreaming()" 
+          (click)="onSend()"
+          mat-icon-button
+        >
+          <mat-icon>send</mat-icon>
+        </button>
+      </div>
+      <div class="disclaimer">The AI Assistant can make mistakes. Verify important facts.</div>
+    </div>
+  </main>
+</div>

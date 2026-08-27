@@ -32,7 +32,6 @@ export interface SidebarItem {
   standalone: true,
   imports: [
     CommonModule,
-    RouterLink,
     MatIconModule,
     MatButtonModule,
     MatTooltipModule,
