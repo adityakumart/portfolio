@@ -165,14 +165,33 @@ export async function handleChatStream(
     console.error('Error in handleChatStream:', error);
     const err = error as Error;
 
+    // Parse the error on the backend to provide clean, structured data
+    let parsedError: any = err.message || 'Failed to initialize streaming response.';
+    try {
+      if (typeof parsedError === 'string' && (parsedError.startsWith('{') || parsedError.startsWith('['))) {
+        const parsed = JSON.parse(parsedError);
+        if (parsed && parsed.error && typeof parsed.error.message === 'string') {
+          try {
+            parsed.error.message = JSON.parse(parsed.error.message);
+          } catch {
+            // ignore
+          }
+        }
+        parsedError = parsed;
+      }
+    } catch {
+      // ignore
+    }
+
     if (!res.headersSent) {
       res.status(500).json({
-        error: 'Internal Server Error',
-        message: err.message || 'Failed to initialize streaming response.',
+        type: 'error',
+        message: 'An Error occurred',
+        error: parsedError,
       });
     } else {
       res.write(
-        `data: ${JSON.stringify({ type: 'error', message: err.message })}\n\n`,
+        `data: ${JSON.stringify({ type: 'error', message: 'An Error occurred', error: parsedError })}\n\n`,
       );
       res.end();
     }

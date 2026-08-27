@@ -114,7 +114,18 @@ export class AiChatService {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        let rawError: any = `HTTP error! status: ${response.status}`;
+        try {
+          const errObj = await response.json();
+          if (errObj && errObj.error) {
+            rawError = errObj.error;
+          }
+        } catch {
+          // ignore
+        }
+        const customErr = new Error('An Error occurred');
+        (customErr as any).rawError = rawError;
+        throw customErr;
       }
 
       if (!response.body) {
@@ -164,8 +175,10 @@ export class AiChatService {
                 }
                 return updated;
               });
-            } else if (dataObj.type === 'error' && dataObj.message) {
-              throw new Error(dataObj.message);
+            } else if (dataObj.type === 'error') {
+              const customErr = new Error('An Error occurred');
+              (customErr as any).rawError = dataObj.error || dataObj.message;
+              throw customErr;
             }
           } catch (e) {
             console.error('Error parsing SSE line:', e, trimmedLine);
@@ -173,11 +186,12 @@ export class AiChatService {
         }
       }
     } catch (error: any) {
-      console.error('Error streaming chat:', error);
+      console.error('Error streaming chat:', error.rawError || error);
+
       this.messages.update((prev) => {
         const updated = [...prev];
         if (updated[assistantMsgIdx]) {
-          updated[assistantMsgIdx].text = `An error occurred while generating the response. Please try again.`;
+          updated[assistantMsgIdx].text = `An Error occurred`;
         }
         return updated;
       });
