@@ -822,8 +822,58 @@ export class RRBookingListComponent implements OnInit {
     this.printAgreementPDFFromObject(bObj);
   }
 
+  printAgreementPDFFromModifyForm() {
+    const original = this.selectedBookingToModify();
+    if (!original) return;
+    const formVal = this.modifyBookingFormGroup.value;
+    const merged = {
+      ...original,
+      ...formVal,
+    };
+    this.printAgreementPDFFromObject(merged);
+  }
+
   printAgreementPDFFromObject(b: any) {
     if (!b) return;
+
+    // Normalize all fields to avoid "undefined" strings in printed PDF
+    const id = b.id || 'DRAFT';
+    const renterFirstName = b.renterFirstName || '';
+    const renterSecondName = b.renterSecondName || '';
+    const renterFatherName = b.renterFatherName || '____';
+    const renterAddress = b.renterAddress || '____';
+    const renterPhone = b.renterPhone || '____';
+    const renterAltPhone = b.renterAltPhone || '-';
+    const renterAadhar = b.renterAadhar || '____';
+    const renterDL = b.renterDL || '____';
+
+    const vehicleRegNo = b.vehicleRegNo || '____';
+    const vehicleName = b.vehicleName || '____';
+    const vehicleOdometerStart = b.vehicleOdometerStart || '____';
+
+    const rawPickupDateTime = b.pickupDateTime || '____';
+    const rawReturnDateTime = b.returnDateTime || '____';
+    const pickupDateTime = formatToIndianDate(rawPickupDateTime);
+    const returnDateTime = formatToIndianDate(rawReturnDateTime);
+    const travelFrom = b.travelFrom || '____';
+    const travelTo = b.travelTo || '____';
+
+    const extraHourPrice = b.extraHourPrice || '____';
+    const extraKmPrice = b.extraKmPrice || '____';
+
+    // Use finalRentalAmount if present, else totalRentalAmount
+    const rentalAmountVal = b.finalRentalAmount !== undefined && b.finalRentalAmount !== null
+      ? b.finalRentalAmount
+      : (b.totalRentalAmount || '____');
+
+    const paymentMode = b.paymentMode || '____';
+
+    const guarFirstName = b.guarFirstName || '';
+    const guarSecondName = b.guarSecondName || '';
+    const guarFatherName = b.guarFatherName || '____';
+    const guarAddress = b.guarAddress || '____';
+
+    const depositType = b.depositType || 'none';
 
     const doc = new jsPDF({
       unit: 'mm',
@@ -857,43 +907,43 @@ export class RRBookingListComponent implements OnInit {
     const rightX = 115;
 
     let depositValue = 'None';
-    if (b.depositType === 'bike') {
+    if (depositType === 'bike') {
       depositValue = `${b.bikeManufacturer || ''} - ${b.bikeModel || ''} (${b.bikeRegNo || ''})`;
-    } else if (b.depositType === 'cash') {
+    } else if (depositType === 'cash') {
       depositValue = `Rs. ${b.cashAmount || ''}`;
-    } else if (b.depositType === 'other') {
+    } else if (depositType === 'other') {
       depositValue = `${b.otherItemName || ''} - Rs. ${b.otherItemValue || ''}`;
     }
 
     const renterPairs = [
       [
         'Name',
-        (b.renterFirstName || '') + ' ' + (b.renterSecondName || ''),
+        (renterFirstName + ' ' + renterSecondName).trim() || '____',
         'Vehicle Reg No',
-        b.vehicleRegNo,
+        vehicleRegNo,
       ],
-      ['Father Name', b.renterFatherName, 'Vehicle Model', b.vehicleName],
+      ['Father Name', renterFatherName, 'Vehicle Model', vehicleName],
       [
         'Alternate Phone',
-        b.renterAltPhone || '-',
+        renterAltPhone,
         'Pickup Date & Time',
-        b.pickupDateTime,
+        pickupDateTime,
       ],
       [
         'Aadhar Number',
-        b.renterAadhar,
+        renterAadhar,
         'Odometer Reading',
-        b.vehicleOdometerStart,
+        vehicleOdometerStart,
       ],
-      ['Driving License', b.renterDL, 'Return Date & Time', b.returnDateTime],
+      ['Driving License', renterDL, 'Return Date & Time', returnDateTime],
       [
         'Contact Number',
-        b.renterPhone,
+        renterPhone,
         'Rental Amount',
-        `Rs. ${b.totalRentalAmount}`,
+        `Rs. ${rentalAmountVal}`,
       ],
-      ['Address', b.renterAddress, 'Security Deposit', depositValue],
-      ['Payment Mode', b.paymentMode, '', ''],
+      ['Address', renterAddress, 'Security Deposit', depositValue],
+      ['Payment Mode', paymentMode, '', ''],
     ];
 
     renterPairs.forEach(([label1, val1, label2, val2]) => {
@@ -921,22 +971,22 @@ export class RRBookingListComponent implements OnInit {
     doc.setFontSize(11);
     doc.setFont('Helvetica', 'normal');
     doc.text(
-      `Name: ${b.guarFirstName || ''} ${b.guarSecondName || ''}`,
+      `Name: ${(guarFirstName + ' ' + guarSecondName).trim() || '____'}`,
       leftX,
       y,
     );
-    doc.text(`Father Name: ${b.guarFatherName || ''}`, rightX, y);
+    doc.text(`Father Name: ${guarFatherName}`, rightX, y);
     y += 5.5;
-    doc.text(`Address: ${b.guarAddress || ''}`, 15, y);
+    doc.text(`Address: ${guarAddress}`, 15, y);
     y += 10;
 
-    const pickupDate = b.pickupDateTime
-      ? b.pickupDateTime.split('T')[0]
+    const pickupDate = rawPickupDateTime !== '____'
+      ? formatToIndianDate(rawPickupDateTime.split('T')[0])
       : '____';
-    const returnDate = b.returnDateTime
-      ? b.returnDateTime.split('T')[0]
+    const returnDate = rawReturnDateTime !== '____'
+      ? formatToIndianDate(rawReturnDateTime.split('T')[0])
       : '____';
-    const fullParagraph = `For my (Renter) need I hired your above-mentioned Vehicle for Self-Drive/Driver Assisted Car/Vehicle bearing registration number ${b.vehicleRegNo} from Dt. ${pickupDate} To Dt. ${returnDate} to travel from ${b.travelFrom} to ${b.travelTo}.`;
+    const fullParagraph = `For my (Renter) need I hired your above-mentioned Vehicle for Self-Drive/Driver Assisted Car/Vehicle bearing registration number ${vehicleRegNo} from Dt. ${pickupDate} To Dt. ${returnDate} to travel from ${travelFrom} to ${travelTo}.`;
 
     doc.text(fullParagraph, 15, y, { maxWidth: 185, lineHeightFactor: 1.35 });
     const splitParagraph = doc.splitTextToSize(fullParagraph, 185);
@@ -983,9 +1033,9 @@ export class RRBookingListComponent implements OnInit {
     y += 6;
 
     doc.setFont('Helvetica', 'normal');
-    doc.text(`• Late Return Fee: Rs. ${b.extraHourPrice}/- per hour`, 18, y);
+    doc.text(`• Late Return Fee: Rs. ${extraHourPrice}/- per hour`, 18, y);
     y += 5.5;
-    doc.text(`• Extra Kilometer Fee: Rs. ${b.extraKmPrice}/- per km`, 18, y);
+    doc.text(`• Extra Kilometer Fee: Rs. ${extraKmPrice}/- per km`, 18, y);
     y += 5.5;
     doc.text(
       `• Cleanliness Fee: Rs. 500 to Rs. 1000 in case of dirty vehicle returns`,
@@ -998,6 +1048,30 @@ export class RRBookingListComponent implements OnInit {
     doc.text('Renter Signature: _______________________', 15, yy);
     doc.text('Authorized Representative: _______________________', 115, yy);
 
-    doc.save(`Agreement_${b.id}.pdf`);
+    doc.save(`Agreement_${id}.pdf`);
   }
 }
+
+function formatToIndianDate(dateStr: string): string {
+  if (!dateStr || dateStr === '____' || dateStr === 'N/A') return dateStr;
+  
+  const separator = dateStr.includes('T') ? 'T' : dateStr.includes(' ') ? ' ' : null;
+  if (separator) {
+    const parts = dateStr.split(separator);
+    const datePart = parts[0];
+    const timePart = parts[1] || '';
+    const dateParts = datePart.split('-');
+    if (dateParts.length === 3 && dateParts[0].length === 4) {
+      const formattedDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
+      return timePart ? `${formattedDate} ${timePart}` : formattedDate;
+    }
+    return dateStr;
+  }
+
+  const parts = dateStr.split('-');
+  if (parts.length === 3 && parts[0].length === 4) {
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+  }
+  return dateStr;
+}
+

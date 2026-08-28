@@ -181,14 +181,14 @@
             <mat-icon>shield</mat-icon>
             <div class="expiry-content">
               <span class="exp-lbl">Insurance Expiry</span>
-              <span class="exp-val">{{ selectedVehicleDetails()?.insuranceExpiry || 'N/A' }}</span>
+              <span class="exp-val">{{ (selectedVehicleDetails()?.insuranceExpiry | date:'dd-MM-yyyy':'UTC') || 'N/A' }}</span>
             </div>
           </div>
           <div class="expiry-pill">
             <mat-icon>eco</mat-icon>
             <div class="expiry-content">
               <span class="exp-lbl">Pollution Expiry</span>
-              <span class="exp-val">{{ selectedVehicleDetails()?.pollutionExpiry || 'N/A' }}</span>
+              <span class="exp-val">{{ (selectedVehicleDetails()?.pollutionExpiry | date:'dd-MM-yyyy':'UTC') || 'N/A' }}</span>
             </div>
           </div>
         </div>

@@ -78,43 +78,37 @@
   <span class="badge count-badge">{{ getVehicleCount('available') }} Available</span>
 </div>
 
-<div class="fleet-showcase">
+<div class="vehicle-grid">
   @for (v of vehicles(); track v.regNo) {
     @if (v.status === 'available') {
-      <mat-card class="fleet-row-card">
-        <div class="row-glow"></div>
-        <div class="vehicle-visual">
+      <mat-card class="vehicle-card">
+        <div class="card-img-container">
           <img [src]="getVehicleImage(v)" alt="Vehicle Image" />
+          <div class="active-status-badge status-badge-{{ v.status }}">
+            <span class="status-dot"></span>
+            <span>{{ v.status | uppercase }}</span>
+          </div>
         </div>
-        <div class="vehicle-details">
-          <h4 class="vehicle-title">{{ v.manufacturer }} {{ v.name }}</h4>
-          <span class="vehicle-plate">
-            <mat-icon>subtitles</mat-icon>
-            {{ v.regNo }}
-          </span>
-        </div>
-        <div class="vehicle-specifications">
-          <span class="spec-badge">
-            <mat-icon>airline_seat_recline_normal</mat-icon>
-            <span>{{ v.seating }} Seats</span>
-          </span>
-          <span class="spec-badge">
-            <mat-icon>local_gas_station</mat-icon>
-            <span>{{ v.fuelType | uppercase }}</span>
-          </span>
-          <span class="spec-badge">
-            <mat-icon>commute</mat-icon>
-            <span>{{ v.type || 'SEDAN' | uppercase }}</span>
-          </span>
-        </div>
-        <div class="vehicle-status">
-          <span class="status-indicator">
-            <span class="indicator-dot"></span>
-            Ready to Rent
-          </span>
-        </div>
-        <div class="vehicle-action">
-          <mat-icon class="action-chevron">chevron_right</mat-icon>
+        
+        <div class="card-content">
+          <div class="veh-type-tag">{{ v.type | uppercase }}</div>
+          <div class="veh-title">{{ v.manufacturer }} {{ v.name }}</div>
+          <div class="veh-subtitle reg-no">{{ v.regNo }}</div>
+          
+          <div class="veh-specs">
+            <span class="spec-badge" matTooltip="Capacity">
+              <mat-icon>airline_seat_recline_normal</mat-icon>
+              <span>{{ v.seating }} Seats</span>
+            </span>
+            <span class="spec-badge" matTooltip="Fuel Type">
+              <mat-icon>local_gas_station</mat-icon>
+              <span>{{ v.fuelType | uppercase }}</span>
+            </span>
+            <span class="spec-badge" matTooltip="Odometer">
+              <mat-icon>speed</mat-icon>
+              <span>{{ v.odometer }} KM</span>
+            </span>
+          </div>
         </div>
       </mat-card>
     }

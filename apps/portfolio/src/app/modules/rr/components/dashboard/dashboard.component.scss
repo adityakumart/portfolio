@@ -7,7 +7,8 @@
 .dashboard-wrapper {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   background: var(--rr-bg);
   color: var(--rr-text);
   font-family: 'Inter', sans-serif;
