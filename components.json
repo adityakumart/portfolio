@@ -1,0 +1,7 @@
+{
+  "componentsPath": "styles/libs/ui",
+  "buildable": true,
+  "generateAs": "library",
+  "importAlias": "@spartan-ng/hel",
+  "style": "nova"
+}

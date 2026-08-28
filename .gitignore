@@ -56,3 +56,4 @@ vitest.config.*.timestamp*
 
 # Vercel
 /.vercel
+.angular
