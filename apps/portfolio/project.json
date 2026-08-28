@@ -32,32 +32,7 @@
           "apps/portfolio/src/assets"
         ],
         "styles": [
-          "apps/portfolio/src/styles.scss",
-          {
-            "input": "apps/portfolio/src/app/shared/styles/custom.scss",
-            "bundleName": "custom",
-            "inject": false
-          },
-          {
-            "input": "apps/portfolio/src/app/shared/styles/bootstrap.scss",
-            "bundleName": "bootstrap",
-            "inject": false
-          },
-          {
-            "input": "apps/portfolio/src/app/shared/styles/border.scss",
-            "bundleName": "border",
-            "inject": false
-          },
-          {
-            "input": "apps/portfolio/src/app/shared/styles/colors.scss",
-            "bundleName": "colors",
-            "inject": false
-          },
-          {
-            "input": "apps/portfolio/src/app/shared/styles/text.scss",
-            "bundleName": "text",
-            "inject": false
-          }
+          "apps/portfolio/src/styles.scss"
         ],
         "scripts": [],
         "browser": "apps/portfolio/src/main.ts",
