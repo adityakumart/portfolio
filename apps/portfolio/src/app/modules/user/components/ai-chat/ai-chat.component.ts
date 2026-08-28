@@ -195,7 +195,7 @@ export class AiChatComponent implements OnInit, AfterViewInit {
     html = html.replace(/(?:^|\n)###\s+([^\n]+)/g, '\n<h3>$1</h3>');
 
     // 4. Bold: **text** -> <strong>text</strong>
-    html = html.replace(/\*\*([^\*]+)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
 
     // 5. Inline Code: `text` -> <code class="inline-code">text</code>
     html = html.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
