@@ -13,6 +13,12 @@
       "skillPath": "plugins/auth0/skills/auth0-quickstart/SKILL.md",
       "computedHash": "fde383fc91a232bc41d951791e9622725e35fd7839e7b4596c1e0175340c5f86"
     },
+    "spartan": {
+      "source": "spartan-ng/spartan",
+      "sourceType": "github",
+      "skillPath": "skills/spartan/SKILL.md",
+      "computedHash": "0959668ac0c5d8e39a97fb43c5a8462e187501817adfeae6ff29bbc3a4dde8ac"
+    },
     "supabase": {
       "source": "supabase/agent-skills",
       "sourceType": "github",

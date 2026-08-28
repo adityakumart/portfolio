@@ -7,6 +7,12 @@
       ],
       "@portfolio/shared-types": [
         "./libs/shared-types/src/index.ts"
+      ],
+      "@spartan-ng/hel/button": [
+        "./libs/styles/button/src/index.ts"
+      ],
+      "@spartan-ng/hel/utils": [
+        "./libs/styles/utils/src/index.ts"
       ]
     },
     "forceConsistentCasingInFileNames": true,

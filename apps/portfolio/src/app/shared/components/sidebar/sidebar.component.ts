@@ -55,7 +55,7 @@ export class SidebarComponent {
 
   // User and Theme state
   currentUser = computed(() => this.authService.currentUser());
-  isDarkMode = computed(() => this.themeService.theme() === 'dark');
+  isDarkMode = computed(() => this.themeService.darkMode());
 
   // Track the current URL using toSignal
   currentUrl = toSignal(

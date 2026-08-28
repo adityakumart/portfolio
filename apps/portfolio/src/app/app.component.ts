@@ -1,32 +1,19 @@
 import {
   Component,
-  computed,
   DOCUMENT,
   inject,
   ChangeDetectionStrategy,
   ViewChildren,
   QueryList,
 } from '@angular/core';
-import {
-  RouterOutlet,
-  RouterLink,
-  RouterLinkActive,
-  Router,
-  NavigationEnd,
-} from '@angular/router';
+import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map } from 'rxjs/operators';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { ThemeService } from './theme.service';
 import { GlobalData } from '../shared/data/GlobalData';
 import { appRoutingList } from './shared/data/routes';
-import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
+import { MatMenuTrigger } from '@angular/material/menu';
 import { AuthService } from './modules/user/services/auth';
-import { ProfileMenuComponent } from './shared/components/profile-menu/profile-menu.component';
 
 @Component({
   selector: 'app-root',
@@ -54,8 +41,6 @@ export class AppComponent {
   private themeService = inject(ThemeService);
   private router = inject(Router);
   private authService = inject(AuthService);
-
-  readonly isDarkMode = computed(() => this.themeService.theme() === 'dark');
 
   readonly isUserRoute = toSignal(
     this.router.events.pipe(

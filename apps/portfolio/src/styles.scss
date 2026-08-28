@@ -1,6 +1,49 @@
-/* You can add global styles to this file, and also import other style files */
 @use 'themes' as themes;
 @use '@angular/material' as mat;
+
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/preflight.css' layer(base);
+@import 'tailwindcss/utilities.css';
+
+@import "@spartan-ng/brain/hlm-tailwind-preset.css";
+
+@theme {
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+/* You can add global styles to this file, and also import other style files */
 
 // Apply the core structural styles (typography, etc.) for all components.
 // We only need to do this once.
@@ -14,158 +57,234 @@
 // When the `.light-theme` class is applied to a parent element (e.g., body),
 // it will override the default dark theme colors for all components inside.
 .light-theme {
-  @include mat.all-component-colors(themes.$light-theme);
+@include mat.all-component-colors(themes.$light-theme);
 
-  /* Light Theme Custom Properties */
-  --portRed: #ef5b5b;
-  --portLightRed: #f95f6f;
-  --portBlue: #5838ff;
-  --portSkyBlue: #529fe1;
-  --portPaleBlue: #f1f8ff;
-  --portDarkBlue: #3d20dd;
-  --portPurple: #7d62ef;
-  --portLightGreen: #2dce98;
-  --portPaleGreen: #30dbb5;
-  --portGreen: #26be77;
-  --portLightOrange: #fda341;
-  --portOrange: #f48665;
-  --portBrown: #7f7f7f;
-  --portDarkGrey: #3e566d;
-  --portGrey: #7e92a4;
-  --portPaleGrey: #f6f8ff;
-  --portLightGrey: #eff3fe;
-  --portWhite: #ffffff;
-  --portBlack: #354053;
-  --c-primary-color: #146ef6;
-  --c-secondary-color: #cacacc;
+/* Light Theme Custom Properties */
+--portRed: #ef5b5b;
+--portLightRed: #f95f6f;
+--portBlue: #5838ff;
+--portSkyBlue: #529fe1;
+--portPaleBlue: #f1f8ff;
+--portDarkBlue: #3d20dd;
+--portPurple: #7d62ef;
+--portLightGreen: #2dce98;
+--portPaleGreen: #30dbb5;
+--portGreen: #26be77;
+--portLightOrange: #fda341;
+--portOrange: #f48665;
+--portBrown: #7f7f7f;
+--portDarkGrey: #3e566d;
+--portGrey: #7e92a4;
+--portPaleGrey: #f6f8ff;
+--portLightGrey: #eff3fe;
+--portWhite: #ffffff;
+--portBlack: #354053;
+--c-primary-color: #146ef6;
+--c-secondary-color: #cacacc;
 
-  /* Car Rentals Light Theme Variables (Glassmorphism & High Contrast) */
-  --rr-bg: #f8fafc;
-  --rr-text: #0f172a;
-  --rr-card-bg: rgba(255, 255, 255, 0.75);
-  --rr-border-color: rgba(15, 23, 42, 0.08);
-  --rr-header-bg: rgba(255, 255, 255, 0.85);
-  --rr-header-text: #0f172a;
-  --rr-card-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.06);
-  --rr-card-hover-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.15);
-  --rr-text-muted: #475569;
-  --rr-btn-bg: rgba(15, 23, 42, 0.05);
-  --rr-btn-hover-bg: rgba(15, 23, 42, 0.12);
-  --rr-accent: #0ea5e9;
-  --rr-accent-gradient: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
-  --rr-glass-blur: blur(16px) saturate(180%);
+/* Car Rentals Light Theme Variables (Glassmorphism & High Contrast) */
+--rr-bg: #f8fafc;
+--rr-text: #0f172a;
+--rr-card-bg: rgba(255, 255, 255, 0.75);
+--rr-border-color: rgba(15, 23, 42, 0.08);
+--rr-header-bg: rgba(255, 255, 255, 0.85);
+--rr-header-text: #0f172a;
+--rr-card-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.06);
+--rr-card-hover-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.15);
+--rr-text-muted: #475569;
+--rr-btn-bg: rgba(15, 23, 42, 0.05);
+--rr-btn-hover-bg: rgba(15, 23, 42, 0.12);
+--rr-accent: #0ea5e9;
+--rr-accent-gradient: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+--rr-glass-blur: blur(16px) saturate(180%);
 
-  /* Material 3 Compatibility / Fallback Variables */
-  --mat-sys-primary: var(--c-primary-color);
-  --mat-sys-primary-container: var(--portPaleBlue);
-  --mat-sys-on-primary-container: var(--portDarkBlue);
-  --mat-sys-secondary: var(--portPurple);
-  --mat-sys-surface-container-lowest: var(--portWhite);
-  --mat-sys-surface-container-low: var(--portWhite);
-  --mat-sys-surface-container: var(--portPaleGrey);
-  --mat-sys-surface-container-high: var(--portWhite);
-  --mat-sys-on-surface: var(--portBlack);
-  --mat-sys-on-surface-variant: var(--portGrey);
-  --mat-sys-outline: var(--portGrey);
-  --mat-sys-outline-variant: var(--portLightGrey);
-  --mat-sys-error: var(--portRed);
+/* Material 3 Compatibility / Fallback Variables */
+--mat-sys-primary: var(--c-primary-color);
+--mat-sys-primary-container: var(--portPaleBlue);
+--mat-sys-on-primary-container: var(--portDarkBlue);
+--mat-sys-secondary: var(--portPurple);
+--mat-sys-surface-container-lowest: var(--portWhite);
+--mat-sys-surface-container-low: var(--portWhite);
+--mat-sys-surface-container: var(--portPaleGrey);
+--mat-sys-surface-container-high: var(--portWhite);
+--mat-sys-on-surface: var(--portBlack);
+--mat-sys-on-surface-variant: var(--portGrey);
+--mat-sys-outline: var(--portGrey);
+--mat-sys-outline-variant: var(--portLightGrey);
+--mat-sys-error: var(--portRed);
 }
 
 .dark-theme {
-  /* Inverted for Dark Theme (Adjusted for contrast and readability) */
-  --portRed: #ff6b6b;
-  --portLightRed: #ff7a8a;
-  --portBlue: #8c73ff;
-  --portSkyBlue: #62aef0;
-  --portPaleBlue: #1a2235;
-  --portDarkBlue: #a28bf4;
-  --portPurple: #9882ff;
-  --portLightGreen: #3ee0aa;
-  --portPaleGreen: #42ecc6;
-  --portGreen: #38d089;
-  --portLightOrange: #ffb559;
-  --portOrange: #ff9877;
-  --portBrown: #a6a6a6;
-  --portDarkGrey: #a0b3c6;
-  --portGrey: #63778a;
-  --portPaleGrey: #1a1c23;
-  --portLightGrey: #232733;
-  --portWhite: #121212;
-  --portBlack: #e0e0e0;
-  --c-primary-color: #4a90e2;
-  --c-secondary-color: #4a4a4c;
+/* Inverted for Dark Theme (Adjusted for contrast and readability) */
+--portRed: #ff6b6b;
+--portLightRed: #ff7a8a;
+--portBlue: #8c73ff;
+--portSkyBlue: #62aef0;
+--portPaleBlue: #1a2235;
+--portDarkBlue: #a28bf4;
+--portPurple: #9882ff;
+--portLightGreen: #3ee0aa;
+--portPaleGreen: #42ecc6;
+--portGreen: #38d089;
+--portLightOrange: #ffb559;
+--portOrange: #ff9877;
+--portBrown: #a6a6a6;
+--portDarkGrey: #a0b3c6;
+--portGrey: #63778a;
+--portPaleGrey: #1a1c23;
+--portLightGrey: #232733;
+--portWhite: #121212;
+--portBlack: #e0e0e0;
+--c-primary-color: #4a90e2;
+--c-secondary-color: #4a4a4c;
 
-  /* Car Rentals Dark Theme Variables (Glassmorphism & High Contrast) */
-  --rr-bg: #030712;
-  --rr-text: #f8fafc;
-  --rr-card-bg: rgba(17, 24, 39, 0.65);
-  --rr-border-color: rgba(255, 255, 255, 0.08);
-  --rr-header-bg: rgba(3, 7, 18, 0.85);
-  --rr-header-text: #f8fafc;
-  --rr-card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
-  --rr-card-hover-shadow: 0 12px 48px 0 rgba(0, 0, 0, 0.7), 0 0 20px rgba(6, 182, 212, 0.25);
-  --rr-text-muted: #94a3b8;
-  --rr-btn-bg: rgba(31, 41, 55, 0.8);
-  --rr-btn-hover-bg: rgba(55, 65, 81, 0.9);
-  --rr-accent: #06b6d4;
-  --rr-accent-gradient: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
-  --rr-glass-blur: blur(16px) saturate(180%);
+/* Car Rentals Dark Theme Variables (Glassmorphism & High Contrast) */
+--rr-bg: #030712;
+--rr-text: #f8fafc;
+--rr-card-bg: rgba(17, 24, 39, 0.65);
+--rr-border-color: rgba(255, 255, 255, 0.08);
+--rr-header-bg: rgba(3, 7, 18, 0.85);
+--rr-header-text: #f8fafc;
+--rr-card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+--rr-card-hover-shadow:
+0 12px 48px 0 rgba(0, 0, 0, 0.7), 0 0 20px rgba(6, 182, 212, 0.25);
+--rr-text-muted: #94a3b8;
+--rr-btn-bg: rgba(31, 41, 55, 0.8);
+--rr-btn-hover-bg: rgba(55, 65, 81, 0.9);
+--rr-accent: #06b6d4;
+--rr-accent-gradient: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+--rr-glass-blur: blur(16px) saturate(180%);
 
-  /* Material 3 Compatibility / Fallback Variables */
-  --mat-sys-primary: var(--c-primary-color);
-  --mat-sys-primary-container: var(--portPaleBlue);
-  --mat-sys-on-primary-container: var(--portDarkBlue);
-  --mat-sys-secondary: var(--portPurple);
-  --mat-sys-surface-container-lowest: var(--portWhite);
-  --mat-sys-surface-container-low: var(--portPaleGrey);
-  --mat-sys-surface-container: var(--portLightGrey);
-  --mat-sys-surface-container-high: var(--portLightGrey);
-  --mat-sys-on-surface: var(--portBlack);
-  --mat-sys-on-surface-variant: var(--portGrey);
-  --mat-sys-outline: var(--portGrey);
-  --mat-sys-outline-variant: var(--portLightGrey);
-  --mat-sys-error: var(--portRed);
+/* Material 3 Compatibility / Fallback Variables */
+--mat-sys-primary: var(--c-primary-color);
+--mat-sys-primary-container: var(--portPaleBlue);
+--mat-sys-on-primary-container: var(--portDarkBlue);
+--mat-sys-secondary: var(--portPurple);
+--mat-sys-surface-container-lowest: var(--portWhite);
+--mat-sys-surface-container-low: var(--portPaleGrey);
+--mat-sys-surface-container: var(--portLightGrey);
+--mat-sys-surface-container-high: var(--portLightGrey);
+--mat-sys-on-surface: var(--portBlack);
+--mat-sys-on-surface-variant: var(--portGrey);
+--mat-sys-outline: var(--portGrey);
+--mat-sys-outline-variant: var(--portLightGrey);
+--mat-sys-error: var(--portRed);
 }
 
 html,
 body {
-  height: 100%;
+height: 100%;
 }
 body {
-  margin: 0;
-  font-family: Roboto, 'Helvetica Neue', sans-serif;
+margin: 0;
+font-family: Roboto, 'Helvetica Neue', sans-serif;
 }
 
 /* Global Scroll Animation Utility */
 .reveal-on-scroll {
-  opacity: 0;
-  transform: translateY(40px);
-  transition:
-    opacity 0.8s cubic-bezier(0.165, 0.84, 0.44, 1),
-    transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
-  will-change: opacity, transform;
+opacity: 0;
+transform: translateY(40px);
+transition:
+opacity 0.8s cubic-bezier(0.165, 0.84, 0.44, 1),
+transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
+will-change: opacity, transform;
 
-  &.visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
+&.visible {
+opacity: 1;
+transform: translateY(0);
+}
 }
 
 /* Material Dialog Glassmorphic Panel Overrides */
 .glass-dialog-panel {
-  .mat-mdc-dialog-container {
-    padding: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    border-radius: 20px !important;
-    overflow: hidden !important;
+.mat-mdc-dialog-container {
+padding: 0 !important;
+background: transparent !important;
+box-shadow: none !important;
+border-radius: 20px !important;
+overflow: hidden !important;
 
-    .mdc-dialog__surface {
-      background: transparent !important;
-      box-shadow: none !important;
-      border-radius: 20px !important;
-      overflow: hidden !important;
-      padding: 0 !important;
-    }
+.mdc-dialog__surface {
+background: transparent !important;
+box-shadow: none !important;
+border-radius: 20px !important;
+overflow: hidden !important;
+padding: 0 !important;
+}
+}
+}
+
+
+:root {
+color-scheme: light;
+
+--font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+--radius: 0.625rem;
+--background: oklch(1 0 0);
+--foreground: oklch(0.145 0 0);
+--card: oklch(1 0 0);
+--card-foreground: oklch(0.145 0 0);
+--popover: oklch(1 0 0);
+--popover-foreground: oklch(0.145 0 0);
+--primary: oklch(0.205 0 0);
+--primary-foreground: oklch(0.985 0 0);
+--secondary: oklch(0.97 0 0);
+--secondary-foreground: oklch(0.205 0 0);
+--muted: oklch(0.97 0 0);
+--muted-foreground: oklch(0.556 0 0);
+--accent: oklch(0.97 0 0);
+--accent-foreground: oklch(0.205 0 0);
+--destructive: oklch(0.577 0.245 27.325);
+--border: oklch(0.922 0 0);
+--input: oklch(0.922 0 0);
+--ring: oklch(0.708 0 0);
+--sidebar: oklch(0.985 0 0);
+--sidebar-foreground: oklch(0.145 0 0);
+--sidebar-primary: oklch(0.205 0 0);
+--sidebar-primary-foreground: oklch(0.985 0 0);
+--sidebar-accent: oklch(0.97 0 0);
+--sidebar-accent-foreground: oklch(0.205 0 0);
+--sidebar-border: oklch(0.922 0 0);
+--sidebar-ring: oklch(0.708 0 0);
+}
+
+:root.dark {
+color-scheme: dark;
+
+--background: oklch(0.145 0 0);
+--foreground: oklch(0.985 0 0);
+--card: oklch(0.205 0 0);
+--card-foreground: oklch(0.985 0 0);
+--popover: oklch(0.205 0 0);
+--popover-foreground: oklch(0.985 0 0);
+--primary: oklch(0.922 0 0);
+--primary-foreground: oklch(0.205 0 0);
+--secondary: oklch(0.269 0 0);
+--secondary-foreground: oklch(0.985 0 0);
+--muted: oklch(0.269 0 0);
+--muted-foreground: oklch(0.708 0 0);
+--accent: oklch(0.269 0 0);
+--accent-foreground: oklch(0.985 0 0);
+--destructive: oklch(0.704 0.191 22.216);
+--border: oklch(1 0 0 / 10%);
+--input: oklch(1 0 0 / 15%);
+--ring: oklch(0.556 0 0);
+--sidebar: oklch(0.205 0 0);
+--sidebar-foreground: oklch(0.985 0 0);
+--sidebar-primary: oklch(0.985 0 0);
+--sidebar-primary-foreground: oklch(0.205 0 0);
+--sidebar-accent: oklch(0.269 0 0);
+--sidebar-accent-foreground: oklch(0.985 0 0);
+--sidebar-border: oklch(1 0 0 / 10%);
+--sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
   }
 }
