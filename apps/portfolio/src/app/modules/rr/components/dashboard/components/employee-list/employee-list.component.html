@@ -44,7 +44,7 @@
       <!-- Date of Birth Column -->
       <ng-container matColumnDef="dob">
         <th mat-header-cell *matHeaderCellDef> Date of Birth </th>
-        <td mat-cell *matCellDef="let emp"> {{ emp.dob }} </td>
+        <td mat-cell *matCellDef="let emp"> {{ emp.dob | date:'dd-MM-yyyy':'UTC' }} </td>
       </ng-container>
 
       <!-- Phone Column -->

@@ -851,8 +851,10 @@ export class RRBookingListComponent implements OnInit {
     const vehicleName = b.vehicleName || '____';
     const vehicleOdometerStart = b.vehicleOdometerStart || '____';
 
-    const pickupDateTime = b.pickupDateTime || '____';
-    const returnDateTime = b.returnDateTime || '____';
+    const rawPickupDateTime = b.pickupDateTime || '____';
+    const rawReturnDateTime = b.returnDateTime || '____';
+    const pickupDateTime = formatToIndianDate(rawPickupDateTime);
+    const returnDateTime = formatToIndianDate(rawReturnDateTime);
     const travelFrom = b.travelFrom || '____';
     const travelTo = b.travelTo || '____';
 
@@ -978,11 +980,11 @@ export class RRBookingListComponent implements OnInit {
     doc.text(`Address: ${guarAddress}`, 15, y);
     y += 10;
 
-    const pickupDate = pickupDateTime !== '____'
-      ? pickupDateTime.split('T')[0]
+    const pickupDate = rawPickupDateTime !== '____'
+      ? formatToIndianDate(rawPickupDateTime.split('T')[0])
       : '____';
-    const returnDate = returnDateTime !== '____'
-      ? returnDateTime.split('T')[0]
+    const returnDate = rawReturnDateTime !== '____'
+      ? formatToIndianDate(rawReturnDateTime.split('T')[0])
       : '____';
     const fullParagraph = `For my (Renter) need I hired your above-mentioned Vehicle for Self-Drive/Driver Assisted Car/Vehicle bearing registration number ${vehicleRegNo} from Dt. ${pickupDate} To Dt. ${returnDate} to travel from ${travelFrom} to ${travelTo}.`;
 
@@ -1049,3 +1051,27 @@ export class RRBookingListComponent implements OnInit {
     doc.save(`Agreement_${id}.pdf`);
   }
 }
+
+function formatToIndianDate(dateStr: string): string {
+  if (!dateStr || dateStr === '____' || dateStr === 'N/A') return dateStr;
+  
+  const separator = dateStr.includes('T') ? 'T' : dateStr.includes(' ') ? ' ' : null;
+  if (separator) {
+    const parts = dateStr.split(separator);
+    const datePart = parts[0];
+    const timePart = parts[1] || '';
+    const dateParts = datePart.split('-');
+    if (dateParts.length === 3 && dateParts[0].length === 4) {
+      const formattedDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
+      return timePart ? `${formattedDate} ${timePart}` : formattedDate;
+    }
+    return dateStr;
+  }
+
+  const parts = dateStr.split('-');
+  if (parts.length === 3 && parts[0].length === 4) {
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+  }
+  return dateStr;
+}
+
