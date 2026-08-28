@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { RRApiService } from '../../../../services/rr-api.service';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-rr-stats-view',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatIconModule],
+  imports: [CommonModule, MatCardModule, MatIconModule, MatTooltipModule],
   templateUrl: './stats-view.component.html',
   styleUrl: './stats-view.component.scss'
 })
