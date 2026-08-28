@@ -104,6 +104,9 @@
         <button mat-icon-button class="action-btn success" style="margin-right: 8px; border-radius: 50%;" [matTooltip]="'End Rental'" (click)="openEndBookingPopup(b)">
           <mat-icon style="font-size: 18px; width: 18px; height: 18px; vertical-align: middle;">event_busy</mat-icon>
         </button>
+        <button mat-icon-button class="action-btn" style="margin-right: 8px; border-radius: 50%;" [matTooltip]="'Print Agreement PDF'" (click)="printAgreementPDFFromObject(b)">
+          <mat-icon style="font-size: 18px; width: 18px; height: 18px; vertical-align: middle;">picture_as_pdf</mat-icon>
+        </button>
         <button mat-icon-button class="action-btn" style="border-radius: 50%;" [matTooltip]="'Modify Details'" (click)="openModifyBookingPopup(b)">
           <mat-icon style="font-size: 18px; width: 18px; height: 18px; vertical-align: middle;">edit</mat-icon>
         </button>
@@ -591,7 +594,7 @@
       <mat-icon>save</mat-icon>
       <span>Save Changes</span>
     </button>
-    <button mat-stroked-button class="action-btn" style="margin-right: 12px;" [disabled]="modifyBookingFormGroup.invalid" (click)="printAgreementPDFFromObject(modifyBookingFormGroup.value)">
+    <button mat-stroked-button class="action-btn" style="margin-right: 12px;" [disabled]="modifyBookingFormGroup.invalid" (click)="printAgreementPDFFromModifyForm()">
       <mat-icon>picture_as_pdf</mat-icon>
       <span>Print Agreement PDF</span>
     </button>
