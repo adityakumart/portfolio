@@ -1,8 +1,11 @@
 import { Router, Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcrypt';
+import multer from 'multer';
 import { authenticateRRToken, requireAdmin } from './rr.middleware';
 import { RRService, IEmployee, IVehicle, IBooking } from './rr.service';
+import { handleVehicleImageUpload } from './r2-storage.controller';
+import { R2Service } from '../../services/r2.service';
 
 const rrRouter = Router();
 const JWT_SECRET = process.env['JWT_SECRET'] || 'supersecretlocaljwtkey1234567890!';
@@ -110,6 +113,37 @@ rrRouter.post('/auth/login', async (req: Request, res: Response) => {
 /* ============================================================
    VEHICLES
 ============================================================ */
+
+// Multer storage and filter configuration for image files
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed.'));
+    }
+  }
+});
+
+// POST upload vehicle image (Authenticated)
+rrRouter.post(
+  '/vehicles/upload',
+  authenticateRRToken,
+  (req, res, next) => {
+    upload.single('image')(req, res, (err: any) => {
+      if (err) {
+        res.status(400).json({ error: 'Bad Request', message: err.message });
+      } else {
+        next();
+      }
+    });
+  },
+  handleVehicleImageUpload
+);
 
 // GET all vehicles (public so homepage can show them)
 rrRouter.get('/vehicles', async (req: Request, res: Response) => {
@@ -446,7 +480,7 @@ rrRouter.get('/dashboard/stats', authenticateRRToken, async (req: any, res: Resp
       vehCol.countDocuments({}),
       vehCol.countDocuments({ status: 'maintenance' }),
       bookingCol.countDocuments({ status: 'active' }),
-      bookingCol.countDocuments({ status: 'active', pendingAmount: { $nin: ['0', '', null] } })
+      bookingCol.countDocuments({ status: 'active', pendingAmount: { $nin: ['0', '', null] } } as any)
     ]);
 
     res.json({

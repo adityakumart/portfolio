@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal, computed, ViewChild, TemplateRef } f
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
 import { RRApiService } from '../../../../services/rr-api.service';
+import { HlmButton } from '@spartan-ng/hel/button';
 
 // Material Imports
 import { MatCardModule } from '@angular/material/card';
@@ -31,7 +32,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     MatButtonModule,
     MatIconModule,
     MatDialogModule,
-    MatTooltipModule
+    MatTooltipModule,
+    HlmButton
   ],
   templateUrl: './vehicle-list.component.html',
   styleUrl: './vehicle-list.component.scss'
@@ -60,6 +62,21 @@ export class RRVehicleListComponent implements OnInit {
   // Forms
   vehicleFormGroup!: FormGroup;
   vehicleImageInputUrl = '';
+
+  // File Upload State
+  isUploading = signal<boolean>(false);
+  uploadError = signal<string | null>(null);
+  selectedFileName = signal<string | null>(null);
+  uploadProgress = signal<number>(0);
+  previewUrl = signal<string | null>(null);
+
+  resetUploadState() {
+    this.isUploading.set(false);
+    this.uploadError.set(null);
+    this.selectedFileName.set(null);
+    this.uploadProgress.set(0);
+    this.previewUrl.set(null);
+  }
 
   ngOnInit() {
     this.initForms();
@@ -128,6 +145,7 @@ export class RRVehicleListComponent implements OnInit {
   openAddVehicleModal() {
     this.editingVehicleMode.set(false);
     this.vehicleImageInputUrl = '';
+    this.resetUploadState();
     this.vehicleFormGroup.reset({
       seating: '5',
       fuelType: 'Petrol',
@@ -146,6 +164,7 @@ export class RRVehicleListComponent implements OnInit {
 
     this.dialog.closeAll();
     this.editingVehicleMode.set(true);
+    this.resetUploadState();
 
     this.vehicleFormGroup.reset({
       regNo: v.regNo,
@@ -175,6 +194,10 @@ export class RRVehicleListComponent implements OnInit {
     });
 
     this.vehicleImageInputUrl = v.images && v.images.length > 0 ? v.images[0] : '';
+    if (this.vehicleImageInputUrl && !this.vehicleImageInputUrl.startsWith('assets/')) {
+      this.previewUrl.set(this.vehicleImageInputUrl);
+      this.selectedFileName.set('Current vehicle image');
+    }
     this.dialog.open(this.vehicleFormDialog, {
       width: '800px',
       maxWidth: '95vw',
@@ -226,5 +249,64 @@ export class RRVehicleListComponent implements OnInit {
       console.error(err);
       alert(err.error?.message || 'Error deleting vehicle.');
     }
+  }
+
+  async onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    const file = input.files[0];
+    
+    // File Validation: Limit to images only
+    if (!file.type.startsWith('image/')) {
+      this.uploadError.set('Only image files (PNG, JPG, JPEG, WEBP) are allowed.');
+      return;
+    }
+
+    // File Validation: Limit to 5MB
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      this.uploadError.set('File size exceeds the 5MB limit.');
+      return;
+    }
+
+    this.uploadError.set(null);
+    this.selectedFileName.set(file.name);
+
+    // Create a local object URL for instant preview
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.previewUrl.set(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    // Upload to server
+    try {
+      this.isUploading.set(true);
+      this.uploadProgress.set(20);
+      
+      const response = await this.rrApi.uploadVehicleImage(file);
+      
+      this.uploadProgress.set(100);
+      // Save the permanent URL in vehicleImageInputUrl (which gets sent in form payload)
+      this.vehicleImageInputUrl = response.url;
+      
+      // Update preview to use resolved URL
+      this.previewUrl.set(response.url);
+    } catch (err: any) {
+      console.error(err);
+      this.uploadError.set(err.error?.message || 'Failed to upload image. Please try again.');
+      this.previewUrl.set(null);
+      this.selectedFileName.set(null);
+    } finally {
+      this.isUploading.set(false);
+      // Reset input element value so same file can be selected again if cleared
+      input.value = '';
+    }
+  }
+
+  clearSelectedImage() {
+    this.resetUploadState();
+    this.vehicleImageInputUrl = '';
   }
 }

@@ -186,5 +186,24 @@ export class RRApiService {
       this.http.get<any>(`${this.baseUrl}/vehicles/${regNo}/availability`, { headers: this.getHeaders() })
     );
   }
+
+  async uploadVehicleImage(file: File): Promise<{ key: string; url: string }> {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    const token = this.getToken();
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    return firstValueFrom(
+      this.http.post<{ key: string; url: string }>(
+        `${this.baseUrl}/vehicles/upload`,
+        formData,
+        { headers }
+      )
+    );
+  }
 }
 

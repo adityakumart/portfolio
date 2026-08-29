@@ -128,10 +128,11 @@ export class R2Service {
     key: string,
     buffer: Buffer,
     contentType: string,
+    bucket?: string,
   ): Promise<void> {
     if (isR2Configured && s3Client) {
       const command = new PutObjectCommand({
-        Bucket: bucketName,
+        Bucket: bucket || bucketName,
         Key: key,
         Body: buffer,
         ContentType: contentType,
