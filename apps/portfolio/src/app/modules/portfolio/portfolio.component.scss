@@ -74,13 +74,13 @@
   }
 }
 
-.gateway-bolt {
+.theme-toggle-btn {
   position: fixed;
   top: 24px;
-  right: 24px;
+  right: 76px;
   z-index: 1000;
-  width: 48px !important;
-  height: 48px !important;
+  width: 40px !important;
+  height: 40px !important;
   border-radius: 50% !important;
   background: rgba(255, 255, 255, 0.15) !important;
   backdrop-filter: blur(12px);
@@ -94,14 +94,65 @@
   justify-content: center;
 
   mat-icon {
-    font-size: 24px;
-    width: 24px;
-    height: 24px;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  &:hover {
+    background: linear-gradient(
+      135deg,
+      var(--primary) 0%,
+      var(--color-sky-500) 100%
+    ) !important;
+    color: #ffffff !important;
+    border-color: transparent !important;
+    box-shadow: 0 0 20px rgba(147, 51, 234, 0.4);
+    transform: translateY(-2px);
+
+    mat-icon {
+      transform: rotate(360deg) scale(1.1);
+    }
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.gateway-bolt {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 1000;
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15);
+  color: var(--primary) !important;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
     transition: transform 0.3s ease;
   }
 
   &:hover {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--color-sky-500) 100%) !important;
+    background: linear-gradient(
+      135deg,
+      var(--primary) 0%,
+      var(--color-sky-500) 100%
+    ) !important;
     color: #ffffff !important;
     border-color: transparent !important;
     box-shadow: 0 0 20px rgba(147, 51, 234, 0.4);

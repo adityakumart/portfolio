@@ -1,6 +1,16 @@
 <div class="portfolio-page-wrapper">
   <button
     mat-icon-button
+    class="theme-toggle-btn"
+    (click)="toggleTheme()"
+    [matTooltip]="isDarkMode() ? 'Switch to Light Theme' : 'Switch to Dark Theme'"
+    matTooltipPosition="left"
+  >
+    <mat-icon>{{ isDarkMode() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+  </button>
+
+  <button
+    mat-icon-button
     class="gateway-bolt"
     routerLink="/user"
     matTooltip="Enter Dashboard"
