@@ -1,0 +1,1 @@
+import{Ia as i}from"./chunk-4J67J3VG.js";var o=(()=>{class e{_listeners=[];notify(t,r){for(let s of this._listeners)s(t,r)}listen(t){return this._listeners.push(t),()=>{this._listeners=this._listeners.filter(r=>t!==r)}}ngOnDestroy(){this._listeners=[]}static \u0275fac=function(r){return new(r||e)};static \u0275prov=i({token:e,factory:e.\u0275fac})}return e})();export{o as a};
