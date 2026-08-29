@@ -1,28 +1,26 @@
-<mat-sidenav-container class="app-layout">
+<div class="app-layout flex h-screen w-screen overflow-hidden bg-background text-foreground">
   <!-- Single Collapsible Sidebar (Fixed Width 72px) -->
-  <mat-sidenav mode="side" opened [disableClose]="true" class="single-sidebar">
+  <aside class="single-sidebar flex h-full w-[72px] flex-col border-r border-border bg-card p-4 select-none">
     <!-- Menu Scroller -->
-    <div class="menu-scroller">
-      <mat-nav-list class="menu-items-list">
+    <div class="menu-scroller flex-grow w-full flex flex-col items-center">
+      <nav class="menu-items-list flex flex-col gap-3 w-full">
         @for (item of menuItems(); track item.label) {
           <div
-            class="menu-item-block"
+            class="menu-item-block relative w-full"
             [class.hovered]="activeLevel0Item() === item"
             (mouseenter)="activeLevel0Item.set(item)"
             (mouseleave)="activeLevel0Item.set(null)"
           >
             <!-- Level 0: Top Menu Row (Icon Only) -->
             <div
-              class="menu-row"
+              class="menu-row flex items-center justify-center h-12 w-12 rounded-lg cursor-pointer transition-colors duration-200"
               [class.active]="isItemActive(item)"
               (click)="onItemClick(item)"
-              [matTooltip]="
-                item.children && item.children.length > 0 ? '' : item.label
-              "
-              matTooltipPosition="right"
+              [hlmTooltip]="item.children && item.children.length > 0 ? '' : item.label"
+              tooltipPosition="right"
             >
               @if (item.icon) {
-                <mat-icon class="row-icon">{{ item.icon }}</mat-icon>
+                <ng-icon [name]="item.icon" class="row-icon text-muted-foreground size-5 transition-colors duration-200" />
               }
             </div>
 
@@ -31,7 +29,7 @@
               <div class="submenu-panel">
                 @for (subItem of item.children; track subItem.label) {
                   <div
-                    class="sub-item-block"
+                    class="sub-item-block relative w-full"
                     [class.hovered]="activeLevel1Item() === subItem"
                     (mouseenter)="activeLevel1Item.set(subItem)"
                     (mouseleave)="activeLevel1Item.set(null)"
@@ -39,21 +37,17 @@
                     <!-- If subItem has children (nested level 2 list, e.g. tools under categories) -->
                     @if (subItem.children && subItem.children.length > 0) {
                       <div
-                        class="sub-row-header"
+                        class="sub-row-header flex items-center gap-2 h-9 px-3 rounded-md cursor-pointer transition-colors duration-200"
                         [class.active]="isItemActive(subItem)"
                         (click)="onItemClick(subItem)"
                       >
                         @if (subItem.icon) {
-                          <mat-icon class="sub-row-icon">{{
-                            subItem.icon
-                          }}</mat-icon>
+                          <ng-icon [name]="subItem.icon" class="sub-row-icon text-muted-foreground size-[18px] transition-colors duration-200" />
                         } @else {
-                          <span class="sub-row-icon">{{ subItem.label }}</span>
+                          <span class="sub-row-icon font-medium text-xs">{{ subItem.label.charAt(0) }}</span>
                         }
-                        <span class="sub-row-label">{{ subItem.label }}</span>
-                        <mat-icon class="sub-row-chevron"
-                          >chevron_right</mat-icon
-                        >
+                        <span class="sub-row-label text-sm text-foreground flex-grow truncate">{{ subItem.label }}</span>
+                        <ng-icon name="lucideChevronRight" class="sub-row-chevron text-muted-foreground size-4" />
                       </div>
 
                       <!-- Level 2 Sub-submenu Panel (Fly-out further to the right) -->
@@ -63,27 +57,25 @@
                           track leafItem.label
                         ) {
                           <div
-                            class="leaf-item-row"
+                            class="leaf-item-row flex items-center h-9 px-3 rounded-md cursor-pointer transition-colors duration-200"
                             [class.active]="isItemActive(leafItem)"
                             (click)="onItemClick(leafItem)"
                           >
-                            <span class="leaf-label">{{ leafItem.label }}</span>
+                            <span class="leaf-label text-sm text-muted-foreground truncate">{{ leafItem.label }}</span>
                           </div>
                         }
                       </div>
                     } @else {
                       <!-- Flat Level 1 Item with text and icon -->
                       <div
-                        class="leaf-item-row flat-level-1"
+                        class="leaf-item-row flat-level-1 flex items-center gap-2 h-9 px-3 rounded-md cursor-pointer transition-colors duration-200"
                         [class.active]="isItemActive(subItem)"
                         (click)="onItemClick(subItem)"
                       >
                         @if (subItem.icon) {
-                          <mat-icon class="leaf-icon">{{
-                            subItem.icon
-                          }}</mat-icon>
+                          <ng-icon [name]="subItem.icon" class="leaf-icon text-muted-foreground size-[18px] transition-colors duration-200" />
                         }
-                        <span class="leaf-label">{{ subItem.label }}</span>
+                        <span class="leaf-label text-sm text-foreground flex-grow truncate">{{ subItem.label }}</span>
                       </div>
                     }
                   </div>
@@ -92,56 +84,56 @@
             }
           </div>
         }
-      </mat-nav-list>
+      </nav>
     </div>
 
     <!-- Footer Settings & Account -->
-    <div class="sidebar-footer">
-      <div class="footer-actions">
+    <div class="sidebar-footer w-full mt-auto pt-3 border-t border-border flex flex-col items-center gap-3">
+      <div class="footer-actions flex flex-col items-center gap-3 w-full">
         <!-- Theme toggle -->
         <button
-          mat-icon-button
-          class="footer-btn"
+          hlmBtn
+          variant="ghost"
+          size="icon"
+          class="footer-btn text-muted-foreground hover:text-foreground hover:bg-muted size-9 rounded-full"
           (click)="toggleTheme()"
-          [matTooltip]="isDarkMode() ? 'Light Theme' : 'Dark Theme'"
-          matTooltipPosition="right"
+          [hlmTooltip]="isDarkMode() ? 'Light Theme' : 'Dark Theme'"
+          tooltipPosition="right"
         >
-          <mat-icon>{{ isDarkMode() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+          <ng-icon [name]="isDarkMode() ? 'lucideSun' : 'lucideMoon'" class="size-5" />
         </button>
 
         <!-- User account initials bubble -->
         <div
-          class="profile-bubble"
-          [matMenuTriggerFor]="accountMenu"
-          [matTooltip]="userName()"
-          matTooltipPosition="right"
+          class="profile-bubble cursor-pointer flex items-center justify-center rounded-full size-9 bg-muted hover:bg-muted/80 border border-border text-foreground font-semibold text-xs transition-colors"
+          [hlmDropdownMenuTrigger]="accountMenu"
+          [hlmTooltip]="userName()"
+          tooltipPosition="right"
         >
           {{ userInitials() }}
         </div>
       </div>
 
       <!-- Unified drop-down account action panel -->
-      <mat-menu
-        #accountMenu="matMenu"
-        xPosition="before"
-        yPosition="above"
-        class="user-dropdown-panel"
-      >
-        <div class="menu-user-header">
-          <div class="header-name">{{ userName() }}</div>
-          <div class="header-role">{{ userRole() }}</div>
-          <hr class="menu-divider" />
+      <ng-template #accountMenu>
+        <div hlmDropdownMenu class="w-56">
+          <div class="menu-user-header p-3 border-b border-border">
+            <div class="header-name font-semibold text-sm text-foreground">{{ userName() }}</div>
+            <div class="header-role text-xs text-muted-foreground mt-0.5">{{ userRole() }}</div>
+          </div>
+          <div class="p-1">
+            <button hlmDropdownMenuItem (click)="onLogout()">
+              <ng-icon name="lucideLogOut" class="size-4 mr-2 text-muted-foreground" />
+              <span>Sign Out</span>
+            </button>
+          </div>
         </div>
-        <button mat-menu-item (click)="onLogout()">
-          <mat-icon>logout</mat-icon>
-          <span>Sign Out</span>
-        </button>
-      </mat-menu>
+      </ng-template>
     </div>
-  </mat-sidenav>
+  </aside>
 
   <!-- Main View Area -->
-  <mat-sidenav-content class="app-main-viewport">
+  <main class="app-main-viewport flex-1 h-full overflow-y-auto">
     <ng-content></ng-content>
-  </mat-sidenav-content>
-</mat-sidenav-container>
+  </main>
+</div>

@@ -1,4 +1,4 @@
-$primary-gradient: linear-gradient(135deg, var(--portPurple) 0%, var(--portLightOrange) 100%);
+$primary-gradient: linear-gradient(135deg, var(--color-violet-500) 0%, var(--color-orange-400) 100%);
 
 .profile-menu-container {
   position: relative;
@@ -33,7 +33,7 @@ $primary-gradient: linear-gradient(135deg, var(--portPurple) 0%, var(--portLight
     width: 100%;
     height: 100%;
     background: #ffffff;
-    color: var(--portPurple);
+    color: var(--primary);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -42,7 +42,7 @@ $primary-gradient: linear-gradient(135deg, var(--portPurple) 0%, var(--portLight
     font-size: 0.95rem;
     transition: background-color 0.3s ease, color 0.3s ease;
 
-    :host-context(.dark-theme) & {
+    :host-context(.dark) & {
       background: #0f172a;
       color: #ffffff;
     }
@@ -68,7 +68,7 @@ $primary-gradient: linear-gradient(135deg, var(--portPurple) 0%, var(--portLight
   gap: 0.75rem;
   animation: dropdownFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 
-  :host-context(.dark-theme) & {
+  :host-context(.dark) & {
     background: rgba(15, 23, 42, 0.85);
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4),
@@ -109,7 +109,7 @@ $primary-gradient: linear-gradient(135deg, var(--portPurple) 0%, var(--portLight
       text-overflow: ellipsis;
       overflow: hidden;
 
-      :host-context(.dark-theme) & {
+      :host-context(.dark) & {
         color: #f1f5f9;
       }
     }
@@ -121,7 +121,7 @@ $primary-gradient: linear-gradient(135deg, var(--portPurple) 0%, var(--portLight
       text-overflow: ellipsis;
       overflow: hidden;
 
-      :host-context(.dark-theme) & {
+      :host-context(.dark) & {
         color: #94a3b8;
       }
     }
@@ -133,7 +133,7 @@ $primary-gradient: linear-gradient(135deg, var(--portPurple) 0%, var(--portLight
   background: rgba(0, 0, 0, 0.06);
   margin: 0.25rem 0;
 
-  :host-context(.dark-theme) & {
+  :host-context(.dark) & {
     background: rgba(255, 255, 255, 0.08);
   }
 }
@@ -151,7 +151,7 @@ $primary-gradient: linear-gradient(135deg, var(--portPurple) 0%, var(--portLight
     color: #64748b;
     margin-top: 2px;
 
-    :host-context(.dark-theme) & {
+    :host-context(.dark) & {
       color: #94a3b8;
     }
   }
@@ -168,7 +168,7 @@ $primary-gradient: linear-gradient(135deg, var(--portPurple) 0%, var(--portLight
       letter-spacing: 0.05em;
       color: #94a3b8;
 
-      :host-context(.dark-theme) & {
+      :host-context(.dark) & {
         color: #64748b;
       }
     }
@@ -178,7 +178,7 @@ $primary-gradient: linear-gradient(135deg, var(--portPurple) 0%, var(--portLight
       font-weight: 500;
       color: #334155;
 
-      :host-context(.dark-theme) & {
+      :host-context(.dark) & {
         color: #cbd5e1;
       }
     }
@@ -220,10 +220,10 @@ $primary-gradient: linear-gradient(135deg, var(--portPurple) 0%, var(--portLight
 
     &:hover {
       background: rgba(0, 0, 0, 0.04);
-      color: var(--portPurple);
+      color: var(--primary);
     }
 
-    :host-context(.dark-theme) & {
+    :host-context(.dark) & {
       color: #cbd5e1;
 
       &:hover {

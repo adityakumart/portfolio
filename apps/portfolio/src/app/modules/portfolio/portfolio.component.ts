@@ -24,6 +24,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { GlobalData } from '../../../shared/data/GlobalData';
+import { ThemeService } from '../../theme.service';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { HeroComponent } from './sub-components/hero/hero.component';
 import { SummaryComponent } from './sub-components/summary/summary.component';
@@ -62,6 +63,13 @@ export class PortfolioComponent implements OnDestroy, AfterViewInit {
   private el = inject(ElementRef);
   private platformId = inject(PLATFORM_ID);
   private globalData = inject(GlobalData);
+  private themeService = inject(ThemeService);
+
+  isDarkMode = computed(() => this.themeService.darkMode());
+
+  toggleTheme(): void {
+    this.themeService.toggleTheme();
+  }
   columnsMap = new Map([
     // [Breakpoints.XSmall, 1],
     // [Breakpoints.Small, 2],

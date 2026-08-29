@@ -1,6 +1,6 @@
 // login.component.scss
 
-$primary-gradient: linear-gradient(135deg, var(--portPurple) 0%, var(--portLightOrange) 100%);
+$primary-gradient: linear-gradient(135deg, var(--color-violet-500) 0%, var(--color-orange-400) 100%);
 $error-color: #ef4444;
 $success-color: #10b981;
 
@@ -38,7 +38,7 @@ $success-color: #10b981;
   }
 }
 
-:host-context(.dark-theme) {
+:host-context(.dark) {
   .glass-card {
     background: rgba(15, 23, 42, 0.45);
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -116,7 +116,7 @@ $success-color: #10b981;
   }
 }
 
-:host-context(.dark-theme) {
+:host-context(.dark) {
   .auth-header .subtitle {
     color: #94a3b8;
   }
@@ -132,7 +132,7 @@ $success-color: #10b981;
   margin: 1.5rem 0;
   border: 1px solid rgba(0, 0, 0, 0.02);
   
-  :host-context(.dark-theme) & {
+  :host-context(.dark) & {
     background: rgba(255, 255, 255, 0.04);
     border-color: rgba(255, 255, 255, 0.02);
   }
@@ -172,7 +172,7 @@ $success-color: #10b981;
     color: #ffffff;
   }
   
-  :host-context(.dark-theme) & {
+  :host-context(.dark) & {
     color: #94a3b8;
     
     &.active {
@@ -205,7 +205,7 @@ $success-color: #10b981;
     border: 1px solid rgba(239, 68, 68, 0.2);
     color: #dc2626;
 
-    :host-context(.dark-theme) & {
+    :host-context(.dark) & {
       background: rgba(239, 68, 68, 0.15);
       border-color: rgba(239, 68, 68, 0.25);
       color: #fca5a5;
@@ -217,7 +217,7 @@ $success-color: #10b981;
     border: 1px solid rgba(16, 185, 129, 0.2);
     color: #059669;
 
-    :host-context(.dark-theme) & {
+    :host-context(.dark) & {
       background: rgba(16, 185, 129, 0.15);
       border-color: rgba(16, 185, 129, 0.25);
       color: #a7f3d0;
@@ -253,7 +253,7 @@ $success-color: #10b981;
 
     &:hover .mat-mdc-form-field-icon-prefix,
     &.mat-form-field-focused .mat-mdc-form-field-icon-prefix {
-      color: var(--portPurple);
+      color: var(--primary);
     }
   }
 }
@@ -301,7 +301,7 @@ $success-color: #10b981;
     color: rgba(0, 0, 0, 0.26) !important;
     box-shadow: none !important;
 
-    :host-context(.dark-theme) & {
+    :host-context(.dark) & {
       background: rgba(255, 255, 255, 0.08) !important;
       color: rgba(255, 255, 255, 0.3) !important;
     }
@@ -331,7 +331,7 @@ $success-color: #10b981;
       font-size: 72px;
       width: 72px;
       height: 72px;
-      color: var(--portPurple);
+      color: var(--primary);
     }
   }
 
@@ -342,7 +342,7 @@ $success-color: #10b981;
     margin-bottom: 2rem;
   }
 
-  :host-context(.dark-theme) & {
+  :host-context(.dark) & {
     .email-display {
       color: #94a3b8;
     }
@@ -357,7 +357,7 @@ $success-color: #10b981;
   margin-bottom: 2rem;
   text-align: left;
   
-  :host-context(.dark-theme) & {
+  :host-context(.dark) & {
     background: rgba(255, 255, 255, 0.02);
     border-color: rgba(255, 255, 255, 0.04);
   }
@@ -371,7 +371,7 @@ $success-color: #10b981;
     &:not(:last-child) {
       border-bottom: 1px solid rgba(0, 0, 0, 0.04);
       
-      :host-context(.dark-theme) & {
+      :host-context(.dark) & {
         border-bottom-color: rgba(255, 255, 255, 0.05);
       }
     }
@@ -381,7 +381,7 @@ $success-color: #10b981;
       color: #64748b;
       font-weight: 500;
       
-      :host-context(.dark-theme) & {
+      :host-context(.dark) & {
         color: #94a3b8;
       }
     }
@@ -394,7 +394,7 @@ $success-color: #10b981;
       align-items: center;
       gap: 0.5rem;
       
-      :host-context(.dark-theme) & {
+      :host-context(.dark) & {
         color: #f1f5f9;
       }
 
@@ -459,7 +459,7 @@ $success-color: #10b981;
     color: #64748b;
     margin: 0;
     
-    :host-context(.dark-theme) & {
+    :host-context(.dark) & {
       color: #94a3b8;
     }
   }

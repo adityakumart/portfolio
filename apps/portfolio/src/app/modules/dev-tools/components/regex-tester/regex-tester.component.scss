@@ -29,7 +29,7 @@
     font-size: 32px;
     height: 32px;
     width: 32px;
-    color: var(--c-primary-color);
+    color: var(--primary);
   }
 
   h1 {
@@ -37,12 +37,12 @@
     font-weight: 700;
     margin: 0;
     letter-spacing: -0.5px;
-    color: var(--portBlack);
+    color: var(--foreground);
   }
 }
 
 .intro-text {
-  color: var(--portGrey, #7e92a4);
+  color: var(--muted-foreground);
   font-size: 15px;
   margin: 0 0 16px 0;
 }
@@ -60,9 +60,9 @@
 .config-card,
 .tester-card {
   border-radius: 16px;
-  border: 1px solid var(--portLightGrey, #eff3fe);
+  border: 1px solid var(--border);
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.02);
-  background: var(--portWhite, #ffffff);
+  background: var(--card);
   overflow: hidden;
   transition: transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
 
@@ -73,20 +73,20 @@
 
 .card-header {
   padding: 20px 24px;
-  border-bottom: 1px solid var(--portLightGrey, #eff3fe);
+  border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   gap: 12px;
 
   mat-icon {
-    color: var(--portPurple, #7d62ef);
+    color: var(--primary);
   }
 
   h2 {
     font-size: 18px;
     font-weight: 600;
     margin: 0;
-    color: var(--portBlack);
+    color: var(--foreground);
   }
 }
 
@@ -123,14 +123,14 @@
   .flags-label {
     font-size: 14px;
     font-weight: 600;
-    color: var(--portGrey, #7e92a4);
+    color: var(--muted-foreground);
   }
 
   .premium-toggle-group {
-    border: 1px solid var(--portLightGrey, #eff3fe);
+    border: 1px solid var(--border);
     border-radius: 8px;
     overflow: hidden;
-    background: var(--portPaleGrey, #f6f8ff);
+    background: var(--secondary);
     display: inline-flex;
 
     ::ng-deep .mat-button-toggle {
@@ -142,7 +142,7 @@
       background: transparent;
       border: none;
       transition: all 0.2s ease;
-      color: var(--portGrey, #7e92a4);
+      color: var(--muted-foreground);
 
       .mat-button-toggle-label-content {
         line-height: 34px;
@@ -151,7 +151,7 @@
       }
 
       &.mat-button-toggle-checked {
-        background: var(--portPurple, #7d62ef);
+        background: var(--primary);
         color: #ffffff;
       }
     }
@@ -183,8 +183,8 @@
 }
 
 .password-builder-panel {
-  background: var(--portPaleGrey, #f6f8ff);
-  border: 1px dashed var(--portGrey, #7e92a4);
+  background: var(--secondary);
+  border: 1px dashed var(--muted-foreground);
   border-radius: 12px;
   padding: 20px;
   display: flex;
@@ -196,7 +196,7 @@
     margin: 0;
     font-size: 15px;
     font-weight: 600;
-    color: var(--portPurple, #7d62ef);
+    color: var(--primary);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -222,17 +222,17 @@
 
   .instructions-note {
     font-size: 13px;
-    color: var(--portBlack, #354053);
+    color: var(--foreground);
     line-height: 1.5;
     background: rgba(125, 98, 239, 0.05);
     padding: 12px 14px;
     border-radius: 8px;
-    border-left: 3px solid var(--portPurple, #7d62ef);
+    border-left: 3px solid var(--primary);
 
     code {
       font-family: Consolas, Monaco, monospace;
       font-weight: 600;
-      color: var(--portRed, #ef5b5b);
+      color: #ef4444;
       background: rgba(0, 0, 0, 0.04);
       padding: 2px 5px;
       border-radius: 4px;
@@ -252,8 +252,8 @@
 }
 
 .explanation-block {
-  background: var(--portPaleGrey, #f6f8ff);
-  border-left: 4px solid var(--portPurple, #7d62ef);
+  background: var(--secondary);
+  border-left: 4px solid var(--primary);
   border-radius: 8px;
   padding: 16px;
   margin-top: 12px;
@@ -264,7 +264,7 @@
   .explanation-text {
     line-height: 1.6;
     font-size: 14.5px;
-    color: var(--portBlack, #354053);
+    color: var(--foreground);
     margin: 0;
     white-space: pre-line;
   }
@@ -274,13 +274,13 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  border-top: 1px solid var(--portLightGrey, #eff3fe);
+  border-top: 1px solid var(--border);
   padding-top: 12px;
 
   .breakdown-label {
     font-size: 13px;
     font-weight: 600;
-    color: var(--portGrey, #7e92a4);
+    color: var(--muted-foreground);
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
@@ -297,7 +297,7 @@
       width: 4px;
     }
     &::-webkit-scrollbar-thumb {
-      background: var(--portLightGrey, #eff3fe);
+      background: var(--border);
       border-radius: 2px;
     }
   }
@@ -307,8 +307,8 @@
     align-items: center;
     gap: 12px;
     padding: 6px 10px;
-    background: var(--portWhite, #ffffff);
-    border: 1px solid var(--portLightGrey, #eff3fe);
+    background: var(--card);
+    border: 1px solid var(--border);
     border-radius: 6px;
     transition: transform 0.2s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
 
@@ -351,15 +351,15 @@
       }
 
       &.literal {
-        color: var(--portGrey, #7e92a4);
-        background: var(--portPaleGrey, #f6f8ff);
-        border-color: var(--portLightGrey, #eff3fe);
+        color: var(--muted-foreground);
+        background: var(--secondary);
+        border-color: var(--border);
       }
     }
 
     .token-desc {
       font-size: 13px;
-      color: var(--portBlack, #354053);
+      color: var(--foreground);
       line-height: 1.4;
     }
   }
@@ -381,7 +381,7 @@
     margin: 0;
     font-size: 14px;
     font-weight: 600;
-    color: var(--portGrey, #7e92a4);
+    color: var(--muted-foreground);
     text-transform: uppercase;
   }
 
@@ -393,12 +393,12 @@
 
     &.valid {
       background: rgba(45, 206, 152, 0.1);
-      color: var(--portLightGreen, #2dce98);
+      color: #10b981;
     }
 
     &.invalid {
       background: rgba(239, 91, 91, 0.1);
-      color: var(--portRed, #ef5b5b);
+      color: #f43f5e;
     }
   }
 }
@@ -407,13 +407,13 @@
   position: relative;
   width: 100%;
   height: 250px;
-  border: 1px solid var(--portLightGrey, #eff3fe);
+  border: 1px solid var(--border);
   border-radius: 8px;
-  background: var(--portPaleGrey, #f6f8ff);
+  background: var(--secondary);
   overflow: hidden;
 
   &:focus-within {
-    border-color: var(--portPurple, #7d62ef);
+    border-color: var(--primary);
     box-shadow: 0 0 0 2px rgba(125, 98, 239, 0.15);
   }
 }
@@ -443,26 +443,26 @@
   @extend %editor-layer-shared;
   z-index: 2;
   color: transparent;
-  caret-color: var(--portBlack, #354053);
+  caret-color: var(--foreground);
   resize: none;
   outline: none;
 
   &::placeholder {
-    color: var(--portGrey, #7e92a4);
-    -webkit-text-fill-color: var(--portGrey, #7e92a4);
+    color: var(--muted-foreground);
+    -webkit-text-fill-color: var(--muted-foreground);
   }
 }
 
 .editor-highlight {
   @extend %editor-layer-shared;
   z-index: 1;
-  color: var(--portBlack, #354053);
+  color: var(--foreground);
   pointer-events: none;
   overflow: hidden;
 }
 
 ::ng-deep .regex-line-match {
-  color: var(--portGreen, #26be77);
+  color: #10b981;
   background-color: rgba(45, 206, 152, 0.08);
   display: block;
   width: calc(100% + 32px);
@@ -472,7 +472,7 @@
 }
 
 ::ng-deep .regex-line-no-match {
-  color: var(--portRed, #ef5b5b);
+  color: #ef4444;
   background-color: rgba(239, 91, 91, 0.04);
   display: block;
   width: calc(100% + 32px);
@@ -491,12 +491,12 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--portRed, #ef5b5b);
+  color: #ef4444;
   font-size: 13px;
   background: rgba(239, 91, 91, 0.05);
   padding: 10px 12px;
   border-radius: 6px;
-  border-left: 3px solid var(--portRed, #ef5b5b);
+  border-left: 3px solid #ef4444;
   margin-top: 8px;
 
   mat-icon {
