@@ -99,6 +99,8 @@ export class RRBookingListComponent implements OnInit {
   selectedBookingToEnd = signal<any | null>(null);
   selectedBookingToModify = signal<any | null>(null);
 
+  overrideOdometer = false;
+
   // Forms
   bookingFormGroup!: FormGroup;
   modifyBookingFormGroup!: FormGroup;
@@ -152,7 +154,7 @@ export class RRBookingListComponent implements OnInit {
       vehicleName: [''],
       vehicleManufacturer: [''],
       vehicleModel: [''],
-      vehicleOdometerStart: [''],
+      vehicleOdometerStart: ['', [Validators.required, Validators.min(0)]],
       extraKmPrice: [''],
       extraHourPrice: [''],
 
@@ -226,7 +228,7 @@ export class RRBookingListComponent implements OnInit {
       // Financials
       totalRentalAmount: ['0'],
       discount: ['0'],
-      discountType: ['rupee'],
+      discountType: ['none'],
       finalRentalAmount: ['0'],
       amountPaid: ['0', [Validators.required, Validators.min(0)]],
       pendingAmount: ['0'],
@@ -247,7 +249,7 @@ export class RRBookingListComponent implements OnInit {
       returnDateTime: [''],
       totalRentalAmount: ['0'],
       discount: ['0'],
-      discountType: ['rupee'],
+      discountType: ['none'],
       finalRentalAmount: ['0'],
       amountPaid: ['0', [Validators.required, Validators.min(0)]],
       pendingAmount: ['0'],
@@ -340,6 +342,7 @@ export class RRBookingListComponent implements OnInit {
     const regNo = this.bookingFormGroup.get('vehicleRegNo')?.value;
     const selected = this.vehicles().find((v) => v.regNo === regNo);
     this.selectedVehicle.set(selected || null);
+    this.overrideOdometer = false;
 
     if (selected) {
       this.bookingFormGroup.patchValue({
@@ -498,31 +501,66 @@ export class RRBookingListComponent implements OnInit {
     return totalKm;
   }
 
+  onOverrideOdometerChange(checked: boolean) {
+    this.overrideOdometer = checked;
+    if (!checked) {
+      const selected = this.selectedVehicle();
+      this.bookingFormGroup.patchValue({
+        vehicleOdometerStart: selected ? selected.odometer : ''
+      });
+    }
+  }
+
   recalculateFinalAmount() {
     const total =
       Number(this.bookingFormGroup.get('totalRentalAmount')?.value) || 0;
+    const discountType = this.bookingFormGroup.get('discountType')?.value || 'none';
+
+    if (discountType === 'none') {
+      this.bookingFormGroup.get('discount')?.setValue('0', { emitEvent: false });
+    }
+
     const discountVal =
       Number(this.bookingFormGroup.get('discount')?.value) || 0;
     const paid = Number(this.bookingFormGroup.get('amountPaid')?.value) || 0;
-    const discountType = this.bookingFormGroup.get('discountType')?.value;
 
     let finalRent = total;
-    if (discountVal > 0) {
+    if (discountVal > 0 && discountType !== 'none') {
       if (discountType === 'percentage') {
         finalRent = total - (total * discountVal) / 100;
-      } else {
+      } else if (discountType === 'rupee' || discountType === 'rupees') {
         finalRent = total - discountVal;
       }
     }
+    finalRent = Math.max(0, finalRent);
 
     this.bookingFormGroup.patchValue({
-      finalRentalAmount: String(Math.max(0, finalRent)),
-      pendingAmount: String(Math.max(0, finalRent - paid)),
-    });
+      finalRentalAmount: String(finalRent),
+      pendingAmount: String(finalRent - paid),
+    }, { emitEvent: false });
+
+    // Dynamic validations for Discount field
+    const discountCtrl = this.bookingFormGroup.get('discount');
+    discountCtrl?.clearValidators();
+    if (discountType === 'percentage') {
+      discountCtrl?.setValidators([Validators.required, Validators.min(0), Validators.max(100)]);
+    } else if (discountType === 'rupee' || discountType === 'rupees') {
+      discountCtrl?.setValidators([Validators.required, Validators.min(0), Validators.max(total)]);
+    } else {
+      discountCtrl?.setValidators([Validators.min(0), Validators.max(0)]);
+    }
+    discountCtrl?.updateValueAndValidity({ emitEvent: false });
+
+    // Dynamic validations for Advance amount
+    const paidCtrl = this.bookingFormGroup.get('amountPaid');
+    paidCtrl?.clearValidators();
+    paidCtrl?.setValidators([Validators.required, Validators.min(0)]);
+    paidCtrl?.updateValueAndValidity({ emitEvent: false });
   }
 
   resetBookingForm() {
     this.selectedVehicle.set(null);
+    this.overrideOdometer = false;
     if (this.bookingFormGroup) {
       this.bookingFormGroup.reset({
         durationDays: '0',
@@ -530,7 +568,7 @@ export class RRBookingListComponent implements OnInit {
         depositType: 'none',
         totalRentalAmount: '0',
         discount: '0',
-        discountType: 'rupee',
+        discountType: 'none',
         finalRentalAmount: '0',
         amountPaid: '0',
         pendingAmount: '0',
@@ -683,12 +721,13 @@ export class RRBookingListComponent implements OnInit {
       returnDateTime: booking.returnDateTime,
       totalRentalAmount: booking.totalRentalAmount,
       discount: booking.discount || '0',
-      discountType: booking.discountType || 'rupee',
+      discountType: booking.discountType || 'none',
       finalRentalAmount: booking.finalRentalAmount,
       amountPaid: booking.amountPaid || '0',
       pendingAmount: booking.pendingAmount || '0',
       totalKmLimit: booking.totalKmLimit,
     });
+    this.recalculateModifyFinalAmount();
     this.dialog.open(this.modifyBookingDialog, {
       width: '800px',
       maxWidth: '95vw',
@@ -767,25 +806,49 @@ export class RRBookingListComponent implements OnInit {
   recalculateModifyFinalAmount() {
     const total =
       Number(this.modifyBookingFormGroup.get('totalRentalAmount')?.value) || 0;
+    const discountType = this.modifyBookingFormGroup.get('discountType')?.value || 'none';
+
+    if (discountType === 'none') {
+      this.modifyBookingFormGroup.get('discount')?.setValue('0', { emitEvent: false });
+    }
+
     const discountVal =
       Number(this.modifyBookingFormGroup.get('discount')?.value) || 0;
     const paid =
       Number(this.modifyBookingFormGroup.get('amountPaid')?.value) || 0;
-    const discountType = this.modifyBookingFormGroup.get('discountType')?.value;
 
     let finalRent = total;
-    if (discountVal > 0) {
+    if (discountVal > 0 && discountType !== 'none') {
       if (discountType === 'percentage') {
         finalRent = total - (total * discountVal) / 100;
-      } else {
+      } else if (discountType === 'rupee' || discountType === 'rupees') {
         finalRent = total - discountVal;
       }
     }
+    finalRent = Math.max(0, finalRent);
 
     this.modifyBookingFormGroup.patchValue({
-      finalRentalAmount: String(Math.max(0, finalRent)),
-      pendingAmount: String(Math.max(0, finalRent - paid)),
-    });
+      finalRentalAmount: String(finalRent),
+      pendingAmount: String(finalRent - paid),
+    }, { emitEvent: false });
+
+    // Dynamic validations for Discount field in modification
+    const discountCtrl = this.modifyBookingFormGroup.get('discount');
+    discountCtrl?.clearValidators();
+    if (discountType === 'percentage') {
+      discountCtrl?.setValidators([Validators.required, Validators.min(0), Validators.max(100)]);
+    } else if (discountType === 'rupee' || discountType === 'rupees') {
+      discountCtrl?.setValidators([Validators.required, Validators.min(0), Validators.max(total)]);
+    } else {
+      discountCtrl?.setValidators([Validators.min(0), Validators.max(0)]);
+    }
+    discountCtrl?.updateValueAndValidity({ emitEvent: false });
+
+    // Dynamic validations for Advance amount in modification
+    const paidCtrl = this.modifyBookingFormGroup.get('amountPaid');
+    paidCtrl?.clearValidators();
+    paidCtrl?.setValidators([Validators.required, Validators.min(0)]);
+    paidCtrl?.updateValueAndValidity({ emitEvent: false });
   }
 
   async submitModifyBooking() {

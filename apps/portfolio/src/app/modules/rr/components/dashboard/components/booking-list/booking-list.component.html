@@ -198,10 +198,18 @@
               <input matInput formControlName="totalKmLimit" readonly />
             </mat-form-field>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Odometer Pickup Reading (Auto)</mat-label>
-              <input matInput [value]="selectedVehicle()?.odometer || ''" readonly disabled />
-            </mat-form-field>
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <mat-form-field appearance="outline" style="width: 100%; margin-bottom: 0;">
+                <mat-label>Odometer Pickup Reading</mat-label>
+                <input matInput type="number" formControlName="vehicleOdometerStart" [readonly]="!overrideOdometer" />
+                @if (bookingFormGroup.get('vehicleOdometerStart')?.invalid && bookingFormGroup.get('vehicleOdometerStart')?.touched) {
+                  <mat-error>Must be positive number.</mat-error>
+                }
+              </mat-form-field>
+              <mat-checkbox [checked]="overrideOdometer" (change)="onOverrideOdometerChange($event.checked)" style="margin-bottom: 12px; margin-top: -4px;">
+                Override Odometer
+              </mat-checkbox>
+            </div>
 
             <mat-form-field appearance="outline">
               <mat-label>Travel Purpose</mat-label>
@@ -422,16 +430,26 @@
               </mat-form-field>
 
               <mat-form-field appearance="outline">
-                <mat-label>Discount</mat-label>
-                <input matInput type="number" formControlName="discount" (input)="recalculateFinalAmount()" />
-              </mat-form-field>
-
-              <mat-form-field appearance="outline">
                 <mat-label>Discount Type</mat-label>
                 <mat-select formControlName="discountType" (selectionChange)="recalculateFinalAmount()">
+                  <mat-option value="none">None</mat-option>
                   <mat-option value="rupee">Rupee (Rs.)</mat-option>
                   <mat-option value="percentage">Percentage (%)</mat-option>
                 </mat-select>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Discount</mat-label>
+                <input matInput type="number" formControlName="discount" (input)="recalculateFinalAmount()" (change)="recalculateFinalAmount()" [readonly]="bookingFormGroup.get('discountType')?.value === 'none'" />
+                @if (bookingFormGroup.get('discount')?.touched && bookingFormGroup.get('discount')?.hasError('max') && bookingFormGroup.get('discountType')?.value === 'percentage') {
+                  <mat-error>Discount cannot exceed 100%.</mat-error>
+                }
+                @if (bookingFormGroup.get('discount')?.touched && bookingFormGroup.get('discount')?.hasError('max') && bookingFormGroup.get('discountType')?.value !== 'percentage') {
+                  <mat-error>Discount cannot exceed total rental amount.</mat-error>
+                }
+                @if (bookingFormGroup.get('discount')?.touched && bookingFormGroup.get('discount')?.hasError('min')) {
+                  <mat-error>Invalid discount value.</mat-error>
+                }
               </mat-form-field>
 
               <mat-form-field appearance="outline">
@@ -441,7 +459,7 @@
 
               <mat-form-field appearance="outline">
                 <mat-label>Advance Amount Paid (Rs.)</mat-label>
-                <input matInput type="number" formControlName="amountPaid" (input)="recalculateFinalAmount()" />
+                <input matInput type="number" formControlName="amountPaid" (input)="recalculateFinalAmount()" (change)="recalculateFinalAmount()" />
                 @if (bookingFormGroup.get('amountPaid')?.invalid && bookingFormGroup.get('amountPaid')?.touched) {
                   <mat-error>Must be positive number.</mat-error>
                 }
@@ -451,6 +469,12 @@
                 <mat-label>Balance Pending Amount (Rs. Auto)</mat-label>
                 <input matInput formControlName="pendingAmount" readonly />
               </mat-form-field>
+              @if (bookingFormGroup.get('pendingAmount')?.value && bookingFormGroup.get('pendingAmount')?.value.startsWith('-')) {
+                <div style="color: #d97706; font-size: 0.85rem; margin-top: -8px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; grid-column: 1 / -1; background: rgba(217, 119, 6, 0.08); padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(217, 119, 6, 0.15);">
+                  <mat-icon style="font-size: 18px; width: 18px; height: 18px; color: #d97706; margin-right: 2px;">warning</mat-icon>
+                  <span><strong>Warning:</strong> Excess advance amount paid. Refund/credit of Rs. {{ bookingFormGroup.get('pendingAmount')?.value.replace('-', '') }} is pending.</span>
+                </div>
+              }
 
               <mat-form-field appearance="outline">
                 <mat-label>Payment Mode</mat-label>
@@ -563,16 +587,26 @@
         </mat-form-field>
 
         <mat-form-field appearance="outline">
-          <mat-label>Discount Amount</mat-label>
-          <input matInput type="number" formControlName="discount" (input)="recalculateModifyFinalAmount()" />
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
           <mat-label>Discount Type</mat-label>
           <mat-select formControlName="discountType" (selectionChange)="recalculateModifyFinalAmount()">
+            <mat-option value="none">None</mat-option>
             <mat-option value="rupee">Rupee (Rs.)</mat-option>
             <mat-option value="percentage">Percentage (%)</mat-option>
           </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Discount Amount</mat-label>
+          <input matInput type="number" formControlName="discount" (input)="recalculateModifyFinalAmount()" (change)="recalculateModifyFinalAmount()" [readonly]="modifyBookingFormGroup.get('discountType')?.value === 'none'" />
+          @if (modifyBookingFormGroup.get('discount')?.touched && modifyBookingFormGroup.get('discount')?.hasError('max') && modifyBookingFormGroup.get('discountType')?.value === 'percentage') {
+            <mat-error>Discount cannot exceed 100%.</mat-error>
+          }
+          @if (modifyBookingFormGroup.get('discount')?.touched && modifyBookingFormGroup.get('discount')?.hasError('max') && modifyBookingFormGroup.get('discountType')?.value !== 'percentage') {
+            <mat-error>Discount cannot exceed total rental amount.</mat-error>
+          }
+          @if (modifyBookingFormGroup.get('discount')?.touched && modifyBookingFormGroup.get('discount')?.hasError('min')) {
+            <mat-error>Invalid discount value.</mat-error>
+          }
         </mat-form-field>
 
         <mat-form-field appearance="outline">
@@ -582,13 +616,22 @@
 
         <mat-form-field appearance="outline">
           <mat-label>Amount Already Paid (Rs.)</mat-label>
-          <input matInput type="number" formControlName="amountPaid" (input)="recalculateModifyFinalAmount()" />
+          <input matInput type="number" formControlName="amountPaid" (input)="recalculateModifyFinalAmount()" (change)="recalculateModifyFinalAmount()" />
+          @if (modifyBookingFormGroup.get('amountPaid')?.invalid && modifyBookingFormGroup.get('amountPaid')?.touched) {
+            <mat-error>Must be positive number.</mat-error>
+          }
         </mat-form-field>
 
         <mat-form-field appearance="outline">
           <mat-label>Balance Pending Amount (Rs. Auto)</mat-label>
           <input matInput formControlName="pendingAmount" readonly />
         </mat-form-field>
+        @if (modifyBookingFormGroup.get('pendingAmount')?.value && modifyBookingFormGroup.get('pendingAmount')?.value.startsWith('-')) {
+          <div style="color: #d97706; font-size: 0.85rem; margin-top: -8px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; grid-column: 1 / -1; background: rgba(217, 119, 6, 0.08); padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(217, 119, 6, 0.15);">
+            <mat-icon style="font-size: 18px; width: 18px; height: 18px; color: #d97706; margin-right: 2px;">warning</mat-icon>
+            <span><strong>Warning:</strong> Excess advance amount paid. Refund/credit of Rs. {{ modifyBookingFormGroup.get('pendingAmount')?.value.replace('-', '') }} is pending.</span>
+          </div>
+        }
       </div>
     </form>
   </mat-dialog-content>
