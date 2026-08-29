@@ -24,14 +24,14 @@
 <div class="logs-scroll">
   @for (log of logs(); track log._id) {
     <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-      <span style="color: var(--rr-accent); font-weight: 700;">[{{ log.time }}]</span>
+      <span style="color: var(--color-cyan-500); font-weight: 700;">[{{ log.time }}]</span>
       <span class="badge" [class]="log.role === 'admin' ? 'status-active' : 'status-available'" style="padding: 2px 8px; font-size: 10px;">{{ log.role | uppercase }}</span>
-      <span style="font-weight: 700; color: var(--rr-text);">{{ log.performedBy }}</span>
-      <span style="color: var(--rr-text-muted);">—</span>
-      <span style="color: var(--rr-text); font-weight: 550;">{{ log.action }}</span>
+      <span style="font-weight: 700; color: var(--foreground);">{{ log.performedBy }}</span>
+      <span style="color: var(--muted-foreground);">—</span>
+      <span style="color: var(--foreground); font-weight: 550;">{{ log.action }}</span>
     </div>
   } @empty {
-    <div style="text-align: center; color: var(--rr-text-muted); padding: 24px 0;">
+    <div style="text-align: center; color: var(--muted-foreground); padding: 24px 0;">
       <mat-icon style="font-size: 32px; width: 32px; height: 32px; display: block; margin: 0 auto 8px auto;">sync_problem</mat-icon>
       <p style="margin: 0;">No activity logs found matching the criteria.</p>
     </div>

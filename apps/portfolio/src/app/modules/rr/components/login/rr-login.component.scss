@@ -6,7 +6,7 @@ $success-color: #10b981;
   grid-template-columns: 1fr 1fr;
   min-height: 100vh;
   width: 100%;
-  background: var(--rr-bg);
+  background: var(--background);
   transition: background 0.4s ease;
 }
 
@@ -22,7 +22,7 @@ $success-color: #10b981;
   position: relative;
   overflow: hidden;
   box-sizing: border-box;
-  border-right: 1px solid var(--rr-border-color);
+  border-right: 1px solid var(--border);
 
   .visual-pane-overlay {
     position: absolute;
@@ -48,7 +48,7 @@ $success-color: #10b981;
     border-radius: 30px;
     font-size: 0.75rem;
     font-weight: 700;
-    color: var(--rr-accent);
+    color: var(--color-cyan-500);
     letter-spacing: 0.05em;
     text-transform: uppercase;
     display: inline-flex;
@@ -102,7 +102,7 @@ $success-color: #10b981;
     font-family: 'Montserrat', sans-serif;
     font-size: 1.85rem;
     font-weight: 900;
-    color: var(--rr-accent);
+    color: var(--color-cyan-500);
   }
 
   .p-lbl {
@@ -126,7 +126,7 @@ $success-color: #10b981;
   .quote-icon {
     font-family: 'Montserrat', sans-serif;
     font-size: 3rem;
-    color: var(--rr-accent);
+    color: var(--color-cyan-500);
     opacity: 0.3;
     position: absolute;
     top: 5px;
@@ -154,7 +154,7 @@ $success-color: #10b981;
     .author-dot {
       width: 6px;
       height: 6px;
-      background: var(--rr-accent);
+      background: var(--color-cyan-500);
       border-radius: 50%;
     }
 
@@ -186,7 +186,7 @@ $success-color: #10b981;
     opacity: 0.1;
     z-index: 1;
     
-    :host-context(.dark-theme) & {
+    :host-context(.dark) & {
       opacity: 0.2;
     }
   }
@@ -194,7 +194,7 @@ $success-color: #10b981;
   .auth-decor-glow-1 {
     width: 300px;
     height: 300px;
-    background: var(--rr-accent);
+    background: var(--color-cyan-500);
     top: -50px;
     right: -50px;
   }
@@ -211,12 +211,12 @@ $success-color: #10b981;
 .glass-card {
   width: 100%;
   max-width: 420px;
-  background: var(--rr-card-bg);
-  backdrop-filter: var(--rr-glass-blur);
-  -webkit-backdrop-filter: var(--rr-glass-blur);
-  border: 1px solid var(--rr-border-color);
+  background: var(--card);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid var(--border);
   border-radius: 24px;
-  box-shadow: var(--rr-card-shadow), 
+  box-shadow: 0 8px 32px 0 color-mix(in srgb, var(--foreground) 6%, transparent), 
               0 1px 3px 0 rgba(255, 255, 255, 0.05) inset;
   padding: 2.5rem;
   box-sizing: border-box;
@@ -227,7 +227,7 @@ $success-color: #10b981;
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: var(--rr-card-hover-shadow), 
+    box-shadow: 0 12px 40px 0 color-mix(in srgb, var(--foreground) 15%, transparent), 
                 0 1px 3px 0 rgba(255, 255, 255, 0.1) inset;
   }
 }
@@ -243,7 +243,7 @@ $success-color: #10b981;
     width: 64px;
     height: 64px;
     border-radius: 18px;
-    background: var(--rr-accent-gradient);
+    background: linear-gradient(135deg, var(--color-cyan-400) 0%, var(--color-blue-600) 100%);
     margin-bottom: 1.25rem;
     box-shadow: 0 8px 24px rgba(6, 182, 212, 0.25);
     position: relative;
@@ -264,7 +264,7 @@ $success-color: #10b981;
     font-weight: 800;
     letter-spacing: -0.025em;
     margin-bottom: 6px;
-    background: var(--rr-accent-gradient);
+    background: linear-gradient(135deg, var(--color-cyan-400) 0%, var(--color-blue-600) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
@@ -272,7 +272,7 @@ $success-color: #10b981;
   .subtitle {
     font-size: 0.875rem;
     line-height: 1.5;
-    color: var(--rr-text-muted);
+    color: var(--muted-foreground);
     font-weight: 500;
     margin: 0;
   }
@@ -284,10 +284,10 @@ $success-color: #10b981;
   border-radius: 30px;
   padding: 4px;
   margin: 1.5rem 0;
-  border: 1px solid var(--rr-border-color);
+  border: 1px solid var(--border);
   gap: 4px;
   
-  :host-context(.dark-theme) & {
+  :host-context(.dark) & {
     background: rgba(255, 255, 255, 0.02);
   }
 }
@@ -299,7 +299,7 @@ $success-color: #10b981;
   padding: 10px;
   font-weight: 700;
   font-size: 0.85rem;
-  color: var(--rr-text-muted);
+  color: var(--muted-foreground);
   cursor: pointer;
   z-index: 2;
   transition: all 0.3s ease;
@@ -307,14 +307,14 @@ $success-color: #10b981;
   outline: none;
   
   &.active {
-    background: var(--rr-btn-bg);
-    color: var(--rr-header-text);
+    background: var(--background);
+    color: var(--foreground);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   }
   
-  :host-context(.dark-theme) & {
+  :host-context(.dark) & {
     &.active {
-      background: var(--rr-accent-gradient);
+      background: linear-gradient(135deg, var(--color-cyan-400) 0%, var(--color-blue-600) 100%);
       color: #ffffff;
       box-shadow: 0 4px 12px rgba(6, 182, 212, 0.25);
     }
@@ -344,7 +344,7 @@ $success-color: #10b981;
     border: 1px solid rgba(239, 68, 68, 0.15);
     color: #dc2626;
 
-    :host-context(.dark-theme) & {
+    :host-context(.dark) & {
       background: rgba(239, 68, 68, 0.12);
       border-color: rgba(239, 68, 68, 0.2);
       color: #fca5a5;
@@ -356,7 +356,7 @@ $success-color: #10b981;
     border: 1px solid rgba(16, 185, 129, 0.15);
     color: #059669;
 
-    :host-context(.dark-theme) & {
+    :host-context(.dark) & {
       background: rgba(16, 185, 129, 0.12);
       border-color: rgba(16, 185, 129, 0.2);
       color: #a7f3d0;
@@ -379,12 +379,12 @@ $success-color: #10b981;
     --mdc-outlined-text-field-container-shape: 12px;
     
     .mat-mdc-form-field-icon-prefix {
-      color: var(--rr-text-muted);
+      color: var(--muted-foreground);
       margin-right: 8px;
     }
     
     .mat-mdc-form-field-icon-suffix button {
-      color: var(--rr-text-muted);
+      color: var(--muted-foreground);
     }
   }
 }
@@ -395,7 +395,7 @@ $success-color: #10b981;
   border-radius: 12px !important;
   font-weight: 700 !important;
   font-size: 0.9rem !important;
-  background: var(--rr-accent-gradient) !important;
+  background: linear-gradient(135deg, var(--color-cyan-400) 0%, var(--color-blue-600) 100%) !important;
   color: #ffffff !important;
   box-shadow: 0 6px 16px rgba(6, 182, 212, 0.2) !important;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
@@ -407,10 +407,10 @@ $success-color: #10b981;
 
   &[disabled] {
     background: rgba(0, 0, 0, 0.08) !important;
-    color: var(--rr-text-muted) !important;
+    color: var(--muted-foreground) !important;
     box-shadow: none !important;
 
-    :host-context(.dark-theme) & {
+    :host-context(.dark) & {
       background: rgba(255, 255, 255, 0.08) !important;
       color: rgba(255, 255, 255, 0.3) !important;
     }
@@ -436,14 +436,14 @@ $success-color: #10b981;
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    color: var(--rr-text-muted);
+    color: var(--muted-foreground);
     text-decoration: none;
     font-weight: 600;
     font-size: 0.85rem;
     transition: all 0.25s ease;
 
     &:hover {
-      color: var(--rr-accent);
+      color: var(--color-cyan-500);
       transform: translateX(-2px);
     }
 

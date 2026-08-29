@@ -47,128 +47,17 @@
 
 // Apply the core structural styles (typography, etc.) for all components.
 // We only need to do this once.
-@include mat.core-theme(themes.$dark-theme);
+@include mat.core-theme(themes.$light-theme);
 
-// DEFAULT THEME (Dark)
+// DEFAULT THEME (Light)
 // Apply the color styles for all Angular Material components.
-@include mat.all-component-themes(themes.$dark-theme);
+@include mat.all-component-themes(themes.$light-theme);
 
-// LIGHT THEME OVERRIDE
-// When the `.light-theme` class is applied to a parent element (e.g., body),
-// it will override the default dark theme colors for all components inside.
-.light-theme {
-@include mat.all-component-colors(themes.$light-theme);
-
-/* Light Theme Custom Properties */
---portRed: #ef5b5b;
---portLightRed: #f95f6f;
---portBlue: #5838ff;
---portSkyBlue: #529fe1;
---portPaleBlue: #f1f8ff;
---portDarkBlue: #3d20dd;
---portPurple: #7d62ef;
---portLightGreen: #2dce98;
---portPaleGreen: #30dbb5;
---portGreen: #26be77;
---portLightOrange: #fda341;
---portOrange: #f48665;
---portBrown: #7f7f7f;
---portDarkGrey: #3e566d;
---portGrey: #7e92a4;
---portPaleGrey: #f6f8ff;
---portLightGrey: #eff3fe;
---portWhite: #ffffff;
---portBlack: #354053;
---c-primary-color: #146ef6;
---c-secondary-color: #cacacc;
-
-/* Car Rentals Light Theme Variables (Glassmorphism & High Contrast) */
---rr-bg: #f8fafc;
---rr-text: #0f172a;
---rr-card-bg: rgba(255, 255, 255, 0.75);
---rr-border-color: rgba(15, 23, 42, 0.08);
---rr-header-bg: rgba(255, 255, 255, 0.85);
---rr-header-text: #0f172a;
---rr-card-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.06);
---rr-card-hover-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.15);
---rr-text-muted: #475569;
---rr-btn-bg: rgba(15, 23, 42, 0.05);
---rr-btn-hover-bg: rgba(15, 23, 42, 0.12);
---rr-accent: #0ea5e9;
---rr-accent-gradient: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
---rr-glass-blur: blur(16px) saturate(180%);
-
-/* Material 3 Compatibility / Fallback Variables */
---mat-sys-primary: var(--c-primary-color);
---mat-sys-primary-container: var(--portPaleBlue);
---mat-sys-on-primary-container: var(--portDarkBlue);
---mat-sys-secondary: var(--portPurple);
---mat-sys-surface-container-lowest: var(--portWhite);
---mat-sys-surface-container-low: var(--portWhite);
---mat-sys-surface-container: var(--portPaleGrey);
---mat-sys-surface-container-high: var(--portWhite);
---mat-sys-on-surface: var(--portBlack);
---mat-sys-on-surface-variant: var(--portGrey);
---mat-sys-outline: var(--portGrey);
---mat-sys-outline-variant: var(--portLightGrey);
---mat-sys-error: var(--portRed);
-}
-
-.dark-theme {
-/* Inverted for Dark Theme (Adjusted for contrast and readability) */
---portRed: #ff6b6b;
---portLightRed: #ff7a8a;
---portBlue: #8c73ff;
---portSkyBlue: #62aef0;
---portPaleBlue: #1a2235;
---portDarkBlue: #a28bf4;
---portPurple: #9882ff;
---portLightGreen: #3ee0aa;
---portPaleGreen: #42ecc6;
---portGreen: #38d089;
---portLightOrange: #ffb559;
---portOrange: #ff9877;
---portBrown: #a6a6a6;
---portDarkGrey: #a0b3c6;
---portGrey: #63778a;
---portPaleGrey: #1a1c23;
---portLightGrey: #232733;
---portWhite: #121212;
---portBlack: #e0e0e0;
---c-primary-color: #4a90e2;
---c-secondary-color: #4a4a4c;
-
-/* Car Rentals Dark Theme Variables (Glassmorphism & High Contrast) */
---rr-bg: #030712;
---rr-text: #f8fafc;
---rr-card-bg: rgba(17, 24, 39, 0.65);
---rr-border-color: rgba(255, 255, 255, 0.08);
---rr-header-bg: rgba(3, 7, 18, 0.85);
---rr-header-text: #f8fafc;
---rr-card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
---rr-card-hover-shadow:
-0 12px 48px 0 rgba(0, 0, 0, 0.7), 0 0 20px rgba(6, 182, 212, 0.25);
---rr-text-muted: #94a3b8;
---rr-btn-bg: rgba(31, 41, 55, 0.8);
---rr-btn-hover-bg: rgba(55, 65, 81, 0.9);
---rr-accent: #06b6d4;
---rr-accent-gradient: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
---rr-glass-blur: blur(16px) saturate(180%);
-
-/* Material 3 Compatibility / Fallback Variables */
---mat-sys-primary: var(--c-primary-color);
---mat-sys-primary-container: var(--portPaleBlue);
---mat-sys-on-primary-container: var(--portDarkBlue);
---mat-sys-secondary: var(--portPurple);
---mat-sys-surface-container-lowest: var(--portWhite);
---mat-sys-surface-container-low: var(--portPaleGrey);
---mat-sys-surface-container: var(--portLightGrey);
---mat-sys-surface-container-high: var(--portLightGrey);
---mat-sys-on-surface: var(--portBlack);
---mat-sys-on-surface-variant: var(--portGrey);
---mat-sys-outline: var(--portGrey);
---mat-sys-outline-variant: var(--portLightGrey);
---mat-sys-error: var(--portRed);
+// DARK THEME OVERRIDE
+// When the `.dark` class is applied to a parent (e.g. html),
+// it will override the color styles for all components inside.
+.dark {
+  @include mat.all-component-colors(themes.$dark-theme);
 }
 
 html,

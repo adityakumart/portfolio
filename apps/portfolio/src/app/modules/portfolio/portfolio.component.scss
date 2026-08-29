@@ -3,21 +3,21 @@
   background:
     radial-gradient(
       circle at top left,
-      color-mix(in srgb, var(--portPurple) 18%, transparent),
+      color-mix(in srgb, var(--primary) 18%, transparent),
       transparent 24%
     ),
     radial-gradient(
       circle at top right,
-      color-mix(in srgb, var(--portSkyBlue) 18%, transparent),
+      color-mix(in srgb, var(--color-sky-500) 18%, transparent),
       transparent 18%
     ),
     linear-gradient(
       180deg,
-      var(--portPaleGrey) 0%,
-      var(--portLightGrey) 55%,
-      var(--portWhite) 100%
+      var(--secondary) 0%,
+      var(--border) 55%,
+      var(--background) 100%
     );
-  color: var(--portBlack);
+  color: var(--foreground);
   overflow-x: hidden;
   padding-bottom: 80px;
 }
@@ -30,7 +30,7 @@
   .gradient-title {
     margin: 0;
     font-size: 1.15rem;
-    background: linear-gradient(90deg, var(--portPurple), var(--portSkyBlue));
+    background: linear-gradient(90deg, var(--primary), var(--color-sky-500));
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -38,7 +38,7 @@
 
   .section-title {
     font-size: 1.6rem;
-    color: var(--portBlack);
+    color: var(--foreground);
     letter-spacing: 0.01em;
     margin-bottom: 6px;
   }
@@ -52,7 +52,7 @@
 
   .section-note {
     margin: 0;
-    color: var(--portDarkGrey);
+    color: var(--muted-foreground);
     line-height: 1.7;
     max-width: 720px;
   }
@@ -87,7 +87,7 @@
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.25) !important;
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15);
-  color: var(--portPurple) !important;
+  color: var(--primary) !important;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
   display: flex !important;
   align-items: center;
@@ -101,7 +101,7 @@
   }
 
   &:hover {
-    background: linear-gradient(135deg, var(--portPurple) 0%, var(--portSkyBlue) 100%) !important;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--color-sky-500) 100%) !important;
     color: #ffffff !important;
     border-color: transparent !important;
     box-shadow: 0 0 20px rgba(147, 51, 234, 0.4);

@@ -11,9 +11,9 @@
 .skill-card-with-accent {
   position: relative;
   overflow: hidden;
-  background: var(--portWhite);
-  border: 1px solid var(--portLightGrey);
-  box-shadow: 0 24px 50px color-mix(in srgb, var(--portBlack) 10%, transparent);
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: 0 24px 50px color-mix(in srgb, var(--foreground) 10%, transparent);
 }
 
 .skill-card-with-accent::before {
@@ -23,7 +23,7 @@
   top: 0;
   width: 6px;
   height: 100%;
-  background: linear-gradient(180deg, var(--portSkyBlue), var(--portPurple));
+  background: linear-gradient(180deg, var(--color-sky-500), var(--primary));
 }
 
 .skill-card-with-accent mat-card-header {
@@ -35,7 +35,7 @@
 .skill-card-with-accent .mat-card-content,
 .skill-card-with-accent .skill-chip,
 .skill-card-with-accent .mat-chip {
-  color: var(--portBlack) !important;
+  color: var(--foreground) !important;
 }
 
 .skillCard {
@@ -53,9 +53,9 @@
 
 .skillCard:hover {
   transform: translateY(-4px);
-  border-color: var(--portSkyBlue);
-  box-shadow: 0 24px 55px color-mix(in srgb, var(--portBlack) 10%, transparent);
-  background: var(--portPaleGrey);
+  border-color: var(--color-sky-500);
+  box-shadow: 0 24px 55px color-mix(in srgb, var(--foreground) 10%, transparent);
+  background: var(--secondary);
 }
 
 .skill-chips-container {
@@ -73,22 +73,22 @@
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  background: var(--portPaleGrey);
-  color: var(--portDarkGrey);
+  background: var(--secondary);
+  color: var(--muted-foreground);
   font-weight: 500;
   transition:
     transform 0.25s ease,
     background 0.25s ease,
     color 0.25s ease,
     border-color 0.25s ease;
-  border: 1px solid var(--portLightGrey);
+  border: 1px solid var(--border);
 }
 
 .skill-chip:hover {
   transform: translateY(-2px);
-  background: color-mix(in srgb, var(--portSkyBlue) 15%, transparent);
-  color: var(--portBlack);
-  border-color: var(--portSkyBlue);
+  background: color-mix(in srgb, var(--color-sky-500) 15%, transparent);
+  color: var(--foreground);
+  border-color: var(--color-sky-500);
 }
 
 .skill-grid-item {
@@ -103,8 +103,8 @@
   width: 54px;
   height: 54px;
   border-radius: 18px;
-  background: var(--portPaleGrey);
-  border: 1px solid var(--portLightGrey);
+  background: var(--secondary);
+  border: 1px solid var(--border);
   transition:
     transform 0.25s ease,
     background 0.25s ease,
@@ -113,8 +113,8 @@
 
 .skill-icon-wrapper:hover {
   transform: translateY(-3px);
-  background: var(--portLightGrey);
-  border-color: var(--portPurple);
+  background: var(--border);
+  border-color: var(--primary);
 }
 
 .skillImage {
