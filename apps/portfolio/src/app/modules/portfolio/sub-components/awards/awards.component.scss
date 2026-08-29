@@ -12,9 +12,9 @@
 .award-card-with-accent {
   position: relative;
   overflow: hidden;
-  background: var(--portWhite);
-  border: 1px solid var(--portLightGrey);
-  box-shadow: 0 24px 50px color-mix(in srgb, var(--portBlack) 10%, transparent);
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: 0 24px 50px color-mix(in srgb, var(--foreground) 10%, transparent);
 }
 
 .award-card-with-accent::before {
@@ -24,7 +24,7 @@
   top: 0;
   width: 6px;
   height: 100%;
-  background: linear-gradient(180deg, var(--portSkyBlue), var(--portPurple));
+  background: linear-gradient(180deg, var(--color-sky-500), var(--primary));
 }
 
 .award-card-with-accent mat-card-header {
@@ -33,7 +33,7 @@
 
 .award-card-with-accent .mat-card-title,
 .award-card-with-accent .mat-card-subtitle {
-  color: var(--portBlack) !important;
+  color: var(--foreground) !important;
 }
 
 .awardCard {
@@ -54,21 +54,21 @@
 
 .awardCard:hover {
   transform: translateY(-4px);
-  border-color: var(--portSkyBlue);
-  box-shadow: 0 24px 55px color-mix(in srgb, var(--portBlack) 10%, transparent);
-  background: var(--portPaleGrey);
+  border-color: var(--color-sky-500);
+  box-shadow: 0 24px 55px color-mix(in srgb, var(--foreground) 10%, transparent);
+  background: var(--secondary);
 }
 
 .award-issuer {
-  color: var(--portSkyBlue);
+  color: var(--color-sky-500);
   font-weight: 500;
 }
 .award-date {
-  color: var(--portGrey);
+  color: var(--muted-foreground);
   font-size: 0.85rem;
 }
 .award-summary {
-  color: var(--portDarkGrey);
+  color: var(--muted-foreground);
   line-height: 1.6;
   margin: 0;
 }

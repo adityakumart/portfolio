@@ -1,5 +1,5 @@
-$primary-gradient: linear-gradient(135deg, var(--portPurple) 0%, var(--portLightOrange) 100%);
-$ai-gradient: linear-gradient(135deg, var(--portBlue) 0%, var(--portSkyBlue) 100%);
+$primary-gradient: linear-gradient(135deg, var(--color-violet-500) 0%, var(--color-orange-400) 100%);
+$ai-gradient: linear-gradient(135deg, var(--color-blue-500) 0%, var(--color-sky-400) 100%);
 $card-bg: rgba(255, 255, 255, 0.45);
 $card-border: rgba(255, 255, 255, 0.4);
 $text-primary: #1e293b;
@@ -29,7 +29,7 @@ $text-secondary: #64748b;
   transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-:host-context(.dark-theme) {
+:host-context(.dark) {
   .glass-card {
     background: rgba(15, 23, 42, 0.45);
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -68,7 +68,7 @@ $text-secondary: #64748b;
       font-size: 1.8rem;
       width: 1.8rem;
       height: 1.8rem;
-      color: var(--portPurple);
+      color: var(--primary);
       -webkit-text-fill-color: initial;
     }
   }
@@ -81,7 +81,7 @@ $text-secondary: #64748b;
     color: $text-secondary;
     font-weight: 500;
 
-    :host-context(.dark-theme) & {
+    :host-context(.dark) & {
       color: #94a3b8;
     }
 
@@ -96,11 +96,11 @@ $text-secondary: #64748b;
 
       &:hover {
         background: rgba(0, 0, 0, 0.05);
-        color: var(--portPurple);
+        color: var(--primary);
 
-        :host-context(.dark-theme) & {
+        :host-context(.dark) & {
           background: rgba(255, 255, 255, 0.05);
-          color: var(--portLightOrange);
+          color: var(--color-orange-400);
         }
       }
 
@@ -188,7 +188,7 @@ $text-secondary: #64748b;
   padding: 0.75rem 1.25rem;
   color: #ef4444;
 
-  :host-context(.dark-theme) & {
+  :host-context(.dark) & {
     background: rgba(239, 68, 68, 0.15);
     border: 1px solid rgba(239, 68, 68, 0.2);
     color: #fca5a5;
@@ -221,7 +221,7 @@ $text-secondary: #64748b;
     font-size: 0.9rem;
     color: $text-primary;
 
-    :host-context(.dark-theme) & {
+    :host-context(.dark) & {
       color: #f1f5f9;
     }
 
@@ -231,7 +231,7 @@ $text-secondary: #64748b;
       gap: 0.5rem;
       
       .uploading-spinner {
-        color: var(--portPurple);
+        color: var(--primary);
         animation: pulse 1.5s infinite ease-in-out;
       }
     }
@@ -257,11 +257,11 @@ $text-secondary: #64748b;
   overflow: hidden;
 
   &.drag-active {
-    border: 2px dashed var(--portPurple);
+    border: 2px dashed var(--primary);
     background: rgba(125, 98, 239, 0.05);
 
-    :host-context(.dark-theme) & {
-      border-color: var(--portLightOrange);
+    :host-context(.dark) & {
+      border-color: var(--color-orange-400);
       background: rgba(224, 86, 36, 0.05);
     }
   }
@@ -282,7 +282,7 @@ $text-secondary: #64748b;
   gap: 1rem;
   pointer-events: none;
 
-  :host-context(.dark-theme) & {
+  :host-context(.dark) & {
     background: rgba(15, 23, 42, 0.9);
   }
 
@@ -290,17 +290,17 @@ $text-secondary: #64748b;
     font-size: 4rem;
     width: 4rem;
     height: 4rem;
-    color: var(--portPurple);
+    color: var(--primary);
     animation: bounce 1s infinite alternate;
   }
 
   .drag-text {
     font-size: 1.25rem;
     font-weight: 700;
-    color: var(--portPurple);
+    color: var(--primary);
 
-    :host-context(.dark-theme) & {
-      color: var(--portLightOrange);
+    :host-context(.dark) & {
+      color: var(--color-orange-400);
     }
   }
 }
@@ -315,7 +315,7 @@ $text-secondary: #64748b;
   padding: 4rem 2rem;
   color: $text-secondary;
 
-  :host-context(.dark-theme) & {
+  :host-context(.dark) & {
     color: #94a3b8;
   }
 }
@@ -336,7 +336,7 @@ $text-secondary: #64748b;
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     box-sizing: border-box;
 
-    :host-context(.dark-theme) & {
+    :host-context(.dark) & {
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
   }
@@ -347,7 +347,7 @@ $text-secondary: #64748b;
     background: rgba(0, 0, 0, 0.02);
     user-select: none;
 
-    :host-context(.dark-theme) & {
+    :host-context(.dark) & {
       color: #94a3b8;
       background: rgba(255, 255, 255, 0.02);
     }
@@ -375,15 +375,15 @@ $text-secondary: #64748b;
     &:hover {
       background: rgba(125, 98, 239, 0.04);
 
-      :host-context(.dark-theme) & {
+      :host-context(.dark) & {
         background: rgba(224, 86, 36, 0.04);
       }
 
       .node-name-text {
-        color: var(--portPurple);
+        color: var(--primary);
 
-        :host-context(.dark-theme) & {
-          color: var(--portLightOrange);
+        :host-context(.dark) & {
+          color: var(--color-orange-400);
         }
       }
     }
@@ -403,7 +403,7 @@ $text-secondary: #64748b;
     }
 
     .file-icon {
-      color: var(--portBlue);
+      color: var(--color-blue-500);
     }
 
     .node-name-text {
@@ -411,7 +411,7 @@ $text-secondary: #64748b;
       color: $text-primary;
       transition: color 0.2s ease;
 
-      :host-context(.dark-theme) & {
+      :host-context(.dark) & {
         color: #e2e8f0;
       }
     }
@@ -420,7 +420,7 @@ $text-secondary: #64748b;
   td.col-size, td.col-date {
     color: $text-secondary;
 
-    :host-context(.dark-theme) & {
+    :host-context(.dark) & {
       color: #94a3b8;
     }
   }
@@ -429,15 +429,15 @@ $text-secondary: #64748b;
     button {
       color: $text-secondary;
       
-      :host-context(.dark-theme) & {
+      :host-context(.dark) & {
         color: #94a3b8;
       }
 
       &:hover {
-        color: var(--portPurple);
+        color: var(--primary);
 
-        :host-context(.dark-theme) & {
-          color: var(--portLightOrange);
+        :host-context(.dark) & {
+          color: var(--color-orange-400);
         }
       }
     }
@@ -454,7 +454,7 @@ $text-secondary: #64748b;
   text-align: center;
   color: $text-secondary;
 
-  :host-context(.dark-theme) & {
+  :host-context(.dark) & {
     color: #94a3b8;
   }
 
@@ -472,7 +472,7 @@ $text-secondary: #64748b;
     margin: 0 0 0.5rem 0;
     color: $text-primary;
 
-    :host-context(.dark-theme) & {
+    :host-context(.dark) & {
       color: #f1f5f9;
     }
   }

@@ -1,10 +1,10 @@
 <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 16px;">
   <div>
-    <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--rr-accent); font-weight: 800; margin-bottom: 6px; display: inline-flex; align-items: center; gap: 6px;">
+    <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--color-cyan-500); font-weight: 800; margin-bottom: 6px; display: inline-flex; align-items: center; gap: 6px;">
       <mat-icon style="font-size: 14px; width: 14px; height: 14px;">people</mat-icon>
       <span>Employees &bull; Staff Registry</span>
     </div>
-    <h2 style="margin: 0; font-size: 1.85rem; font-weight: 800; font-family: 'Montserrat', sans-serif; color: var(--rr-text);">Staff Registry</h2>
+    <h2 style="margin: 0; font-size: 1.85rem; font-weight: 800; font-family: 'Montserrat', sans-serif; color: var(--foreground);">Staff Registry</h2>
   </div>
   <button mat-raised-button color="primary" class="action-btn success" style="padding: 10px 20px; border-radius: 12px;" (click)="openAddEmployeeModal()">
     <mat-icon>add</mat-icon> Register New Employee
@@ -19,7 +19,7 @@
       <ng-container matColumnDef="id">
         <th mat-header-cell *matHeaderCellDef> Employee ID </th>
         <td mat-cell *matCellDef="let emp">
-          <span style="font-family: monospace; font-weight: 700; color: var(--rr-accent);">{{ emp.id }}</span>
+          <span style="font-family: monospace; font-weight: 700; color: var(--color-cyan-500);">{{ emp.id }}</span>
         </td>
       </ng-container>
 
@@ -27,7 +27,7 @@
       <ng-container matColumnDef="name">
         <th mat-header-cell *matHeaderCellDef> Name </th>
         <td mat-cell *matCellDef="let emp">
-          <div style="font-weight: 700; color: var(--rr-text);">{{ emp.firstName }} {{ emp.lastName }}</div>
+          <div style="font-weight: 700; color: var(--foreground);">{{ emp.firstName }} {{ emp.lastName }}</div>
         </td>
       </ng-container>
 
@@ -85,14 +85,14 @@
 
       <!-- Empty Row -->
       <tr class="mat-row" *matNoDataRow>
-        <td class="mat-cell" colspan="8" style="text-align: center; color: var(--rr-text-muted); padding: 48px 0;">
-          <mat-icon style="font-size: 40px; width: 40px; height: 40px; color: var(--rr-text-muted); display: block; margin: 0 auto 12px auto;">people</mat-icon>
+        <td class="mat-cell" colspan="8" style="text-align: center; color: var(--muted-foreground); padding: 48px 0;">
+          <mat-icon style="font-size: 40px; width: 40px; height: 40px; color: var(--muted-foreground); display: block; margin: 0 auto 12px auto;">people</mat-icon>
           <span style="font-weight: 600; font-size: 0.95rem;">No registered employees found.</span>
         </td>
       </tr>
     </table>
   </div>
-  <mat-paginator [pageSize]="10" [pageSizeOptions]="[5, 10, 20]" style="background: transparent; color: var(--rr-text);" showFirstLastButtons></mat-paginator>
+  <mat-paginator [pageSize]="10" [pageSizeOptions]="[5, 10, 20]" style="background: transparent; color: var(--foreground);" showFirstLastButtons></mat-paginator>
 </div>
 
 <!-- POPUP: ADD/MODIFY EMPLOYEE DIALOG TEMPLATE -->

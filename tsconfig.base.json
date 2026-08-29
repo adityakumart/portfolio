@@ -13,6 +13,12 @@
       ],
       "@spartan-ng/hel/utils": [
         "./libs/styles/utils/src/index.ts"
+      ],
+      "@spartan-ng/hel/tooltip": [
+        "./libs/styles/tooltip/src/index.ts"
+      ],
+      "@spartan-ng/hel/dropdown-menu": [
+        "./libs/styles/dropdown-menu/src/index.ts"
       ]
     },
     "forceConsistentCasingInFileNames": true,

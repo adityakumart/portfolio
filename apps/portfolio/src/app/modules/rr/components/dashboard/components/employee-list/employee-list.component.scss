@@ -5,12 +5,12 @@
   flex-direction: column;
   height: calc(100vh - 300px) !important;
   min-height: 250px !important;
-  background: var(--rr-card-bg);
-  backdrop-filter: var(--rr-glass-blur);
-  -webkit-backdrop-filter: var(--rr-glass-blur);
+  background: var(--card);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
   border-radius: 20px;
-  box-shadow: var(--rr-card-shadow);
-  border: 1px solid var(--rr-border-color);
+  box-shadow: 0 8px 32px 0 color-mix(in srgb, var(--foreground) 6%, transparent);
+  border: 1px solid var(--border);
   transition: all 0.3s ease;
   overflow: hidden;
   margin-bottom: 2.5rem;
@@ -25,11 +25,11 @@
   table {
     width: 100%;
     border-collapse: collapse;
-    border: 1px solid var(--rr-border-color) !important;
+    border: 1px solid var(--border) !important;
   }
 
   th, td, .mat-mdc-header-cell, .mat-mdc-cell {
-    border: 1px solid var(--rr-border-color) !important;
+    border: 1px solid var(--border) !important;
   }
 }
 
@@ -46,7 +46,7 @@
     background: #ffffff !important; /* Default light theme background */
   }
 
-  .dark-theme {
+  .dark {
     .mat-mdc-header-row {
       background: #111827 !important; /* Solid dark theme background (rgba(17,24,39) card bg) */
     }

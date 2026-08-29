@@ -7,7 +7,7 @@
 .work-item {
   position: relative;
   padding-left: 18px;
-  border-left: 2px solid color-mix(in srgb, var(--portPurple) 45%, transparent);
+  border-left: 2px solid color-mix(in srgb, var(--primary) 45%, transparent);
 }
 
 .work-item::before {
@@ -18,8 +18,8 @@
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--portSkyBlue), var(--portPurple));
-  box-shadow: 0 0 16px color-mix(in srgb, var(--portSkyBlue) 45%, transparent);
+  background: linear-gradient(135deg, var(--color-sky-500), var(--primary));
+  box-shadow: 0 0 16px color-mix(in srgb, var(--color-sky-500) 45%, transparent);
 }
 
 .work-header {
@@ -27,13 +27,13 @@
 }
 
 .work-company {
-  color: var(--portBlack);
+  color: var(--foreground);
   text-decoration: none;
   transition: color 0.25s ease;
 }
 
 .work-company:hover {
-  color: var(--portPurple);
+  color: var(--primary);
 }
 
 .badge-modern {
@@ -41,14 +41,14 @@
   align-items: center;
   padding: 8px 14px;
   border-radius: 999px;
-  background: var(--portPaleBlue);
-  border: 1px solid var(--portSkyBlue);
-  color: var(--portBlue);
+  background: var(--secondary);
+  border: 1px solid var(--color-sky-500);
+  color: var(--primary);
   font-size: 0.85rem;
 }
 
 .work-position {
-  color: var(--portSkyBlue);
+  color: var(--color-sky-500);
 }
 
 .work-divider {
@@ -57,12 +57,12 @@
   background: linear-gradient(
     90deg,
     transparent,
-    color-mix(in srgb, var(--portGrey) 18%, transparent),
+    color-mix(in srgb, var(--muted-foreground) 18%, transparent),
     transparent
   );
   margin: 28px 0;
 }
 
 .text-muted {
-  color: var(--portGrey);
+  color: var(--muted-foreground);
 }

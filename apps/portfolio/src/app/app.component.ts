@@ -100,42 +100,9 @@ export class AppComponent {
     this.themeService.toggleTheme();
   }
 
-  loadStyle(styleName: string): void {
-    const head = this.document.getElementsByTagName('head')[0];
-
-    // const themeLink = this.document.getElementById(
-    //   'client-theme'
-    // ) as HTMLLinkElement;
-    // if (themeLink) {
-    //   themeLink.href = styleName;
-    // } else {
-    const style = this.document.createElement('link');
-    // style.id = styleName;
-    style.rel = 'stylesheet';
-    style.href = `${styleName}`;
-
-    head.appendChild(style);
-    // }
-  }
   ngOnInit(): void {
     //Called after the constructor, initializing input properties, and the first call to ngOnChanges.
     //Add 'implements OnInit' to the class.
-    setTimeout(() => {
-      this.loadStyle('custom.css');
-      this.loadStyle('bootstrap.css');
-      this.loadStyle('border.css');
-      this.loadStyle('colors.css');
-      // this.loadStyle('materialIcons.css');
-      this.loadStyle('text.css');
-
-      // let bases = this.document.getElementsByTagName('base');
-
-      // if (bases.length > 0) {
-      //   bases[0].setAttribute('href', environment.baseHref);
-
-      // }
-    }, 0);
-
     this.document.title =
       this.globalData.resume.basics.name +
       ' || ' +
