@@ -9,12 +9,33 @@ import { CommonModule } from '@angular/common';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map } from 'rxjs/operators';
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatListModule } from '@angular/material/list';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import {
+  lucideLayoutDashboard,
+  lucideCode,
+  lucideUser,
+  lucideCar,
+  lucideChevronRight,
+  lucideCalculator,
+  lucideAlignLeft,
+  lucideKey,
+  lucideRefreshCw,
+  lucideHammer,
+  lucideMessageSquare,
+  lucideFolder,
+  lucideHome,
+  lucideBarChart2,
+  lucideFileText,
+  lucideUsers,
+  lucideHistory,
+  lucideSun,
+  lucideMoon,
+  lucideLogOut,
+  lucideZap
+} from '@ng-icons/lucide';
+import { HlmButton } from '@spartan-ng/hel/button';
+import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
+import { HlmDropdownMenuImports } from '@spartan-ng/hel/dropdown-menu';
 import { AuthService } from '../../../modules/user/services/auth';
 import { ThemeService } from '../../../theme.service';
 import { devToolsRoutingList } from '../../data/routes';
@@ -32,12 +53,35 @@ export interface SidebarItem {
   standalone: true,
   imports: [
     CommonModule,
-    MatIconModule,
-    MatButtonModule,
-    MatTooltipModule,
-    MatMenuModule,
-    MatSidenavModule,
-    MatListModule,
+    NgIconComponent,
+    HlmButton,
+    HlmTooltipImports,
+    HlmDropdownMenuImports,
+  ],
+  providers: [
+    provideIcons({
+      lucideLayoutDashboard,
+      lucideCode,
+      lucideUser,
+      lucideCar,
+      lucideChevronRight,
+      lucideCalculator,
+      lucideAlignLeft,
+      lucideKey,
+      lucideRefreshCw,
+      lucideHammer,
+      lucideMessageSquare,
+      lucideFolder,
+      lucideHome,
+      lucideBarChart2,
+      lucideFileText,
+      lucideUsers,
+      lucideHistory,
+      lucideSun,
+      lucideMoon,
+      lucideLogOut,
+      lucideZap
+    })
   ],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss',
@@ -72,17 +116,17 @@ export class SidebarComponent {
     const rrUser = this.rrApiService.currentUser();
 
     const items: SidebarItem[] = [
-      { label: 'Portfolio', icon: 'bolt', link: '/' },
+      { label: 'Portfolio', icon: 'lucideZap', link: '/' },
       {
         label: 'Dev Tools',
-        icon: 'code',
+        icon: 'lucideCode',
         children: devToolsRoutingList.map((group) => ({
           label: group.header,
           icon: this.getDevToolIcon(group.header),
           children: group.tools.map((tool) => ({
             label: tool.name,
             link: tool.link,
-            icon: 'chevron_right',
+            icon: 'lucideChevronRight',
           })),
         })),
       },
@@ -91,52 +135,52 @@ export class SidebarComponent {
     if (user) {
       items.push({
         label: 'User',
-        icon: 'account_circle',
+        icon: 'lucideUser',
         children: [
-          { label: 'Profile', link: '/user', icon: 'person' },
-          { label: 'AI Assistant', link: '/user/ai', icon: 'chat' },
-          { label: 'File Manager', link: '/user/files', icon: 'folder_shared' },
+          { label: 'Profile', link: '/user', icon: 'lucideUser' },
+          { label: 'AI Assistant', link: '/user/ai', icon: 'lucideMessageSquare' },
+          { label: 'File Manager', link: '/user/files', icon: 'lucideFolder' },
         ],
       });
     } else if (rrUser) {
       items.push({
         label: 'Car Rentals',
-        icon: 'directions_car',
+        icon: 'lucideCar',
         children: [
-          { label: 'Homepage', link: '/user/rr/home', icon: 'home' },
+          { label: 'Homepage', link: '/user/rr/home', icon: 'lucideHome' },
           {
             label: 'Dashboard Summary',
             link: '/user/rr/dashboard',
-            icon: 'analytics',
+            icon: 'lucideBarChart2',
           },
           {
             label: 'Active Rentals',
             link: '/user/rr/booking/list',
-            icon: 'assignment',
+            icon: 'lucideFileText',
           },
           {
             label: 'Vehicles List',
             link: '/user/rr/vehicle/list',
-            icon: 'directions_car',
+            icon: 'lucideCar',
           },
           {
             label: 'Employee List',
             link: '/user/rr/employee/list',
-            icon: 'people',
+            icon: 'lucideUsers',
           },
-          { label: 'History Logs', link: '/user/rr/history', icon: 'history' },
+          { label: 'History Logs', link: '/user/rr/history', icon: 'lucideHistory' },
         ],
       });
     } else {
       items.push({
         label: 'User Login',
         link: '/user/login',
-        icon: 'account_circle',
+        icon: 'lucideUser',
       });
       items.push({
         label: 'Car Rental Login',
         link: '/user/rr/login',
-        icon: 'directions_car',
+        icon: 'lucideCar',
       });
     }
 
@@ -147,17 +191,17 @@ export class SidebarComponent {
   private getDevToolIcon(header: string): string {
     switch (header) {
       case 'Calculator':
-        return 'calculate';
+        return 'lucideCalculator';
       case 'Formatters':
-        return 'format_align_left';
+        return 'lucideAlignLeft';
       case 'Encode/Decode':
-        return 'vpn_key';
+        return 'lucideKey';
       case 'Converters':
-        return 'swap_horiz';
+        return 'lucideRefreshCw';
       case 'Generator':
-        return 'build';
+        return 'lucideHammer';
       default:
-        return 'code';
+        return 'lucideCode';
     }
   }
 

@@ -23,13 +23,6 @@ $transition-duration: 500ms;
   z-index: 10;
   overflow: visible !important; // Allow submenus to render outside the sidebar
   transition: background-color 0.3s ease, border-color 0.3s ease;
-
-  ::ng-deep .mat-drawer-inner-container {
-    overflow: visible !important; // Required to allow flyout menus to escape mat-sidenav container
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-  }
 }
 
 // Header Section
@@ -423,61 +416,4 @@ $transition-duration: 500ms;
   height: 100%;
   overflow-y: auto;
   box-sizing: border-box;
-  margin-left: 72px !important; // Fixed sidebar margin offset
-}
-
-// ----------------------------------------
-// Material Menu Overrides
-// ----------------------------------------
-::ng-deep .user-dropdown-panel {
-  background-color: var(--portWhite) !important;
-  border: 1px solid var(--portLightGrey) !important;
-  border-radius: 8px !important;
-  padding: 4px 0 !important;
-
-  .menu-user-header {
-    padding: 10px 16px 4px 16px;
-    font-family: 'Lexend', sans-serif;
-
-    .header-name {
-      font-size: 13.5px;
-      color: var(--portBlack);
-      font-weight: 500;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .header-role {
-      font-size: 11px;
-      color: var(--portGrey);
-      margin-top: 1px;
-    }
-
-    .menu-divider {
-      border: 0;
-      border-top: 1px solid var(--portLightGrey);
-      margin: 10px 0 0 0;
-    }
-  }
-
-  .mat-mdc-menu-item {
-    color: var(--portBlack) !important;
-    font-family: 'Lexend', sans-serif;
-    font-size: 13px;
-    min-height: 40px !important;
-
-    mat-icon {
-      color: var(--portGrey) !important;
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-      margin-right: 12px !important;
-    }
-
-    &:hover {
-      background-color: var(--portPaleGrey) !important;
-      color: var(--portBlack) !important;
-    }
-  }
 }
