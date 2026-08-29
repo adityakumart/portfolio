@@ -174,4 +174,17 @@ export class RRApiService {
       })
     );
   }
+
+  async getDashboardStats(): Promise<any> {
+    return firstValueFrom(
+      this.http.get<any>(`${this.baseUrl}/dashboard/stats`, { headers: this.getHeaders() })
+    );
+  }
+
+  async checkVehicleAvailability(regNo: string): Promise<any> {
+    return firstValueFrom(
+      this.http.get<any>(`${this.baseUrl}/vehicles/${regNo}/availability`, { headers: this.getHeaders() })
+    );
+  }
 }
+

@@ -9,6 +9,7 @@ import {
   effect,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import {
   ReactiveFormsModule,
   FormBuilder,
@@ -60,6 +61,7 @@ export class RRBookingListComponent implements OnInit {
   private rrApi = inject(RRApiService);
   private fb = inject(FormBuilder);
   private dialog = inject(MatDialog);
+  private route = inject(ActivatedRoute);
 
   @ViewChild('newBookingDialog') newBookingDialog!: TemplateRef<any>;
   @ViewChild('modifyBookingDialog') modifyBookingDialog!: TemplateRef<any>;
@@ -117,10 +119,31 @@ export class RRBookingListComponent implements OnInit {
     this.bookings().filter((b) => b.status === 'active'),
   );
 
-  ngOnInit() {
+  get isTravelDetailsConfigured(): boolean {
+    if (!this.bookingFormGroup) return false;
+    return !!(
+      this.bookingFormGroup.get('vehicleRegNo')?.value &&
+      this.bookingFormGroup.get('pickupDateTime')?.value &&
+      this.bookingFormGroup.get('returnDateTime')?.value
+    );
+  }
+
+  async ngOnInit() {
     this.initForms();
     this.loadBookings();
-    this.loadVehicles();
+    await this.loadVehicles();
+
+    // Listen for query params for contextual booking pre-select
+    this.route.queryParams.subscribe((params) => {
+      const regNo = params['vehicleRegNo'];
+      if (regNo) {
+        // Find if this vehicle is actually available
+        const vehicleExists = this.vehicles().some((v) => v.regNo === regNo && v.status === 'available');
+        if (vehicleExists) {
+          this.openNewBookingModal(regNo);
+        }
+      }
+    });
   }
 
   private initForms() {
@@ -295,8 +318,12 @@ export class RRBookingListComponent implements OnInit {
   }
 
   // --- DIALOG MODALS OPEN/CLOSE ---
-  openNewBookingModal() {
+  openNewBookingModal(vehicleRegNo?: string) {
     this.resetBookingForm();
+    if (vehicleRegNo) {
+      this.bookingFormGroup.patchValue({ vehicleRegNo: vehicleRegNo });
+      this.onVehicleSelectChange();
+    }
     this.dialog.open(this.newBookingDialog, {
       width: '900px',
       maxWidth: '95vw',

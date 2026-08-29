@@ -425,6 +425,7 @@ rrRouter.get('/logs', authenticateRRToken, requireAdmin, async (req: any, res: R
       }
     }
 
+
     const list = await col.find(query).sort({ timestamp: -1 }).toArray();
     res.json(list);
   } catch (err: any) {
@@ -432,4 +433,48 @@ rrRouter.get('/logs', authenticateRRToken, requireAdmin, async (req: any, res: R
   }
 });
 
+/* ============================================================
+   DASHBOARD STATS & AVAILABILITY ENHANCEMENTS
+============================================================ */
+
+rrRouter.get('/dashboard/stats', authenticateRRToken, async (req: any, res: Response) => {
+  try {
+    const vehCol = await RRService.getVehiclesCol();
+    const bookingCol = await RRService.getBookingsCol();
+
+    const [totalFleet, maintenance, activeBookings, pendingPayments] = await Promise.all([
+      vehCol.countDocuments({}),
+      vehCol.countDocuments({ status: 'maintenance' }),
+      bookingCol.countDocuments({ status: 'active' }),
+      bookingCol.countDocuments({ status: 'active', pendingAmount: { $nin: ['0', '', null] } })
+    ]);
+
+    res.json({
+      totalFleet,
+      maintenance,
+      activeBookings,
+      pendingPayments
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+rrRouter.get('/vehicles/:id/availability', authenticateRRToken, async (req: any, res: Response) => {
+  try {
+    const regNo = req.params.id;
+    const col = await RRService.getVehiclesCol();
+    const vehicle = await col.findOne({ regNo });
+    if (!vehicle) {
+      res.status(404).json({ error: 'Not Found', message: 'Vehicle not found' });
+      return;
+    }
+    const isAvailable = vehicle.status === 'available';
+    res.json({ regNo, isAvailable, status: vehicle.status });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
 export { rrRouter };
+
