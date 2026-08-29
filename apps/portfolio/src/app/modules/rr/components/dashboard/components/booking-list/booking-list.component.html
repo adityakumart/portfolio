@@ -138,143 +138,11 @@
   <mat-dialog-content style="max-height: 70vh; overflow-y: auto;">
     <form [formGroup]="bookingFormGroup">
       <div class="booking-sections" style="padding-right: 8px;">
-        <!-- 1. Renter Details -->
-        <div class="booking-card">
-          <h3>
-            <mat-icon style="vertical-align: middle; margin-right: 6px;">person</mat-icon>
-            <span>Renter Person Details</span>
-          </h3>
-          <div class="booking-content" style="margin-top: 15px;">
-            <mat-form-field appearance="outline">
-              <mat-label>Renter First Name</mat-label>
-              <input matInput formControlName="renterFirstName" />
-              @if (bookingFormGroup.get('renterFirstName')?.invalid && bookingFormGroup.get('renterFirstName')?.touched) {
-                <mat-error>Required (letters only).</mat-error>
-              }
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Renter Second Name</mat-label>
-              <input matInput formControlName="renterSecondName" />
-              @if (bookingFormGroup.get('renterSecondName')?.invalid && bookingFormGroup.get('renterSecondName')?.touched) {
-                <mat-error>Required (letters only).</mat-error>
-              }
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Father Name</mat-label>
-              <input matInput formControlName="renterFatherName" />
-              @if (bookingFormGroup.get('renterFatherName')?.invalid && bookingFormGroup.get('renterFatherName')?.touched) {
-                <mat-error>Required (letters only).</mat-error>
-              }
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Aadhar Number</mat-label>
-              <input matInput formControlName="renterAadhar" maxlength="12" />
-              @if (bookingFormGroup.get('renterAadhar')?.invalid && bookingFormGroup.get('renterAadhar')?.touched) {
-                <mat-error>Must be 12 digits.</mat-error>
-              }
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Driving License Number</mat-label>
-              <input matInput formControlName="renterDL" maxlength="16" />
-              @if (bookingFormGroup.get('renterDL')?.invalid && bookingFormGroup.get('renterDL')?.touched) {
-                <mat-error>Must be 16 chars.</mat-error>
-              }
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Phone Number</mat-label>
-              <input matInput formControlName="renterPhone" maxlength="10" />
-              @if (bookingFormGroup.get('renterPhone')?.invalid && bookingFormGroup.get('renterPhone')?.touched) {
-                <mat-error>Must be 10 digits.</mat-error>
-              }
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Alternative Phone Number</mat-label>
-              <input matInput formControlName="renterAltPhone" maxlength="10" />
-              @if (bookingFormGroup.get('renterAltPhone')?.invalid && bookingFormGroup.get('renterAltPhone')?.touched) {
-                <mat-error>Must be 10 digits.</mat-error>
-              }
-            </mat-form-field>
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Address</mat-label>
-              <textarea matInput formControlName="renterAddress" rows="2"></textarea>
-              @if (bookingFormGroup.get('renterAddress')?.invalid && bookingFormGroup.get('renterAddress')?.touched) {
-                <mat-error>Required.</mat-error>
-              }
-            </mat-form-field>
-          </div>
-        </div>
-
-        <!-- 2. Guarantee Details -->
-        <div class="booking-card">
-          <h3>
-            <mat-icon style="vertical-align: middle; margin-right: 6px;">verified_user</mat-icon>
-            <span>Guarantee Person Details</span>
-          </h3>
-          <div class="booking-content" style="margin-top: 15px;">
-            <mat-form-field appearance="outline">
-              <mat-label>Guarantee First Name</mat-label>
-              <input matInput formControlName="guarFirstName" />
-              @if (bookingFormGroup.get('guarFirstName')?.invalid && bookingFormGroup.get('guarFirstName')?.touched) {
-                <mat-error>Required (letters only).</mat-error>
-              }
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Guarantee Second Name</mat-label>
-              <input matInput formControlName="guarSecondName" />
-              @if (bookingFormGroup.get('guarSecondName')?.invalid && bookingFormGroup.get('guarSecondName')?.touched) {
-                <mat-error>Required (letters only).</mat-error>
-              }
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Guarantee Father Name</mat-label>
-              <input matInput formControlName="guarFatherName" />
-              @if (bookingFormGroup.get('guarFatherName')?.invalid && bookingFormGroup.get('guarFatherName')?.touched) {
-                <mat-error>Required (letters only).</mat-error>
-              }
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Aadhar Number (optional)</mat-label>
-              <input matInput formControlName="guarAadhar" maxlength="12" />
-              @if (bookingFormGroup.get('guarAadhar')?.invalid && bookingFormGroup.get('guarAadhar')?.touched) {
-                <mat-error>Must be 12 digits.</mat-error>
-              }
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Driving License (optional)</mat-label>
-              <input matInput formControlName="guarDL" maxlength="16" />
-              @if (bookingFormGroup.get('guarDL')?.invalid && bookingFormGroup.get('guarDL')?.touched) {
-                <mat-error>Must be 16 chars.</mat-error>
-              }
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Phone Number</mat-label>
-              <input matInput formControlName="guarPhone" maxlength="10" />
-              @if (bookingFormGroup.get('guarPhone')?.invalid && bookingFormGroup.get('guarPhone')?.touched) {
-                <mat-error>Must be 10 digits.</mat-error>
-              }
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Alternative Phone Number</mat-label>
-              <input matInput formControlName="guarAltPhone" maxlength="10" />
-              @if (bookingFormGroup.get('guarAltPhone')?.invalid && bookingFormGroup.get('guarAltPhone')?.touched) {
-                <mat-error>Must be 10 digits.</mat-error>
-              }
-            </mat-form-field>
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Address</mat-label>
-              <textarea matInput formControlName="guarAddress" rows="2"></textarea>
-              @if (bookingFormGroup.get('guarAddress')?.invalid && bookingFormGroup.get('guarAddress')?.touched) {
-                <mat-error>Required.</mat-error>
-              }
-            </mat-form-field>
-          </div>
-        </div>
-
-        <!-- 3. Travel Details -->
+        <!-- 3. Travel Details (PRIORITIZED AND ACCESSIBLE FIRST) -->
         <div class="booking-card">
           <h3>
             <mat-icon style="vertical-align: middle; margin-right: 6px;">commute</mat-icon>
-            <span>Travel Details</span>
+            <span>Travel Details (Step 1)</span>
           </h3>
           <div class="booking-content" style="margin-top: 15px;">
             <mat-form-field appearance="outline">
@@ -330,10 +198,18 @@
               <input matInput formControlName="totalKmLimit" readonly />
             </mat-form-field>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Odometer Pickup Reading (Auto)</mat-label>
-              <input matInput [value]="selectedVehicle()?.odometer || ''" readonly disabled />
-            </mat-form-field>
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <mat-form-field appearance="outline" style="width: 100%; margin-bottom: 0;">
+                <mat-label>Odometer Pickup Reading</mat-label>
+                <input matInput type="number" formControlName="vehicleOdometerStart" [readonly]="!overrideOdometer" />
+                @if (bookingFormGroup.get('vehicleOdometerStart')?.invalid && bookingFormGroup.get('vehicleOdometerStart')?.touched) {
+                  <mat-error>Must be positive number.</mat-error>
+                }
+              </mat-form-field>
+              <mat-checkbox [checked]="overrideOdometer" (change)="onOverrideOdometerChange($event.checked)" style="margin-bottom: 12px; margin-top: -4px;">
+                Override Odometer
+              </mat-checkbox>
+            </div>
 
             <mat-form-field appearance="outline">
               <mat-label>Travel Purpose</mat-label>
@@ -352,114 +228,265 @@
           </div>
         </div>
 
-        <!-- 4. Security Deposit -->
-        <div class="booking-card">
-          <h3>
-            <mat-icon style="vertical-align: middle; margin-right: 6px;">inventory</mat-icon>
-            <span>Security Deposit Details</span>
-          </h3>
-          <div style="margin-bottom: 20px; padding: 4px;">
-            <mat-radio-group formControlName="depositType" class="booking-content" style="grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px;">
-              <mat-radio-button value="none">None Required</mat-radio-button>
-              <mat-radio-button value="bike">Two Wheeler Asset</mat-radio-button>
-              <mat-radio-button value="cash">Cash Deposit</mat-radio-button>
-              <mat-radio-button value="other">Other Item</mat-radio-button>
-            </mat-radio-group>
+        <!-- REST OF THE SECTIONS LOCKED UNTIL TRAVEL DETAILS CONFIRMED -->
+        <fieldset [disabled]="!isTravelDetailsConfigured" style="border: none; padding: 0; margin: 0; display: contents;">
+          <!-- 1. Renter Details -->
+          <div class="booking-card">
+            <h3>
+              <mat-icon style="vertical-align: middle; margin-right: 6px;">person</mat-icon>
+              <span>Renter Person Details (Step 2)</span>
+            </h3>
+            <div class="booking-content" style="margin-top: 15px;">
+              <mat-form-field appearance="outline">
+                <mat-label>Renter First Name</mat-label>
+                <input matInput formControlName="renterFirstName" />
+                @if (bookingFormGroup.get('renterFirstName')?.invalid && bookingFormGroup.get('renterFirstName')?.touched) {
+                  <mat-error>Required (letters only).</mat-error>
+                }
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Renter Second Name</mat-label>
+                <input matInput formControlName="renterSecondName" />
+                @if (bookingFormGroup.get('renterSecondName')?.invalid && bookingFormGroup.get('renterSecondName')?.touched) {
+                  <mat-error>Required (letters only).</mat-error>
+                }
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Father Name</mat-label>
+                <input matInput formControlName="renterFatherName" />
+                @if (bookingFormGroup.get('renterFatherName')?.invalid && bookingFormGroup.get('renterFatherName')?.touched) {
+                  <mat-error>Required (letters only).</mat-error>
+                }
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Aadhar Number</mat-label>
+                <input matInput formControlName="renterAadhar" maxlength="12" />
+                @if (bookingFormGroup.get('renterAadhar')?.invalid && bookingFormGroup.get('renterAadhar')?.touched) {
+                  <mat-error>Must be 12 digits.</mat-error>
+                }
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Driving License Number</mat-label>
+                <input matInput formControlName="renterDL" maxlength="16" />
+                @if (bookingFormGroup.get('renterDL')?.invalid && bookingFormGroup.get('renterDL')?.touched) {
+                  <mat-error>Must be 16 chars.</mat-error>
+                }
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Phone Number</mat-label>
+                <input matInput formControlName="renterPhone" maxlength="10" />
+                @if (bookingFormGroup.get('renterPhone')?.invalid && bookingFormGroup.get('renterPhone')?.touched) {
+                  <mat-error>Must be 10 digits.</mat-error>
+                }
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Alternative Phone Number</mat-label>
+                <input matInput formControlName="renterAltPhone" maxlength="10" />
+                @if (bookingFormGroup.get('renterAltPhone')?.invalid && bookingFormGroup.get('renterAltPhone')?.touched) {
+                  <mat-error>Must be 10 digits.</mat-error>
+                }
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Address</mat-label>
+                <textarea matInput formControlName="renterAddress" rows="2"></textarea>
+                @if (bookingFormGroup.get('renterAddress')?.invalid && bookingFormGroup.get('renterAddress')?.touched) {
+                  <mat-error>Required.</mat-error>
+                }
+              </mat-form-field>
+            </div>
           </div>
 
-          <div class="booking-content">
-            @if (bookingFormGroup.get('depositType')?.value === 'bike') {
+          <!-- 2. Guarantee Details -->
+          <div class="booking-card">
+            <h3>
+              <mat-icon style="vertical-align: middle; margin-right: 6px;">verified_user</mat-icon>
+              <span>Guarantee Person Details (Step 3)</span>
+            </h3>
+            <div class="booking-content" style="margin-top: 15px;">
               <mat-form-field appearance="outline">
-                <mat-label>Bike Registration Number</mat-label>
-                <input matInput formControlName="bikeRegNo" />
+                <mat-label>Guarantee First Name</mat-label>
+                <input matInput formControlName="guarFirstName" />
+                @if (bookingFormGroup.get('guarFirstName')?.invalid && bookingFormGroup.get('guarFirstName')?.touched) {
+                  <mat-error>Required (letters only).</mat-error>
+                }
               </mat-form-field>
               <mat-form-field appearance="outline">
-                <mat-label>Bike Manufacturer</mat-label>
-                <input matInput formControlName="bikeManufacturer" />
+                <mat-label>Guarantee Second Name</mat-label>
+                <input matInput formControlName="guarSecondName" />
+                @if (bookingFormGroup.get('guarSecondName')?.invalid && bookingFormGroup.get('guarSecondName')?.touched) {
+                  <mat-error>Required (letters only).</mat-error>
+                }
               </mat-form-field>
               <mat-form-field appearance="outline">
-                <mat-label>Bike Model</mat-label>
-                <input matInput formControlName="bikeModel" />
+                <mat-label>Guarantee Father Name</mat-label>
+                <input matInput formControlName="guarFatherName" />
+                @if (bookingFormGroup.get('guarFatherName')?.invalid && bookingFormGroup.get('guarFatherName')?.touched) {
+                  <mat-error>Required (letters only).</mat-error>
+                }
               </mat-form-field>
               <mat-form-field appearance="outline">
-                <mat-label>Bike Owner</mat-label>
-                <input matInput formControlName="bikeOwner" />
-              </mat-form-field>
-            }
-
-            @if (bookingFormGroup.get('depositType')?.value === 'cash') {
-              <mat-form-field appearance="outline">
-                <mat-label>Cash Deposit Amount (Rs.)</mat-label>
-                <input matInput type="number" formControlName="cashAmount" />
-              </mat-form-field>
-            }
-
-            @if (bookingFormGroup.get('depositType')?.value === 'other') {
-              <mat-form-field appearance="outline">
-                <mat-label>Item Name</mat-label>
-                <input matInput formControlName="otherItemName" />
+                <mat-label>Aadhar Number (optional)</mat-label>
+                <input matInput formControlName="guarAadhar" maxlength="12" />
+                @if (bookingFormGroup.get('guarAadhar')?.invalid && bookingFormGroup.get('guarAadhar')?.touched) {
+                  <mat-error>Must be 12 digits.</mat-error>
+                }
               </mat-form-field>
               <mat-form-field appearance="outline">
-                <mat-label>Item Value (Rs.)</mat-label>
-                <input matInput type="number" formControlName="otherItemValue" />
+                <mat-label>Driving License (optional)</mat-label>
+                <input matInput formControlName="guarDL" maxlength="16" />
+                @if (bookingFormGroup.get('guarDL')?.invalid && bookingFormGroup.get('guarDL')?.touched) {
+                  <mat-error>Must be 16 chars.</mat-error>
+                }
               </mat-form-field>
-            }
+              <mat-form-field appearance="outline">
+                <mat-label>Phone Number</mat-label>
+                <input matInput formControlName="guarPhone" maxlength="10" />
+                @if (bookingFormGroup.get('guarPhone')?.invalid && bookingFormGroup.get('guarPhone')?.touched) {
+                  <mat-error>Must be 10 digits.</mat-error>
+                }
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Alternative Phone Number</mat-label>
+                <input matInput formControlName="guarAltPhone" maxlength="10" />
+                @if (bookingFormGroup.get('guarAltPhone')?.invalid && bookingFormGroup.get('guarAltPhone')?.touched) {
+                  <mat-error>Must be 10 digits.</mat-error>
+                }
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Address</mat-label>
+                <textarea matInput formControlName="guarAddress" rows="2"></textarea>
+                @if (bookingFormGroup.get('guarAddress')?.invalid && bookingFormGroup.get('guarAddress')?.touched) {
+                  <mat-error>Required.</mat-error>
+                }
+              </mat-form-field>
+            </div>
           </div>
-        </div>
 
-        <!-- 5. Financials -->
-        <div class="booking-card">
-          <h3>
-            <mat-icon style="vertical-align: middle; margin-right: 6px;">payments</mat-icon>
-            <span>Financial Billings</span>
-          </h3>
-          <div class="booking-content" style="margin-top: 15px;">
-            <mat-form-field appearance="outline">
-              <mat-label>Total Rental Amount (Rs. Auto)</mat-label>
-              <input matInput formControlName="totalRentalAmount" readonly />
-            </mat-form-field>
+          <!-- 4. Security Deposit -->
+          <div class="booking-card">
+            <h3>
+              <mat-icon style="vertical-align: middle; margin-right: 6px;">inventory</mat-icon>
+              <span>Security Deposit Details (Step 4)</span>
+            </h3>
+            <div style="margin-bottom: 20px; padding: 4px;">
+              <mat-radio-group formControlName="depositType" class="booking-content" style="grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px;">
+                <mat-radio-button value="none">None Required</mat-radio-button>
+                <mat-radio-button value="bike">Two Wheeler Asset</mat-radio-button>
+                <mat-radio-button value="cash">Cash Deposit</mat-radio-button>
+                <mat-radio-button value="other">Other Item</mat-radio-button>
+              </mat-radio-group>
+            </div>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Discount</mat-label>
-              <input matInput type="number" formControlName="discount" (input)="recalculateFinalAmount()" />
-            </mat-form-field>
-
-            <mat-form-field appearance="outline">
-              <mat-label>Discount Type</mat-label>
-              <mat-select formControlName="discountType" (selectionChange)="recalculateFinalAmount()">
-                <mat-option value="rupee">Rupee (Rs.)</mat-option>
-                <mat-option value="percentage">Percentage (%)</mat-option>
-              </mat-select>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline">
-              <mat-label>Final Rental Amount (Rs. Auto)</mat-label>
-              <input matInput formControlName="finalRentalAmount" readonly />
-            </mat-form-field>
-
-            <mat-form-field appearance="outline">
-              <mat-label>Advance Amount Paid (Rs.)</mat-label>
-              <input matInput type="number" formControlName="amountPaid" (input)="recalculateFinalAmount()" />
-              @if (bookingFormGroup.get('amountPaid')?.invalid && bookingFormGroup.get('amountPaid')?.touched) {
-                <mat-error>Must be positive number.</mat-error>
+            <div class="booking-content">
+              @if (bookingFormGroup.get('depositType')?.value === 'bike') {
+                <mat-form-field appearance="outline">
+                  <mat-label>Bike Registration Number</mat-label>
+                  <input matInput formControlName="bikeRegNo" />
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Bike Manufacturer</mat-label>
+                  <input matInput formControlName="bikeManufacturer" />
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Bike Model</mat-label>
+                  <input matInput formControlName="bikeModel" />
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Bike Owner</mat-label>
+                  <input matInput formControlName="bikeOwner" />
+                </mat-form-field>
               }
-            </mat-form-field>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Balance Pending Amount (Rs. Auto)</mat-label>
-              <input matInput formControlName="pendingAmount" readonly />
-            </mat-form-field>
+              @if (bookingFormGroup.get('depositType')?.value === 'cash') {
+                <mat-form-field appearance="outline">
+                  <mat-label>Cash Deposit Amount (Rs.)</mat-label>
+                  <input matInput type="number" formControlName="cashAmount" />
+                </mat-form-field>
+              }
 
-            <mat-form-field appearance="outline">
-              <mat-label>Payment Mode</mat-label>
-              <mat-select formControlName="paymentMode">
-                <mat-option value="Cash">Cash</mat-option>
-                <mat-option value="Online">Online / UPI</mat-option>
-                <mat-option value="Card">Credit/Debit Card</mat-option>
-              </mat-select>
-            </mat-form-field>
+              @if (bookingFormGroup.get('depositType')?.value === 'other') {
+                <mat-form-field appearance="outline">
+                  <mat-label>Item Name</mat-label>
+                  <input matInput formControlName="otherItemName" />
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Item Value (Rs.)</mat-label>
+                  <input matInput type="number" formControlName="otherItemValue" />
+                </mat-form-field>
+              }
+            </div>
           </div>
-        </div>
+
+          <!-- 5. Financials -->
+          <div class="booking-card">
+            <h3>
+              <mat-icon style="vertical-align: middle; margin-right: 6px;">payments</mat-icon>
+              <span>Financial Billings (Step 5)</span>
+            </h3>
+            <div class="booking-content" style="margin-top: 15px;">
+              <mat-form-field appearance="outline">
+                <mat-label>Total Rental Amount (Rs. Auto)</mat-label>
+                <input matInput formControlName="totalRentalAmount" readonly />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Discount Type</mat-label>
+                <mat-select formControlName="discountType" (selectionChange)="recalculateFinalAmount()">
+                  <mat-option value="none">None</mat-option>
+                  <mat-option value="rupee">Rupee (Rs.)</mat-option>
+                  <mat-option value="percentage">Percentage (%)</mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Discount</mat-label>
+                <input matInput type="number" formControlName="discount" (input)="recalculateFinalAmount()" (change)="recalculateFinalAmount()" [readonly]="bookingFormGroup.get('discountType')?.value === 'none'" />
+                @if (bookingFormGroup.get('discount')?.touched && bookingFormGroup.get('discount')?.hasError('max') && bookingFormGroup.get('discountType')?.value === 'percentage') {
+                  <mat-error>Discount cannot exceed 100%.</mat-error>
+                }
+                @if (bookingFormGroup.get('discount')?.touched && bookingFormGroup.get('discount')?.hasError('max') && bookingFormGroup.get('discountType')?.value !== 'percentage') {
+                  <mat-error>Discount cannot exceed total rental amount.</mat-error>
+                }
+                @if (bookingFormGroup.get('discount')?.touched && bookingFormGroup.get('discount')?.hasError('min')) {
+                  <mat-error>Invalid discount value.</mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Final Rental Amount (Rs. Auto)</mat-label>
+                <input matInput formControlName="finalRentalAmount" readonly />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Advance Amount Paid (Rs.)</mat-label>
+                <input matInput type="number" formControlName="amountPaid" (input)="recalculateFinalAmount()" (change)="recalculateFinalAmount()" />
+                @if (bookingFormGroup.get('amountPaid')?.invalid && bookingFormGroup.get('amountPaid')?.touched) {
+                  <mat-error>Must be positive number.</mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Balance Pending Amount (Rs. Auto)</mat-label>
+                <input matInput formControlName="pendingAmount" readonly />
+              </mat-form-field>
+              @if (bookingFormGroup.get('pendingAmount')?.value && bookingFormGroup.get('pendingAmount')?.value.startsWith('-')) {
+                <div style="color: #d97706; font-size: 0.85rem; margin-top: -8px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; grid-column: 1 / -1; background: rgba(217, 119, 6, 0.08); padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(217, 119, 6, 0.15);">
+                  <mat-icon style="font-size: 18px; width: 18px; height: 18px; color: #d97706; margin-right: 2px;">warning</mat-icon>
+                  <span><strong>Warning:</strong> Excess advance amount paid. Refund/credit of Rs. {{ bookingFormGroup.get('pendingAmount')?.value.replace('-', '') }} is pending.</span>
+                </div>
+              }
+
+              <mat-form-field appearance="outline">
+                <mat-label>Payment Mode</mat-label>
+                <mat-select formControlName="paymentMode">
+                  <mat-option value="Cash">Cash</mat-option>
+                  <mat-option value="Online">Online / UPI</mat-option>
+                  <mat-option value="Card">Credit/Debit Card</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </div>
+        </fieldset>
       </div>
     </form>
   </mat-dialog-content>
@@ -560,16 +587,26 @@
         </mat-form-field>
 
         <mat-form-field appearance="outline">
-          <mat-label>Discount Amount</mat-label>
-          <input matInput type="number" formControlName="discount" (input)="recalculateModifyFinalAmount()" />
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
           <mat-label>Discount Type</mat-label>
           <mat-select formControlName="discountType" (selectionChange)="recalculateModifyFinalAmount()">
+            <mat-option value="none">None</mat-option>
             <mat-option value="rupee">Rupee (Rs.)</mat-option>
             <mat-option value="percentage">Percentage (%)</mat-option>
           </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Discount Amount</mat-label>
+          <input matInput type="number" formControlName="discount" (input)="recalculateModifyFinalAmount()" (change)="recalculateModifyFinalAmount()" [readonly]="modifyBookingFormGroup.get('discountType')?.value === 'none'" />
+          @if (modifyBookingFormGroup.get('discount')?.touched && modifyBookingFormGroup.get('discount')?.hasError('max') && modifyBookingFormGroup.get('discountType')?.value === 'percentage') {
+            <mat-error>Discount cannot exceed 100%.</mat-error>
+          }
+          @if (modifyBookingFormGroup.get('discount')?.touched && modifyBookingFormGroup.get('discount')?.hasError('max') && modifyBookingFormGroup.get('discountType')?.value !== 'percentage') {
+            <mat-error>Discount cannot exceed total rental amount.</mat-error>
+          }
+          @if (modifyBookingFormGroup.get('discount')?.touched && modifyBookingFormGroup.get('discount')?.hasError('min')) {
+            <mat-error>Invalid discount value.</mat-error>
+          }
         </mat-form-field>
 
         <mat-form-field appearance="outline">
@@ -579,13 +616,22 @@
 
         <mat-form-field appearance="outline">
           <mat-label>Amount Already Paid (Rs.)</mat-label>
-          <input matInput type="number" formControlName="amountPaid" (input)="recalculateModifyFinalAmount()" />
+          <input matInput type="number" formControlName="amountPaid" (input)="recalculateModifyFinalAmount()" (change)="recalculateModifyFinalAmount()" />
+          @if (modifyBookingFormGroup.get('amountPaid')?.invalid && modifyBookingFormGroup.get('amountPaid')?.touched) {
+            <mat-error>Must be positive number.</mat-error>
+          }
         </mat-form-field>
 
         <mat-form-field appearance="outline">
           <mat-label>Balance Pending Amount (Rs. Auto)</mat-label>
           <input matInput formControlName="pendingAmount" readonly />
         </mat-form-field>
+        @if (modifyBookingFormGroup.get('pendingAmount')?.value && modifyBookingFormGroup.get('pendingAmount')?.value.startsWith('-')) {
+          <div style="color: #d97706; font-size: 0.85rem; margin-top: -8px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; grid-column: 1 / -1; background: rgba(217, 119, 6, 0.08); padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(217, 119, 6, 0.15);">
+            <mat-icon style="font-size: 18px; width: 18px; height: 18px; color: #d97706; margin-right: 2px;">warning</mat-icon>
+            <span><strong>Warning:</strong> Excess advance amount paid. Refund/credit of Rs. {{ modifyBookingFormGroup.get('pendingAmount')?.value.replace('-', '') }} is pending.</span>
+          </div>
+        }
       </div>
     </form>
   </mat-dialog-content>

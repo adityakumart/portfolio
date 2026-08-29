@@ -12,23 +12,23 @@
 </div>
 
 <div class="stats-card-grid">
-  <!-- Available Card -->
-  <mat-card class="stat-card card-available">
+  <!-- Total Fleet Card -->
+  <mat-card class="stat-card card-available clickable-card" (click)="openDetailsModal('fleet')" matTooltip="Click to view all vehicles">
     <div class="stat-glow"></div>
     <div class="stat-card-header">
-      <span class="stat-title">Available Fleet</span>
+      <span class="stat-title">Total Fleet</span>
       <div class="stat-icon-wrapper">
         <mat-icon>check_circle</mat-icon>
       </div>
     </div>
-    <div class="stat-number">{{ getVehicleCount('available') }}</div>
+    <div class="stat-number">{{ stats().totalFleet }}</div>
     <div class="stat-footer">
-      <span class="footer-desc">Ready for instant dispatch</span>
+      <span class="footer-desc">Total registered vehicles</span>
     </div>
   </mat-card>
 
-  <!-- In Booking Card -->
-  <mat-card class="stat-card card-rented">
+  <!-- Active Bookings Card -->
+  <mat-card class="stat-card card-rented clickable-card" (click)="openDetailsModal('bookings')" matTooltip="Click to view active bookings">
     <div class="stat-glow"></div>
     <div class="stat-card-header">
       <span class="stat-title">Active Bookings</span>
@@ -36,14 +36,14 @@
         <mat-icon>key</mat-icon>
       </div>
     </div>
-    <div class="stat-number">{{ getVehicleCount('in_booking') }}</div>
+    <div class="stat-number">{{ stats().activeBookings }}</div>
     <div class="stat-footer">
       <span class="footer-desc">Active customer journeys</span>
     </div>
   </mat-card>
 
   <!-- Maintenance Card -->
-  <mat-card class="stat-card card-maintenance">
+  <mat-card class="stat-card card-maintenance clickable-card" (click)="openDetailsModal('maintenance')" matTooltip="Click to view fleet in service">
     <div class="stat-glow"></div>
     <div class="stat-card-header">
       <span class="stat-title">In Service</span>
@@ -51,24 +51,24 @@
         <mat-icon>handyman</mat-icon>
       </div>
     </div>
-    <div class="stat-number">{{ getVehicleCount('maintenance') }}</div>
+    <div class="stat-number">{{ stats().maintenance }}</div>
     <div class="stat-footer">
       <span class="footer-desc">Routine servicing & repairs</span>
     </div>
   </mat-card>
 
-  <!-- Contract Card -->
-  <mat-card class="stat-card card-contract">
+  <!-- Pending Payments Card -->
+  <mat-card class="stat-card card-payments clickable-card" (click)="openDetailsModal('payments')" matTooltip="Click to view outstanding dues">
     <div class="stat-glow"></div>
     <div class="stat-card-header">
-      <span class="stat-title">Corporate Leased</span>
+      <span class="stat-title">Pending Payments</span>
       <div class="stat-icon-wrapper">
-        <mat-icon>description</mat-icon>
+        <mat-icon>warning</mat-icon>
       </div>
     </div>
-    <div class="stat-number">{{ getVehicleCount('contract') }}</div>
+    <div class="stat-number">{{ stats().pendingPayments }}</div>
     <div class="stat-footer">
-      <span class="footer-desc">Active corporate contracts</span>
+      <span class="footer-desc">Outstanding balances</span>
     </div>
   </mat-card>
 </div>
@@ -87,6 +87,14 @@
           <div class="active-status-badge status-badge-{{ v.status }}">
             <span class="status-dot"></span>
             <span>{{ v.status | uppercase }}</span>
+          </div>
+          
+          <!-- Hover "Book Now" action -->
+          <div class="hover-overlay">
+            <button mat-flat-button class="book-now-btn" (click)="bookVehicle(v, $event)">
+              <mat-icon>key</mat-icon>
+              <span>Book Now</span>
+            </button>
           </div>
         </div>
         
@@ -121,3 +129,82 @@
     </div>
   }
 </div>
+
+<!-- DETAILS MODAL DIALOG TEMPLATE -->
+<ng-template #detailsDialog>
+  <div class="modal-container">
+    <div class="modal-header">
+      <div class="header-title">
+        <mat-icon class="header-icon">
+          @if (modalType() === 'fleet') { directions_car }
+          @else if (modalType() === 'bookings') { event_available }
+          @else if (modalType() === 'maintenance') { handyman }
+          @else if (modalType() === 'payments') { warning }
+        </mat-icon>
+        <h3>{{ modalTitle() }}</h3>
+      </div>
+      <button mat-icon-button class="close-btn" mat-dialog-close>
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="table-wrapper">
+        <table class="details-table">
+          <thead>
+            @if (modalType() === 'fleet' || modalType() === 'maintenance') {
+              <tr>
+                <th>Vehicle</th>
+                <th>Reg No</th>
+                <th>Type</th>
+                <th>Odometer</th>
+                <th>Status</th>
+              </tr>
+            } @else {
+              <tr>
+                <th>Booking ID</th>
+                <th>Renter Name</th>
+                <th>Phone</th>
+                <th>Vehicle</th>
+                <th>Pending Amount</th>
+                <th>Status</th>
+              </tr>
+            }
+          </thead>
+          <tbody>
+            @for (item of modalData(); track item.id || item.regNo) {
+              @if (modalType() === 'fleet' || modalType() === 'maintenance') {
+                <tr>
+                  <td class="font-bold">{{ item.manufacturer }} {{ item.name }}</td>
+                  <td class="code-font">{{ item.regNo }}</td>
+                  <td>{{ item.type | uppercase }}</td>
+                  <td>{{ item.odometer }} KM</td>
+                  <td>
+                    <span class="badge status-badge-{{ item.status }}">{{ item.status | uppercase }}</span>
+                  </td>
+                </tr>
+              } @else {
+                <tr>
+                  <td class="font-bold code-font">{{ item.id }}</td>
+                  <td>{{ item.renterFirstName }} {{ item.renterSecondName }}</td>
+                  <td>{{ item.renterPhone }}</td>
+                  <td>{{ item.vehicleManufacturer }} {{ item.vehicleName }}</td>
+                  <td class="price-font text-danger">₹{{ item.pendingAmount || '0' }}</td>
+                  <td>
+                    <span class="badge status-badge-available">ACTIVE</span>
+                  </td>
+                </tr>
+              }
+            } @empty {
+              <tr>
+                <td colspan="6" class="empty-row" style="text-align: center; padding: 24px; color: var(--muted-foreground);">
+                  No records found.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</ng-template>

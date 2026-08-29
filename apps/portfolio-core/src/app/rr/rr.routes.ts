@@ -1,8 +1,11 @@
 import { Router, Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcrypt';
+import multer from 'multer';
 import { authenticateRRToken, requireAdmin } from './rr.middleware';
 import { RRService, IEmployee, IVehicle, IBooking } from './rr.service';
+import { handleVehicleImageUpload } from './r2-storage.controller';
+import { R2Service } from '../../services/r2.service';
 
 const rrRouter = Router();
 const JWT_SECRET = process.env['JWT_SECRET'] || 'supersecretlocaljwtkey1234567890!';
@@ -110,6 +113,37 @@ rrRouter.post('/auth/login', async (req: Request, res: Response) => {
 /* ============================================================
    VEHICLES
 ============================================================ */
+
+// Multer storage and filter configuration for image files
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed.'));
+    }
+  }
+});
+
+// POST upload vehicle image (Authenticated)
+rrRouter.post(
+  '/vehicles/upload',
+  authenticateRRToken,
+  (req, res, next) => {
+    upload.single('image')(req, res, (err: any) => {
+      if (err) {
+        res.status(400).json({ error: 'Bad Request', message: err.message });
+      } else {
+        next();
+      }
+    });
+  },
+  handleVehicleImageUpload
+);
 
 // GET all vehicles (public so homepage can show them)
 rrRouter.get('/vehicles', async (req: Request, res: Response) => {
@@ -425,6 +459,7 @@ rrRouter.get('/logs', authenticateRRToken, requireAdmin, async (req: any, res: R
       }
     }
 
+
     const list = await col.find(query).sort({ timestamp: -1 }).toArray();
     res.json(list);
   } catch (err: any) {
@@ -432,4 +467,48 @@ rrRouter.get('/logs', authenticateRRToken, requireAdmin, async (req: any, res: R
   }
 });
 
+/* ============================================================
+   DASHBOARD STATS & AVAILABILITY ENHANCEMENTS
+============================================================ */
+
+rrRouter.get('/dashboard/stats', authenticateRRToken, async (req: any, res: Response) => {
+  try {
+    const vehCol = await RRService.getVehiclesCol();
+    const bookingCol = await RRService.getBookingsCol();
+
+    const [totalFleet, maintenance, activeBookings, pendingPayments] = await Promise.all([
+      vehCol.countDocuments({}),
+      vehCol.countDocuments({ status: 'maintenance' }),
+      bookingCol.countDocuments({ status: 'active' }),
+      bookingCol.countDocuments({ status: 'active', pendingAmount: { $nin: ['0', '', null] } } as any)
+    ]);
+
+    res.json({
+      totalFleet,
+      maintenance,
+      activeBookings,
+      pendingPayments
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+rrRouter.get('/vehicles/:id/availability', authenticateRRToken, async (req: any, res: Response) => {
+  try {
+    const regNo = req.params.id;
+    const col = await RRService.getVehiclesCol();
+    const vehicle = await col.findOne({ regNo });
+    if (!vehicle) {
+      res.status(404).json({ error: 'Not Found', message: 'Vehicle not found' });
+      return;
+    }
+    const isAvailable = vehicle.status === 'available';
+    res.json({ regNo, isAvailable, status: vehicle.status });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
 export { rrRouter };
+

@@ -460,10 +460,71 @@
               <input matInput type="number" formControlName="extraHourPrice" />
             </mat-form-field>
 
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Vehicle Asset Image URL (Fallback matches default assets)</mat-label>
-              <input matInput [(ngModel)]="vehicleImageInputUrl" [ngModelOptions]="{standalone: true}" placeholder="e.g. assets/rr/baleno.png" />
-            </mat-form-field>
+            <div class="file-upload-wrapper full-width">
+              <span class="upload-label" style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--muted-foreground); margin-bottom: 6px; display: block; letter-spacing: 0.05em;">Vehicle Asset Image</span>
+              
+              <!-- Dropzone / Selector -->
+              @if (!previewUrl()) {
+                <div class="file-upload-dropzone" 
+                     (click)="fileInput.click()" 
+                     (dragover)="$event.preventDefault(); $event.stopPropagation();" 
+                     (drop)="$event.preventDefault(); $event.stopPropagation(); onFileSelected($event)">
+                  <mat-icon class="upload-icon">cloud_upload</mat-icon>
+                  <span class="upload-text">Drag & Drop or Click to Upload Image</span>
+                  <span class="upload-hint">PNG, JPG, JPEG, WEBP up to 5MB</span>
+                </div>
+              } @else {
+                <!-- Preview & Upload Status Card -->
+                <div class="upload-preview-container">
+                  <img [src]="previewUrl()!" alt="Vehicle Preview" class="preview-image" />
+                  <div class="file-info">
+                    <span class="file-name">{{ selectedFileName() }}</span>
+                    @if (isUploading()) {
+                      <span class="file-size" style="color: var(--color-cyan-500); font-weight: 700;">Uploading file to R2...</span>
+                    } @else {
+                      <span class="file-size" style="color: #10b981; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+                        <mat-icon style="font-size: 14px; width: 14px; height: 14px;">check_circle</mat-icon> Uploaded Successfully
+                      </span>
+                    }
+                  </div>
+                  
+                  <div class="action-buttons">
+                    @if (!isUploading()) {
+                      <button hlmBtn variant="outline" size="sm" type="button" (click)="fileInput.click(); $event.stopPropagation()" style="border-radius: 8px;">
+                        Replace
+                      </button>
+                      <button hlmBtn variant="destructive" size="sm" type="button" (click)="clearSelectedImage(); $event.stopPropagation()" style="border-radius: 8px;">
+                        Clear
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
+
+              <!-- Progress Bar -->
+              @if (isUploading()) {
+                <div class="upload-progress-container" style="margin-top: 10px;">
+                  <div class="progress-header">
+                    <span>Uploading...</span>
+                    <span>{{ uploadProgress() }}%</span>
+                  </div>
+                  <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" [style.width.%]="uploadProgress()"></div>
+                  </div>
+                </div>
+              }
+
+              <!-- Error Display -->
+              @if (uploadError()) {
+                <div class="upload-error-message">
+                  <mat-icon>error_outline</mat-icon>
+                  <span>{{ uploadError() }}</span>
+                </div>
+              }
+
+              <!-- Hidden Input -->
+              <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" style="display: none;" />
+            </div>
           </div>
         </div>
       </div>
