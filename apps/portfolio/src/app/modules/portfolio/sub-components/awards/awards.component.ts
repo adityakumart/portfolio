@@ -7,7 +7,7 @@ import { Award } from '@portfolio/shared-types';
   standalone: true,
   imports: [MatCardModule],
   templateUrl: './awards.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './awards.component.scss',
 })
 export class AwardsComponent {

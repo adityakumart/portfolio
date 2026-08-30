@@ -69,6 +69,13 @@
     cursor: pointer;
   }
 
+  .defer-section-placeholder {
+    width: 100%;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--foreground) 3%, transparent);
+    margin-bottom: 24px;
+  }
+
   @media (max-width: 700px) {
     padding: 22px 16px;
   }

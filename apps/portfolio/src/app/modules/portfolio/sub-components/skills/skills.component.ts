@@ -2,14 +2,14 @@ import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { ResumeObject } from '../../../../../shared/Interface/Resume';
+import { ResumeObject } from '@portfolio/shared-types';
 
 @Component({
   selector: 'app-skills',
   standalone: true,
   imports: [MatCardModule, MatChipsModule, MatTooltipModule],
   templateUrl: './skills.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './skills.component.scss',
 })
 export class SkillsComponent {

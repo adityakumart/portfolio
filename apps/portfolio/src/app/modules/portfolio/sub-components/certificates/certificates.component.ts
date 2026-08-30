@@ -7,7 +7,7 @@ import { Certificate } from '@portfolio/shared-types';
   standalone: true,
   imports: [MatCardModule],
   templateUrl: './certificates.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './certificates.component.scss',
 })
 export class CertificatesComponent {

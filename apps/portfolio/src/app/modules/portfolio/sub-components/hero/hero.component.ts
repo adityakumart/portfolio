@@ -1,11 +1,11 @@
 import { Component, input, ChangeDetectionStrategy } from '@angular/core';
-import { ResumeObject } from '../../../../../shared/Interface/Resume';
+import { ResumeObject } from '@portfolio/shared-types';
 
 @Component({
   selector: 'app-hero',
   standalone: true,
   templateUrl: './hero.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './hero.component.scss',
 })
 export class HeroComponent {

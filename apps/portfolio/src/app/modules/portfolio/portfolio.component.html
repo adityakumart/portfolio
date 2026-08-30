@@ -20,12 +20,39 @@
   </button>
   
   <div class="header">
-    <app-hero [resume]="resume()"></app-hero>
-    <app-summary [resume]="resume()"></app-summary>
-    <app-experience [worksData]="resume().work"></app-experience>
-    <app-education [education]="resume().education"></app-education>
-    <app-skills [resume]="resume()" [gridColumns]="gridColumns()"></app-skills>
-    <app-certificates [certificates]="resume().certificates"></app-certificates>
-    <app-awards [awards]="resume().awards"></app-awards>
+    <!-- Immediate / Above-the-fold Critical Path -->
+    <app-hero [resume]="resume()" />
+    <app-summary [resume]="resume()" />
+
+    <!-- Below-the-fold Viewport Deferred Sections -->
+    @defer (on viewport) {
+      <app-experience [worksData]="resume().work" />
+    } @placeholder {
+      <div class="defer-section-placeholder" style="min-height: 200px;"></div>
+    }
+
+    @defer (on viewport) {
+      <app-education [education]="resume().education" />
+    } @placeholder {
+      <div class="defer-section-placeholder" style="min-height: 180px;"></div>
+    }
+
+    @defer (on viewport) {
+      <app-skills [resume]="resume()" [gridColumns]="gridColumns()" />
+    } @placeholder {
+      <div class="defer-section-placeholder" style="min-height: 180px;"></div>
+    }
+
+    @defer (on viewport) {
+      <app-certificates [certificates]="resume().certificates" />
+    } @placeholder {
+      <div class="defer-section-placeholder" style="min-height: 160px;"></div>
+    }
+
+    @defer (on viewport) {
+      <app-awards [awards]="resume().awards" />
+    } @placeholder {
+      <div class="defer-section-placeholder" style="min-height: 140px;"></div>
+    }
   </div>
 </div>

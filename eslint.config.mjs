@@ -17,8 +17,16 @@ export default [
           allow: ['^.*/eslint(\\.base)?\\.config\\.[cm]?[jt]s$'],
           depConstraints: [
             {
-              sourceTag: '*',
-              onlyDependOnLibsWithTags: ['*'],
+              sourceTag: 'scope:portfolio',
+              onlyDependOnLibsWithTags: ['scope:portfolio', 'scope:shared'],
+            },
+            {
+              sourceTag: 'scope:portfolio-core',
+              onlyDependOnLibsWithTags: ['scope:portfolio-core', 'scope:shared'],
+            },
+            {
+              sourceTag: 'scope:shared',
+              onlyDependOnLibsWithTags: ['scope:shared'],
             },
           ],
         },

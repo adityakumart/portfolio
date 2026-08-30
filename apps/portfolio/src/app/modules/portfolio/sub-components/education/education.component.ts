@@ -7,7 +7,7 @@ import { Education } from '@portfolio/shared-types';
   standalone: true,
   imports: [MatCardModule],
   templateUrl: './education.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './education.component.scss',
 })
 export class EducationComponent {
