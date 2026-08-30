@@ -3,8 +3,7 @@ import {
   DOCUMENT,
   inject,
   ChangeDetectionStrategy,
-  ViewChildren,
-  QueryList,
+  OnInit,
 } from '@angular/core';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -12,35 +11,22 @@ import { filter, map } from 'rxjs/operators';
 import { ThemeService } from './theme.service';
 import { GlobalData } from '../shared/data/GlobalData';
 import { appRoutingList } from './shared/data/routes';
-import { MatMenuTrigger } from '@angular/material/menu';
-import { AuthService } from './modules/user/services/auth';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [RouterOutlet],
   templateUrl: './app.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './app.component.scss',
 })
-export class AppComponent {
-  @ViewChildren(MatMenuTrigger) menuTriggers!: QueryList<MatMenuTrigger>;
-
+export class AppComponent implements OnInit {
   routingList = appRoutingList;
-
-  closeAllMenus(): void {
-    this.menuTriggers.forEach((trigger) => {
-      if (trigger.menuOpen) {
-        trigger.closeMenu();
-      }
-    });
-  }
 
   private document = inject(DOCUMENT);
   private globalData: GlobalData = inject(GlobalData);
   private themeService = inject(ThemeService);
   private router = inject(Router);
-  private authService = inject(AuthService);
 
   readonly isUserRoute = toSignal(
     this.router.events.pipe(
@@ -95,14 +81,11 @@ export class AppComponent {
     { initialValue: '' },
   );
 
-  // name = signal(this.globalData.resume.basics.name);
   toggleTheme(): void {
     this.themeService.toggleTheme();
   }
 
   ngOnInit(): void {
-    //Called after the constructor, initializing input properties, and the first call to ngOnChanges.
-    //Add 'implements OnInit' to the class.
     this.document.title =
       this.globalData.resume.basics.name +
       ' || ' +

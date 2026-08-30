@@ -7,7 +7,7 @@ import { WorkProject } from '@portfolio/shared-types';
   standalone: true,
   imports: [MatChipsModule],
   templateUrl: './projects.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './projects.component.scss',
 })
 export class ProjectsComponent {

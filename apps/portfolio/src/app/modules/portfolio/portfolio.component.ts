@@ -4,28 +4,18 @@ import {
   signal,
   inject,
   computed,
-  AfterViewInit,
-  ElementRef,
   ChangeDetectionStrategy,
-  PLATFORM_ID,
 } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
-
-import { PortfolioRoutingModule } from './portfolio-routing.module';
-import { MatCardModule } from '@angular/material/card';
-import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { RouterLink } from '@angular/router';
-
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { GlobalData } from '../../../shared/data/GlobalData';
 import { ThemeService } from '../../theme.service';
-import { MatExpansionModule } from '@angular/material/expansion';
 import { HeroComponent } from './sub-components/hero/hero.component';
 import { SummaryComponent } from './sub-components/summary/summary.component';
 import { ExperienceComponent } from './sub-components/experience/experience.component';
@@ -36,14 +26,11 @@ import { AwardsComponent } from './sub-components/awards/awards.component';
 
 @Component({
   selector: 'app-portfolio',
+  standalone: true,
   templateUrl: './portfolio.component.html',
   styleUrls: ['./portfolio.component.scss'],
   imports: [
-    PortfolioRoutingModule,
-    MatCardModule,
-    MatChipsModule,
     MatTooltipModule,
-    MatExpansionModule,
     MatIconModule,
     MatButtonModule,
     RouterLink,
@@ -55,27 +42,19 @@ import { AwardsComponent } from './sub-components/awards/awards.component';
     EducationComponent,
     AwardsComponent,
   ],
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [GlobalData],
 })
-export class PortfolioComponent implements OnDestroy, AfterViewInit {
-  destroyed = new Subject<void>();
-  private el = inject(ElementRef);
-  private platformId = inject(PLATFORM_ID);
+export class PortfolioComponent implements OnDestroy {
+  private destroyed = new Subject<void>();
   private globalData = inject(GlobalData);
   private themeService = inject(ThemeService);
 
   isDarkMode = computed(() => this.themeService.darkMode());
+  resume = signal(this.globalData.resume);
+  gridColumns = signal(1);
 
-  toggleTheme(): void {
-    this.themeService.toggleTheme();
-  }
-  columnsMap = new Map([
-    // [Breakpoints.XSmall, 1],
-    // [Breakpoints.Small, 2],
-    // [Breakpoints.Medium, 3],
-    // [Breakpoints.Large, 4],
-    // [Breakpoints.XLarge, 5],
+  private readonly columnsMap = new Map([
     [Breakpoints.XSmall, 1],
     [Breakpoints.Small, 2],
     [Breakpoints.Medium, 2],
@@ -102,59 +81,9 @@ export class PortfolioComponent implements OnDestroy, AfterViewInit {
       });
   }
 
-  ngAfterViewInit() {
-    if (isPlatformBrowser(this.platformId)) {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              entry.target.classList.add('visible');
-              observer.unobserve(entry.target); // Only animate once
-            }
-          });
-        },
-        { threshold: 0.1, rootMargin: '0px 0px -50px 0px' },
-      );
-
-      setTimeout(() => {
-        const elements =
-          this.el.nativeElement.querySelectorAll('.reveal-on-scroll');
-        elements.forEach((el: Element) => observer.observe(el));
-      }, 100); // Small timeout ensures the @for loops have rendered
-    }
+  toggleTheme(): void {
+    this.themeService.toggleTheme();
   }
-
-  gridColumns = signal(1);
-
-  resume = signal(this.globalData.resume);
-  classNameForJobTitle = computed(() => {
-    switch (true) {
-      case this.jobtitle().length % 10 === 0:
-        return 'purple';
-      case this.jobtitle().length % 9 === 0:
-        return 'grey';
-      case this.jobtitle().length % 8 === 0:
-        return 'darkGrey';
-      case this.jobtitle().length % 7 === 0:
-        return 'darkBlue';
-      case this.jobtitle().length % 6 === 0:
-        return 'brown';
-      case this.jobtitle().length % 5 === 0:
-        return 'orange';
-      case this.jobtitle().length % 4 === 0:
-        return 'green';
-      case this.jobtitle().length % 3 === 0:
-        return 'skyblue';
-      case this.jobtitle().length % 2 === 0:
-        return 'blue';
-      case this.jobtitle().length % 1 === 0:
-        return 'red';
-      default:
-        return '';
-    }
-  });
-
-  jobtitle = signal('');
 
   ngOnDestroy() {
     this.destroyed.next();
