@@ -85,8 +85,9 @@ export class PortfolioComponent implements OnDestroy {
     this.themeService.toggleTheme();
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this.destroyed.next();
     this.destroyed.complete();
   }
 }
+
