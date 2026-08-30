@@ -86,8 +86,6 @@ export function csvToJson(csvString: string, delimiter: Delimiter): [string, Con
     let match;
     let colIndex = 0;
     const line = lines[i];
-    let lastIndex = 0;
-
     // This regex-based parser correctly handles quoted fields containing delimiters.
     while ((match = csvRegex.exec(line))) {
       if (colIndex >= headers.length) break;
@@ -96,7 +94,6 @@ export function csvToJson(csvString: string, delimiter: Delimiter): [string, Con
         value = value.slice(1, -1).replace(/""/g, '"');
       }
       obj[headers[colIndex++]] = value;
-      lastIndex = csvRegex.lastIndex;
     }
     // Ensure all headers are present, even if the line is short
     for (let j = colIndex; j < headers.length; j++) {

@@ -128,7 +128,7 @@ export class FileManagerComponent implements OnInit {
       const file = input.files[0];
       try {
         await this.fileService.uploadFile(file);
-      } catch (err) {
+      } catch {
         // Handled in service
       } finally {
         // Reset file input value to allow uploading same file again
@@ -154,7 +154,7 @@ export class FileManagerComponent implements OnInit {
       await this.fileService.createFolder(name);
       this.newFolderName.set('');
       this.showFolderInput.set(false);
-    } catch (err) {
+    } catch {
       // Handled in service
     }
   }
@@ -183,7 +183,7 @@ export class FileManagerComponent implements OnInit {
       const file = event.dataTransfer.files[0];
       try {
         await this.fileService.uploadFile(file);
-      } catch (err) {
+      } catch {
         // Handled in service
       }
     }

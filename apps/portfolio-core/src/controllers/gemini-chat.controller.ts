@@ -61,7 +61,7 @@ export async function handleChatStream(
       }
       try {
         chatObjectId = new ObjectId(activeChatId);
-      } catch (err) {
+      } catch {
         res
           .status(400)
           .json({ error: 'Bad Request', message: 'Invalid chatId format.' });
@@ -270,7 +270,7 @@ export async function handleGetChatMessages(
     let chatObjectId: ObjectId;
     try {
       chatObjectId = new ObjectId(chatId);
-    } catch (err) {
+    } catch {
       res
         .status(400)
         .json({ error: 'Bad Request', message: 'Invalid chatId format.' });

@@ -446,7 +446,6 @@ export class RRBookingListComponent implements OnInit {
     const p23 = Number(pricing.h23?.price || 0);
     const p11 = Number(pricing.h11?.price || 0);
     const p3 = Number(pricing.h3?.price || 0);
-    const p1 = Number(pricing.h1?.price || 0);
 
     if (remaining >= 24) {
       const count = Math.floor(remaining / 24);
@@ -477,7 +476,6 @@ export class RRBookingListComponent implements OnInit {
     const km23 = Number(pricing.h23?.km || 0);
     const km11 = Number(pricing.h11?.km || 0);
     const km3 = Number(pricing.h3?.km || 0);
-    const km1 = Number(pricing.h1?.km || 0);
 
     if (remaining >= 24) {
       const count = Math.floor(remaining / 24);

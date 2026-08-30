@@ -22,7 +22,7 @@ export class ChatHistoryService {
       let userId: ObjectId;
       try {
         userId = new ObjectId(userIdStr);
-      } catch (err) {
+      } catch {
         throw new Error('Invalid user ID format');
       }
 

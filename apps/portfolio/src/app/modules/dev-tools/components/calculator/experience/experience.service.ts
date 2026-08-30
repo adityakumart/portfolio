@@ -34,7 +34,7 @@ export class ExperienceService {
     try {
       const list = await this.experienceDbService.getAll();
       this.experienceSignal.set(list);
-    } catch (err) {
+    } catch {
       this.snackBar.open('Failed to load experiences', 'error');
     }
   }

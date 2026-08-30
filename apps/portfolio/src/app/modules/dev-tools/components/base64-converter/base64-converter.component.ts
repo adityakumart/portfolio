@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, inject } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -134,7 +134,7 @@ export class Base64ConverterComponent implements OnInit, OnDestroy {
         const encoded = this.base64Service.encodeText(text);
         this.form.patchValue({ outputText: encoded }, { emitEvent: false });
         this.clearPreviewAndErrorStates();
-      } catch (error) {
+      } catch {
         this.form.patchValue({ outputText: '' }, { emitEvent: false });
       }
     } else {
@@ -146,7 +146,7 @@ export class Base64ConverterComponent implements OnInit, OnDestroy {
 
         // Examine if the input was actually a base64 file representation to show visual preview
         this.detectAndSetupPreview(text);
-      } catch (error) {
+      } catch {
         // Suppress real-time error displaying while typing, but try to resolve preview if possible
         this.form.patchValue({ outputText: '' }, { emitEvent: false });
         this.detectAndSetupPreview(text);

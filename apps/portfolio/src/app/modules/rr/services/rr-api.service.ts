@@ -34,7 +34,7 @@ export class RRApiService {
       if (userStr && token) {
         try {
           this.currentUser.set(JSON.parse(userStr));
-        } catch (e) {
+        } catch {
           this.clearSession();
         }
       }

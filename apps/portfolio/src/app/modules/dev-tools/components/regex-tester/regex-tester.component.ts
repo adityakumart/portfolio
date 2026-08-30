@@ -428,7 +428,7 @@ info@sub.domain.co`],
 
     try {
       // Validate RegExp syntax by compiling it with active flags
-      const regex = new RegExp(pattern, this.activeFlags);
+      new RegExp(pattern, this.activeFlags);
 
       // Successfully compiled! Parse the token structure for visual explanation
       this.parsedTokens = this.parseRegexTokens(pattern);

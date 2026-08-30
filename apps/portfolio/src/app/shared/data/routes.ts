@@ -1,5 +1,4 @@
 import { Routes, Route } from '@angular/router';
-import { Type } from '@angular/core';
 
 /**
  * Strict type definition for individual developer tools

@@ -63,7 +63,7 @@ export class Base64Service {
     let binaryString: string;
     try {
       binaryString = atob(cleaned);
-    } catch (error) {
+    } catch {
       throw new Error('Invalid Base64 format: The input string is not correctly encoded or contains invalid characters.');
     }
 
@@ -82,7 +82,7 @@ export class Base64Service {
     try {
       // Decode using TextDecoder with fatal validation to detect non-text binary inputs
       return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
-    } catch (error) {
+    } catch {
       throw new Error('Decoding Error: The input is not a valid UTF-8 text string (it may be binary data).');
     }
   }
@@ -122,7 +122,7 @@ export class Base64Service {
         bytes[i] = binaryString.charCodeAt(i);
       }
       return bytes.slice(0, numBytes);
-    } catch (e) {
+    } catch {
       return new Uint8Array(0);
     }
   }
@@ -218,7 +218,7 @@ export class Base64Service {
         if (nonPrintableCount / decodedChunk.length > 0.1) {
           isBinary = true;
         }
-      } catch (e) {
+      } catch {
         isBinary = true;
       }
     }

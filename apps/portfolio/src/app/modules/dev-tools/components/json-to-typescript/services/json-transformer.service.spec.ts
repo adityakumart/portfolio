@@ -1,18 +1,15 @@
 import { TestBed } from '@angular/core/testing';
 import { JsonTransformerService } from './json-transformer.service';
-import { TypeGeneratorUtility } from '../utilities/type-generator.utility';
 
 describe('JsonTransformerService', () => {
   let service: JsonTransformerService;
-  let typeGenerator: TypeGeneratorUtility;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [JsonTransformerService, TypeGeneratorUtility],
+      providers: [JsonTransformerService],
     });
 
     service = TestBed.inject(JsonTransformerService);
-    typeGenerator = TestBed.inject(TypeGeneratorUtility);
   });
 
   it('should be created', () => {
