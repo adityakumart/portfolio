@@ -154,7 +154,7 @@ export class NumberBaseConverterComponent implements OnInit, OnDestroy {
       this.generateExplanation(value, sourceFieldName, base, decimalValue, convertedValues);
 
       this.isUpdating = false;
-    } catch (err) {
+    } catch {
       // Gracefully clear conversion outputs on parsing failures
       const patchValues: Record<string, string> = {};
       ['decimal', 'binary', 'octal', 'hexadecimal'].forEach(name => {

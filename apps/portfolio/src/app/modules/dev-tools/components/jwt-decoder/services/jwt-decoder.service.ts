@@ -141,7 +141,7 @@ export class JwtDecoderService {
       const percentEncoded = escape(binaryString);
       // 5. Safely decode as UTF-8 string
       return decodeURIComponent(percentEncoded);
-    } catch (error) {
+    } catch {
       throw new Error('Invalid Base64Url character encoding or padding.');
     }
   }

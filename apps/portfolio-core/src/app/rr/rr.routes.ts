@@ -5,7 +5,6 @@ import multer from 'multer';
 import { authenticateRRToken, requireAdmin } from './rr.middleware';
 import { RRService, IEmployee, IVehicle, IBooking } from './rr.service';
 import { handleVehicleImageUpload } from './r2-storage.controller';
-import { R2Service } from '../../services/r2.service';
 
 const rrRouter = Router();
 const JWT_SECRET = process.env['JWT_SECRET'] || 'supersecretlocaljwtkey1234567890!';

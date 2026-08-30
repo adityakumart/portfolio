@@ -45,10 +45,11 @@ export class AuthService {
       const result = await userCollection.insertOne(newUser);
 
       // Return user without password
-      const { password, ...safeUser } = {
+      const safeUser = {
         id: result.insertedId.toString(),
         ...newUser,
       };
+      delete (safeUser as any).password;
       return safeUser;
     } catch (err) {
       console.error('Signup Error:', err);
@@ -98,15 +99,17 @@ export class AuthService {
       if (!updatedUser)
         throw new Error('Error retrieving updated user profile');
 
-      const { password, _id, ...safeUser } = {
+      const safeUser = {
         id: updatedUser._id.toString(),
         ...updatedUser,
       } as unknown as User & { password?: string; _id?: unknown };
+      delete safeUser.password;
+      delete (safeUser as any)._id;
 
       return safeUser;
-    } catch (err) {
-      console.error('Login Error:', err);
-      throw err;
+    } catch (_) {
+      console.error('Login Error:', _);
+      throw _;
     }
   }
 
@@ -123,7 +126,7 @@ export class AuthService {
       let objId: ObjectId;
       try {
         objId = new ObjectId(payload.id);
-      } catch (e) {
+      } catch {
         throw new Error('Invalid user ID format');
       }
 
@@ -159,10 +162,12 @@ export class AuthService {
       if (!updatedUser)
         throw new Error('Error retrieving updated user profile');
 
-      const { password, _id, ...safeUser } = {
+      const safeUser = {
         id: updatedUser._id.toString(),
         ...updatedUser,
       } as unknown as User & { password?: string; _id?: unknown };
+      delete safeUser.password;
+      delete (safeUser as any)._id;
 
       return {
         access_token: newAccessToken,
@@ -184,7 +189,7 @@ export class AuthService {
       let objId: ObjectId;
       try {
         objId = new ObjectId(userId);
-      } catch (e) {
+      } catch {
         throw new Error('Invalid user ID format');
       }
 

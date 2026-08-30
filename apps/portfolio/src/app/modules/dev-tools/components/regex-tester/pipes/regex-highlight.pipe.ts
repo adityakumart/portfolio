@@ -53,7 +53,7 @@ export class RegexHighlightPipe implements PipeTransform {
       }
 
       return this.sanitizer.bypassSecurityTrustHtml(result);
-    } catch (e) {
+    } catch {
       // Return safely escaped plain text if regex compiles with syntax errors
       return this.sanitizer.bypassSecurityTrustHtml(this.escapeHtml(text));
     }

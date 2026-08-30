@@ -250,7 +250,7 @@ export async function handleMockDownload(req: AuthenticatedRequest, res: Respons
     res.setHeader('Content-Type', contentType);
     res.setHeader('Content-Disposition', `attachment; filename="${path.basename(key)}"`);
     res.status(200).send(buffer);
-  } catch (error: any) {
+  } catch {
     res.status(404).send('File not found');
   }
 }

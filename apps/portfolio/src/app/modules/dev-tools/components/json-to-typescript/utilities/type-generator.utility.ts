@@ -41,7 +41,7 @@ export class TypeGeneratorUtility {
     const lines: string[] = [];
     const keys = Object.keys(obj);
 
-    keys.forEach((key, index) => {
+    keys.forEach((key) => {
       const value = obj[key];
       const typeDefinition = this.getTypeDefinition(value, key, depth);
       lines.push(typeDefinition);
@@ -67,7 +67,7 @@ export class TypeGeneratorUtility {
     }
 
     if (Array.isArray(value)) {
-      return this.getArrayTypeDefinition(value, sanitizedKey, indent, depth);
+      return this.getArrayTypeDefinition(value, sanitizedKey, indent);
     }
 
     if (typeof value === 'object') {
@@ -96,7 +96,6 @@ export class TypeGeneratorUtility {
     array: unknown[],
     key: string,
     indent: string,
-    depth: number,
   ): string {
     if (array.length === 0) {
       return `${indent}${key}: any[];`;
@@ -115,10 +114,6 @@ export class TypeGeneratorUtility {
     ) {
       // Array of objects - create interface for array element
       const elementInterfaceName = this.generateInterfaceNameFromProperty(key);
-      const elementInterface = this.generateInterface(
-        firstElement as Record<string, unknown>,
-        elementInterfaceName,
-      );
 
       // Store the nested interface (will be returned separately or handled)
       return `${indent}${key}: ${elementInterfaceName}[];`;
@@ -144,8 +139,6 @@ export class TypeGeneratorUtility {
     originalKey: string,
     depth: number,
   ): string {
-    const nestedInterfaceName =
-      this.generateInterfaceNameFromProperty(originalKey);
     const properties = this.generateProperties(obj, depth + 1);
 
     const nestedInterface = [
