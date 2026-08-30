@@ -1,9 +1,14 @@
+export type UserRole = 'admin' | 'user';
+
 export interface User {
   id: string;
   email: string;
   first_name?: string;
   last_name?: string;
+  fullName?: string;
+  role?: UserRole;
   admin?: boolean;
+  masterFolder?: boolean;
   isEnabled?: boolean;
   is_deleted?: boolean;
   access_token?: string | null;

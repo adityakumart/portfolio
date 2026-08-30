@@ -1,15 +1,47 @@
-import { Component, inject, OnInit, signal, computed, ElementRef, ViewChild } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnInit,
+  signal,
+  computed,
+  ElementRef,
+  ViewChild,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
-import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import {
+  lucideFolder,
+  lucideFolderPlus,
+  lucideUpload,
+  lucideFile,
+  lucideFileText,
+  lucideDownload,
+  lucideEye,
+  lucideChevronRight,
+  lucideHome,
+  lucideTrash2,
+  lucideShieldCheck,
+  lucideUser,
+  lucideSparkles,
+  lucideX,
+  lucideArrowLeft,
+  lucideCloud,
+  lucideCornerLeftUp,
+  lucideLock,
+  lucideBot,
+  lucideCopy,
+  lucideRefreshCw,
+  lucideCheck,
+} from '@ng-icons/lucide';
+import { HlmButton } from '@spartan-ng/hel/button';
+import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
 import { FileManagerService } from '../../services/file-manager.service';
+import { AuthService } from '../../services/auth';
 import { FileNode } from '@portfolio/shared-types';
 import { FilePreviewDialogComponent } from './file-preview-dialog.component';
 
@@ -19,20 +51,46 @@ import { FilePreviewDialogComponent } from './file-preview-dialog.component';
   imports: [
     CommonModule,
     FormsModule,
-    MatButtonModule,
-    MatIconModule,
-    MatInputModule,
-    MatFormFieldModule,
     MatProgressBarModule,
-    MatTooltipModule,
     MatProgressSpinnerModule,
     MatDialogModule,
+    NgIconComponent,
+    HlmButton,
+    HlmTooltipImports,
+  ],
+  providers: [
+    provideIcons({
+      lucideFolder,
+      lucideFolderPlus,
+      lucideUpload,
+      lucideFile,
+      lucideFileText,
+      lucideDownload,
+      lucideEye,
+      lucideChevronRight,
+      lucideHome,
+      lucideTrash2,
+      lucideShieldCheck,
+      lucideUser,
+      lucideSparkles,
+      lucideX,
+      lucideArrowLeft,
+      lucideCloud,
+      lucideCornerLeftUp,
+      lucideLock,
+      lucideBot,
+      lucideCopy,
+      lucideRefreshCw,
+      lucideCheck,
+    }),
   ],
   templateUrl: './file-manager.component.html',
   styleUrl: './file-manager.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FileManagerComponent implements OnInit {
   fileService = inject(FileManagerService);
+  authService = inject(AuthService);
   private dialog = inject(MatDialog);
 
   // UI State Signals
@@ -40,10 +98,23 @@ export class FileManagerComponent implements OnInit {
   newFolderName = signal<string>('');
   isDragging = signal<boolean>(false);
 
-  // Breadcrumbs selector
+  // AI Assistant Modal State
+  selectedAiFile = signal<FileNode | null>(null);
+  aiPrompt = signal<string>('');
+  copiedAiReply = signal<boolean>(false);
+
+  // Active user & RBAC scope state
+  currentUser = computed(() => this.authService.currentUser());
+  scope = computed(() => this.fileService.scope());
+  userRole = computed(() => this.scope()?.userRole || (this.currentUser()?.admin ? 'admin' : 'user'));
+  isAdmin = computed(() => this.userRole() === 'admin');
+  userFullName = computed(() => this.scope()?.userFullName || this.currentUser()?.fullName || 'User');
+  uploadDir = computed(() => this.scope()?.uploadDir || 'root/');
+
+  // Breadcrumbs computation based on scope
   breadcrumbs = computed(() => {
-    const path = this.fileService.currentPath();
-    const parts = path.split('/').filter(Boolean);
+    const current = this.fileService.currentPath();
+    const parts = current.split('/').filter(Boolean);
     const crumbs: { name: string; path: string }[] = [];
     let accum = '';
     for (const part of parts) {
@@ -56,8 +127,15 @@ export class FileManagerComponent implements OnInit {
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
   ngOnInit(): void {
-    // Initial folder load (root of bucket)
+    // Initialize directory from authorized scope
     this.fileService.loadDirectory('');
+  }
+
+  /**
+   * Refreshes the active folder contents
+   */
+  refreshCurrentDirectory(): void {
+    this.fileService.loadDirectory(this.fileService.currentPath());
   }
 
   /**
@@ -105,11 +183,42 @@ export class FileManagerComponent implements OnInit {
   async downloadFile(node: FileNode): Promise<void> {
     try {
       const url = await this.fileService.getDownloadUrl(node.path);
-      // Open in a new tab to trigger download
       window.open(url, '_blank');
     } catch (err: any) {
       console.error('Download url retrieval failed:', err);
     }
+  }
+
+  /**
+   * Opens AI assistant analysis modal for the selected file
+   */
+  openAiAssistant(node: FileNode): void {
+    this.selectedAiFile.set(node);
+    this.aiPrompt.set('Summarize the contents of this file and extract key takeaways.');
+    this.fileService.aiResponse.set(null);
+  }
+
+  closeAiAssistant(): void {
+    this.selectedAiFile.set(null);
+    this.aiPrompt.set('');
+    this.fileService.aiResponse.set(null);
+    this.copiedAiReply.set(false);
+  }
+
+  async runAiAnalysis(): Promise<void> {
+    const node = this.selectedAiFile();
+    if (!node) return;
+    try {
+      await this.fileService.askAiAboutFile(node.path, this.aiPrompt());
+    } catch (err) {
+      console.error('AI Analysis failed:', err);
+    }
+  }
+
+  copyAiResponse(text: string): void {
+    navigator.clipboard.writeText(text);
+    this.copiedAiReply.set(true);
+    setTimeout(() => this.copiedAiReply.set(false), 2000);
   }
 
   /**
@@ -131,7 +240,6 @@ export class FileManagerComponent implements OnInit {
       } catch {
         // Handled in service
       } finally {
-        // Reset file input value to allow uploading same file again
         input.value = '';
       }
     }
@@ -144,7 +252,6 @@ export class FileManagerComponent implements OnInit {
     const name = this.newFolderName().trim();
     if (!name) return;
 
-    // Reject folder names containing slashes
     if (name.includes('/') || name.includes('\\')) {
       this.fileService.error.set('Folder name cannot contain slashes.');
       return;
