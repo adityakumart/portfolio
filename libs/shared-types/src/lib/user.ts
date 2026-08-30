@@ -8,6 +8,7 @@ export interface User {
   fullName?: string;
   role?: UserRole;
   admin?: boolean;
+  masterFolder?: boolean;
   isEnabled?: boolean;
   is_deleted?: boolean;
   access_token?: string | null;

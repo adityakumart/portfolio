@@ -20,5 +20,6 @@ export interface FileScopeInfo {
   rootPath: string;
   uploadDir: string;
   isAdmin: boolean;
+  masterFolder?: boolean;
   activePath: string;
 }

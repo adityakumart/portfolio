@@ -22,12 +22,13 @@ export function computeUserScope(user: User): FileScopeInfo {
   const USER_ID = user.id;
   const rawFullName = user.fullName || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'User';
   const USER_FULL_NAME = sanitizeFolderName(rawFullName);
-  const USER_ROLE: UserRole = user.admin ? 'admin' : 'user';
-  const isAdmin = USER_ROLE === 'admin';
+  const hasMasterFolder = user.masterFolder === true;
+  const isAdmin = user.admin === true || hasMasterFolder;
+  const USER_ROLE: UserRole = isAdmin ? 'admin' : 'user';
 
-  // Admin has full visibility starting at ROOT_PATH ('root/')
+  // Users with masterFolder === true or admin === true have full visibility starting at ROOT_PATH ('root/')
   // Standard users are restricted to /root/users/{userId}-{fullName}/
-  const UPLOAD_DIR = isAdmin 
+  const UPLOAD_DIR = (isAdmin || hasMasterFolder)
     ? ROOT_PATH 
     : `${ROOT_PATH}users/${USER_ID}-${USER_FULL_NAME}/`;
 
@@ -38,6 +39,7 @@ export function computeUserScope(user: User): FileScopeInfo {
     rootPath: ROOT_PATH,
     uploadDir: UPLOAD_DIR,
     isAdmin,
+    masterFolder: hasMasterFolder,
     activePath: UPLOAD_DIR,
   };
 }
@@ -76,6 +78,8 @@ export async function enforceFileRBAC(
       return;
     }
 
+    const masterFolder = userDoc['masterFolder'] === true;
+    const isAdmin = userDoc['admin'] === true || masterFolder;
     const user: User = {
       id: userDoc._id ? userDoc._id.toString() : String(userDoc['id']),
       email: userDoc['email'],
@@ -83,7 +87,8 @@ export async function enforceFileRBAC(
       last_name: userDoc['last_name'],
       fullName: `${userDoc['first_name'] || ''} ${userDoc['last_name'] || ''}`.trim(),
       admin: Boolean(userDoc['admin']),
-      role: userDoc['admin'] ? 'admin' : 'user',
+      masterFolder: masterFolder,
+      role: isAdmin ? 'admin' : 'user',
       isEnabled: userDoc['isEnabled'],
     };
 
