@@ -1,15 +1,11 @@
 import {
   Component,
   OnDestroy,
-  AfterViewInit,
-  ElementRef,
-  PLATFORM_ID,
   signal,
   inject,
   computed,
   ChangeDetectionStrategy,
 } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -49,15 +45,10 @@ import { AwardsComponent } from './sub-components/awards/awards.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [GlobalData],
 })
-export class PortfolioComponent implements AfterViewInit, OnDestroy {
+export class PortfolioComponent implements OnDestroy {
   private destroyed = new Subject<void>();
-  private el = inject(ElementRef);
-  private platformId = inject(PLATFORM_ID);
   private globalData = inject(GlobalData);
   private themeService = inject(ThemeService);
-
-  private intersectionObserver?: IntersectionObserver;
-  private mutationObserver?: MutationObserver;
 
   isDarkMode = computed(() => this.themeService.darkMode());
   resume = signal(this.globalData.resume);
@@ -90,63 +81,13 @@ export class PortfolioComponent implements AfterViewInit, OnDestroy {
       });
   }
 
-  ngAfterViewInit(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      this.initScrollReveal();
-    }
-  }
-
-  private initScrollReveal(): void {
-    if (typeof IntersectionObserver === 'undefined') {
-      // Fallback if IntersectionObserver is not available: make everything visible immediately
-      const elements =
-        this.el.nativeElement.querySelectorAll('.reveal-on-scroll');
-      elements.forEach((el: Element) => el.classList.add('visible'));
-      return;
-    }
-
-    this.intersectionObserver = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-            this.intersectionObserver?.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.05, rootMargin: '0px 0px -20px 0px' },
-    );
-
-    const observePendingElements = () => {
-      const elements = this.el.nativeElement.querySelectorAll(
-        '.reveal-on-scroll:not(.visible)',
-      );
-      elements.forEach((el: Element) => this.intersectionObserver?.observe(el));
-    };
-
-    // Observe immediate elements
-    observePendingElements();
-
-    // Observe newly rendered deferred elements
-    if (typeof MutationObserver !== 'undefined') {
-      this.mutationObserver = new MutationObserver(() => {
-        observePendingElements();
-      });
-      this.mutationObserver.observe(this.el.nativeElement, {
-        childList: true,
-        subtree: true,
-      });
-    }
-  }
-
   toggleTheme(): void {
     this.themeService.toggleTheme();
   }
 
   ngOnDestroy(): void {
-    this.intersectionObserver?.disconnect();
-    this.mutationObserver?.disconnect();
     this.destroyed.next();
     this.destroyed.complete();
   }
 }
+
