@@ -1,24 +1,50 @@
 import { Response } from 'express';
 import { AuthenticatedRequest } from '../types/express';
 import { R2Service, isR2Configured } from '../services/r2.service';
+import { FileModel } from '../models/file.model';
+import { GeminiAiService } from '../services/gemini.service';
 import { FileNode } from '@portfolio/shared-types';
 import * as path from 'path';
 
 /**
+ * GET /api/files/scope
+ * Returns the current authenticated user's RBAC scope and directory configuration
+ */
+export async function handleGetScope(req: AuthenticatedRequest, res: Response): Promise<void> {
+  try {
+    const scope = req.fileScope;
+    if (!scope) {
+      res.status(401).json({ error: 'Unauthorized', message: 'User scope not found.' });
+      return;
+    }
+    res.status(200).json(scope);
+  } catch (error: any) {
+    console.error('Get scope error:', error);
+    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+  }
+}
+
+/**
  * GET /api/files/list
- * Returns a hierarchical list of FileNodes based on a prefix
+ * Returns a hierarchical list of FileNodes based on user's authorized scope and prefix
  */
 export async function handleListFiles(req: AuthenticatedRequest, res: Response): Promise<void> {
   try {
-    const userId = req.userId;
-    if (!userId) {
-      res.status(401).json({ error: 'Unauthorized', message: 'User ID is missing.' });
+    const scope = req.fileScope;
+    if (!scope) {
+      res.status(401).json({ error: 'Unauthorized', message: 'User scope not found.' });
       return;
     }
 
     const queryPrefix = String(req.query['prefix'] || '');
-    const userRoot = `users/${userId}/`;
-    const fullPrefix = userRoot + queryPrefix;
+    // Standardize prefix without leading slash
+    const cleanPrefix = queryPrefix.startsWith('/') ? queryPrefix.slice(1) : queryPrefix;
+    
+    // Dynamic Path Resolution
+    // For admin: scope.uploadDir is 'root/'
+    // For standard user: scope.uploadDir is 'root/users/{userId}-{fullName}/'
+    const scopeRoot = scope.uploadDir;
+    const fullPrefix = scopeRoot + cleanPrefix;
 
     const { commonPrefixes, contents } = await R2Service.listObjects(fullPrefix);
 
@@ -26,14 +52,15 @@ export async function handleListFiles(req: AuthenticatedRequest, res: Response):
 
     // Map folders (CommonPrefixes)
     for (const prefix of commonPrefixes) {
-      if (prefix.startsWith(userRoot)) {
-        const relativePath = prefix.slice(userRoot.length);
-        if (relativePath && relativePath !== queryPrefix) {
+      if (prefix.startsWith(scopeRoot)) {
+        const relativePath = prefix.slice(scopeRoot.length);
+        if (relativePath && relativePath !== cleanPrefix) {
           const parts = relativePath.split('/').filter(Boolean);
           const name = parts[parts.length - 1] || relativePath;
           nodes.push({
             name,
             path: relativePath,
+            fullPath: prefix,
             type: 'folder',
           });
         }
@@ -42,18 +69,27 @@ export async function handleListFiles(req: AuthenticatedRequest, res: Response):
 
     // Map files (Contents)
     for (const item of contents) {
-      if (item.key.startsWith(userRoot)) {
-        const relativePath = item.key.slice(userRoot.length);
+      if (item.key.startsWith(scopeRoot)) {
+        const relativePath = item.key.slice(scopeRoot.length);
         // Exclude directory placeholder itself and empty keys
-        if (relativePath && relativePath !== queryPrefix && !relativePath.endsWith('/')) {
+        if (relativePath && relativePath !== cleanPrefix && !relativePath.endsWith('/')) {
           const parts = relativePath.split('/');
           const name = parts[parts.length - 1] || relativePath;
+
+          // Attempt to enrich with database metadata
+          const fileMeta = await FileModel.findByPath(item.key).catch(() => null);
+
           nodes.push({
             name,
             path: relativePath,
+            fullPath: item.key,
             type: 'file',
             size: item.size,
             lastModified: item.lastModified instanceof Date ? item.lastModified.toISOString() : String(item.lastModified),
+            ownerId: fileMeta?.ownerId?.toString() || scope.userId,
+            ownerName: fileMeta?.ownerName || (scope.isAdmin ? 'Admin' : scope.userFullName),
+            uploadedBy: fileMeta?.ownerName || (scope.isAdmin ? 'Admin' : scope.userFullName),
+            mimeType: fileMeta?.mimeType,
           });
         }
       }
@@ -76,22 +112,23 @@ export async function handleListFiles(req: AuthenticatedRequest, res: Response):
 
 /**
  * GET /api/files/view-url
- * Generates a GET Presigned URL (or local mock URL) for a specific object
+ * Generates a GET Presigned URL (or local mock URL) for a specific object within authorized scope
  */
 export async function handleGetViewUrl(req: AuthenticatedRequest, res: Response): Promise<void> {
   try {
-    const userId = req.userId;
-    const key = String(req.query['key'] || '');
-    if (!userId) {
+    const scope = req.fileScope;
+    const rawKey = String(req.query['key'] || '');
+    if (!scope) {
       res.status(401).json({ error: 'Unauthorized' });
       return;
     }
-    if (!key) {
+    if (!rawKey) {
       res.status(400).json({ error: 'Bad Request', message: 'Query parameter "key" is required.' });
       return;
     }
 
-    const fullKey = `users/${userId}/${key}`;
+    const cleanKey = rawKey.startsWith('/') ? rawKey.slice(1) : rawKey;
+    const fullKey = `${scope.uploadDir}${cleanKey}`;
     const hostUrl = req.protocol + '://' + req.get('host');
     const url = await R2Service.getDownloadUrl(fullKey, hostUrl);
 
@@ -104,23 +141,25 @@ export async function handleGetViewUrl(req: AuthenticatedRequest, res: Response)
 
 /**
  * POST /api/files/upload
- * Handles direct binary stream upload from the client and saves it to R2 or local mock storage
+ * Handles direct binary stream upload from the client, saves to storage, and persists metadata in DB
  */
 export async function handleUploadFile(req: AuthenticatedRequest, res: Response): Promise<void> {
   try {
-    const userId = req.userId;
-    const key = String(req.query['key'] || '');
-    if (!userId) {
+    const scope = req.fileScope;
+    const rawKey = String(req.query['key'] || '');
+    if (!scope) {
       res.status(401).json({ error: 'Unauthorized' });
       return;
     }
-    if (!key) {
+    if (!rawKey) {
       res.status(400).json({ error: 'Bad Request', message: 'Query parameter "key" is required.' });
       return;
     }
 
-    const fullKey = `users/${userId}/${key}`;
+    const cleanKey = rawKey.startsWith('/') ? rawKey.slice(1) : rawKey;
+    const fullKey = `${scope.uploadDir}${cleanKey}`;
     const contentType = req.headers['content-type'] || 'application/octet-stream';
+    const fileName = path.basename(cleanKey);
 
     const chunks: Buffer[] = [];
     req.on('data', (chunk) => {
@@ -131,7 +170,22 @@ export async function handleUploadFile(req: AuthenticatedRequest, res: Response)
       const buffer = Buffer.concat(chunks);
       try {
         await R2Service.uploadObject(fullKey, buffer, contentType);
-        res.status(200).json({ success: true, message: 'Uploaded successfully' });
+
+        // Record metadata in Mongoose/MongoDB File model
+        await FileModel.recordFile({
+          name: fileName,
+          path: fullKey,
+          relativePath: cleanKey,
+          size: buffer.length,
+          mimeType: contentType,
+          ownerId: scope.userId,
+          ownerName: scope.userFullName,
+          ownerRole: scope.userRole,
+        }).catch((dbErr) => {
+          console.warn('Failed to record file metadata in DB:', dbErr);
+        });
+
+        res.status(200).json({ success: true, message: 'Uploaded successfully', key: cleanKey });
       } catch (err: any) {
         console.error('Direct file upload storage error:', err);
         res.status(500).json({ error: 'Internal Server Error', message: err.message });
@@ -143,16 +197,15 @@ export async function handleUploadFile(req: AuthenticatedRequest, res: Response)
   }
 }
 
-
 /**
  * POST /api/files/create-folder
  * Creates an empty directory placeholder in S3 or local mock directory
  */
 export async function handleCreateFolder(req: AuthenticatedRequest, res: Response): Promise<void> {
   try {
-    const userId = req.userId;
+    const scope = req.fileScope;
     const { path: folderPath } = req.body;
-    if (!userId) {
+    if (!scope) {
       res.status(401).json({ error: 'Unauthorized' });
       return;
     }
@@ -161,8 +214,9 @@ export async function handleCreateFolder(req: AuthenticatedRequest, res: Respons
       return;
     }
 
-    const sanitizedPath = folderPath.endsWith('/') ? folderPath : folderPath + '/';
-    const fullKey = `users/${userId}/${sanitizedPath}`;
+    const cleanPath = folderPath.startsWith('/') ? folderPath.slice(1) : folderPath;
+    const sanitizedPath = cleanPath.endsWith('/') ? cleanPath : cleanPath + '/';
+    const fullKey = `${scope.uploadDir}${sanitizedPath}`;
 
     if (isR2Configured) {
       const { S3Client, PutObjectCommand } = await import('@aws-sdk/client-s3');
@@ -187,9 +241,52 @@ export async function handleCreateFolder(req: AuthenticatedRequest, res: Respons
       R2Service.createMockDirectory(fullKey);
     }
 
-    res.status(200).json({ success: true });
+    res.status(200).json({ success: true, folder: sanitizedPath });
   } catch (error: any) {
     console.error('Create folder error:', error);
+    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+  }
+}
+
+/**
+ * POST /api/files/ai-context
+ * AI Assistant (Antigravity) integration: reads file from user scope and processes with Gemini API
+ */
+export async function handleAiFileContext(req: AuthenticatedRequest, res: Response): Promise<void> {
+  try {
+    const scope = req.fileScope;
+    const { key, prompt } = req.body;
+    if (!scope) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+    if (!key) {
+      res.status(400).json({ error: 'Bad Request', message: 'File "key" is required.' });
+      return;
+    }
+
+    const cleanKey = key.startsWith('/') ? key.slice(1) : key;
+    const fullKey = `${scope.uploadDir}${cleanKey}`;
+
+    // Read file buffer safely within allowed user scope
+    const fileBuffer = await R2Service.readFileContent(fullKey);
+    const textPreview = fileBuffer.toString('utf-8').slice(0, 10000); // Limit to first 10KB for prompt context
+
+    const userPrompt = prompt || 'Please summarize this file and describe its contents.';
+    const enhancedPrompt = `You are Antigravity, the AI pair programmer and assistant. The user has requested analysis of the file "${path.basename(cleanKey)}":
+
+File Content Preview:
+\`\`\`
+${textPreview}
+\`\`\`
+
+User Question / Task:
+${userPrompt}`;
+
+    const reply = await GeminiAiService.generateResponse(enhancedPrompt);
+    res.status(200).json({ reply, fileName: path.basename(cleanKey) });
+  } catch (error: any) {
+    console.error('AI File context error:', error);
     res.status(500).json({ error: 'Internal Server Error', message: error.message });
   }
 }
@@ -241,8 +338,7 @@ export async function handleMockDownload(req: AuthenticatedRequest, res: Respons
     const ext = path.extname(key).toLowerCase();
     let contentType = 'application/octet-stream';
 
-    if (ext === '.txt') contentType = 'text/plain';
-    else if (ext === '.json') contentType = 'application/json';
+    if (ext === '.txt' || ext === '.md' || ext === '.json' || ext === '.ts' || ext === '.js') contentType = 'text/plain';
     else if (ext === '.png') contentType = 'image/png';
     else if (ext === '.jpg' || ext === '.jpeg') contentType = 'image/jpeg';
     else if (ext === '.pdf') contentType = 'application/pdf';

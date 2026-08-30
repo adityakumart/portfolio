@@ -1,8 +1,12 @@
+export type UserRole = 'admin' | 'user';
+
 export interface User {
   id: string;
   email: string;
   first_name?: string;
   last_name?: string;
+  fullName?: string;
+  role?: UserRole;
   admin?: boolean;
   isEnabled?: boolean;
   is_deleted?: boolean;

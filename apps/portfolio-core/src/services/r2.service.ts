@@ -180,6 +180,30 @@ export class R2Service {
     }
   }
 
+  /**
+   * Helper to read file content as string/buffer (used for AI Assistant & text inspection).
+   */
+  static async readFileContent(key: string): Promise<Buffer> {
+    if (isR2Configured && s3Client) {
+      const command = new GetObjectCommand({
+        Bucket: bucketName,
+        Key: key,
+      });
+      const response = await s3Client.send(command);
+      const streamToBuffer = async (stream: any): Promise<Buffer> => {
+        return new Promise((resolve, reject) => {
+          const chunks: any[] = [];
+          stream.on('data', (chunk: any) => chunks.push(chunk));
+          stream.on('error', reject);
+          stream.on('end', () => resolve(Buffer.concat(chunks)));
+        });
+      };
+      return streamToBuffer(response.Body);
+    } else {
+      return this.readMockFile(key);
+    }
+  }
+
   private static listObjectsMock(prefix: string) {
     const dirPath = path.join(MOCK_STORAGE_DIR, prefix);
     if (!fs.existsSync(dirPath)) {

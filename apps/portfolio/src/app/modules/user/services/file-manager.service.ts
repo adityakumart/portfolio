@@ -3,7 +3,7 @@ import { HttpClient, HttpHeaders, HttpEvent, HttpEventType } from '@angular/comm
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { AuthService } from './auth';
-import { FileNode } from '@portfolio/shared-types';
+import { FileNode, FileScopeInfo } from '@portfolio/shared-types';
 
 @Injectable({
   providedIn: 'root',
@@ -13,6 +13,7 @@ export class FileManagerService {
   private authService = inject(AuthService);
 
   // Angular Signals for state tracking
+  scope = signal<FileScopeInfo | null>(null);
   currentPath = signal<string>('');
   files = signal<FileNode[]>([]);
   loading = signal<boolean>(false);
@@ -21,6 +22,10 @@ export class FileManagerService {
   // Upload progress tracking
   uploadingFileName = signal<string | null>(null);
   uploadProgress = signal<number | null>(null);
+
+  // AI Assistant Analysis State
+  aiAnalyzing = signal<boolean>(false);
+  aiResponse = signal<{ fileName: string; reply: string } | null>(null);
 
   /**
    * Generates authorization headers using current access token
@@ -34,11 +39,34 @@ export class FileManagerService {
   }
 
   /**
-   * Fetches folders and files for the current directory prefix
+   * Fetches user RBAC scope and directory path configuration
    */
-  async loadDirectory(prefix: string): Promise<void> {
+  async loadScope(): Promise<FileScopeInfo | null> {
+    const url = `${environment.APIURL}/files/scope`;
+    try {
+      const scope = await firstValueFrom(
+        this.http.get<FileScopeInfo>(url, { headers: this.getHeaders() })
+      );
+      this.scope.set(scope);
+      return scope;
+    } catch (err: any) {
+      console.error('Failed to load file scope:', err);
+      return null;
+    }
+  }
+
+  /**
+   * Fetches folders and files for the given directory prefix within authorized scope
+   */
+  async loadDirectory(prefix = ''): Promise<void> {
     this.loading.set(true);
     this.error.set(null);
+
+    // If scope is not loaded yet, fetch it first
+    if (!this.scope()) {
+      await this.loadScope();
+    }
+
     const url = `${environment.APIURL}/files/list?prefix=${encodeURIComponent(prefix)}`;
 
     try {
@@ -56,7 +84,7 @@ export class FileManagerService {
   }
 
   /**
-   * Fetches a short-lived download view URL for a file
+   * Fetches a download/view URL for a file within authorized scope
    */
   async getDownloadUrl(path: string): Promise<string> {
     const url = `${environment.APIURL}/files/view-url?key=${encodeURIComponent(path)}`;
@@ -91,7 +119,7 @@ export class FileManagerService {
   }
 
   /**
-   * Performs direct file upload to backend which uploads directly to R2 / mock storage
+   * Performs direct binary file upload within authorized scope
    */
   async uploadFile(file: File): Promise<void> {
     const targetPath = `${this.currentPath()}${file.name}`;
@@ -140,6 +168,33 @@ export class FileManagerService {
       this.uploadingFileName.set(null);
       this.uploadProgress.set(null);
       throw err;
+    }
+  }
+
+  /**
+   * Sends file to Antigravity AI assistant for summarization or analysis via Gemini API
+   */
+  async askAiAboutFile(filePath: string, prompt?: string): Promise<string> {
+    this.aiAnalyzing.set(true);
+    this.error.set(null);
+    const url = `${environment.APIURL}/files/ai-context`;
+
+    try {
+      const res = await firstValueFrom(
+        this.http.post<{ reply: string; fileName: string }>(
+          url,
+          { key: filePath, prompt },
+          { headers: this.getHeaders() }
+        )
+      );
+      this.aiResponse.set({ fileName: res.fileName, reply: res.reply });
+      return res.reply;
+    } catch (err: any) {
+      console.error('AI analysis error:', err);
+      this.error.set(err.error?.message || 'Failed to analyze file with AI Assistant.');
+      throw err;
+    } finally {
+      this.aiAnalyzing.set(false);
     }
   }
 }

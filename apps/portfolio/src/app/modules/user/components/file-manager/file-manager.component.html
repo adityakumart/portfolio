@@ -1,15 +1,37 @@
 <div class="file-manager-container">
-  <!-- Header & Navigation Breadcrumbs -->
+  <!-- Header & Navigation Control Panel -->
   <div class="file-manager-header glass-card">
     <div class="header-left">
-      <h1 class="title">
-        <mat-icon class="title-icon">folder_shared</mat-icon> File Vault
-      </h1>
+      <div class="title-row">
+        <h1 class="title">
+          <ng-icon name="lucideFolder" class="title-icon"></ng-icon> File Vault
+        </h1>
+
+        <!-- RBAC Scope & Role Badge -->
+        @if (isAdmin()) {
+          <div class="role-badge admin-badge" hlmTooltip="Full administrative access to root and all user directories">
+            <ng-icon name="lucideShieldCheck"></ng-icon>
+            <span>ADMIN ROOT</span>
+          </div>
+        } @else {
+          <div class="role-badge user-badge" hlmTooltip="Isolated workspace scoped to your dedicated directory">
+            <ng-icon name="lucideLock"></ng-icon>
+            <span>USER VAULT</span>
+          </div>
+        }
+      </div>
+
+      <!-- Scope Directory Info -->
+      <div class="scope-info-line">
+        <span class="scope-label">Isolated Scope:</span>
+        <code class="scope-path">{{ uploadDir() }}</code>
+      </div>
       
       <!-- Breadcrumbs Path -->
       <div class="breadcrumbs-bar">
-        <span class="crumb-item" (click)="navigateTo('')">
-          <mat-icon class="crumb-home">home</mat-icon> root
+        <span class="crumb-item" (click)="navigateTo('')" hlmTooltip="Go to root scope">
+          <ng-icon name="lucideHome" class="crumb-icon"></ng-icon>
+          <span>{{ isAdmin() ? 'root' : userFullName() }}</span>
         </span>
         
         @for (crumb of breadcrumbs(); track crumb.path) {
@@ -21,14 +43,39 @@
       </div>
     </div>
 
-    <!-- Actions Control Panel -->
+    <!-- Actions Control Panel with Spartan UI Buttons -->
     <div class="header-right">
-      <button mat-stroked-button class="action-btn" (click)="showFolderInput.set(!showFolderInput())">
-        <mat-icon>create_new_folder</mat-icon> New Folder
+      <button 
+        hlmBtn 
+        variant="outline" 
+        size="sm" 
+        class="action-btn"
+        (click)="refreshCurrentDirectory()" 
+        hlmTooltip="Refresh directory"
+      >
+        <ng-icon name="lucideRefreshCw" class="btn-icon"></ng-icon>
       </button>
-      <button mat-flat-button color="primary" class="action-btn upload-btn" (click)="triggerUpload()">
-        <mat-icon>upload_file</mat-icon> Upload File
+
+      <button 
+        hlmBtn 
+        variant="outline" 
+        class="action-btn"
+        (click)="showFolderInput.set(!showFolderInput())"
+      >
+        <ng-icon name="lucideFolderPlus" class="btn-icon"></ng-icon>
+        <span>New Folder</span>
       </button>
+
+      <button 
+        hlmBtn 
+        variant="default" 
+        class="action-btn upload-btn"
+        (click)="triggerUpload()"
+      >
+        <ng-icon name="lucideUpload" class="btn-icon"></ng-icon>
+        <span>Upload File</span>
+      </button>
+
       <input type="file" #fileInput (change)="onFileSelected($event)" style="display: none;" />
     </div>
   </div>
@@ -36,28 +83,49 @@
   <!-- Inline New Folder Dialog/Form -->
   @if (showFolderInput()) {
     <div class="new-folder-card glass-card">
-      <mat-form-field appearance="outline" class="folder-input">
-        <mat-label>Folder Name</mat-label>
-        <input matInput placeholder="e.g. photos, documents" [ngModel]="newFolderName()" (ngModelChange)="newFolderName.set($event)" (keyup.enter)="onCreateFolderSubmit()" />
-      </mat-form-field>
+      <div class="input-wrap">
+        <ng-icon name="lucideFolderPlus" class="folder-input-icon"></ng-icon>
+        <input 
+          type="text" 
+          class="custom-folder-input" 
+          placeholder="Folder name (e.g. documents, invoices)..." 
+          [ngModel]="newFolderName()" 
+          (ngModelChange)="newFolderName.set($event)" 
+          (keyup.enter)="onCreateFolderSubmit()"
+          autofocus
+        />
+      </div>
       <div class="form-actions">
-        <button mat-flat-button color="primary" [disabled]="!newFolderName().trim()" (click)="onCreateFolderSubmit()">
+        <button 
+          hlmBtn 
+          variant="default" 
+          size="sm" 
+          [disabled]="!newFolderName().trim()" 
+          (click)="onCreateFolderSubmit()"
+        >
           Create
         </button>
-        <button mat-button (click)="showFolderInput.set(false); newFolderName.set('')">
+        <button 
+          hlmBtn 
+          variant="ghost" 
+          size="sm" 
+          (click)="showFolderInput.set(false); newFolderName.set('')"
+        >
           Cancel
         </button>
       </div>
     </div>
   }
 
-  <!-- Error Alerts -->
+  <!-- Error Banner -->
   @if (fileService.error()) {
     <div class="error-banner glass-card">
-      <mat-icon class="error-icon">error_outline</mat-icon>
-      <span class="error-text">{{ fileService.error() }}</span>
-      <button mat-icon-button (click)="fileService.error.set(null)" aria-label="Dismiss error">
-        <mat-icon>close</mat-icon>
+      <div class="error-content">
+        <ng-icon name="lucideX" class="error-icon"></ng-icon>
+        <span class="error-text">{{ fileService.error() }}</span>
+      </div>
+      <button hlmBtn variant="ghost" size="icon" (click)="fileService.error.set(null)" aria-label="Dismiss error">
+        <ng-icon name="lucideX"></ng-icon>
       </button>
     </div>
   }
@@ -67,7 +135,7 @@
     <div class="upload-progress-card glass-card">
       <div class="upload-info">
         <div class="upload-text">
-          <mat-icon class="uploading-spinner">cloud_upload</mat-icon>
+          <ng-icon name="lucideUpload" class="uploading-spinner"></ng-icon>
           Uploading <strong>{{ fileService.uploadingFileName() }}</strong>...
         </div>
         <div class="upload-percentage">{{ fileService.uploadProgress() }}%</div>
@@ -87,8 +155,8 @@
     <!-- Drag & Drop Overlay -->
     @if (isDragging()) {
       <div class="drag-overlay">
-        <mat-icon class="drag-icon">arrow_circle_down</mat-icon>
-        <p class="drag-text">Drop file to upload to the current folder</p>
+        <ng-icon name="lucideCloud" class="drag-icon"></ng-icon>
+        <p class="drag-text">Drop file here to upload to this folder</p>
       </div>
     }
 
@@ -96,7 +164,7 @@
     @if (fileService.loading()) {
       <div class="loading-state">
         <mat-spinner diameter="40"></mat-spinner>
-        <p>Loading directory files...</p>
+        <p>Loading directory contents...</p>
       </div>
     } @else {
       <!-- File Explorer Grid Table -->
@@ -105,6 +173,7 @@
           <thead>
             <tr>
               <th class="col-name">Name</th>
+              <th class="col-owner">Uploaded By</th>
               <th class="col-size">Size</th>
               <th class="col-date">Last Modified</th>
               <th class="col-actions">Actions</th>
@@ -116,17 +185,18 @@
               <tr class="explorer-row parent-row" (click)="navigateUp()">
                 <td class="col-name">
                   <div class="file-name-cell">
-                    <mat-icon class="folder-icon">subdirectory_arrow_left</mat-icon>
+                    <ng-icon name="lucideCornerLeftUp" class="folder-icon"></ng-icon>
                     <span>..</span>
                   </div>
                 </td>
+                <td class="col-owner">—</td>
                 <td class="col-size">—</td>
                 <td class="col-date">—</td>
                 <td class="col-actions">—</td>
               </tr>
             }
 
-             <!-- Loop Files & Subfolders -->
+            <!-- Loop Files & Subfolders -->
             @for (node of fileService.files(); track node.path) {
               <tr 
                 class="explorer-row" 
@@ -135,11 +205,17 @@
                 <td class="col-name">
                   <div class="file-name-cell">
                     @if (node.type === 'folder') {
-                      <mat-icon class="folder-icon">folder</mat-icon>
+                      <ng-icon name="lucideFolder" class="folder-icon"></ng-icon>
                     } @else {
-                      <mat-icon class="file-icon">insert_drive_file</mat-icon>
+                      <ng-icon name="lucideFileText" class="file-icon"></ng-icon>
                     }
                     <span class="node-name-text">{{ node.name }}</span>
+                  </div>
+                </td>
+                <td class="col-owner">
+                  <div class="owner-chip">
+                    <ng-icon name="lucideUser" class="owner-icon"></ng-icon>
+                    <span>{{ node.uploadedBy || 'User' }}</span>
                   </div>
                 </td>
                 <td class="col-size">
@@ -149,18 +225,54 @@
                   {{ node.type === 'folder' ? '—' : formatDate(node.lastModified) }}
                 </td>
                 <td class="col-actions" (click)="$event.stopPropagation()">
-                  @if (node.type === 'file') {
-                    <button mat-icon-button (click)="previewFile(node)" matTooltip="Preview file">
-                      <mat-icon>visibility</mat-icon>
-                    </button>
-                    <button mat-icon-button (click)="downloadFile(node)" matTooltip="Download file">
-                      <mat-icon>download</mat-icon>
-                    </button>
-                  } @else {
-                    <button mat-icon-button (click)="navigateTo(node.path)" matTooltip="Open folder">
-                      <mat-icon>chevron_right</mat-icon>
-                    </button>
-                  }
+                  <div class="actions-group">
+                    @if (node.type === 'file') {
+                      <!-- Antigravity AI File Assistant Action -->
+                      <button 
+                        hlmBtn 
+                        variant="ghost" 
+                        size="icon" 
+                        class="ai-action-btn"
+                        (click)="openAiAssistant(node)" 
+                        hlmTooltip="Ask Antigravity AI about this file"
+                      >
+                        <ng-icon name="lucideSparkles" class="ai-sparkle-icon"></ng-icon>
+                      </button>
+
+                      <!-- Preview Action -->
+                      <button 
+                        hlmBtn 
+                        variant="ghost" 
+                        size="icon" 
+                        (click)="previewFile(node)" 
+                        hlmTooltip="Preview file"
+                      >
+                        <ng-icon name="lucideEye"></ng-icon>
+                      </button>
+
+                      <!-- Download Action -->
+                      <button 
+                        hlmBtn 
+                        variant="ghost" 
+                        size="icon" 
+                        (click)="downloadFile(node)" 
+                        hlmTooltip="Download file"
+                      >
+                        <ng-icon name="lucideDownload"></ng-icon>
+                      </button>
+                    } @else {
+                      <!-- Open Folder Action -->
+                      <button 
+                        hlmBtn 
+                        variant="ghost" 
+                        size="icon" 
+                        (click)="navigateTo(node.path)" 
+                        hlmTooltip="Open folder"
+                      >
+                        <ng-icon name="lucideChevronRight"></ng-icon>
+                      </button>
+                    }
+                  </div>
                 </td>
               </tr>
             }
@@ -168,14 +280,93 @@
         </table>
       </div>
 
-      <!-- Empty Folder/Bucket State -->
+      <!-- Empty Folder State -->
       @if (fileService.files().length === 0) {
         <div class="empty-state">
-          <mat-icon class="empty-icon">cloud_queue</mat-icon>
+          <ng-icon name="lucideCloud" class="empty-icon"></ng-icon>
           <h3>This folder is empty</h3>
-          <p>Drag & drop files here, or click "Upload File" to add files.</p>
+          <p>Drag & drop files here, or click "Upload File" to add files to your vault.</p>
         </div>
       }
     }
   </div>
+
+  <!-- Antigravity AI File Assistant Drawer / Modal -->
+  @if (selectedAiFile()) {
+    <div class="ai-modal-overlay" (click)="closeAiAssistant()">
+      <div class="ai-modal-card glass-card" (click)="$event.stopPropagation()">
+        <div class="ai-modal-header">
+          <div class="ai-header-left">
+            <div class="ai-badge">
+              <ng-icon name="lucideBot"></ng-icon>
+              <span>Antigravity AI Assistant</span>
+            </div>
+            <h2 class="ai-filename">{{ selectedAiFile()?.name }}</h2>
+          </div>
+          <button hlmBtn variant="ghost" size="icon" (click)="closeAiAssistant()">
+            <ng-icon name="lucideX"></ng-icon>
+          </button>
+        </div>
+
+        <div class="ai-modal-body">
+          <div class="ai-prompt-box">
+            <label class="prompt-label">Ask Antigravity about this file:</label>
+            <textarea 
+              class="custom-textarea" 
+              rows="3" 
+              [ngModel]="aiPrompt()" 
+              (ngModelChange)="aiPrompt.set($event)"
+              placeholder="e.g. Summarize this document, identify key metrics, check for errors..."
+            ></textarea>
+            <div class="prompt-actions">
+              <button 
+                hlmBtn 
+                variant="default" 
+                class="ask-ai-btn"
+                [disabled]="fileService.aiAnalyzing() || !aiPrompt().trim()" 
+                (click)="runAiAnalysis()"
+              >
+                @if (fileService.aiAnalyzing()) {
+                  <mat-spinner diameter="18" class="btn-spinner"></mat-spinner>
+                  <span>Analyzing with Gemini...</span>
+                } @else {
+                  <ng-icon name="lucideSparkles" class="btn-icon"></ng-icon>
+                  <span>Run Analysis</span>
+                }
+              </button>
+            </div>
+          </div>
+
+          <!-- AI Response Output -->
+          @if (fileService.aiResponse()) {
+            <div class="ai-response-box">
+              <div class="ai-response-header">
+                <span class="response-title">
+                  <ng-icon name="lucideBot" class="bot-icon"></ng-icon> AI Analysis Result
+                </span>
+                <button 
+                  hlmBtn 
+                  variant="outline" 
+                  size="sm" 
+                  class="copy-btn"
+                  (click)="copyAiResponse(fileService.aiResponse()!.reply)"
+                >
+                  @if (copiedAiReply()) {
+                    <ng-icon name="lucideCheck" class="copy-icon text-green-500"></ng-icon>
+                    <span>Copied!</span>
+                  } @else {
+                    <ng-icon name="lucideCopy" class="copy-icon"></ng-icon>
+                    <span>Copy</span>
+                  }
+                </button>
+              </div>
+              <div class="ai-response-text">
+                {{ fileService.aiResponse()?.reply }}
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
 </div>
