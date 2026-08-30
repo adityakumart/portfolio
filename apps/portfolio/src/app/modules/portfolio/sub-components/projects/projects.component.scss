@@ -4,6 +4,10 @@
   letter-spacing: 0.03em;
 }
 
+.project-title {
+  color: var(--foreground);
+}
+
 .project-item {
   background: var(--secondary);
   border: 1px solid var(--border);
@@ -22,3 +26,4 @@
 .project-description {
   color: var(--muted-foreground);
 }
+
