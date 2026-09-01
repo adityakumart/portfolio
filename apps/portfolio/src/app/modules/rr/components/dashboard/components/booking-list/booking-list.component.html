@@ -4,7 +4,7 @@
       <mat-icon style="font-size: 14px; width: 14px; height: 14px;">event_note</mat-icon>
       <span>Bookings &bull; Active Rentals Desk</span>
     </div>
-    <h2 style="margin: 0; font-size: 1.85rem; font-weight: 800; font-family: 'Montserrat', sans-serif; color: var(--foreground);">Active Rentals</h2>
+    <h2 style="margin: 0; font-size: 1.85rem; font-weight: 800; color: var(--foreground);">Active Rentals</h2>
   </div>
   <button mat-raised-button color="primary" class="action-btn success" style="padding: 10px 20px; border-radius: 12px;" (click)="openNewBookingModal()">
     <mat-icon>add</mat-icon> Create New Booking
@@ -33,7 +33,7 @@
         <div style="font-weight: 700; color: var(--foreground);">
           {{ b.vehicleManufacturer }} {{ b.vehicleName }}
         </div>
-        <div style="font-size: 11px; color: var(--muted-foreground); font-family: monospace; margin-top: 1px;">
+        <div style="font-size: 11px; color: var(--muted-foreground); font-family: var(--font-mono, monospace); margin-top: 1px;">
           {{ b.vehicleRegNo }}
         </div>
       </td>
@@ -69,7 +69,7 @@
     <ng-container matColumnDef="finalRentalAmount">
       <th mat-header-cell *matHeaderCellDef> Rent Amount </th>
       <td mat-cell *matCellDef="let b">
-        <span style="font-family: monospace; font-weight: 700; font-size: 0.9rem;">₹{{ b.finalRentalAmount }}</span>
+        <span style="font-family: var(--font-mono, monospace); font-weight: 700; font-size: 0.9rem;">₹{{ b.finalRentalAmount }}</span>
       </td>
     </ng-container>
 
@@ -77,7 +77,7 @@
     <ng-container matColumnDef="amountPaid">
       <th mat-header-cell *matHeaderCellDef> Paid </th>
       <td mat-cell *matCellDef="let b">
-        <span style="font-family: monospace; font-weight: 700; font-size: 0.9rem; color: var(--muted-foreground);">₹{{ b.amountPaid }}</span>
+        <span style="font-family: var(--font-mono, monospace); font-weight: 700; font-size: 0.9rem; color: var(--muted-foreground);">₹{{ b.amountPaid }}</span>
       </td>
     </ng-container>
 
@@ -86,7 +86,7 @@
       <th mat-header-cell *matHeaderCellDef> Balance Due </th>
       <td mat-cell *matCellDef="let b">
         @if (b.pendingAmount > 0) {
-          <span class="badge status-maintenance" style="font-family: monospace; font-weight: 800; border-radius: 8px; padding: 4px 10px; font-size: 0.75rem;">
+          <span class="badge status-maintenance" style="font-family: var(--font-mono, monospace); font-weight: 800; border-radius: 8px; padding: 4px 10px; font-size: 0.75rem;">
             ₹{{ b.pendingAmount }}
           </span>
         } @else {

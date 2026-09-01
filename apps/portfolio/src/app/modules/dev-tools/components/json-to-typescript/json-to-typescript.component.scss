@@ -17,7 +17,7 @@
     margin-bottom: 24px;
 
     .json-textarea {
-      font-family: 'Courier New', monospace;
+      font-family: var(--font-mono, monospace);
       font-size: 12px;
       line-height: 1.6;
       padding: 12px;
@@ -64,7 +64,7 @@
     border: 1px solid var(--mat-sys-outline-variant);
     border-radius: 4px;
     padding: 16px;
-    font-family: 'Courier New', monospace;
+    font-family: var(--font-mono, monospace);
     font-size: 13px;
     line-height: 1.6;
     color: var(--mat-sys-on-surface);

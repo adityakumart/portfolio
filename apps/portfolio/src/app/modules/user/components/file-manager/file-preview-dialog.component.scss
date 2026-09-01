@@ -180,7 +180,7 @@ $text-secondary: #64748b;
   .code-block {
     margin: 0;
     padding: 1.25rem;
-    font-family: 'Fira Code', 'Courier New', Courier, monospace;
+    font-family: var(--font-mono, monospace);
     font-size: 0.85rem;
     line-height: 1.5;
     color: #0f172a;

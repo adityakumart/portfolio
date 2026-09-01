@@ -234,7 +234,6 @@ $transition-duration: 500ms;
   }
 
   .sub-row-label {
-    font-family: 'Lexend', sans-serif;
     font-size: 13.5px;
     color: var(--foreground);
     flex-grow: 1;
@@ -302,7 +301,6 @@ $transition-duration: 500ms;
   }
 
   .leaf-label {
-    font-family: 'Lexend', sans-serif;
     font-size: 13.5px;
     color: var(--muted-foreground);
     flex-grow: 1;
@@ -390,7 +388,6 @@ $transition-duration: 500ms;
       background-color: var(--border);
       border: 1px solid var(--border);
       color: var(--foreground);
-      font-family: 'Lexend', sans-serif;
       font-size: 12px;
       font-weight: 600;
       display: flex;

@@ -116,7 +116,6 @@
       }
 
       .error-message-text {
-        font-family: 'Fira Code', 'Courier New', monospace;
         font-size: 12px;
         margin: 0;
         line-height: 1.4;
@@ -172,7 +171,7 @@
         margin-bottom: 0;
 
         .jwt-textarea {
-          font-family: 'Fira Code', 'Courier New', monospace;
+          font-family: var(--font-mono, monospace);
           font-size: 13px;
           line-height: 1.6;
           padding: 8px;
@@ -198,7 +197,7 @@
         }
 
         .token-split-display {
-          font-family: 'Fira Code', 'Courier New', monospace;
+          font-family: var(--font-mono, monospace);
           font-size: 13px;
           line-height: 1.6;
           padding: 16px;
@@ -328,7 +327,7 @@
 
         .json-code {
           margin: 0;
-          font-family: 'Fira Code', 'Courier New', monospace;
+          font-family: var(--font-mono, monospace);
           font-size: 13px;
           line-height: 1.6;
           overflow-x: auto;
@@ -347,7 +346,7 @@
 
           .signature-code {
             margin: 0;
-            font-family: 'Fira Code', 'Courier New', monospace;
+            font-family: var(--font-mono, monospace);
             font-size: 13px;
             line-height: 1.6;
             overflow-x: auto;
@@ -529,7 +528,7 @@
         
         .badge {
           display: inline-block;
-          font-family: 'Fira Code', 'Courier New', monospace;
+          font-family: var(--font-mono, monospace);
           font-size: 12px;
           font-weight: 600;
           padding: 3px 8px;
@@ -559,7 +558,7 @@
         }
 
         .property-value {
-          font-family: 'Fira Code', 'Courier New', monospace;
+          font-family: var(--font-mono, monospace);
           font-size: 12px;
           color: var(--mat-sys-secondary, #3f51b5);
           word-break: break-all;

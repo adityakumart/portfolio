@@ -2,7 +2,7 @@
 
 $primary-gradient: linear-gradient(135deg, var(--color-violet-500) 0%, var(--color-orange-400) 100%);
 $user-bubble-gradient: linear-gradient(135deg, var(--color-violet-500) 0%, var(--color-blue-500) 100%);
-$font-code: 'Fira Code', 'Cascadia Code', Consolas, Monaco, 'Andale Mono', monospace;
+$font-code: var(--font-mono, monospace);
 
 .chat-route-container {
   display: flex;

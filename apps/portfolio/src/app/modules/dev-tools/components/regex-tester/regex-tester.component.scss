@@ -134,7 +134,7 @@
     display: inline-flex;
 
     ::ng-deep .mat-button-toggle {
-      font-family: monospace;
+      font-family: var(--font-mono, monospace);
       font-weight: 600;
       font-size: 15px;
       width: 42px;
@@ -230,7 +230,7 @@
     border-left: 3px solid var(--primary);
 
     code {
-      font-family: Consolas, Monaco, monospace;
+      font-family: var(--font-mono, monospace);
       font-weight: 600;
       color: #ef4444;
       background: rgba(0, 0, 0, 0.04);
@@ -318,7 +318,7 @@
     }
 
     .token-symbol {
-      font-family: 'Fira Code', Consolas, Monaco, monospace;
+      font-family: var(--font-mono, monospace);
       font-weight: 700;
       font-size: 13px;
       padding: 3px 6px;
@@ -428,7 +428,7 @@
   padding: 16px;
   border: none;
   background: transparent;
-  font-family: 'Fira Code', Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+  font-family: var(--font-mono, monospace);
   font-size: 15px;
   line-height: 1.5;
   letter-spacing: 0px;
