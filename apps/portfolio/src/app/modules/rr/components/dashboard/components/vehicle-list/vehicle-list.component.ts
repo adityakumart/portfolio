@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
 import { RRApiService } from '../../../../services/rr-api.service';
 import { HlmButton } from '@spartan-ng/hel/button';
+import { IVehicle } from '@portfolio/shared-types';
 
 // Material Imports
 import { MatCardModule } from '@angular/material/card';
@@ -47,7 +48,7 @@ export class RRVehicleListComponent implements OnInit {
   @ViewChild('vehicleFormDialog') vehicleFormDialog!: TemplateRef<any>;
 
   // Collections data
-  vehicles = signal<any[]>([]);
+  vehicles = signal<IVehicle[]>([]);
 
   // User details & checks
   currentUser = computed(() => this.rrApi.currentUser());
@@ -57,7 +58,7 @@ export class RRVehicleListComponent implements OnInit {
   editingVehicleMode = signal<boolean>(false);
 
   // Selections
-  selectedVehicleDetails = signal<any | null>(null);
+  selectedVehicleDetails = signal<IVehicle | null>(null);
 
   // Forms
   vehicleFormGroup!: FormGroup;

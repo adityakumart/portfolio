@@ -111,4 +111,20 @@ export class RRLoginComponent {
       this.loading.set(false);
     }
   }
+
+  fillDemoAdmin() {
+    this.setRole('admin');
+    this.adminFormGroup.patchValue({
+      adminUsername: 'admin@rams-cars.com',
+      adminPassword: 'AdminPD'
+    });
+  }
+
+  fillDemoEmployee() {
+    this.setRole('employee');
+    this.employeeFormGroup.patchValue({
+      empId: 'RRA002',
+      dob: '1990-05-15'
+    });
+  }
 }

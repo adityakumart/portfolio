@@ -19,6 +19,8 @@ import {
 } from '@angular/forms';
 import { RRApiService } from '../../../../services/rr-api.service';
 import { jsPDF } from 'jspdf';
+import QRCode from 'qrcode';
+import { IBooking, IVehicle } from '@portfolio/shared-types';
 
 // Material Imports
 import { MatCardModule } from '@angular/material/card';
@@ -680,7 +682,7 @@ export class RRBookingListComponent implements OnInit {
 
     try {
       const patch = {
-        status: 'completed',
+        status: 'completed' as const,
         vehicleOdometerEnd: String(endOdo),
         finalRentalAmount: String(this.endBookingFields.finalTotalPayable),
         pendingAmount: '0',
@@ -864,6 +866,7 @@ export class RRBookingListComponent implements OnInit {
       alert('Booking updated successfully.');
       this.closeModifyBookingPopup();
       this.loadBookings();
+      this.loadVehicles();
     } catch (e: any) {
       console.error(e);
       alert(e.error?.message || 'Error updating booking.');
@@ -921,7 +924,7 @@ export class RRBookingListComponent implements OnInit {
     this.printAgreementPDFFromObject(merged);
   }
 
-  printAgreementPDFFromObject(b: any) {
+  async printAgreementPDFFromObject(b: any) {
     if (!b) return;
 
     // Normalize all fields to avoid "undefined" strings in printed PDF
@@ -970,6 +973,22 @@ export class RRBookingListComponent implements OnInit {
 
     let y = 15;
     const pageWidth = doc.internal.pageSize.getWidth();
+
+    try {
+      const qrData = JSON.stringify({
+        bookingId: id,
+        vehicle: vehicleRegNo,
+        renter: `${renterFirstName} ${renterSecondName}`.trim(),
+        phone: renterPhone,
+        pickup: pickupDateTime,
+        return: returnDateTime,
+        amount: rentalAmountVal,
+      });
+      const qrCodeUrl = await QRCode.toDataURL(qrData, { width: 100, margin: 1 });
+      doc.addImage(qrCodeUrl, 'PNG', pageWidth - 35, 8, 24, 24);
+    } catch (e) {
+      console.warn('QR code generation for PDF skipped:', e);
+    }
 
     doc.setFontSize(18);
     doc.setFont('Helvetica', 'bold');

@@ -3,14 +3,27 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import {
+  IRRUser,
+  IVehicle,
+  IBooking,
+  IEmployee,
+  ILog,
+  IRRDashboardStats,
+  IRRVehicleAvailability,
+  IRRLoginRequest,
+  IRRLoginResponse,
+} from '@portfolio/shared-types';
 
-export interface IRRUser {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: 'admin' | 'employee';
-}
+export {
+  IRRUser,
+  IVehicle,
+  IBooking,
+  IEmployee,
+  ILog,
+  IRRDashboardStats,
+  IRRVehicleAvailability,
+};
 
 @Injectable({
   providedIn: 'root',
@@ -80,9 +93,9 @@ export class RRApiService {
   // --- API Methods ---
 
   // Auth Login
-  async login(body: { username?: string; password?: string; empId?: string; dob?: string }): Promise<IRRUser> {
+  async login(body: IRRLoginRequest): Promise<IRRUser> {
     const res = await firstValueFrom(
-      this.http.post<{ access_token: string; user: IRRUser }>(
+      this.http.post<IRRLoginResponse>(
         `${this.baseUrl}/auth/login`,
         body,
         { headers: this.getHeaders() }
@@ -99,91 +112,91 @@ export class RRApiService {
   }
 
   // Vehicles
-  async getVehicles(): Promise<any[]> {
+  async getVehicles(): Promise<IVehicle[]> {
     return firstValueFrom(
-      this.http.get<any[]>(`${this.baseUrl}/vehicles`, { headers: this.getHeaders() })
+      this.http.get<IVehicle[]>(`${this.baseUrl}/vehicles`, { headers: this.getHeaders() })
     );
   }
 
-  async createVehicle(data: any): Promise<any> {
+  async createVehicle(data: Partial<IVehicle>): Promise<IVehicle> {
     return firstValueFrom(
-      this.http.post<any>(`${this.baseUrl}/vehicles`, data, { headers: this.getHeaders() })
+      this.http.post<IVehicle>(`${this.baseUrl}/vehicles`, data, { headers: this.getHeaders() })
     );
   }
 
-  async updateVehicle(id: string, data: any): Promise<any> {
+  async updateVehicle(id: string, data: Partial<IVehicle>): Promise<IVehicle> {
     return firstValueFrom(
-      this.http.put<any>(`${this.baseUrl}/vehicles/${id}`, data, { headers: this.getHeaders() })
+      this.http.put<IVehicle>(`${this.baseUrl}/vehicles/${id}`, data, { headers: this.getHeaders() })
     );
   }
 
-  async deleteVehicle(id: string): Promise<any> {
+  async deleteVehicle(id: string): Promise<{ message: string }> {
     return firstValueFrom(
-      this.http.delete<any>(`${this.baseUrl}/vehicles/${id}`, { headers: this.getHeaders() })
+      this.http.delete<{ message: string }>(`${this.baseUrl}/vehicles/${id}`, { headers: this.getHeaders() })
     );
   }
 
   // Bookings
-  async getBookings(): Promise<any[]> {
+  async getBookings(): Promise<IBooking[]> {
     return firstValueFrom(
-      this.http.get<any[]>(`${this.baseUrl}/bookings`, { headers: this.getHeaders() })
+      this.http.get<IBooking[]>(`${this.baseUrl}/bookings`, { headers: this.getHeaders() })
     );
   }
 
-  async createBooking(data: any): Promise<any> {
+  async createBooking(data: Partial<IBooking>): Promise<IBooking> {
     return firstValueFrom(
-      this.http.post<any>(`${this.baseUrl}/bookings`, data, { headers: this.getHeaders() })
+      this.http.post<IBooking>(`${this.baseUrl}/bookings`, data, { headers: this.getHeaders() })
     );
   }
 
-  async updateBooking(id: string, data: any): Promise<any> {
+  async updateBooking(id: string, data: Partial<IBooking>): Promise<IBooking> {
     return firstValueFrom(
-      this.http.put<any>(`${this.baseUrl}/bookings/${id}`, data, { headers: this.getHeaders() })
+      this.http.put<IBooking>(`${this.baseUrl}/bookings/${id}`, data, { headers: this.getHeaders() })
     );
   }
 
   // Employees
-  async getEmployees(): Promise<any[]> {
+  async getEmployees(): Promise<IEmployee[]> {
     return firstValueFrom(
-      this.http.get<any[]>(`${this.baseUrl}/employees`, { headers: this.getHeaders() })
+      this.http.get<IEmployee[]>(`${this.baseUrl}/employees`, { headers: this.getHeaders() })
     );
   }
 
-  async createEmployee(data: any): Promise<any> {
+  async createEmployee(data: Partial<IEmployee>): Promise<IEmployee> {
     return firstValueFrom(
-      this.http.post<any>(`${this.baseUrl}/employees`, data, { headers: this.getHeaders() })
+      this.http.post<IEmployee>(`${this.baseUrl}/employees`, data, { headers: this.getHeaders() })
     );
   }
 
-  async updateEmployee(id: string, data: any): Promise<any> {
+  async updateEmployee(id: string, data: Partial<IEmployee>): Promise<IEmployee> {
     return firstValueFrom(
-      this.http.put<any>(`${this.baseUrl}/employees/${id}`, data, { headers: this.getHeaders() })
+      this.http.put<IEmployee>(`${this.baseUrl}/employees/${id}`, data, { headers: this.getHeaders() })
     );
   }
 
   // Logs
-  async getLogs(from?: string, to?: string): Promise<any[]> {
+  async getLogs(from?: string, to?: string): Promise<ILog[]> {
     let params = new HttpParams();
     if (from) params = params.set('from', from);
     if (to) params = params.set('to', to);
 
     return firstValueFrom(
-      this.http.get<any[]>(`${this.baseUrl}/logs`, {
+      this.http.get<ILog[]>(`${this.baseUrl}/logs`, {
         headers: this.getHeaders(),
         params: params,
       })
     );
   }
 
-  async getDashboardStats(): Promise<any> {
+  async getDashboardStats(): Promise<IRRDashboardStats> {
     return firstValueFrom(
-      this.http.get<any>(`${this.baseUrl}/dashboard/stats`, { headers: this.getHeaders() })
+      this.http.get<IRRDashboardStats>(`${this.baseUrl}/dashboard/stats`, { headers: this.getHeaders() })
     );
   }
 
-  async checkVehicleAvailability(regNo: string): Promise<any> {
+  async checkVehicleAvailability(regNo: string): Promise<IRRVehicleAvailability> {
     return firstValueFrom(
-      this.http.get<any>(`${this.baseUrl}/vehicles/${regNo}/availability`, { headers: this.getHeaders() })
+      this.http.get<IRRVehicleAvailability>(`${this.baseUrl}/vehicles/${regNo}/availability`, { headers: this.getHeaders() })
     );
   }
 
@@ -206,4 +219,3 @@ export class RRApiService {
     );
   }
 }
-

@@ -282,10 +282,16 @@ rrRouter.post('/bookings', authenticateRRToken, async (req: any, res: Response) 
 
     await bookingCol.insertOne(newBooking);
 
-    // Update vehicle status
+    // Update main vehicle status to in_booking (odometer remains unchanged until booking is closed)
     await vehCol.updateOne(
       { regNo: bookingData.vehicleRegNo },
-      { $set: { status: 'in_booking', bookingId: bookingId } }
+      {
+        $set: {
+          status: 'in_booking',
+          bookingId: bookingId,
+          updatedAt: new Date().toISOString()
+        }
+      }
     );
 
     await RRService.logActivity(`Created booking ${bookingId} for ${bookingData.vehicleRegNo}`, req.userId, req.userRole);
@@ -324,19 +330,45 @@ rrRouter.put('/bookings/:id', authenticateRRToken, async (req: any, res: Respons
       }
     );
 
-    // If status changed to completed or cancelled, release the vehicle
-    if (updateData.status === 'completed' || updateData.status === 'cancelled') {
-      const vehicle = await vehCol.findOne({ regNo: booking.vehicleRegNo });
-      if (vehicle && vehicle.bookingId === bookingId) {
-        await vehCol.updateOne(
-          { regNo: booking.vehicleRegNo },
-          { $set: { status: 'available', bookingId: null } }
-        );
+    // Synchronize vehicle table ONLY when booking is closed / completed
+    if (updateData.status === 'completed') {
+      const vehicleUpdateDoc: any = {
+        status: 'available',
+        bookingId: null,
+        updatedAt: new Date().toISOString()
+      };
+
+      // Set the final odometer reading from the closed booking
+      const finalOdo = updateData.vehicleOdometerEnd || booking.vehicleOdometerEnd;
+      if (finalOdo !== undefined && finalOdo !== null && String(finalOdo).trim() !== '') {
+        vehicleUpdateDoc.odometer = String(finalOdo);
       }
+
+      await vehCol.updateOne(
+        { regNo: booking.vehicleRegNo },
+        { $set: vehicleUpdateDoc }
+      );
+    } else if (updateData.status === 'cancelled') {
+      // If cancelled, release vehicle back to available without modifying odometer
+      await vehCol.updateOne(
+        { regNo: booking.vehicleRegNo },
+        {
+          $set: {
+            status: 'available',
+            bookingId: null,
+            updatedAt: new Date().toISOString()
+          }
+        }
+      );
     }
 
     const updated = await bookingCol.findOne({ id: bookingId });
-    await RRService.logActivity(`Updated booking ${bookingId} status to ${updateData.status}`, req.userId, req.userRole);
+    await RRService.logActivity(
+      `Updated booking ${bookingId} status to ${updateData.status || booking.status}` +
+      (updateData.status === 'completed' && updateData.vehicleOdometerEnd ? ` (Vehicle: ${booking.vehicleRegNo} odometer updated to ${updateData.vehicleOdometerEnd})` : ''),
+      req.userId,
+      req.userRole
+    );
 
     res.json(updated);
   } catch (err: any) {

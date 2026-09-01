@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RRApiService } from '../../../../services/rr-api.service';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
+import { IBooking } from '@portfolio/shared-types';
 
 @Component({
   selector: 'app-rr-history',
@@ -13,7 +14,7 @@ import { MatTableModule } from '@angular/material/table';
 })
 export class RRHistoryComponent implements OnInit {
   private rrApi = inject(RRApiService);
-  bookings = signal<any[]>([]);
+  bookings = signal<IBooking[]>([]);
 
   displayedColumns = [
     'id',

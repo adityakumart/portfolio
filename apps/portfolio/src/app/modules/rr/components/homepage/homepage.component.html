@@ -14,10 +14,17 @@
       <a href="#browse">Browse Fleet</a>
       <a href="#about">About</a>
       <a href="#contact">Contact</a>
-      <a routerLink="/user/rr/login" class="nav-login-btn">
-        <span>Admin Login</span>
-        <mat-icon>arrow_right_alt</mat-icon>
-      </a>
+      @if (currentUser()) {
+        <a routerLink="/user/rr/dashboard" class="nav-login-btn">
+          <span>Command Desk</span>
+          <mat-icon>dashboard</mat-icon>
+        </a>
+      } @else {
+        <a routerLink="/user/rr/login" class="nav-login-btn">
+          <span>Staff Login</span>
+          <mat-icon>arrow_right_alt</mat-icon>
+        </a>
+      }
     </nav>
     <div class="hamburger" (click)="toggleMobileMenu()">
       <span></span><span></span><span></span>
@@ -30,7 +37,11 @@
     <a href="#browse" (click)="toggleMobileMenu()">Browse Fleet</a>
     <a href="#about" (click)="toggleMobileMenu()">About us</a>
     <a href="#contact" (click)="toggleMobileMenu()">Contact us</a>
-    <a routerLink="/user/rr/login" (click)="toggleMobileMenu()" class="mobile-login-link">Admin Login</a>
+    @if (currentUser()) {
+      <a routerLink="/user/rr/dashboard" (click)="toggleMobileMenu()" class="mobile-login-link">Command Desk</a>
+    } @else {
+      <a routerLink="/user/rr/login" (click)="toggleMobileMenu()" class="mobile-login-link">Staff Login</a>
+    }
   </div>
 
   <!-- Hero Section -->
@@ -38,10 +49,10 @@
     <div class="hero-container">
       <div class="hero-badge">
         <span class="badge-dot"></span>
-        <span>Premium Car Rentals & Tours</span>
+        <span>Premium Car Rentals & Fleet Command</span>
       </div>
       <h1>Uncompromising Comfort for Every Journey</h1>
-      <p>Experience seamless travels with Kakinada's premier car rental fleet. Tailored corporate solutions, local sightseeing, and self-drive luxury.</p>
+      <p>Experience seamless travels with Kakinada's premier car rental fleet. Tailored corporate solutions, local sightseeing, and self-drive luxury with zero hidden charges.</p>
       <div class="hero-actions">
         <a href="#browse" class="hero-primary-btn">Explore Fleet</a>
         <a href="#contact" class="hero-secondary-btn">Book Consultation</a>
@@ -106,14 +117,89 @@
       <h2>Browse by Category</h2>
       <p class="section-desc">Select from our wide selection of fully inspected, cleaned, and road-ready vehicles.</p>
     </div>
-    
-    <h3>5 Seater Comforts</h3>
+
+    <!-- Category Filter Controls -->
+    <div class="fleet-controls" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 30px;">
+      <button
+        class="filter-pill"
+        [style.background]="selectedCategory() === 'all' ? 'var(--color-cyan-500, #06b6d4)' : 'rgba(255,255,255,0.06)'"
+        [style.color]="selectedCategory() === 'all' ? '#000' : 'inherit'"
+        [style.border]="'1px solid rgba(255,255,255,0.12)'"
+        [style.padding]="'8px 18px'"
+        [style.border-radius]="'30px'"
+        [style.cursor]="'pointer'"
+        [style.font-weight]="'600'"
+        (click)="setCategory('all')"
+      >
+        All Fleet ({{ vehicles().length }})
+      </button>
+      <button
+        class="filter-pill"
+        [style.background]="selectedCategory() === '5' ? 'var(--color-cyan-500, #06b6d4)' : 'rgba(255,255,255,0.06)'"
+        [style.color]="selectedCategory() === '5' ? '#000' : 'inherit'"
+        [style.border]="'1px solid rgba(255,255,255,0.12)'"
+        [style.padding]="'8px 18px'"
+        [style.border-radius]="'30px'"
+        [style.cursor]="'pointer'"
+        [style.font-weight]="'600'"
+        (click)="setCategory('5')"
+      >
+        5-Seaters
+      </button>
+      <button
+        class="filter-pill"
+        [style.background]="selectedCategory() === '7' ? 'var(--color-cyan-500, #06b6d4)' : 'rgba(255,255,255,0.06)'"
+        [style.color]="selectedCategory() === '7' ? '#000' : 'inherit'"
+        [style.border]="'1px solid rgba(255,255,255,0.12)'"
+        [style.padding]="'8px 18px'"
+        [style.border-radius]="'30px'"
+        [style.cursor]="'pointer'"
+        [style.font-weight]="'600'"
+        (click)="setCategory('7')"
+      >
+        7-Seaters
+      </button>
+      <button
+        class="filter-pill"
+        [style.background]="selectedCategory() === 'suv' ? 'var(--color-cyan-500, #06b6d4)' : 'rgba(255,255,255,0.06)'"
+        [style.color]="selectedCategory() === 'suv' ? '#000' : 'inherit'"
+        [style.border]="'1px solid rgba(255,255,255,0.12)'"
+        [style.padding]="'8px 18px'"
+        [style.border-radius]="'30px'"
+        [style.cursor]="'pointer'"
+        [style.font-weight]="'600'"
+        (click)="setCategory('suv')"
+      >
+        SUVs
+      </button>
+      <button
+        class="filter-pill"
+        [style.background]="selectedCategory() === 'sedan' ? 'var(--color-cyan-500, #06b6d4)' : 'rgba(255,255,255,0.06)'"
+        [style.color]="selectedCategory() === 'sedan' ? '#000' : 'inherit'"
+        [style.border]="'1px solid rgba(255,255,255,0.12)'"
+        [style.padding]="'8px 18px'"
+        [style.border-radius]="'30px'"
+        [style.cursor]="'pointer'"
+        [style.font-weight]="'600'"
+        (click)="setCategory('sedan')"
+      >
+        Sedans
+      </button>
+    </div>
+
+    <!-- Car Grid -->
     <div class="car-grid">
-      @for (v of fiveSeaters(); track v.regNo) {
-        <div class="car-card">
+      @for (v of filteredVehicles(); track v.regNo) {
+        <div class="car-card" (click)="openVehicleModal(v)" style="cursor: pointer;">
           <div class="card-image-holder">
             <img [src]="getVehicleImage(v)" alt="Vehicle Image" />
-            <span class="card-status-pill">Active</span>
+            <span
+              class="card-status-pill"
+              [style.background]="v.status === 'available' ? 'rgba(34, 197, 94, 0.2)' : 'rgba(239, 68, 68, 0.2)'"
+              [style.color]="v.status === 'available' ? '#22c55e' : '#ef4444'"
+            >
+              {{ v.status === 'available' ? 'Available' : (v.status | uppercase) }}
+            </span>
           </div>
           <div class="car-details">
             <div class="car-title">
@@ -122,47 +208,36 @@
             <div class="car-specs">
               <span class="spec-tag"><mat-icon>palette</mat-icon> {{ v.color || 'Premium' }}</span>
               <span class="spec-tag"><mat-icon>local_gas_station</mat-icon> {{ v.fuelType || 'Petrol' }}</span>
+              <span class="spec-tag"><mat-icon>airline_seat_recline_normal</mat-icon> {{ v.seating }} Seats</span>
             </div>
+
+            <!-- Pricing Badges -->
+            <div style="display: flex; gap: 6px; margin: 10px 0; font-size: 0.8rem;">
+              <span style="background: rgba(6, 182, 212, 0.12); color: var(--color-cyan-400, #22d3ee); padding: 4px 8px; border-radius: 6px; font-weight: 600;">
+                23h: ₹{{ v.pricing?.h23?.price || '2000' }}
+              </span>
+              <span style="background: rgba(255, 255, 255, 0.06); padding: 4px 8px; border-radius: 6px;">
+                11h: ₹{{ v.pricing?.h11?.price || '1200' }}
+              </span>
+            </div>
+
             <div class="car-action-row">
               <span class="type-tag">{{ v.type || 'Sedan' }}</span>
-              <div class="card-btn-arrow"><mat-icon>arrow_forward</mat-icon></div>
+              <button
+                type="button"
+                (click)="$event.stopPropagation(); onBookNow(v)"
+                style="background: var(--color-cyan-500, #06b6d4); color: #000; border: none; padding: 6px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px;"
+              >
+                <span>Reserve</span>
+                <mat-icon style="font-size: 16px; width: 16px; height: 16px;">arrow_forward</mat-icon>
+              </button>
             </div>
           </div>
         </div>
       } @empty {
-        <div class="empty-fleet-card">
-          <mat-icon>no_sim</mat-icon>
-          <p>No 5-seater vehicles currently available in our active fleet.</p>
-        </div>
-      }
-    </div>
-
-    <h3>7 Seater Explorers</h3>
-    <div class="car-grid">
-      @for (v of sevenSeaters(); track v.regNo) {
-        <div class="car-card">
-          <div class="card-image-holder">
-            <img [src]="getVehicleImage(v)" alt="Vehicle Image" />
-            <span class="card-status-pill">Active</span>
-          </div>
-          <div class="car-details">
-            <div class="car-title">
-              {{ v.manufacturer }} {{ v.name }}
-            </div>
-            <div class="car-specs">
-              <span class="spec-tag"><mat-icon>palette</mat-icon> {{ v.color || 'Premium' }}</span>
-              <span class="spec-tag"><mat-icon>local_gas_station</mat-icon> {{ v.fuelType || 'Diesel' }}</span>
-            </div>
-            <div class="car-action-row">
-              <span class="type-tag">{{ v.type || 'SUV' }}</span>
-              <div class="card-btn-arrow"><mat-icon>arrow_forward</mat-icon></div>
-            </div>
-          </div>
-        </div>
-      } @empty {
-        <div class="empty-fleet-card">
-          <mat-icon>no_sim</mat-icon>
-          <p>No 7-seater vehicles currently available in our active fleet.</p>
+        <div class="empty-fleet-card" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+          <mat-icon style="font-size: 48px; width: 48px; height: 48px; opacity: 0.5;">no_sim</mat-icon>
+          <p>No vehicles match the selected filter.</p>
         </div>
       }
     </div>
@@ -228,7 +303,7 @@
           <mat-icon>email</mat-icon>
         </div>
         <strong>Email Enquiries</strong>
-        <p>abc@gmail.com<br>support@roadready.com</p>
+        <p>support&#64;roadready.com<br>info&#64;rams-cars.com</p>
       </div>
 
       <div class="contact-item">
@@ -236,7 +311,7 @@
           <mat-icon>language</mat-icon>
         </div>
         <strong>Web Portal</strong>
-        <p>ramandramscarrentals.com<br>roadreadyrentals.com</p>
+        <p>roadreadyrentals.com</p>
       </div>
     </div>
   </section>
@@ -247,4 +322,102 @@
       <p>© 2026 Sri Ram & Ram's RoadReady Rentals — Built for Ultimate Comfort and Speed</p>
     </div>
   </footer>
+
+  <!-- Quick Booking Inquiry / Vehicle Details Modal -->
+  @if (selectedVehicleForModal(); as vehicle) {
+    <div
+      class="modal-backdrop"
+      style="position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px;"
+      (click)="closeVehicleModal()"
+    >
+      <div
+        class="modal-card"
+        style="background: var(--card, #18181b); border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; max-width: 540px; width: 100%; padding: 24px; color: var(--foreground, #fff); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);"
+        (click)="$event.stopPropagation()"
+      >
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h3 style="margin: 0; font-size: 1.35rem; font-weight: 700;">
+            {{ vehicle.manufacturer }} {{ vehicle.name }} ({{ vehicle.regNo }})
+          </h3>
+          <button
+            (click)="closeVehicleModal()"
+            style="background: none; border: none; color: inherit; cursor: pointer; padding: 4px;"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+
+        <div style="margin-bottom: 16px; border-radius: 12px; overflow: hidden; max-height: 200px;">
+          <img [src]="getVehicleImage(vehicle)" alt="Vehicle" style="width: 100%; height: 200px; object-fit: cover;" />
+        </div>
+
+        <!-- Pricing Slabs Table -->
+        <div style="background: rgba(255,255,255,0.04); border-radius: 10px; padding: 12px; margin-bottom: 16px;">
+          <div style="font-weight: 600; font-size: 0.85rem; color: var(--color-cyan-400, #22d3ee); margin-bottom: 8px;">
+            Pricing Packages:
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; font-size: 0.85rem;">
+            <div>23 Hours: ₹{{ vehicle.pricing?.h23?.price || '2000' }} ({{ vehicle.pricing?.h23?.km || '300' }} KM)</div>
+            <div>11 Hours: ₹{{ vehicle.pricing?.h11?.price || '1200' }} ({{ vehicle.pricing?.h11?.km || '150' }} KM)</div>
+            <div>3 Hours: ₹{{ vehicle.pricing?.h3?.price || '500' }} ({{ vehicle.pricing?.h3?.km || '50' }} KM)</div>
+            <div>1 Hour: ₹{{ vehicle.pricing?.h1?.price || '200' }} ({{ vehicle.pricing?.h1?.km || '20' }} KM)</div>
+          </div>
+          <div style="font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-top: 8px;">
+            Extra: ₹{{ vehicle.extraKmPrice || '12' }}/KM & ₹{{ vehicle.extraHourPrice || '150' }}/Hour.
+          </div>
+        </div>
+
+        @if (inquirySubmitted()) {
+          <div style="background: rgba(34, 197, 94, 0.15); border: 1px solid #22c55e; border-radius: 10px; padding: 16px; text-align: center; color: #22c55e;">
+            <mat-icon style="font-size: 32px; width: 32px; height: 32px;">check_circle</mat-icon>
+            <p style="margin: 8px 0 0 0; font-weight: 600;">Inquiry Sent! Our desk agent will contact you shortly.</p>
+          </div>
+        } @else {
+          <form (submit)="submitInquiry()" style="display: flex; flex-direction: column; gap: 12px;">
+            <input
+              type="text"
+              placeholder="Your Full Name"
+              [(ngModel)]="inquiryName"
+              name="inquiryName"
+              required
+              style="padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.3); color: #fff;"
+            />
+            <input
+              type="tel"
+              placeholder="Contact Phone Number (10 digits)"
+              [(ngModel)]="inquiryPhone"
+              name="inquiryPhone"
+              required
+              style="padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.3); color: #fff;"
+            />
+            <div style="display: flex; gap: 10px;">
+              <input
+                type="datetime-local"
+                [(ngModel)]="inquiryPickupDate"
+                name="inquiryPickupDate"
+                style="flex: 1; padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.3); color: #fff;"
+              />
+              <select
+                [(ngModel)]="inquiryDuration"
+                name="inquiryDuration"
+                style="padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.3); color: #fff;"
+              >
+                <option value="23">23 Hours (Full Day)</option>
+                <option value="11">11 Hours (Half Day)</option>
+                <option value="3">3 Hours</option>
+                <option value="1">1 Hour</option>
+              </select>
+            </div>
+            <button
+              type="submit"
+              [disabled]="!inquiryName || !inquiryPhone"
+              style="background: var(--color-cyan-500, #06b6d4); color: #000; padding: 12px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 4px;"
+            >
+              Request Booking Reservation
+            </button>
+          </form>
+        }
+      </div>
+    </div>
+  }
 </div>

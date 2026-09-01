@@ -7,6 +7,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { Router } from '@angular/router';
+import { IVehicle, IBooking, IRRDashboardStats } from '@portfolio/shared-types';
 
 @Component({
   selector: 'app-rr-stats-view',
@@ -29,9 +30,9 @@ export class RRStatsViewComponent implements OnInit {
 
   @ViewChild('detailsDialog') detailsDialog!: TemplateRef<any>;
 
-  vehicles = signal<any[]>([]);
-  bookings = signal<any[]>([]);
-  stats = signal<any>({
+  vehicles = signal<IVehicle[]>([]);
+  bookings = signal<IBooking[]>([]);
+  stats = signal<IRRDashboardStats>({
     totalFleet: 0,
     activeBookings: 0,
     maintenance: 0,
