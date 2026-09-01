@@ -1,7 +1,15 @@
 // ai-chat.component.scss
 
-$primary-gradient: linear-gradient(135deg, var(--color-violet-500) 0%, var(--color-orange-400) 100%);
-$user-bubble-gradient: linear-gradient(135deg, var(--color-violet-500) 0%, var(--color-blue-500) 100%);
+$primary-gradient: linear-gradient(
+  135deg,
+  var(--color-violet-500) 0%,
+  var(--color-orange-400) 100%
+);
+$user-bubble-gradient: linear-gradient(
+  135deg,
+  var(--color-violet-500) 0%,
+  var(--color-blue-500) 100%
+);
 $sidebar-bg-light: rgba(248, 250, 252, 0.85);
 $sidebar-bg-dark: rgba(15, 23, 42, 0.95);
 $workspace-bg-light: rgba(255, 255, 255, 0.45);
@@ -13,7 +21,6 @@ $workspace-bg-dark: rgba(15, 23, 42, 0.45);
   width: 100%;
   overflow: hidden;
   box-sizing: border-box;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background: var(--bodyBg, #f1f5f9);
   transition: background-color 0.3s ease;
 
@@ -36,7 +43,10 @@ $workspace-bg-dark: rgba(15, 23, 42, 0.45);
   display: flex;
   flex-direction: column;
   height: 100%;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s ease, background-color 0.3s ease;
+  transition:
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    width 0.3s ease,
+    background-color 0.3s ease;
   z-index: 10;
 
   :host-context(.dark) & {
@@ -92,7 +102,8 @@ $workspace-bg-dark: rgba(15, 23, 42, 0.45);
       justify-content: center;
       gap: 0.5rem;
       padding: 0.75rem 1rem;
-      border: 1px dashed color-mix(in srgb, var(--primary) 0.4 * 100%, transparent);
+      border: 1px dashed
+        color-mix(in srgb, var(--primary) 0.4 * 100%, transparent);
       background: color-mix(in srgb, var(--primary) 0.04 * 100%, transparent);
       border-radius: 12px;
       color: var(--primary);
@@ -184,7 +195,11 @@ $workspace-bg-dark: rgba(15, 23, 42, 0.45);
         font-weight: 600;
 
         :host-context(.dark) & {
-          background: color-mix(in srgb, var(--primary) 0.15 * 100%, transparent);
+          background: color-mix(
+            in srgb,
+            var(--primary) 0.15 * 100%,
+            transparent
+          );
           color: #c084fc;
         }
 
@@ -402,10 +417,28 @@ $workspace-bg-dark: rgba(15, 23, 42, 0.45);
         background: #fff;
         border-radius: 50%;
         animation: floating-sp 3s infinite ease-in-out;
-        
-        &.s1 { width: 8px; height: 8px; top: 15px; left: 15px; animation-delay: 0s; }
-        &.s2 { width: 12px; height: 12px; top: 25px; right: 15px; animation-delay: 0.8s; }
-        &.s3 { width: 6px; height: 6px; bottom: 12px; left: 25px; animation-delay: 1.6s; }
+
+        &.s1 {
+          width: 8px;
+          height: 8px;
+          top: 15px;
+          left: 15px;
+          animation-delay: 0s;
+        }
+        &.s2 {
+          width: 12px;
+          height: 12px;
+          top: 25px;
+          right: 15px;
+          animation-delay: 0.8s;
+        }
+        &.s3 {
+          width: 6px;
+          height: 6px;
+          bottom: 12px;
+          left: 25px;
+          animation-delay: 1.6s;
+        }
       }
     }
 
@@ -483,9 +516,15 @@ $workspace-bg-dark: rgba(15, 23, 42, 0.45);
           height: 24px;
           margin-bottom: 0.75rem;
 
-          &.text-purple { color: #8b5cf6; }
-          &.text-orange { color: #f97316; }
-          &.text-blue { color: #3b82f6; }
+          &.text-purple {
+            color: #8b5cf6;
+          }
+          &.text-orange {
+            color: #f97316;
+          }
+          &.text-blue {
+            color: #3b82f6;
+          }
         }
 
         .card-text {
@@ -611,13 +650,16 @@ $workspace-bg-dark: rgba(15, 23, 42, 0.45);
 
     .copy-bubble-btn {
       opacity: 0;
-      transition: opacity 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+      transition:
+        opacity 0.2s ease,
+        background-color 0.2s ease,
+        color 0.2s ease;
       color: #94a3b8;
       width: 32px;
       height: 32px;
       line-height: 32px;
       flex-shrink: 0;
-      
+
       ::ng-deep .mat-icon {
         font-size: 1.1rem;
         width: 18px;
@@ -639,7 +681,10 @@ $workspace-bg-dark: rgba(15, 23, 42, 0.45);
     .retry-bubble-btn {
       color: var(--primary);
       opacity: 0.8;
-      transition: opacity 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+      transition:
+        opacity 0.2s ease,
+        background-color 0.2s ease,
+        color 0.2s ease;
       width: 32px;
       height: 32px;
       line-height: 32px;
@@ -671,7 +716,7 @@ $workspace-bg-dark: rgba(15, 23, 42, 0.45);
       background: rgba(255, 255, 255, 0.6);
       border: 1px solid rgba(0, 0, 0, 0.05);
       color: #1e293b;
-      box-shadow: 0 2px 8px -2px rgba(0,0,0,0.02);
+      box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.02);
       line-height: 1.5;
       font-size: 0.95rem;
 
@@ -796,8 +841,9 @@ $workspace-bg-dark: rgba(15, 23, 42, 0.45);
 
       &:focus-within:not(.disabled) {
         border-color: var(--primary);
-        box-shadow: 0 8px 24px -10px rgba(124, 58, 237, 0.2), 
-                    0 0 0 1px var(--primary);
+        box-shadow:
+          0 8px 24px -10px rgba(124, 58, 237, 0.2),
+          0 0 0 1px var(--primary);
       }
 
       &.disabled {
@@ -876,25 +922,49 @@ $workspace-bg-dark: rgba(15, 23, 42, 0.45);
     border-radius: 50%;
     animation: bounce 1.4s infinite ease-in-out both;
 
-    &:nth-child(1) { animation-delay: -0.32s; }
-    &:nth-child(2) { animation-delay: -0.16s; }
+    &:nth-child(1) {
+      animation-delay: -0.32s;
+    }
+    &:nth-child(2) {
+      animation-delay: -0.16s;
+    }
   }
 }
 
 @keyframes bounce {
-  0%, 80%, 100% { transform: scale(0); }
-  40% { transform: scale(1.0); }
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
 }
 
 @keyframes pulse-dot {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.7); }
-  70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(124, 58, 237, 0); }
-  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(124, 58, 237, 0); }
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 8px rgba(124, 58, 237, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(124, 58, 237, 0);
+  }
 }
 
 @keyframes floating-sp {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
 }
 
 // ------------------------------
