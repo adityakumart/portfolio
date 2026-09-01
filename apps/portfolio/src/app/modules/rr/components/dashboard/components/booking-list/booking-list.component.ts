@@ -866,6 +866,7 @@ export class RRBookingListComponent implements OnInit {
       alert('Booking updated successfully.');
       this.closeModifyBookingPopup();
       this.loadBookings();
+      this.loadVehicles();
     } catch (e: any) {
       console.error(e);
       alert(e.error?.message || 'Error updating booking.');
