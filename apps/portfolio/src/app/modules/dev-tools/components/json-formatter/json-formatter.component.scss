@@ -130,7 +130,7 @@
         margin-bottom: 0;
 
         .json-textarea {
-          font-family: 'Fira Code', 'Courier New', monospace;
+          font-family: var(--font-mono, monospace);
           font-size: 13px;
           line-height: 1.6;
           padding: 8px;
@@ -170,7 +170,6 @@
           }
 
           .error-message-text {
-            font-family: 'Fira Code', 'Courier New', monospace;
             font-size: 12px;
             margin: 0;
             line-height: 1.4;

@@ -63,7 +63,6 @@
 
   .app-title {
     margin: 0;
-    font-family: 'Montserrat', sans-serif;
     font-weight: 900;
     font-size: 1.35rem;
     letter-spacing: -0.04em;
@@ -121,7 +120,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-family: 'Montserrat', sans-serif;
       box-shadow: 0 4px 10px rgba(6, 182, 212, 0.3);
       letter-spacing: 0.02em;
     }
@@ -264,7 +262,6 @@
     }
 
     span {
-      font-family: 'Montserrat', sans-serif;
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.12em;
@@ -328,7 +325,6 @@
     font-weight: 800;
     padding-left: 12px;
     color: var(--foreground);
-    font-family: 'Montserrat', sans-serif;
   }
 
   .menu {
@@ -432,7 +428,6 @@
   }
 
   h2 {
-    font-family: 'Montserrat', sans-serif;
     font-size: 1.85rem;
     font-weight: 800;
     letter-spacing: -0.025em;
@@ -442,7 +437,6 @@
   }
 
   h3 {
-    font-family: 'Montserrat', sans-serif;
     font-size: 1.25rem;
     font-weight: 700;
     letter-spacing: -0.02em;
@@ -647,7 +641,6 @@
       text-align: center;
       color: var(--foreground);
       line-height: 1.3;
-      font-family: 'Montserrat', sans-serif;
     }
 
     .veh-subtitle {
@@ -764,7 +757,6 @@
       text-align: left;
 
       .veh-name {
-        font-family: 'Montserrat', sans-serif;
         font-size: 1.05rem;
         font-weight: 800;
         margin: 0 0 4px 0;
@@ -1201,7 +1193,7 @@
       color-mix(in srgb, var(--foreground) 6%, transparent);
     border: 1px solid var(--border);
     line-height: 1.8;
-    font-family: 'Fira Code', 'Courier New', Courier, monospace;
+    font-family: var(--font-mono, monospace);
     font-size: 0.775rem;
 
     &::-webkit-scrollbar {
@@ -1255,7 +1247,6 @@
     }
 
     .mat-mdc-dialog-title {
-      font-family: 'Montserrat', sans-serif !important;
       font-weight: 900 !important;
       letter-spacing: -0.03em !important;
       font-size: 1.5rem !important;

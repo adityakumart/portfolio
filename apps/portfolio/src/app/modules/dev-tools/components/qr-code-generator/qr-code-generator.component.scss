@@ -48,7 +48,7 @@
       }
       p {
         margin: 0;
-        font-family: monospace;
+        font-family: var(--font-mono, monospace);
         font-size: 13px;
         white-space: pre-wrap;
         word-break: break-all;
@@ -130,7 +130,7 @@
         }
 
         .code-textarea {
-          font-family: 'Courier New', Courier, monospace;
+          font-family: var(--font-mono, monospace);
           font-size: 14px;
           background-color: var(--mat-sys-surface-container-low, #fcfcfc);
           color: var(--mat-sys-on-surface, #333);
@@ -247,7 +247,7 @@
       .hex-text {
         border: none;
         background: none;
-        font-family: 'Courier New', Courier, monospace;
+        font-family: var(--font-mono, monospace);
         font-size: 14px;
         font-weight: 600;
         color: var(--mat-sys-on-surface, #333);

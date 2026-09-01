@@ -159,7 +159,6 @@
       }
 
       .error-message-text {
-        font-family: 'Fira Code', 'Courier New', monospace;
         font-size: 12px;
         margin: 0;
         line-height: 1.4;
@@ -248,7 +247,7 @@
             }
 
             &.code-font {
-              font-family: 'Fira Code', 'Courier New', monospace;
+              font-family: var(--font-mono, monospace);
               letter-spacing: 0.5px;
             }
           }
