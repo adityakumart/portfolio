@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal, ViewChild, TemplateRef, effect } fro
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RRApiService } from '../../../../services/rr-api.service';
+import { IEmployee } from '@portfolio/shared-types';
 
 // Material Imports
 import { MatCardModule } from '@angular/material/card';
@@ -47,7 +48,7 @@ export class RREmployeeListComponent implements OnInit {
   @ViewChild('employeeFormDialog') employeeFormDialog!: TemplateRef<any>;
 
   // MatTable Configuration
-  dataSource = new MatTableDataSource<any>([]);
+  dataSource = new MatTableDataSource<IEmployee>([]);
   displayedColumns: string[] = [
     'id',
     'name',
@@ -70,7 +71,7 @@ export class RREmployeeListComponent implements OnInit {
   }
 
   // Collections data
-  employees = signal<any[]>([]);
+  employees = signal<IEmployee[]>([]);
 
   // Modals signals
   editingEmployeeMode = signal<boolean>(false);

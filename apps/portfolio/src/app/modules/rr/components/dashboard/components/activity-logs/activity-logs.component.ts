@@ -5,6 +5,7 @@ import { RRApiService } from '../../../../services/rr-api.service';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
+import { ILog } from '@portfolio/shared-types';
 
 @Component({
   selector: 'app-rr-activity-logs',
@@ -15,7 +16,7 @@ import { MatIconModule } from '@angular/material/icon';
 })
 export class RRActivityLogsComponent implements OnInit {
   private rrApi = inject(RRApiService);
-  logs = signal<any[]>([]);
+  logs = signal<ILog[]>([]);
   logFilterFrom = '';
   logFilterTo = '';
 
