@@ -75,7 +75,7 @@
     &.copied {
       color: var(--mat-sys-primary);
 
-      mat-icon {
+      ng-icon {
         animation: pulse 0.5s ease;
       }
     }

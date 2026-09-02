@@ -143,7 +143,7 @@
     transform: none;
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 
-    mat-icon {
+    ng-icon {
       font-size: 18px;
       width: 18px;
       height: 18px;
@@ -154,7 +154,7 @@
       box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4);
       transform: translateY(-2px);
 
-      mat-icon {
+      ng-icon {
         transform: translateX(4px);
       }
     }
@@ -427,7 +427,7 @@
       margin-bottom: 1.5rem;
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 
-      mat-icon {
+      ng-icon {
         font-size: 24px;
         width: 24px;
         height: 24px;
@@ -630,7 +630,7 @@
         background: rgba(255, 255, 255, 0.03);
       }
 
-      mat-icon {
+      ng-icon {
         font-size: 13px;
         width: 13px;
         height: 13px;
@@ -664,7 +664,7 @@
     color: var(--foreground);
     transition: all 0.3s ease;
 
-    mat-icon {
+    ng-icon {
       font-size: 16px;
       width: 16px;
       height: 16px;
@@ -682,7 +682,7 @@
     box-shadow: 0 8px 32px 0
       color-mix(in srgb, var(--foreground) 6%, transparent);
 
-    mat-icon {
+    ng-icon {
       font-size: 40px;
       width: 40px;
       height: 40px;
@@ -852,7 +852,7 @@
       margin-bottom: 1.5rem;
       transition: all 0.3s ease;
 
-      mat-icon {
+      ng-icon {
         font-size: 24px;
         width: 24px;
         height: 24px;
