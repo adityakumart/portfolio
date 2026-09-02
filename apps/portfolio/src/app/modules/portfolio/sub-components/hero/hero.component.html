@@ -1,4 +1,4 @@
-<section class="hero-panel reveal-on-scroll">
+<section class="hero-panel reveal-on-scroll" aria-label="Hero Introduction">
   <div class="hero-copy">
     <span class="eyebrow">Frontend Developer Portfolio</span>
     <h1 class="hero-title">
@@ -15,9 +15,13 @@
     </div>
     <div class="hero-links">
       @for (social of resume().basics.socialUrl; track social.name) {
-        <a [href]="social.url" target="_blank" class="social-link">{{
-          social.name
-        }}</a>
+        <a
+          [href]="social.url"
+          target="_blank"
+          rel="noopener noreferrer"
+          [attr.aria-label]="social.name + ' Profile'"
+          class="social-link"
+        >{{ social.name }}</a>
       }
     </div>
   </div>

@@ -1,5 +1,6 @@
 import {
   Component,
+  OnInit,
   OnDestroy,
   signal,
   inject,
@@ -16,6 +17,7 @@ import { takeUntil } from 'rxjs/operators';
 
 import { GlobalData } from '../../../shared/data/GlobalData';
 import { ThemeService } from '../../theme.service';
+import { SeoService } from '../../shared/services/seo.service';
 import { HeroComponent } from './sub-components/hero/hero.component';
 import { SummaryComponent } from './sub-components/summary/summary.component';
 import { ExperienceComponent } from './sub-components/experience/experience.component';
@@ -45,10 +47,11 @@ import { AwardsComponent } from './sub-components/awards/awards.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [GlobalData],
 })
-export class PortfolioComponent implements OnDestroy {
+export class PortfolioComponent implements OnInit, OnDestroy {
   private destroyed = new Subject<void>();
   private globalData = inject(GlobalData);
   private themeService = inject(ThemeService);
+  private seoService = inject(SeoService);
 
   isDarkMode = computed(() => this.themeService.darkMode());
   resume = signal(this.globalData.resume);
@@ -81,13 +84,19 @@ export class PortfolioComponent implements OnDestroy {
       });
   }
 
+  ngOnInit(): void {
+    this.seoService.setPortfolioSeo(this.resume());
+  }
+
   toggleTheme(): void {
     this.themeService.toggleTheme();
   }
 
   ngOnDestroy(): void {
+    this.seoService.removeJsonLd();
     this.destroyed.next();
     this.destroyed.complete();
   }
 }
+
 

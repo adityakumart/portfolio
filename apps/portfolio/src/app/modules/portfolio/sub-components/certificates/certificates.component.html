@@ -1,4 +1,4 @@
-<section class="certificates-section reveal-on-scroll">
+<section class="certificates-section reveal-on-scroll" aria-label="Certificates">
   <div class="section-heading">
     <div>
       <h2 class="section-title">Certificates</h2>
@@ -15,11 +15,15 @@
           class="certificateCard modern-card certificate-card-with-accent"
         >
           <mat-card-header>
-            <mat-card-title class="fs-16 font-weight-bold">
-              <a [href]="cert.url" target="_blank" class="cert-link">{{
-                cert.name
-              }}</a>
-            </mat-card-title>
+            <h3 mat-card-title class="fs-16 font-weight-bold">
+              <a
+                [href]="cert.url"
+                target="_blank"
+                rel="noopener noreferrer"
+                [attr.aria-label]="cert.name + ' Certificate'"
+                class="cert-link"
+              >{{ cert.name }}</a>
+            </h3>
             <mat-card-subtitle
               class="mt-2 d-flex justify-content-between align-items-center"
             >
