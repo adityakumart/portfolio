@@ -9,8 +9,8 @@ import {
 } from '@angular/core';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { lucideSun, lucideMoon, lucideZap } from '@ng-icons/lucide';
-import { HlmButtonImports } from '@spartan-ng/hel/button';
-import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
+import { HlmButton } from '@spartan-ng/hel/button';
+import { HlmTooltip } from '@spartan-ng/hel/tooltip';
 import { RouterLink } from '@angular/router';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Subject } from 'rxjs';
@@ -33,8 +33,8 @@ import { AwardsComponent } from './sub-components/awards/awards.component';
   templateUrl: './portfolio.component.html',
   styleUrls: ['./portfolio.component.scss'],
   imports: [
-    HlmButtonImports,
-    HlmTooltipImports,
+    HlmButton,
+    HlmTooltip,
     NgIconComponent,
     RouterLink,
     HeroComponent,

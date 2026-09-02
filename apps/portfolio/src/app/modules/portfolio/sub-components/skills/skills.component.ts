@@ -1,13 +1,25 @@
 import { Component, input, ChangeDetectionStrategy } from '@angular/core';
-import { MatCardModule } from '@angular/material/card';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatTooltipModule } from '@angular/material/tooltip';
+import {
+  HlmCard,
+  HlmCardHeader,
+  HlmCardTitle,
+  HlmCardContent,
+} from '@spartan-ng/hel/card';
+import { HlmBadge } from '@spartan-ng/hel/badge';
+import { HlmTooltip } from '@spartan-ng/hel/tooltip';
 import { ResumeObject } from '@portfolio/shared-types';
 
 @Component({
   selector: 'app-skills',
   standalone: true,
-  imports: [MatCardModule, MatChipsModule, MatTooltipModule],
+  imports: [
+    HlmCard,
+    HlmCardHeader,
+    HlmCardTitle,
+    HlmCardContent,
+    HlmBadge,
+    HlmTooltip,
+  ],
   templateUrl: './skills.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './skills.component.scss',

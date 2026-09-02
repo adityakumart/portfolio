@@ -1,11 +1,16 @@
 import { Component, input, ChangeDetectionStrategy } from '@angular/core';
-import { MatCardModule } from '@angular/material/card';
+import {
+  HlmCard,
+  HlmCardHeader,
+  HlmCardTitle,
+  HlmCardContent,
+} from '@spartan-ng/hel/card';
 import { Award } from '@portfolio/shared-types';
 
 @Component({
   selector: 'app-awards',
   standalone: true,
-  imports: [MatCardModule],
+  imports: [HlmCard, HlmCardHeader, HlmCardTitle, HlmCardContent],
   templateUrl: './awards.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './awards.component.scss',

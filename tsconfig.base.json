@@ -19,6 +19,15 @@
       ],
       "@spartan-ng/hel/dropdown-menu": [
         "./libs/styles/dropdown-menu/src/index.ts"
+      ],
+      "@spartan-ng/hel/card": [
+        "./libs/styles/card/src/index.ts"
+      ],
+      "@spartan-ng/hel/badge": [
+        "./libs/styles/badge/src/index.ts"
+      ],
+      "@spartan-ng/hel/separator": [
+        "./libs/styles/separator/src/index.ts"
       ]
     },
     "forceConsistentCasingInFileNames": true,

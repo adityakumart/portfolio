@@ -1,11 +1,11 @@
 import { Component, input, ChangeDetectionStrategy } from '@angular/core';
-import { MatChipsModule } from '@angular/material/chips';
+import { HlmBadge } from '@spartan-ng/hel/badge';
 import { WorkProject } from '@portfolio/shared-types';
 
 @Component({
   selector: 'app-projects',
   standalone: true,
-  imports: [MatChipsModule],
+  imports: [HlmBadge],
   templateUrl: './projects.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './projects.component.scss',

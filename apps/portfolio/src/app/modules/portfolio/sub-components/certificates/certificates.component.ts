@@ -1,11 +1,11 @@
 import { Component, input, ChangeDetectionStrategy } from '@angular/core';
-import { MatCardModule } from '@angular/material/card';
+import { HlmCard, HlmCardHeader, HlmCardTitle } from '@spartan-ng/hel/card';
 import { Certificate } from '@portfolio/shared-types';
 
 @Component({
   selector: 'app-certificates',
   standalone: true,
-  imports: [MatCardModule],
+  imports: [HlmCard, HlmCardHeader, HlmCardTitle],
   templateUrl: './certificates.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './certificates.component.scss',

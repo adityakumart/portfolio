@@ -1,35 +1,33 @@
-<mat-card class="matCard modern-card mb-4 reveal-on-scroll" aria-label="Work Experience">
-  <mat-card-header>
-    <h2 mat-card-title class="gradient-title">Work Experience</h2>
-  </mat-card-header>
-  <mat-card-content class="work-experience-content mt-4">
+<div hlmCard class="mb-4 overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-xl reveal-on-scroll" aria-label="Work Experience">
+  <div hlmCardHeader class="p-0">
+    <h2 hlmCardTitle class="bg-gradient-to-r from-primary to-sky-500 bg-clip-text text-xl font-bold text-transparent">Work Experience</h2>
+  </div>
+  <div hlmCardContent class="mt-4 flex flex-col gap-6 p-0">
     @for (work of worksData(); track $index) {
-      <div class="work-item mb-4 reveal-on-scroll">
-        <div
-          class="work-header d-flex justify-content-between align-items-center flex-wrap mb-1"
-        >
-          <h3 class="m-0 font-weight-bold">
+      <div class="timeline-work-item relative pl-5 border-l-2 border-primary/45 reveal-on-scroll">
+        <div class="mb-1 flex flex-wrap items-center justify-between gap-2.5">
+          <h3 class="m-0 text-base font-bold">
             <a
               [href]="work.url"
               target="_blank"
               rel="noopener noreferrer"
               [attr.aria-label]="work.name + ' Website'"
-              class="work-company"
+              class="text-foreground transition-colors duration-200 hover:text-primary"
             >{{ work.name }}</a>
           </h3>
-          <span class="work-dates badge-modern"
+          <span hlmBadge variant="outline" class="border-sky-500 bg-secondary px-3.5 py-1.5 text-xs text-primary font-medium"
             >{{ work.startDate }} - {{ work.endDate }}</span
           >
         </div>
-        <div class="work-position mb-3 text-primary">{{ work.position }}</div>
+        <div class="mb-3 text-sm font-medium text-sky-500">{{ work.position }}</div>
 
         @if (work.projects && work.projects.length) {
-          <app-projects [projects]="work.projects"></app-projects>
+          <app-projects [projects]="work.projects" />
         }
       </div>
       @if (!$last) {
-        <hr class="work-divider" />
+        <hr class="my-4 h-px border-none bg-gradient-to-r from-transparent via-muted-foreground/20 to-transparent" />
       }
     }
-  </mat-card-content>
-</mat-card>
+  </div>
+</div>
