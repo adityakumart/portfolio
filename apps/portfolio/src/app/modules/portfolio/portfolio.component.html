@@ -1,25 +1,29 @@
-<main class="portfolio-page-wrapper" role="main" aria-label="Aditya Kumar T Portfolio">
+<main class="portfolio-page-wrapper min-h-screen overflow-x-hidden pb-20 text-foreground" role="main" aria-label="Aditya Kumar T Portfolio">
   <button
-    mat-icon-button
-    class="theme-toggle-btn"
+    hlmBtn
+    variant="ghost"
+    size="icon"
+    class="group fixed top-6 right-[76px] z-50 size-10 rounded-full border border-white/25 bg-white/15 text-primary shadow-lg backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:border-transparent hover:bg-gradient-to-br hover:from-primary hover:to-sky-500 hover:text-white hover:shadow-[0_0_20px_rgba(147,51,234,0.4)] active:translate-y-0"
     (click)="toggleTheme()"
-    [matTooltip]="isDarkMode() ? 'Switch to Light Theme' : 'Switch to Dark Theme'"
-    matTooltipPosition="left"
+    [hlmTooltip]="isDarkMode() ? 'Switch to Light Theme' : 'Switch to Dark Theme'"
+    position="left"
   >
-    <ng-icon [name]="isDarkMode() ? 'lucideSun' : 'lucideMoon'"></ng-icon>
+    <ng-icon class="size-5 transition-transform duration-500 group-hover:rotate-[360deg] group-hover:scale-110" [name]="isDarkMode() ? 'lucideSun' : 'lucideMoon'"></ng-icon>
   </button>
 
   <button
-    mat-icon-button
-    class="gateway-bolt"
+    hlmBtn
+    variant="ghost"
+    size="icon"
+    class="group fixed top-6 right-6 z-50 size-10 rounded-full border border-white/25 bg-white/15 text-primary shadow-lg backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:border-transparent hover:bg-gradient-to-br hover:from-primary hover:to-sky-500 hover:text-white hover:shadow-[0_0_20px_rgba(147,51,234,0.4)] active:translate-y-0"
     routerLink="/user"
-    matTooltip="Enter Dashboard"
-    matTooltipPosition="left"
+    hlmTooltip="Enter Dashboard"
+    position="left"
   >
-    <ng-icon name="lucideZap"></ng-icon>
+    <ng-icon class="size-5 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110" name="lucideZap"></ng-icon>
   </button>
   
-  <div class="header">
+  <div class="mx-auto max-w-[1120px] px-4 py-[22px] sm:px-6 sm:py-8">
     <!-- Immediate / Above-the-fold Critical Path -->
     <app-hero [resume]="resume()" />
     <app-summary [resume]="resume()" />
@@ -28,31 +32,31 @@
     @defer (on viewport) {
       <app-experience [worksData]="resume().work" />
     } @placeholder {
-      <div class="defer-section-placeholder" style="min-height: 200px;"></div>
+      <div class="mb-6 w-full rounded-xl bg-foreground/[0.03]" style="min-height: 200px;"></div>
     }
 
     @defer (on viewport) {
       <app-education [education]="resume().education" />
     } @placeholder {
-      <div class="defer-section-placeholder" style="min-height: 180px;"></div>
+      <div class="mb-6 w-full rounded-xl bg-foreground/[0.03]" style="min-height: 180px;"></div>
     }
 
     @defer (on viewport) {
       <app-skills [resume]="resume()" [gridColumns]="gridColumns()" />
     } @placeholder {
-      <div class="defer-section-placeholder" style="min-height: 180px;"></div>
+      <div class="mb-6 w-full rounded-xl bg-foreground/[0.03]" style="min-height: 180px;"></div>
     }
 
     @defer (on viewport) {
       <app-certificates [certificates]="resume().certificates" />
     } @placeholder {
-      <div class="defer-section-placeholder" style="min-height: 160px;"></div>
+      <div class="mb-6 w-full rounded-xl bg-foreground/[0.03]" style="min-height: 160px;"></div>
     }
 
     @defer (on viewport) {
       <app-awards [awards]="resume().awards" />
     } @placeholder {
-      <div class="defer-section-placeholder" style="min-height: 140px;"></div>
+      <div class="mb-6 w-full rounded-xl bg-foreground/[0.03]" style="min-height: 140px;"></div>
     }
   </div>
 </main>
