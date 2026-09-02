@@ -13,7 +13,29 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import {
+  lucideCar,
+  lucidePlus,
+  lucideUsers,
+  lucideFuel,
+  lucideGauge,
+  lucidePencil,
+  lucideTrash2,
+  lucideInfo,
+  lucideFingerprint,
+  lucideShieldCheck,
+  lucideShield,
+  lucideLeaf,
+  lucideCreditCard,
+  lucideMilestone,
+  lucideClock,
+  lucideMoreHorizontal,
+  lucideUploadCloud,
+  lucideCheckCircle,
+  lucideAlertCircle,
+  lucideCheck,
+} from '@ng-icons/lucide';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
@@ -31,10 +53,34 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     MatRadioModule,
     MatCheckboxModule,
     MatButtonModule,
-    MatIconModule,
+    NgIconComponent,
     MatDialogModule,
     MatTooltipModule,
     HlmButton
+  ],
+  providers: [
+    provideIcons({
+      lucideCar,
+      lucidePlus,
+      lucideUsers,
+      lucideFuel,
+      lucideGauge,
+      lucidePencil,
+      lucideTrash2,
+      lucideInfo,
+      lucideFingerprint,
+      lucideShieldCheck,
+      lucideShield,
+      lucideLeaf,
+      lucideCreditCard,
+      lucideMilestone,
+      lucideClock,
+      lucideMoreHorizontal,
+      lucideUploadCloud,
+      lucideCheckCircle,
+      lucideAlertCircle,
+      lucideCheck,
+    }),
   ],
   templateUrl: './vehicle-list.component.html',
   styleUrl: './vehicle-list.component.scss'

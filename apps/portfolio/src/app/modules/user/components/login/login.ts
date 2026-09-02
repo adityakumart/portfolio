@@ -5,7 +5,21 @@ import { Router, RouterLink } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import {
+  lucideLock,
+  lucideUserPlus,
+  lucideAlertCircle,
+  lucideCheckCircle,
+  lucideUser,
+  lucideMail,
+  lucideKeyRound,
+  lucideEye,
+  lucideEyeOff,
+  lucideCircleUser,
+  lucideHome,
+  lucideLogOut,
+} from '@ng-icons/lucide';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../services/auth';
 
@@ -19,8 +33,24 @@ import { AuthService } from '../../services/auth';
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatIconModule,
+    NgIconComponent,
     MatProgressSpinnerModule,
+  ],
+  providers: [
+    provideIcons({
+      lucideLock,
+      lucideUserPlus,
+      lucideAlertCircle,
+      lucideCheckCircle,
+      lucideUser,
+      lucideMail,
+      lucideKeyRound,
+      lucideEye,
+      lucideEyeOff,
+      lucideCircleUser,
+      lucideHome,
+      lucideLogOut,
+    }),
   ],
   templateUrl: './login.html',
   styleUrl: './login.scss',

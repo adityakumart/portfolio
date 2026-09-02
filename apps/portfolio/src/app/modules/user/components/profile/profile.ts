@@ -2,7 +2,8 @@ import { Component, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import { lucideMessageSquare, lucideZap, lucideFolderArchive } from '@ng-icons/lucide';
 import { AuthService } from '../../services/auth';
 
 @Component({
@@ -12,7 +13,10 @@ import { AuthService } from '../../services/auth';
     CommonModule,
     RouterLink,
     MatButtonModule,
-    MatIconModule,
+    NgIconComponent,
+  ],
+  providers: [
+    provideIcons({ lucideMessageSquare, lucideZap, lucideFolderArchive }),
   ],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',

@@ -5,7 +5,8 @@ import {
   MatDialogModule,
   MatDialogRef,
 } from '@angular/material/dialog';
-import { MatIconModule } from '@angular/material/icon';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import { lucidePencil, lucideTrash2 } from '@ng-icons/lucide';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { UserExperienceRecord } from '@portfolio/shared-types';
@@ -17,8 +18,11 @@ import { UserExperienceRecord } from '@portfolio/shared-types';
     MatDialogModule,
     MatTableModule,
     MatButtonModule,
-    MatIconModule,
+    NgIconComponent,
     MatTooltipModule,
+  ],
+  providers: [
+    provideIcons({ lucidePencil, lucideTrash2 }),
   ],
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `
@@ -57,7 +61,7 @@ import { UserExperienceRecord } from '@portfolio/shared-types';
               (click)="onAction('edit', element)"
               matTooltip="Edit"
             >
-              <mat-icon>edit</mat-icon>
+              <ng-icon name="lucidePencil"></ng-icon>
             </button>
             <button
               mat-icon-button
@@ -65,7 +69,7 @@ import { UserExperienceRecord } from '@portfolio/shared-types';
               (click)="onAction('delete', element)"
               matTooltip="Delete"
             >
-              <mat-icon>delete</mat-icon>
+              <ng-icon name="lucideTrash2"></ng-icon>
             </button>
           </td>
         </ng-container>

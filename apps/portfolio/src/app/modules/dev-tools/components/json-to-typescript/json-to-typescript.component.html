@@ -81,12 +81,12 @@
               [disabled]="form.invalid || isLoading"
               fxFlex="1"
             >
-              <mat-icon>auto_awesome</mat-icon>
+              <ng-icon name="lucideSparkles"></ng-icon>
               <span class="button-text">Generate Interface</span>
             </button>
 
             <button mat-stroked-button (click)="clearInput()" fxFlex="1">
-              <mat-icon>clear</mat-icon>
+              <ng-icon name="lucideTrash2"></ng-icon>
               <span class="button-text">Clear</span>
             </button>
           </div>
@@ -128,9 +128,7 @@
               (click)="copyToClipboard()"
               [class.copied]="copySuccess"
             >
-              <mat-icon>{{
-                copySuccess ? 'check_circle' : 'content_copy'
-              }}</mat-icon>
+              <ng-icon [name]="copySuccess ? 'lucideCheckCircle' : 'lucideCopy'"></ng-icon>
             </button>
 
             <button
@@ -139,7 +137,7 @@
               color="accent"
               (click)="downloadInterface()"
             >
-              <mat-icon>download</mat-icon>
+              <ng-icon name="lucideDownload"></ng-icon>
             </button>
 
             <mat-divider [vertical]="true"></mat-divider>
@@ -149,7 +147,7 @@
               matTooltip="Close"
               (click)="showOutput = false"
             >
-              <mat-icon>close</mat-icon>
+              <ng-icon name="lucideX"></ng-icon>
             </button>
           </div>
         </mat-card-content>

@@ -232,7 +232,7 @@
             [disabled]="generatedOutputs.length === 0"
             matTooltip="Copy all 5 items to clipboard"
           >
-            <mat-icon>{{ copiedAll ? 'check_circle' : 'content_copy' }}</mat-icon>
+            <ng-icon [name]="copiedAll ? 'lucideCheckCircle' : 'lucideCopy'"></ng-icon>
             Copy All
           </button>
 
@@ -244,7 +244,7 @@
             (click)="generate()"
             [disabled]="settingsForm.invalid"
           >
-            <mat-icon>refresh</mat-icon>
+            <ng-icon name="lucideRefreshCw"></ng-icon>
             Regenerate
           </button>
         </div>
@@ -286,7 +286,7 @@
                   (click)="onCopy(item, $index)"
                   [class.copied]="copiedIndex === $index"
                 >
-                  <mat-icon>{{ copiedIndex === $index ? 'check_circle' : 'content_copy' }}</mat-icon>
+                  <ng-icon [name]="copiedIndex === $index ? 'lucideCheckCircle' : 'lucideCopy'"></ng-icon>
                 </button>
               </div>
             </div>

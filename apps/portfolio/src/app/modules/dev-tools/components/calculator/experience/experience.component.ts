@@ -22,7 +22,8 @@ import { MatTableModule } from '@angular/material/table';
 
 import { ExperienceService } from './experience.service';
 import { UserExperienceRecord } from '@portfolio/shared-types';
-import { MatIconModule } from '@angular/material/icon';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import { lucideList, lucidePlus, lucideTrash2 } from '@ng-icons/lucide';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ErrorMessageComponent } from '../../../../../shared/components/error-message.component';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -35,7 +36,10 @@ import { MatCardModule } from '@angular/material/card';
   selector: 'app-experience',
   templateUrl: './experience.component.html',
   styleUrl: './experience.component.scss',
-  providers: [provideNativeDateAdapter()],
+  providers: [
+    provideNativeDateAdapter(),
+    provideIcons({ lucideList, lucidePlus, lucideTrash2 }),
+  ],
   imports: [
     CommonModule,
     MatButtonModule,
@@ -44,7 +48,7 @@ import { MatCardModule } from '@angular/material/card';
     MatTableModule,
     MatDatepickerModule,
     ReactiveFormsModule,
-    MatIconModule,
+    NgIconComponent,
     MatTooltipModule,
     ErrorMessageComponent,
     MatDialogModule,

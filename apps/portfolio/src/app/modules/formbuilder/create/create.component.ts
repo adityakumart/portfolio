@@ -13,10 +13,37 @@ import {
   DragDropModule,
   moveItemInArray,
 } from '@angular/cdk/drag-drop';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import {
+  lucideType,
+  lucidePhone,
+  lucideFileText,
+  lucideListFilter,
+  lucideCheckCircle2,
+  lucideCalendar,
+  lucideCalendarRange,
+  lucideCheckSquare,
+  lucideGripVertical,
+  lucidePlus,
+} from '@ng-icons/lucide';
 
 @Component({
   selector: 'app-create',
-  imports: [CommonModule, CommonMaterialModule, DragDropModule],
+  imports: [CommonModule, CommonMaterialModule, DragDropModule, NgIconComponent],
+  providers: [
+    provideIcons({
+      lucideType,
+      lucidePhone,
+      lucideFileText,
+      lucideListFilter,
+      lucideCheckCircle2,
+      lucideCalendar,
+      lucideCalendarRange,
+      lucideCheckSquare,
+      lucideGripVertical,
+      lucidePlus,
+    }),
+  ],
   templateUrl: './create.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './create.component.scss',
@@ -96,42 +123,42 @@ export class CreateComponent implements OnInit {
     this.addJsonData.set([
       {
         inputType: 'text',
-        icon: 'text_fields',
+        icon: 'lucideType',
         label: 'Text',
       },
       {
         inputType: 'phone',
-        icon: 'call',
+        icon: 'lucidePhone',
         label: 'Phone',
       },
       {
         inputType: 'textarea',
-        icon: 'text_fields',
+        icon: 'lucideFileText',
         label: 'Text Area',
       },
       {
         inputType: 'select',
-        icon: 'playlist_add_check',
+        icon: 'lucideListFilter',
         label: 'Select',
       },
       {
         inputType: 'radio',
-        icon: 'radio_button_checked',
+        icon: 'lucideCheckCircle2',
         label: 'Radio',
       },
       {
         inputType: 'date',
-        icon: 'today',
+        icon: 'lucideCalendar',
         label: 'Date',
       },
       {
         inputType: 'dateRange',
-        icon: 'date_range',
+        icon: 'lucideCalendarRange',
         label: 'Date Range',
       },
       {
         inputType: 'checkBox',
-        icon: 'check_box',
+        icon: 'lucideCheckSquare',
         label: 'Checkbox',
       },
     ]);

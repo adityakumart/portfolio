@@ -4,7 +4,23 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import {
+  lucidePlay,
+  lucideEraser,
+  lucideAlertCircle,
+  lucideSettings,
+  lucideCheck,
+  lucideCopy,
+  lucideClipboardCheck,
+  lucideCode,
+  lucideUser,
+  lucideShieldCheck,
+  lucideKey,
+  lucideShield,
+  lucidePalette,
+  lucideList,
+} from '@ng-icons/lucide';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatTableModule } from '@angular/material/table';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -22,14 +38,32 @@ import { JwtDecoderService, DecodedJwt, ClaimInfo } from './services/jwt-decoder
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatIconModule,
+    NgIconComponent,
     MatTooltipModule,
     MatTableModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+  ],
+  providers: [
+    provideIcons({
+      lucidePlay,
+      lucideEraser,
+      lucideAlertCircle,
+      lucideSettings,
+      lucideCheck,
+      lucideCopy,
+      lucideClipboardCheck,
+      lucideCode,
+      lucideUser,
+      lucideShieldCheck,
+      lucideKey,
+      lucideShield,
+      lucidePalette,
+      lucideList,
+    }),
   ],
   templateUrl: './jwt-decoder.component.html',
   styleUrls: ['./jwt-decoder.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class JwtDecoderComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);

@@ -4,7 +4,7 @@
     <div class="visual-pane-overlay"></div>
     <div class="pane-content">
       <div class="pane-badge">
-        <mat-icon>security</mat-icon>
+        <ng-icon name="lucideShieldCheck"></ng-icon>
         <span>Secure Fleet Gateway</span>
       </div>
       <h2>Sri Ram & Ram's<br>Administrative Command</h2>
@@ -44,62 +44,68 @@
     <div class="auth-decor-glow auth-decor-glow-1"></div>
     <div class="auth-decor-glow auth-decor-glow-2"></div>
 
-    <div class="glass-card">
-      <div class="auth-header">
-        <div class="shield-glow">
-          <mat-icon class="auth-header-icon">directions_car</mat-icon>
-        </div>
-        <h2 class="title">RoadReady Portal</h2>
-        <p class="subtitle">Log in to administer active bookings and fleet operations.</p>
+    <div class="auth-status-bar">
+      <div class="status-indicator">
+        <span class="pulse-dot"></span>
+        <span class="status-text">Internal Network Active</span>
       </div>
+      <div class="security-badge">
+        <ng-icon name="lucideShieldCheck"></ng-icon>
+        <span>Encrypted 256-Bit SSL</span>
+      </div>
+    </div>
 
-      <!-- Toggle Role Tabs -->
-      <div class="auth-toggle-container">
+    <!-- Center Card -->
+    <div class="auth-card">
+      <div class="auth-card-glow"></div>
+
+      <!-- Role Selector Tabs -->
+      <div class="role-selector">
         <button
           type="button"
-          class="auth-toggle-btn"
+          class="role-tab"
           [class.active]="selectedRole() === 'employee'"
-          (click)="setRole('employee')"
+          (click)="switchRole('employee')"
         >
-          Employee Desk
+          <span class="tab-label">Rental Desk Staff</span>
+          <span class="tab-sub">Daily Operations</span>
         </button>
         <button
           type="button"
-          class="auth-toggle-btn"
+          class="role-tab"
           [class.active]="selectedRole() === 'admin'"
-          (click)="setRole('admin')"
+          (click)="switchRole('admin')"
         >
-          Admin Command
+          <span class="tab-label">Executive Portal</span>
+          <span class="tab-sub">Fleet & Admin Oversight</span>
         </button>
       </div>
 
-      <!-- Quick Demo Login Helper -->
-      <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 16px;">
-        <button
-          type="button"
-          (click)="fillDemoAdmin()"
-          style="background: rgba(6, 182, 212, 0.1); border: 1px dashed rgba(6, 182, 212, 0.4); color: var(--color-cyan-400, #22d3ee); font-size: 0.75rem; padding: 4px 10px; border-radius: 6px; cursor: pointer;"
-        >
-          ⚡ Demo Admin
-        </button>
-        <button
-          type="button"
-          (click)="fillDemoEmployee()"
-          style="background: rgba(255, 255, 255, 0.05); border: 1px dashed rgba(255, 255, 255, 0.2); color: rgba(255, 255, 255, 0.8); font-size: 0.75rem; padding: 4px 10px; border-radius: 6px; cursor: pointer;"
-        >
-          ⚡ Demo Staff
-        </button>
-      </div>
-
-      <!-- Feedback Banners -->
-      @if (error()) {
-        <div class="feedback-banner error-banner">
-          <mat-icon>error_outline</mat-icon>
-          <span>{{ error() }}</span>
+      <!-- Header inside Card -->
+      <div class="auth-header">
+        <div class="auth-icon-wrap">
+          <ng-icon class="auth-header-icon" name="lucideCar"></ng-icon>
         </div>
-      } @if (success()) {
-        <div class="feedback-banner success-banner">
-          <mat-icon>check_circle_outline</mat-icon>
+        <h2 class="auth-title">
+          {{ selectedRole() === 'employee' ? 'Rental Desk Authentication' : 'Fleet Administration Access' }}
+        </h2>
+        <p class="auth-subtitle">
+          {{ selectedRole() === 'employee' 
+            ? 'Sign in using your assigned Employee Identification and Date of Birth' 
+            : 'Enter authorized administrative credentials to access fleet metrics' }}
+        </p>
+      </div>
+
+      <!-- Global Alert / Status banner -->
+      @if (authError()) {
+        <div class="auth-alert error-alert animate-shake">
+          <ng-icon name="lucideAlertCircle"></ng-icon>
+          <span>{{ authError() }}</span>
+        </div>
+      }
+      @if (authSuccess()) {
+        <div class="auth-alert success-alert animate-fade">
+          <ng-icon name="lucideCheckCircle"></ng-icon>
           <span>{{ success() }}</span>
         </div>
       }
@@ -114,7 +120,7 @@
               formControlName="empId"
               placeholder="e.g. RRA002"
             />
-            <mat-icon matPrefix>badge</mat-icon>
+            <ng-icon matPrefix name="lucideBadgeCheck"></ng-icon>
             @if (employeeFormGroup.get('empId')?.touched && employeeFormGroup.get('empId')?.invalid) {
               @if (employeeFormGroup.get('empId')?.errors?.['required']) {
                 <mat-error>Employee ID is required.</mat-error>
@@ -131,7 +137,7 @@
               type="date"
               formControlName="dob"
             />
-            <mat-icon matPrefix>calendar_today</mat-icon>
+            <ng-icon matPrefix name="lucideCalendar"></ng-icon>
             @if (employeeFormGroup.get('dob')?.touched && employeeFormGroup.get('dob')?.invalid) {
               <mat-error>Date of Birth is required.</mat-error>
             }
@@ -168,7 +174,7 @@
               formControlName="adminUsername"
               placeholder="e.g. admin@rams-cars.com"
             />
-            <mat-icon matPrefix>person</mat-icon>
+            <ng-icon matPrefix name="lucideUser"></ng-icon>
             @if (adminFormGroup.get('adminUsername')?.touched && adminFormGroup.get('adminUsername')?.invalid) {
               <mat-error>Username/Email is required.</mat-error>
             }
@@ -182,7 +188,7 @@
               [type]="showPassword() ? 'text' : 'password'"
               placeholder="Enter password"
             />
-            <mat-icon matPrefix>lock</mat-icon>
+            <ng-icon matPrefix name="lucideLock"></ng-icon>
             <button
               type="button"
               mat-icon-button
@@ -190,9 +196,7 @@
               (click)="showPassword.set(!showPassword())"
               [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
             >
-              <mat-icon>
-                {{ showPassword() ? 'visibility_off' : 'visibility' }}
-              </mat-icon>
+              <ng-icon [name]="showPassword() ? 'lucideEyeOff' : 'lucideEye'"></ng-icon>
             </button>
             @if (adminFormGroup.get('adminPassword')?.touched && adminFormGroup.get('adminPassword')?.invalid) {
               @if (adminFormGroup.get('adminPassword')?.errors?.['required']) {
@@ -226,7 +230,7 @@
 
       <div class="home-link-container">
         <a routerLink="/user/rr/home" class="home-link">
-          <mat-icon>arrow_back</mat-icon> Back to Public Portal
+          <ng-icon name="lucideArrowLeft"></ng-icon> Back to Public Portal
         </a>
       </div>
     </div>

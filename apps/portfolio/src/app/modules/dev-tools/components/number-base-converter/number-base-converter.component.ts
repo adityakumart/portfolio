@@ -5,7 +5,8 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import { lucideEraser, lucideCopy, lucideCalculator } from '@ng-icons/lucide';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -23,10 +24,13 @@ import { takeUntil } from 'rxjs/operators';
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatIconModule,
+    NgIconComponent,
     MatTooltipModule,
     MatDividerModule,
     MatSnackBarModule,
+  ],
+  providers: [
+    provideIcons({ lucideEraser, lucideCopy, lucideCalculator }),
   ],
   templateUrl: './number-base-converter.component.html',
   styleUrls: ['./number-base-converter.component.scss'],

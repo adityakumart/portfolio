@@ -18,7 +18,7 @@
     <div class="stat-card-header">
       <span class="stat-title">Total Fleet</span>
       <div class="stat-icon-wrapper">
-        <mat-icon>check_circle</mat-icon>
+        <ng-icon name="lucideCheckCircle"></ng-icon>
       </div>
     </div>
     <div class="stat-number">{{ stats().totalFleet }}</div>
@@ -33,7 +33,7 @@
     <div class="stat-card-header">
       <span class="stat-title">Active Bookings</span>
       <div class="stat-icon-wrapper">
-        <mat-icon>key</mat-icon>
+        <ng-icon name="lucideKey"></ng-icon>
       </div>
     </div>
     <div class="stat-number">{{ stats().activeBookings }}</div>
@@ -48,7 +48,7 @@
     <div class="stat-card-header">
       <span class="stat-title">In Service</span>
       <div class="stat-icon-wrapper">
-        <mat-icon>handyman</mat-icon>
+        <ng-icon name="lucideWrench"></ng-icon>
       </div>
     </div>
     <div class="stat-number">{{ stats().maintenance }}</div>
@@ -63,7 +63,7 @@
     <div class="stat-card-header">
       <span class="stat-title">Pending Payments</span>
       <div class="stat-icon-wrapper">
-        <mat-icon>warning</mat-icon>
+        <ng-icon name="lucideAlertTriangle"></ng-icon>
       </div>
     </div>
     <div class="stat-number">{{ stats().pendingPayments }}</div>
@@ -92,7 +92,7 @@
           <!-- Hover "Book Now" action -->
           <div class="hover-overlay">
             <button mat-flat-button class="book-now-btn" (click)="bookVehicle(v, $event)">
-              <mat-icon>key</mat-icon>
+              <ng-icon name="lucideKey"></ng-icon>
               <span>Book Now</span>
             </button>
           </div>
@@ -105,15 +105,15 @@
           
           <div class="veh-specs">
             <span class="spec-badge" matTooltip="Capacity">
-              <mat-icon>airline_seat_recline_normal</mat-icon>
+              <ng-icon name="lucideUsers"></ng-icon>
               <span>{{ v.seating }} Seats</span>
             </span>
             <span class="spec-badge" matTooltip="Fuel Type">
-              <mat-icon>local_gas_station</mat-icon>
+              <ng-icon name="lucideFuel"></ng-icon>
               <span>{{ v.fuelType | uppercase }}</span>
             </span>
             <span class="spec-badge" matTooltip="Odometer">
-              <mat-icon>speed</mat-icon>
+              <ng-icon name="lucideGauge"></ng-icon>
               <span>{{ v.odometer }} KM</span>
             </span>
           </div>
@@ -123,7 +123,7 @@
   } @empty {
     <div class="empty-showcase-card">
       <div class="empty-glow"></div>
-      <mat-icon class="empty-icon">no_sim</mat-icon>
+      <ng-icon class="empty-icon" name="lucideSearchX"></ng-icon>
       <h4>No Available Vehicles</h4>
       <p>All registered fleet vehicles are currently active, in maintenance, or leased.</p>
     </div>
@@ -135,16 +135,15 @@
   <div class="modal-container">
     <div class="modal-header">
       <div class="header-title">
-        <mat-icon class="header-icon">
-          @if (modalType() === 'fleet') { directions_car }
-          @else if (modalType() === 'bookings') { event_available }
-          @else if (modalType() === 'maintenance') { handyman }
-          @else if (modalType() === 'payments') { warning }
-        </mat-icon>
+        <ng-icon class="header-icon" [name]="
+          modalType() === 'fleet' ? 'lucideCar' :
+          modalType() === 'bookings' ? 'lucideCalendarCheck' :
+          modalType() === 'maintenance' ? 'lucideWrench' : 'lucideAlertTriangle'
+        "></ng-icon>
         <h3>{{ modalTitle() }}</h3>
       </div>
       <button mat-icon-button class="close-btn" mat-dialog-close>
-        <mat-icon>close</mat-icon>
+        <ng-icon name="lucideX"></ng-icon>
       </button>
     </div>
 

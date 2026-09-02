@@ -8,7 +8,18 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatIconModule } from '@angular/material/icon';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import {
+  lucideAlignLeft,
+  lucideMinimize2,
+  lucideCheckCheck,
+  lucideEraser,
+  lucideCheckCircle,
+  lucideAlertCircle,
+  lucideHelpCircle,
+  lucideAlertTriangle,
+  lucideCopy,
+} from '@ng-icons/lucide';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
 import { JsonFormatterService } from './services/json-formatter.service';
@@ -28,9 +39,22 @@ export type ValidationState = 'idle' | 'valid' | 'invalid';
     MatSelectModule,
     MatCheckboxModule,
     MatSnackBarModule,
-    MatIconModule,
+    NgIconComponent,
     MatTooltipModule,
     MatDividerModule,
+  ],
+  providers: [
+    provideIcons({
+      lucideAlignLeft,
+      lucideMinimize2,
+      lucideCheckCheck,
+      lucideEraser,
+      lucideCheckCircle,
+      lucideAlertCircle,
+      lucideHelpCircle,
+      lucideAlertTriangle,
+      lucideCopy,
+    }),
   ],
   templateUrl: './json-formatter.component.html',
   styleUrls: ['./json-formatter.component.scss'],

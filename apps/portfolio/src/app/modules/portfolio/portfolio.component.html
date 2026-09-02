@@ -6,7 +6,7 @@
     [matTooltip]="isDarkMode() ? 'Switch to Light Theme' : 'Switch to Dark Theme'"
     matTooltipPosition="left"
   >
-    <mat-icon>{{ isDarkMode() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+    <ng-icon [name]="isDarkMode() ? 'lucideSun' : 'lucideMoon'"></ng-icon>
   </button>
 
   <button
@@ -16,7 +16,7 @@
     matTooltip="Enter Dashboard"
     matTooltipPosition="left"
   >
-    <mat-icon>bolt</mat-icon>
+    <ng-icon name="lucideZap"></ng-icon>
   </button>
   
   <div class="header">

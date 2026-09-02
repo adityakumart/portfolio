@@ -10,7 +10,7 @@
   <!-- Error Detail Panel -->
   @if (errorMessage()) {
     <div class="error-detail-box mb-4 animate-fade-in">
-      <mat-icon class="error-box-icon">warning</mat-icon>
+      <ng-icon class="error-box-icon" name="lucideAlertTriangle"></ng-icon>
       <div class="error-box-content">
         <strong>Parsing Error:</strong>
         <p class="error-message-text">{{ errorMessage() }}</p>
@@ -27,11 +27,11 @@
           <mat-card-title>Input Source</mat-card-title>
           <div class="header-actions">
             <button mat-button color="primary" type="button" (click)="loadSampleUrl()" matTooltip="Load a standard URL with multiple parameters">
-              <mat-icon>link</mat-icon>
+              <ng-icon name="lucideLink"></ng-icon>
               Sample URL
             </button>
             <button mat-button color="primary" type="button" (click)="loadSampleQueryString()" matTooltip="Load a raw query string with duplicate keys">
-              <mat-icon>code</mat-icon>
+              <ng-icon name="lucideCode"></ng-icon>
               Sample Query
             </button>
           </div>
@@ -66,7 +66,7 @@
               [disabled]="!rawInput()"
               (click)="clearInput()"
             >
-              <mat-icon>clear_all</mat-icon>
+              <ng-icon name="lucideEraser"></ng-icon>
               Clear
             </button>
           </div>
@@ -89,7 +89,7 @@
               (click)="copyJson()"
               class="action-btn"
             >
-              <mat-icon>content_copy</mat-icon>
+              <ng-icon name="lucideCopy"></ng-icon>
               Copy JSON
             </button>
           </div>
@@ -119,7 +119,7 @@
         <mat-card-content class="panel-body table-body">
           @if (paramsList().length === 0) {
             <div class="empty-state">
-              <mat-icon class="empty-icon">find_in_page</mat-icon>
+              <ng-icon class="empty-icon" name="lucideSearch"></ng-icon>
               <p>No active query parameters detected.</p>
               <span>Enter a query string or URL in the input section to view parameters.</span>
             </div>
@@ -139,7 +139,7 @@
                         {{ param.key }}
                       </code>
                       <button mat-icon-button class="mini-copy-btn" (click)="copyText(param.key, 'Key')" matTooltip="Copy Key">
-                        <mat-icon>content_copy</mat-icon>
+                        <ng-icon name="lucideCopy"></ng-icon>
                       </button>
                     </div>
 
@@ -149,7 +149,7 @@
                         {{ param.value || '(empty)' }}
                       </span>
                       <button mat-icon-button class="mini-copy-btn" (click)="copyText(param.value, 'Value')" matTooltip="Copy Value">
-                        <mat-icon>content_copy</mat-icon>
+                        <ng-icon name="lucideCopy"></ng-icon>
                       </button>
                     </div>
                   </div>

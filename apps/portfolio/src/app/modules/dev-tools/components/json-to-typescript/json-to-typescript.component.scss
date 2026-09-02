@@ -33,10 +33,6 @@
       &:hover:not(:disabled) {
         transform: translateY(-2px);
       }
-
-      mat-icon {
-        margin-right: 8px;
-      }
     }
   }
 
@@ -79,7 +75,7 @@
     &.copied {
       color: var(--mat-sys-primary);
 
-      mat-icon {
+      ng-icon {
         animation: pulse 0.5s ease;
       }
     }

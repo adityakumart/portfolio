@@ -6,7 +6,15 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatIconModule } from '@angular/material/icon';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import {
+  lucideAlertTriangle,
+  lucideLink,
+  lucideCode,
+  lucideEraser,
+  lucideCopy,
+  lucideSearch,
+} from '@ng-icons/lucide';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -34,10 +42,20 @@ export interface ParsedResult {
     MatInputModule,
     MatButtonModule,
     MatCheckboxModule,
-    MatIconModule,
+    NgIconComponent,
     MatTooltipModule,
     MatDividerModule,
     MatSnackBarModule,
+  ],
+  providers: [
+    provideIcons({
+      lucideAlertTriangle,
+      lucideLink,
+      lucideCode,
+      lucideEraser,
+      lucideCopy,
+      lucideSearch,
+    }),
   ],
   templateUrl: './query-string-converter.component.html',
   styleUrls: ['./query-string-converter.component.scss'],

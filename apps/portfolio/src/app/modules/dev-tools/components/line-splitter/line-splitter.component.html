@@ -100,7 +100,7 @@
               [disabled]="totalCount() === 0"
               fxFlex
             >
-              <mat-icon>content_copy</mat-icon>
+              <ng-icon name="lucideCopy"></ng-icon>
               <span class="button-text">Copy All Joined</span>
             </button>
 
@@ -110,7 +110,7 @@
               (click)="clearInput()"
               fxFlex="30"
             >
-              <mat-icon>delete_sweep</mat-icon>
+              <ng-icon name="lucideTrash2"></ng-icon>
               <span class="button-text">Clear</span>
             </button>
           </div>
@@ -167,7 +167,7 @@
               [disabled]="totalCount() === 0"
               color="primary"
             >
-              <mat-icon>table_view</mat-icon>
+              <ng-icon name="lucideTable"></ng-icon>
             </button>
             <button
               mat-icon-button
@@ -176,7 +176,7 @@
               [disabled]="totalCount() === 0"
               color="primary"
             >
-              <mat-icon>download</mat-icon>
+              <ng-icon name="lucideDownload"></ng-icon>
             </button>
           </div>
         </mat-card-header>
@@ -230,13 +230,10 @@
                       [class.copied]="copiedLines()[element.index]"
                       class="copy-btn"
                     >
-                      <mat-icon class="copy-icon">
-                        {{
-                          copiedLines()[element.index]
-                            ? 'check_circle'
-                            : 'content_copy'
-                        }}
-                      </mat-icon>
+                      <ng-icon
+                        class="copy-icon"
+                        [name]="copiedLines()[element.index] ? 'lucideCheckCircle' : 'lucideCopy'"
+                      ></ng-icon>
                     </button>
                   </td>
                 </ng-container>
@@ -265,7 +262,7 @@
               fxLayoutAlign="center center"
               class="py-5"
             >
-              <mat-icon class="empty-icon text-muted">splitscreen</mat-icon>
+              <ng-icon class="empty-icon text-muted" name="lucideColumns2"></ng-icon>
               <p class="empty-text text-muted mt-2">
                 Enter text in the input card to generate the table.
               </p>

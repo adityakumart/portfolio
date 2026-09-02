@@ -1,13 +1,13 @@
 <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 16px;">
   <div>
     <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--color-cyan-500); font-weight: 800; margin-bottom: 6px; display: inline-flex; align-items: center; gap: 6px;">
-      <mat-icon style="font-size: 14px; width: 14px; height: 14px;">event_note</mat-icon>
+      <ng-icon style="font-size: 14px; width: 14px; height: 14px;" name="lucideCalendarDays"></ng-icon>
       <span>Bookings &bull; Active Rentals Desk</span>
     </div>
     <h2 style="margin: 0; font-size: 1.85rem; font-weight: 800; color: var(--foreground);">Active Rentals</h2>
   </div>
   <button mat-raised-button color="primary" class="action-btn success" style="padding: 10px 20px; border-radius: 12px;" (click)="openNewBookingModal()">
-    <mat-icon>add</mat-icon> Create New Booking
+    <ng-icon name="lucidePlus"></ng-icon> Create New Booking
   </button>
 </div>
 
@@ -102,13 +102,13 @@
       <th mat-header-cell *matHeaderCellDef style="text-align: center;"> Actions </th>
       <td mat-cell *matCellDef="let b" style="text-align: center; white-space: nowrap;">
         <button mat-icon-button class="action-btn success" style="margin-right: 8px; border-radius: 50%;" [matTooltip]="'End Rental'" (click)="openEndBookingPopup(b)">
-          <mat-icon style="font-size: 18px; width: 18px; height: 18px; vertical-align: middle;">event_busy</mat-icon>
+          <ng-icon style="font-size: 18px; width: 18px; height: 18px; vertical-align: middle;" name="lucideCalendarX"></ng-icon>
         </button>
         <button mat-icon-button class="action-btn" style="margin-right: 8px; border-radius: 50%;" [matTooltip]="'Print Agreement PDF'" (click)="printAgreementPDFFromObject(b)">
-          <mat-icon style="font-size: 18px; width: 18px; height: 18px; vertical-align: middle;">picture_as_pdf</mat-icon>
+          <ng-icon style="font-size: 18px; width: 18px; height: 18px; vertical-align: middle;" name="lucideFileText"></ng-icon>
         </button>
         <button mat-icon-button class="action-btn" style="border-radius: 50%;" [matTooltip]="'Modify Details'" (click)="openModifyBookingPopup(b)">
-          <mat-icon style="font-size: 18px; width: 18px; height: 18px; vertical-align: middle;">edit</mat-icon>
+          <ng-icon style="font-size: 18px; width: 18px; height: 18px; vertical-align: middle;" name="lucidePencil"></ng-icon>
         </button>
       </td>
     </ng-container>
@@ -120,7 +120,7 @@
     <!-- Empty Row -->
     <tr class="mat-row" *matNoDataRow>
       <td class="mat-cell" colspan="9" style="text-align: center; color: var(--muted-foreground); padding: 48px 0;">
-        <mat-icon style="font-size: 40px; width: 40px; height: 40px; color: var(--muted-foreground); display: block; margin: 0 auto 12px auto;">info</mat-icon>
+        <ng-icon style="font-size: 40px; width: 40px; height: 40px; color: var(--muted-foreground); display: block; margin: 0 auto 12px auto;" name="lucideInfo"></ng-icon>
         <span style="font-weight: 600; font-size: 0.95rem;">No active bookings found in the database.</span>
       </td>
     </tr>
@@ -132,7 +132,7 @@
 <!-- POPUP 1: NEW BOOKING DIALOG TEMPLATE -->
 <ng-template #newBookingDialog>
   <h3 mat-dialog-title>
-    <mat-icon style="vertical-align: middle; margin-right: 6px;">event_note</mat-icon>
+    <ng-icon style="vertical-align: middle; margin-right: 6px;" name="lucideCalendarDays"></ng-icon>
     <span>Establish New Rental Agreement</span>
   </h3>
   <mat-dialog-content style="max-height: 70vh; overflow-y: auto;">
@@ -141,7 +141,7 @@
         <!-- 3. Travel Details (PRIORITIZED AND ACCESSIBLE FIRST) -->
         <div class="booking-card">
           <h3>
-            <mat-icon style="vertical-align: middle; margin-right: 6px;">commute</mat-icon>
+            <ng-icon style="vertical-align: middle; margin-right: 6px;" name="lucideCar"></ng-icon>
             <span>Travel Details (Step 1)</span>
           </h3>
           <div class="booking-content" style="margin-top: 15px;">
@@ -233,7 +233,7 @@
           <!-- 1. Renter Details -->
           <div class="booking-card">
             <h3>
-              <mat-icon style="vertical-align: middle; margin-right: 6px;">person</mat-icon>
+              <ng-icon style="vertical-align: middle; margin-right: 6px;" name="lucideUser"></ng-icon>
               <span>Renter Person Details (Step 2)</span>
             </h3>
             <div class="booking-content" style="margin-top: 15px;">
@@ -299,7 +299,7 @@
           <!-- 2. Guarantee Details -->
           <div class="booking-card">
             <h3>
-              <mat-icon style="vertical-align: middle; margin-right: 6px;">verified_user</mat-icon>
+              <ng-icon style="vertical-align: middle; margin-right: 6px;" name="lucideShieldCheck"></ng-icon>
               <span>Guarantee Person Details (Step 3)</span>
             </h3>
             <div class="booking-content" style="margin-top: 15px;">
@@ -365,7 +365,7 @@
           <!-- 4. Security Deposit -->
           <div class="booking-card">
             <h3>
-              <mat-icon style="vertical-align: middle; margin-right: 6px;">inventory</mat-icon>
+              <ng-icon style="vertical-align: middle; margin-right: 6px;" name="lucidePackage"></ng-icon>
               <span>Security Deposit Details (Step 4)</span>
             </h3>
             <div style="margin-bottom: 20px; padding: 4px;">
@@ -420,7 +420,7 @@
           <!-- 5. Financials -->
           <div class="booking-card">
             <h3>
-              <mat-icon style="vertical-align: middle; margin-right: 6px;">payments</mat-icon>
+              <ng-icon style="vertical-align: middle; margin-right: 6px;" name="lucideCreditCard"></ng-icon>
               <span>Financial Billings (Step 5)</span>
             </h3>
             <div class="booking-content" style="margin-top: 15px;">
@@ -471,7 +471,7 @@
               </mat-form-field>
               @if (bookingFormGroup.get('pendingAmount')?.value && bookingFormGroup.get('pendingAmount')?.value.startsWith('-')) {
                 <div style="color: #d97706; font-size: 0.85rem; margin-top: -8px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; grid-column: 1 / -1; background: rgba(217, 119, 6, 0.08); padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(217, 119, 6, 0.15);">
-                  <mat-icon style="font-size: 18px; width: 18px; height: 18px; color: #d97706; margin-right: 2px;">warning</mat-icon>
+                  <ng-icon style="font-size: 18px; width: 18px; height: 18px; color: #d97706; margin-right: 2px;" name="lucideAlertTriangle"></ng-icon>
                   <span><strong>Warning:</strong> Excess advance amount paid. Refund/credit of Rs. {{ bookingFormGroup.get('pendingAmount')?.value.replace('-', '') }} is pending.</span>
                 </div>
               }
@@ -492,11 +492,11 @@
   </mat-dialog-content>
   <mat-dialog-actions align="end" style="margin-top: 20px; padding: 12px 24px;">
     <button mat-raised-button color="primary" class="action-btn success" style="margin-right: 12px;" [disabled]="bookingFormGroup.invalid" (click)="createBooking($event)">
-      <mat-icon>check</mat-icon>
+      <ng-icon name="lucideCheck"></ng-icon>
       <span>Create Booking</span>
     </button>
     <button mat-stroked-button class="action-btn" style="margin-right: 12px;" [disabled]="bookingFormGroup.invalid" (click)="printAgreementPDFFromForm()">
-      <mat-icon>picture_as_pdf</mat-icon>
+      <ng-icon name="lucideFileText"></ng-icon>
       <span>Print Agreement PDF</span>
     </button>
     <button mat-button color="warn" (click)="closeNewBookingModal()">Cancel</button>
@@ -506,7 +506,7 @@
 <!-- POPUP 2: END BOOKING DIALOG TEMPLATE -->
 <ng-template #endBookingDialog>
   <h3 mat-dialog-title>
-    <mat-icon style="vertical-align: middle; margin-right: 6px;">event_busy</mat-icon>
+    <ng-icon style="vertical-align: middle; margin-right: 6px;" name="lucideCalendarX"></ng-icon>
     <span>Finalize & End Rental Booking - ID: {{ selectedBookingToEnd()?.id }}</span>
   </h3>
   <mat-dialog-content>
@@ -535,7 +535,7 @@
   </mat-dialog-content>
   <mat-dialog-actions align="end" style="margin-top: 20px; padding: 12px 24px;">
     <button mat-raised-button color="primary" class="action-btn success" style="margin-right: 12px;" [disabled]="!endBookingFields.odometerEnd" (click)="submitEndBooking()">
-      <mat-icon>check_circle</mat-icon>
+      <ng-icon name="lucideCheckCircle"></ng-icon>
       <span>Finalize & Close Booking</span>
     </button>
     <button mat-button color="warn" (click)="closeEndBookingPopup()">Cancel</button>
@@ -545,7 +545,7 @@
 <!-- POPUP 3: MODIFY BOOKING DIALOG TEMPLATE -->
 <ng-template #modifyBookingDialog>
   <h3 mat-dialog-title>
-    <mat-icon style="vertical-align: middle; margin-right: 6px;">edit_calendar</mat-icon>
+    <ng-icon style="vertical-align: middle; margin-right: 6px;" name="lucideCalendarRange"></ng-icon>
     <span>Modify Active Booking Agreement - ID: {{ selectedBookingToModify()?.id }}</span>
   </h3>
   <mat-dialog-content style="max-height: 70vh; overflow-y: auto;">
@@ -628,7 +628,7 @@
         </mat-form-field>
         @if (modifyBookingFormGroup.get('pendingAmount')?.value && modifyBookingFormGroup.get('pendingAmount')?.value.startsWith('-')) {
           <div style="color: #d97706; font-size: 0.85rem; margin-top: -8px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; grid-column: 1 / -1; background: rgba(217, 119, 6, 0.08); padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(217, 119, 6, 0.15);">
-            <mat-icon style="font-size: 18px; width: 18px; height: 18px; color: #d97706; margin-right: 2px;">warning</mat-icon>
+            <ng-icon style="font-size: 18px; width: 18px; height: 18px; color: #d97706; margin-right: 2px;" name="lucideAlertTriangle"></ng-icon>
             <span><strong>Warning:</strong> Excess advance amount paid. Refund/credit of Rs. {{ modifyBookingFormGroup.get('pendingAmount')?.value.replace('-', '') }} is pending.</span>
           </div>
         }
@@ -637,11 +637,11 @@
   </mat-dialog-content>
   <mat-dialog-actions align="end" style="margin-top: 20px; padding: 12px 24px;">
     <button mat-raised-button color="primary" class="action-btn success" style="margin-right: 12px;" [disabled]="modifyBookingFormGroup.invalid" (click)="submitModifyBooking()">
-      <mat-icon>save</mat-icon>
+      <ng-icon name="lucideSave"></ng-icon>
       <span>Save Changes</span>
     </button>
     <button mat-stroked-button class="action-btn" style="margin-right: 12px;" [disabled]="modifyBookingFormGroup.invalid" (click)="printAgreementPDFFromModifyForm()">
-      <mat-icon>picture_as_pdf</mat-icon>
+      <ng-icon name="lucideFileText"></ng-icon>
       <span>Print Agreement PDF</span>
     </button>
     <button mat-button color="warn" (click)="closeModifyBookingPopup()">Cancel</button>

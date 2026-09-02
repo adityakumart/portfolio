@@ -30,7 +30,25 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import {
+  lucideCalendarDays,
+  lucidePlus,
+  lucideCalendarX,
+  lucideFileText,
+  lucidePencil,
+  lucideInfo,
+  lucideCar,
+  lucideUser,
+  lucideShieldCheck,
+  lucidePackage,
+  lucideCreditCard,
+  lucideAlertTriangle,
+  lucideCheck,
+  lucideCheckCircle,
+  lucideCalendarRange,
+  lucideSave,
+} from '@ng-icons/lucide';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
@@ -50,11 +68,31 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     MatRadioModule,
     MatCheckboxModule,
     MatButtonModule,
-    MatIconModule,
+    NgIconComponent,
     MatDialogModule,
     MatTableModule,
     MatPaginatorModule,
     MatTooltipModule,
+  ],
+  providers: [
+    provideIcons({
+      lucideCalendarDays,
+      lucidePlus,
+      lucideCalendarX,
+      lucideFileText,
+      lucidePencil,
+      lucideInfo,
+      lucideCar,
+      lucideUser,
+      lucideShieldCheck,
+      lucidePackage,
+      lucideCreditCard,
+      lucideAlertTriangle,
+      lucideCheck,
+      lucideCheckCircle,
+      lucideCalendarRange,
+      lucideSave,
+    }),
   ],
   templateUrl: './booking-list.component.html',
   styleUrl: './booking-list.component.scss',

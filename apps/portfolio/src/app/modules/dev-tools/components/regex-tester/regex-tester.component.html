@@ -1,7 +1,7 @@
 <div class="regex-tester-container">
   <!-- Title section -->
   <div class="title-section">
-    <mat-icon>settings_ethernet</mat-icon>
+    <ng-icon name="lucideBinary"></ng-icon>
     <h1>Regex Builder & Tester</h1>
   </div>
   <p class="intro-text">
@@ -12,7 +12,7 @@
     <!-- Configuration Card -->
     <mat-card class="config-card">
       <div class="card-header">
-        <mat-icon>tune</mat-icon>
+        <ng-icon name="lucideSlidersHorizontal"></ng-icon>
         <h2>Configuration & Rules</h2>
       </div>
 
@@ -33,7 +33,7 @@
               matTooltip="Copy Regex to Clipboard"
               (click)="copyPattern()"
             >
-              <mat-icon>content_copy</mat-icon>
+              <ng-icon name="lucideCopy"></ng-icon>
             </button>
           </div>
         </div>
@@ -65,7 +65,7 @@
         @if (showPasswordBuilder) {
           <div class="password-builder-panel">
             <h3>
-              <mat-icon>security</mat-icon>
+              <ng-icon name="lucideShieldCheck"></ng-icon>
               Password Rule Builder
             </h3>
 
@@ -127,7 +127,7 @@
     <!-- Testing & Highlight Playground Card -->
     <mat-card class="tester-card">
       <div class="card-header">
-        <mat-icon>biotech</mat-icon>
+        <ng-icon name="lucideFlaskConical"></ng-icon>
         <h2>Interactive Playground</h2>
       </div>
 
@@ -164,7 +164,7 @@
         <!-- Syntax error alerts -->
         @if (regexError) {
           <div class="regex-error-msg">
-            <mat-icon>error_outline</mat-icon>
+            <ng-icon name="lucideAlertCircle"></ng-icon>
             <span>Invalid Regular Expression: {{ regexError }}</span>
           </div>
         }

@@ -23,7 +23,15 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatCardModule } from '@angular/material/card';
-import { MatIconModule } from '@angular/material/icon';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import {
+  lucideTable,
+  lucideColumns2,
+  lucideCopy,
+  lucideTrash2,
+  lucideDownload,
+  lucideCheckCircle,
+} from '@ng-icons/lucide';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -45,7 +53,7 @@ interface ProcessedLine {
     MatInputModule,
     MatCardModule,
     MatButtonModule,
-    MatIconModule,
+    NgIconComponent,
     MatSnackBarModule,
     MatTooltipModule,
     MatTableModule,
@@ -53,6 +61,16 @@ interface ProcessedLine {
     MatSelectModule,
     MatCheckboxModule,
     MatDividerModule,
+  ],
+  providers: [
+    provideIcons({
+      lucideTable,
+      lucideColumns2,
+      lucideCopy,
+      lucideTrash2,
+      lucideDownload,
+      lucideCheckCircle,
+    }),
   ],
   templateUrl: './line-splitter.component.html',
   styleUrls: ['./line-splitter.component.scss'],

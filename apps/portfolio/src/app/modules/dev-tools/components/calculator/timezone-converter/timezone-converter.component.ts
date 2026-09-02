@@ -28,7 +28,8 @@ import { map, startWith } from 'rxjs/operators';
 import { AsyncPipe } from '@angular/common';
 import { ToastrService } from '../../../../../shared/services/toaster.service';
 import { MatCardModule } from '@angular/material/card';
-import { MatIconModule } from '@angular/material/icon';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import { lucideClock } from '@ng-icons/lucide';
 
 @Component({
   selector: 'app-timezone-converter',
@@ -44,9 +45,12 @@ import { MatIconModule } from '@angular/material/icon';
     MatAutocompleteModule,
     AsyncPipe,
     MatCardModule,
-    MatIconModule,
+    NgIconComponent,
   ],
-  providers: [provideNativeDateAdapter()],
+  providers: [
+    provideNativeDateAdapter(),
+    provideIcons({ lucideClock }),
+  ],
   templateUrl: './timezone-converter.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './timezone-converter.component.scss',

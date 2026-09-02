@@ -100,7 +100,7 @@
   align-items: center;
   justify-content: center;
 
-  mat-icon {
+  ng-icon {
     font-size: 20px;
     width: 20px;
     height: 20px;
@@ -118,7 +118,7 @@
     box-shadow: 0 0 20px rgba(147, 51, 234, 0.4);
     transform: translateY(-2px);
 
-    mat-icon {
+    ng-icon {
       transform: rotate(360deg) scale(1.1);
     }
   }
@@ -147,7 +147,7 @@
   align-items: center;
   justify-content: center;
 
-  mat-icon {
+  ng-icon {
     font-size: 20px;
     width: 20px;
     height: 20px;
@@ -165,7 +165,7 @@
     box-shadow: 0 0 20px rgba(147, 51, 234, 0.4);
     transform: translateY(-2px);
 
-    mat-icon {
+    ng-icon {
       transform: rotate(15deg) scale(1.1);
     }
   }

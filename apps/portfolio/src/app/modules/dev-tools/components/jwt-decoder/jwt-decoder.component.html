@@ -24,7 +24,7 @@
             class="action-btn"
             id="load-demo-btn"
           >
-            <mat-icon>play_circle_outline</mat-icon>
+            <ng-icon name="lucidePlay"></ng-icon>
             Load Demo Token
           </button>
 
@@ -36,7 +36,7 @@
             class="action-btn"
             id="clear-btn"
           >
-            <mat-icon>clear_all</mat-icon>
+            <ng-icon name="lucideEraser"></ng-icon>
             Clear
           </button>
         </div>
@@ -46,7 +46,7 @@
     <!-- Error Detail Panel -->
     @if (errorMessage) {
       <div class="error-detail-box mb-4" id="jwt-error-box">
-        <mat-icon class="error-box-icon">error_outline</mat-icon>
+        <ng-icon class="error-box-icon" name="lucideAlertCircle"></ng-icon>
         <div class="error-box-content">
           <strong>Malformed Token Exception</strong>
           <p class="error-message-text">{{ errorMessage }}</p>
@@ -106,7 +106,7 @@
             <mat-card class="decoded-card border-header mb-4">
               <div class="decoded-card-header">
                 <span class="card-title text-header">
-                  <mat-icon>settings</mat-icon>
+                  <ng-icon name="lucideSettings"></ng-icon>
                   HEADER: ALGORITHM & TOKEN TYPE
                 </span>
                 <div class="card-actions">
@@ -116,7 +116,7 @@
                     [class.copied]="copiedSection === 'headerRaw'"
                     matTooltip="Copy Raw Encoded Header"
                   >
-                    <mat-icon>{{ copiedSection === 'headerRaw' ? 'check' : 'content_copy' }}</mat-icon>
+                    <ng-icon [name]="copiedSection === 'headerRaw' ? 'lucideCheck' : 'lucideCopy'"></ng-icon>
                   </button>
                   <button
                     mat-icon-button
@@ -124,7 +124,7 @@
                     [class.copied]="copiedSection === 'headerJson'"
                     matTooltip="Copy Formatted Header JSON"
                   >
-                    <mat-icon>{{ copiedSection === 'headerJson' ? 'assignment' : 'code' }}</mat-icon>
+                    <ng-icon [name]="copiedSection === 'headerJson' ? 'lucideClipboardCheck' : 'lucideCode'"></ng-icon>
                   </button>
                 </div>
               </div>
@@ -137,7 +137,7 @@
             <mat-card class="decoded-card border-payload mb-4">
               <div class="decoded-card-header">
                 <span class="card-title text-payload">
-                  <mat-icon>person</mat-icon>
+                  <ng-icon name="lucideUser"></ng-icon>
                   PAYLOAD: DATA & CLAIMS
                 </span>
                 <div class="card-actions">
@@ -147,7 +147,7 @@
                     [class.copied]="copiedSection === 'payloadRaw'"
                     matTooltip="Copy Raw Encoded Payload"
                   >
-                    <mat-icon>{{ copiedSection === 'payloadRaw' ? 'check' : 'content_copy' }}</mat-icon>
+                    <ng-icon [name]="copiedSection === 'payloadRaw' ? 'lucideCheck' : 'lucideCopy'"></ng-icon>
                   </button>
                   <button
                     mat-icon-button
@@ -155,7 +155,7 @@
                     [class.copied]="copiedSection === 'payloadJson'"
                     matTooltip="Copy Formatted Payload JSON"
                   >
-                    <mat-icon>{{ copiedSection === 'payloadJson' ? 'assignment' : 'code' }}</mat-icon>
+                    <ng-icon [name]="copiedSection === 'payloadJson' ? 'lucideClipboardCheck' : 'lucideCode'"></ng-icon>
                   </button>
                 </div>
               </div>
@@ -168,7 +168,7 @@
             <mat-card class="decoded-card border-signature mb-4">
               <div class="decoded-card-header">
                 <span class="card-title text-signature">
-                  <mat-icon>verified_user</mat-icon>
+                  <ng-icon name="lucideShieldCheck"></ng-icon>
                   SIGNATURE: VERIFICATION
                 </span>
                 <div class="card-actions">
@@ -178,7 +178,7 @@
                     [class.copied]="copiedSection === 'signature'"
                     matTooltip="Copy Raw Signature"
                   >
-                    <mat-icon>{{ copiedSection === 'signature' ? 'check' : 'content_copy' }}</mat-icon>
+                    <ng-icon [name]="copiedSection === 'signature' ? 'lucideCheck' : 'lucideCopy'"></ng-icon>
                   </button>
                 </div>
               </div>
@@ -200,21 +200,21 @@
           <mat-card class="placeholder-card">
             <mat-card-content class="placeholder-content">
               <div class="placeholder-icon-container">
-                <mat-icon class="large-icon">vpn_key</mat-icon>
+                <ng-icon class="large-icon" name="lucideKey"></ng-icon>
               </div>
               <h3>Awaiting Token Input</h3>
               <p>Paste a JWT token in the input area or load the demo token to inspect its visual decoding and mapped claims.</p>
               <div class="placeholder-benefits">
                 <div class="benefit-item">
-                  <mat-icon>shield</mat-icon>
+                  <ng-icon name="lucideShield"></ng-icon>
                   <span>100% Client-Side decoding protects secret payloads</span>
                 </div>
                 <div class="benefit-item">
-                  <mat-icon>palette</mat-icon>
+                  <ng-icon name="lucidePalette"></ng-icon>
                   <span>Color-coded sections match standard specifications</span>
                 </div>
                 <div class="benefit-item">
-                  <mat-icon>format_list_bulleted</mat-icon>
+                  <ng-icon name="lucideList"></ng-icon>
                   <span>Registered claims maps expose human-readable labels</span>
                 </div>
               </div>
@@ -229,7 +229,7 @@
       <mat-card class="claims-card mt-4">
         <mat-card-header class="claims-header">
           <mat-card-title>
-            <mat-icon>list_alt</mat-icon>
+            <ng-icon name="lucideList"></ng-icon>
             Payload Claims Analysis & Interpretations
           </mat-card-title>
           <mat-card-subtitle>

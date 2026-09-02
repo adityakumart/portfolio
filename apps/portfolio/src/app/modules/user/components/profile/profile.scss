@@ -1,5 +1,13 @@
-$primary-gradient: linear-gradient(135deg, var(--color-violet-500) 0%, var(--color-orange-400) 100%);
-$ai-gradient: linear-gradient(135deg, var(--color-blue-500) 0%, var(--color-sky-400) 100%);
+$primary-gradient: linear-gradient(
+  135deg,
+  var(--color-violet-500) 0%,
+  var(--color-orange-400) 100%
+);
+$ai-gradient: linear-gradient(
+  135deg,
+  var(--color-blue-500) 0%,
+  var(--color-sky-400) 100%
+);
 
 .profile-container {
   display: flex;
@@ -24,19 +32,22 @@ $ai-gradient: linear-gradient(135deg, var(--color-blue-500) 0%, var(--color-sky-
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 24px;
-  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.08), 
-              0 1px 3px 0 rgba(255, 255, 255, 0.3) inset;
+  box-shadow:
+    0 20px 40px -15px rgba(0, 0, 0, 0.08),
+    0 1px 3px 0 rgba(255, 255, 255, 0.3) inset;
   padding: 2.5rem;
   box-sizing: border-box;
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), 
-              box-shadow 0.4s ease, 
-              background-color 0.3s ease, 
-              border-color 0.3s ease;
+  transition:
+    transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.4s ease,
+    background-color 0.3s ease,
+    border-color 0.3s ease;
 
   &:hover {
     transform: translateY(-5px);
-    box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.12), 
-                0 1px 3px 0 rgba(255, 255, 255, 0.5) inset;
+    box-shadow:
+      0 30px 60px -20px rgba(0, 0, 0, 0.12),
+      0 1px 3px 0 rgba(255, 255, 255, 0.5) inset;
   }
 }
 
@@ -44,12 +55,14 @@ $ai-gradient: linear-gradient(135deg, var(--color-blue-500) 0%, var(--color-sky-
   .glass-card {
     background: rgba(15, 23, 42, 0.45);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.3), 
-                0 1px 3px 0 rgba(255, 255, 255, 0.05) inset;
-    
+    box-shadow:
+      0 20px 40px -15px rgba(0, 0, 0, 0.3),
+      0 1px 3px 0 rgba(255, 255, 255, 0.05) inset;
+
     &:hover {
-      box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.45), 
-                  0 1px 3px 0 rgba(255, 255, 255, 0.08) inset;
+      box-shadow:
+        0 30px 60px -20px rgba(0, 0, 0, 0.45),
+        0 1px 3px 0 rgba(255, 255, 255, 0.08) inset;
     }
   }
 }
@@ -57,7 +70,6 @@ $ai-gradient: linear-gradient(135deg, var(--color-blue-500) 0%, var(--color-sky-
 .profile-header {
   text-align: center;
   margin-bottom: 2rem;
-
 
   .avatar-circle {
     width: 100%;
@@ -129,9 +141,11 @@ $ai-gradient: linear-gradient(135deg, var(--color-blue-500) 0%, var(--color-sky-
     display: flex;
     justify-content: center;
     align-items: center;
-    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease !important;
 
-    mat-icon {
+    ng-icon {
       margin-right: 8px;
     }
 

@@ -45,7 +45,7 @@
               [disabled]="!form.get('inputText')?.value"
               class="action-btn"
             >
-              <mat-icon>{{ form.get('operation')?.value === 'encode' ? 'lock' : 'lock_open' }}</mat-icon>
+              <ng-icon [name]="form.get('operation')?.value === 'encode' ? 'lucideLock' : 'lucideLockOpen'"></ng-icon>
               {{ form.get('operation')?.value === 'encode' ? 'Encode' : 'Decode' }}
             </button>
 
@@ -55,7 +55,7 @@
               (click)="onClearText()"
               class="action-btn"
             >
-              <mat-icon>clear_all</mat-icon>
+              <ng-icon name="lucideEraser"></ng-icon>
               Clear
             </button>
           } @else {
@@ -66,7 +66,7 @@
               [disabled]="!selectedFile"
               class="action-btn"
             >
-              <mat-icon>clear_all</mat-icon>
+              <ng-icon name="lucideEraser"></ng-icon>
               Clear File
             </button>
           }
@@ -77,7 +77,7 @@
     <!-- Error Detail Panel -->
     @if (errorMessage) {
       <div class="error-detail-box mb-4">
-        <mat-icon class="error-box-icon">warning</mat-icon>
+        <ng-icon class="error-box-icon" name="lucideAlertTriangle"></ng-icon>
         <div class="error-box-content">
           <strong>Process Error:</strong>
           <p class="error-message-text">{{ errorMessage }}</p>
@@ -94,7 +94,7 @@
         <mat-card-content class="preview-content">
           @if (metadataLabel) {
             <div class="metadata-badge">
-              <mat-icon class="info-icon">info</mat-icon>
+              <ng-icon class="info-icon" name="lucideInfo"></ng-icon>
               <span class="metadata-text">{{ metadataLabel }}</span>
             </div>
           }
@@ -105,7 +105,7 @@
             </div>
           } @else if (previewUrl && !isImagePreview) {
             <div class="binary-placeholder mt-3">
-              <mat-icon class="placeholder-icon">insert_drive_file</mat-icon>
+              <ng-icon class="placeholder-icon" name="lucideFile"></ng-icon>
               <p class="placeholder-text">Binary format detected. Previews are only supported for image files.</p>
             </div>
           }
@@ -157,7 +157,7 @@
                 [disabled]="!form.get('outputText')?.value"
                 [class.copied]="copiedField === 'outputText'"
               >
-                <mat-icon>{{ copiedField === 'outputText' ? 'check_circle' : 'content_copy' }}</mat-icon>
+                <ng-icon [name]="copiedField === 'outputText' ? 'lucideCheckCircle' : 'lucideCopy'"></ng-icon>
               </button>
             </div>
           </mat-card-header>
@@ -201,7 +201,7 @@
                 (change)="onFileSelected($event)" 
                 style="display: none;" 
               />
-              <mat-icon class="upload-icon">cloud_upload</mat-icon>
+              <ng-icon class="upload-icon" name="lucideUploadCloud"></ng-icon>
               <p class="upload-text">Drag & drop files here, or <span class="browse-link">browse</span></p>
               <p class="upload-hint">Maximum file size: 15MB. Support for images, PDFs, text, and binary formats.</p>
             </div>
@@ -209,7 +209,7 @@
             <!-- Selected File Metadata -->
             @if (selectedFile) {
               <div class="file-info-panel">
-                <mat-icon class="file-icon">insert_drive_file</mat-icon>
+                <ng-icon class="file-icon" name="lucideFile"></ng-icon>
                 <div class="file-details">
                   <div class="file-name">{{ selectedFile.name }}</div>
                   <div class="file-meta">
@@ -240,7 +240,7 @@
                   [disabled]="!form.get('rawBase64')?.value"
                   [class.copied]="copiedField === 'rawBase64'"
                 >
-                  <mat-icon>{{ copiedField === 'rawBase64' ? 'check_circle' : 'content_copy' }}</mat-icon>
+                  <ng-icon [name]="copiedField === 'rawBase64' ? 'lucideCheckCircle' : 'lucideCopy'"></ng-icon>
                 </button>
               </div>
               <mat-form-field appearance="outline" class="full-width textarea-field" subscriptSizing="dynamic">
@@ -267,7 +267,7 @@
                   [disabled]="!form.get('outputDataUri')?.value"
                   [class.copied]="copiedField === 'outputDataUri'"
                 >
-                  <mat-icon>{{ copiedField === 'outputDataUri' ? 'check_circle' : 'content_copy' }}</mat-icon>
+                  <ng-icon [name]="copiedField === 'outputDataUri' ? 'lucideCheckCircle' : 'lucideCopy'"></ng-icon>
                 </button>
               </div>
               <mat-form-field appearance="outline" class="full-width textarea-field" subscriptSizing="dynamic">

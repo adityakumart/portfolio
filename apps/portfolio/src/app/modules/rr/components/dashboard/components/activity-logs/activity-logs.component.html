@@ -12,11 +12,11 @@
   </mat-form-field>
 
   <button class="action-btn success" (click)="loadActivityLogs()">
-    <mat-icon style="font-size: 16px; width: 16px; height: 16px; vertical-align: middle;">search</mat-icon>
+    <ng-icon style="font-size: 16px; width: 16px; height: 16px; vertical-align: middle;" name="lucideSearch"></ng-icon>
     <span>Get Logs</span>
   </button>
   <button class="action-btn" (click)="clearLogFilters()">
-    <mat-icon style="font-size: 16px; width: 16px; height: 16px; vertical-align: middle;">clear_all</mat-icon>
+    <ng-icon style="font-size: 16px; width: 16px; height: 16px; vertical-align: middle;" name="lucideEraser"></ng-icon>
     <span>Clear Filters & Display All</span>
   </button>
 </div>
@@ -32,7 +32,7 @@
     </div>
   } @empty {
     <div style="text-align: center; color: var(--muted-foreground); padding: 24px 0;">
-      <mat-icon style="font-size: 32px; width: 32px; height: 32px; display: block; margin: 0 auto 8px auto;">sync_problem</mat-icon>
+      <ng-icon style="font-size: 32px; width: 32px; height: 32px; display: block; margin: 0 auto 8px auto;" name="lucideAlertCircle"></ng-icon>
       <p style="margin: 0;">No activity logs found matching the criteria.</p>
     </div>
   }

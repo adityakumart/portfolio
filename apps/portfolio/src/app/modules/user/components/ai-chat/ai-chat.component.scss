@@ -123,7 +123,7 @@ $workspace-bg-dark: rgba(15, 23, 42, 0.45);
         transform: translateY(0);
       }
 
-      mat-icon {
+      ng-icon {
         font-size: 1.25rem;
         width: 20px;
         height: 20px;
@@ -607,7 +607,7 @@ $workspace-bg-dark: rgba(15, 23, 42, 0.45);
           color: #c084fc;
         }
 
-        mat-icon {
+        ng-icon {
           font-size: 1.25rem;
           width: 20px;
           height: 20px;
@@ -660,7 +660,7 @@ $workspace-bg-dark: rgba(15, 23, 42, 0.45);
       line-height: 32px;
       flex-shrink: 0;
 
-      ::ng-deep .mat-icon {
+      ng-icon {
         font-size: 1.1rem;
         width: 18px;
         height: 18px;
@@ -694,7 +694,7 @@ $workspace-bg-dark: rgba(15, 23, 42, 0.45);
         color: #c084fc;
       }
 
-      ::ng-deep .mat-icon {
+      ng-icon {
         font-size: 1.1rem;
         width: 18px;
         height: 18px;

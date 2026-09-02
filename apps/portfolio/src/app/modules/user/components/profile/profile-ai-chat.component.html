@@ -12,7 +12,7 @@
             matTooltip="Back to Profile"
             class="back-btn"
           >
-            <mat-icon>arrow_back</mat-icon>
+            <ng-icon name="lucideArrowLeft"></ng-icon>
           </button>
         }
         <div class="header-titles">
@@ -33,7 +33,7 @@
           matTooltip="Clear Conversation History"
           class="clear-btn"
         >
-          <mat-icon>delete_outline</mat-icon> Clear Chat
+          <ng-icon name="lucideTrash2"></ng-icon> Clear Chat
         </button>
       </div>
     </div>
@@ -55,7 +55,7 @@
                 </div>
               } @else {
                 <div class="avatar-circle ai-avatar">
-                  <mat-icon>smart_toy</mat-icon>
+                  <ng-icon name="lucideBot"></ng-icon>
                 </div>
               }
             </div>
@@ -76,7 +76,7 @@
                   <span class="status-sending-text">• Typing...</span>
                 } @else if (msg.status === 'error') {
                   <button class="retry-inline-btn" (click)="onRetry(msg.id)">
-                    <mat-icon class="size-14">refresh</mat-icon> Retry
+                    <ng-icon name="lucideRefreshCw" class="size-14"></ng-icon> Retry
                   </button>
                 }
               </div>
@@ -89,7 +89,7 @@
           <div class="message-row assistant-message loading-state">
             <div class="message-avatar">
               <div class="avatar-circle ai-avatar">
-                <mat-icon>smart_toy</mat-icon>
+                <ng-icon name="lucideBot"></ng-icon>
               </div>
             </div>
             <div class="message-body">
@@ -134,7 +134,7 @@
             [disabled]="!currentPrompt().trim() || chatService.isLoading()"
             matTooltip="Send Prompt (Enter)"
           >
-            <mat-icon>send</mat-icon>
+            <ng-icon name="lucideSend"></ng-icon>
           </button>
         </div>
       </div>

@@ -18,7 +18,15 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatCardModule } from '@angular/material/card';
-import { MatIconModule } from '@angular/material/icon';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import {
+  lucideSparkles,
+  lucideTrash2,
+  lucideCheckCircle,
+  lucideCopy,
+  lucideDownload,
+  lucideX,
+} from '@ng-icons/lucide';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDividerModule } from '@angular/material/divider';
@@ -38,14 +46,24 @@ import { JsonTransformerService } from './services/json-transformer.service';
     MatInputModule,
     MatCardModule,
     MatButtonModule,
-    MatIconModule,
+    NgIconComponent,
     MatSnackBarModule,
     MatTooltipModule,
     MatProgressSpinnerModule,
     MatDividerModule,
   ],
+  providers: [
+    provideIcons({
+      lucideSparkles,
+      lucideTrash2,
+      lucideCheckCircle,
+      lucideCopy,
+      lucideDownload,
+      lucideX,
+    }),
+  ],
   templateUrl: './json-to-typescript.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./json-to-typescript.component.scss'],
 })
 export class JsonToTypeScriptComponent implements OnInit, OnDestroy {

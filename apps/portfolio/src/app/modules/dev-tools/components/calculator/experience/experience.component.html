@@ -15,7 +15,7 @@
           type="button"
           (click)="openListDialog()"
         >
-          <mat-icon>list</mat-icon> View Saved List
+          <ng-icon name="lucideList"></ng-icon> View Saved List
         </button>
       </div>
       <form [formGroup]="experienceForm" (ngSubmit)="submitRecord()">
@@ -88,7 +88,7 @@
               color="primary"
               matTooltip="Add Experience"
             >
-              <mat-icon>add</mat-icon>
+              <ng-icon name="lucidePlus"></ng-icon>
             </button>
           </div>
 
@@ -175,7 +175,7 @@
                   color="warn"
                   matTooltip="Remove Experience"
                 >
-                  <mat-icon>delete</mat-icon>
+                  <ng-icon name="lucideTrash2"></ng-icon>
                 </button>
               </div>
             }

@@ -18,7 +18,18 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
-import { MatIconModule } from '@angular/material/icon';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import {
+  lucideAlignLeft,
+  lucideMinimize2,
+  lucideCheckCheck,
+  lucideEraser,
+  lucideCheckCircle,
+  lucideAlertCircle,
+  lucideHelpCircle,
+  lucideAlertTriangle,
+  lucideCopy,
+} from '@ng-icons/lucide';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
 import { 
@@ -39,10 +50,23 @@ import {
     MatSelectModule,
     MatCheckboxModule,
     MatSnackBarModule,
-    MatIconModule,
+    NgIconComponent,
     MatTooltipModule,
     MatDividerModule,
     UpperCasePipe,
+  ],
+  providers: [
+    provideIcons({
+      lucideAlignLeft,
+      lucideMinimize2,
+      lucideCheckCheck,
+      lucideEraser,
+      lucideCheckCircle,
+      lucideAlertCircle,
+      lucideHelpCircle,
+      lucideAlertTriangle,
+      lucideCopy,
+    }),
   ],
   templateUrl: './shared-formatter.component.html',
   styleUrls: ['./shared-formatter.component.scss'],
