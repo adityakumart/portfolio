@@ -1,7 +1,15 @@
 // profile-ai-chat.component.scss
 
-$primary-gradient: linear-gradient(135deg, var(--color-violet-500) 0%, var(--color-orange-400) 100%);
-$user-bubble-gradient: linear-gradient(135deg, var(--color-violet-500) 0%, var(--color-blue-500) 100%);
+$primary-gradient: linear-gradient(
+  135deg,
+  var(--color-violet-500) 0%,
+  var(--color-orange-400) 100%
+);
+$user-bubble-gradient: linear-gradient(
+  135deg,
+  var(--color-violet-500) 0%,
+  var(--color-blue-500) 100%
+);
 $font-code: var(--font-mono, monospace);
 
 .chat-route-container {
@@ -39,19 +47,23 @@ $font-code: var(--font-mono, monospace);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 24px;
-  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.08), 
-              0 1px 3px 0 rgba(255, 255, 255, 0.3) inset;
+  box-shadow:
+    0 20px 40px -15px rgba(0, 0, 0, 0.08),
+    0 1px 3px 0 rgba(255, 255, 255, 0.3) inset;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   box-sizing: border-box;
-  transition: background-color 0.3s ease, border-color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
 
   :host-context(.dark) & {
     background: rgba(15, 23, 42, 0.45);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.3), 
-                0 1px 3px 0 rgba(255, 255, 255, 0.05) inset;
+    box-shadow:
+      0 20px 40px -15px rgba(0, 0, 0, 0.3),
+      0 1px 3px 0 rgba(255, 255, 255, 0.05) inset;
   }
 }
 
@@ -166,7 +178,7 @@ $font-code: var(--font-mono, monospace);
   &::-webkit-scrollbar-thumb {
     background: rgba(0, 0, 0, 0.08);
     border-radius: 10px;
-    
+
     &:hover {
       background: rgba(0, 0, 0, 0.15);
     }
@@ -217,7 +229,7 @@ $font-code: var(--font-mono, monospace);
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
       }
     }
-    
+
     .message-meta {
       justify-content: flex-end;
     }
@@ -295,7 +307,7 @@ $font-code: var(--font-mono, monospace);
         animation: avatar-pulse 2s infinite ease-out;
       }
 
-      mat-icon {
+      ng-icon {
         font-size: 20px;
         width: 20px;
         height: 20px;
@@ -363,7 +375,7 @@ $font-code: var(--font-mono, monospace);
       background: rgba(255, 255, 255, 0.08);
       color: #ff6b6b;
     }
-    
+
     // Nested inside user message bubble (needs contrasting colors)
     .user-message & {
       background: rgba(255, 255, 255, 0.2);
@@ -375,7 +387,7 @@ $font-code: var(--font-mono, monospace);
     color: var(--primary);
     text-decoration: underline;
     font-weight: 600;
-    
+
     .user-message & {
       color: #ffffff;
     }
@@ -442,7 +454,8 @@ $font-code: var(--font-mono, monospace);
       font-weight: 600;
       transition: all 0.2s ease;
 
-      mat-icon, .material-icons {
+      .material-icons,
+      ng-icon {
         font-size: 14px;
         width: 14px;
         height: 14px;
@@ -515,7 +528,7 @@ $font-code: var(--font-mono, monospace);
     font-weight: 600;
     padding: 0;
 
-    mat-icon {
+    ng-icon {
       font-size: 12px;
       width: 12px;
       height: 12px;
@@ -595,8 +608,9 @@ $font-code: var(--font-mono, monospace);
 
     &:focus-within {
       border-color: var(--primary);
-      box-shadow: 0 4px 20px rgba(125, 98, 239, 0.12),
-                  0 0 0 1px var(--primary) inset;
+      box-shadow:
+        0 4px 20px rgba(125, 98, 239, 0.12),
+        0 0 0 1px var(--primary) inset;
     }
 
     :host-context(.dark) & {
@@ -643,7 +657,7 @@ $font-code: var(--font-mono, monospace);
       font-size: 0.75rem;
       color: #94a3b8;
       font-weight: 500;
-      
+
       &.maxed-out {
         color: #ef4444;
       }
@@ -660,9 +674,11 @@ $font-code: var(--font-mono, monospace);
       display: flex;
       justify-content: center;
       align-items: center;
-      transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+      transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease !important;
 
-      mat-icon {
+      ng-icon {
         margin: 0 !important;
         font-size: 20px;
         width: 20px;
@@ -706,7 +722,9 @@ $font-code: var(--font-mono, monospace);
 
 // Animations
 @keyframes bounce {
-  0%, 80%, 100% {
+  0%,
+  80%,
+  100% {
     transform: translateY(0);
   }
   40% {
@@ -741,7 +759,8 @@ $font-code: var(--font-mono, monospace);
 }
 
 @keyframes blink-caret {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -774,13 +793,13 @@ $font-code: var(--font-mono, monospace);
 
   .chat-header {
     padding: 0.75rem 1rem;
-    
+
     .clear-btn {
       padding: 0 8px !important;
       span {
         display: none; // hide text
       }
-      mat-icon {
+      ng-icon {
         margin: 0 !important;
       }
     }

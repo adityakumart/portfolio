@@ -5,7 +5,20 @@ import { Router, RouterLink } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import {
+  lucideShieldCheck,
+  lucideCar,
+  lucideAlertCircle,
+  lucideCheckCircle,
+  lucideBadgeCheck,
+  lucideCalendar,
+  lucideUser,
+  lucideLock,
+  lucideEyeOff,
+  lucideEye,
+  lucideArrowLeft,
+} from '@ng-icons/lucide';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { RRApiService } from '../../services/rr-api.service';
 
@@ -19,8 +32,23 @@ import { RRApiService } from '../../services/rr-api.service';
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatIconModule,
+    NgIconComponent,
     MatProgressSpinnerModule,
+  ],
+  providers: [
+    provideIcons({
+      lucideShieldCheck,
+      lucideCar,
+      lucideAlertCircle,
+      lucideCheckCircle,
+      lucideBadgeCheck,
+      lucideCalendar,
+      lucideUser,
+      lucideLock,
+      lucideEyeOff,
+      lucideEye,
+      lucideArrowLeft,
+    }),
   ],
   templateUrl: './rr-login.component.html',
   styleUrl: './rr-login.component.scss',
@@ -45,6 +73,8 @@ export class RRLoginComponent {
   loading = signal(false);
   error = signal<string | null>(null);
   success = signal<string | null>(null);
+  authError = this.error;
+  authSuccess = this.success;
   showPassword = signal(false);
 
   constructor() {
@@ -62,6 +92,10 @@ export class RRLoginComponent {
     this.success.set(null);
     this.employeeFormGroup.reset();
     this.adminFormGroup.reset();
+  }
+
+  switchRole(role: 'employee' | 'admin') {
+    this.setRole(role);
   }
 
   async onEmployeeSubmit() {

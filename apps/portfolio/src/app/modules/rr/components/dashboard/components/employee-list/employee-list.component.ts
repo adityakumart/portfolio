@@ -12,7 +12,15 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import {
+  lucideUsers,
+  lucidePlus,
+  lucidePencil,
+  lucideBadgeCheck,
+  lucideContact,
+  lucideCheck,
+} from '@ng-icons/lucide';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
@@ -31,11 +39,21 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     MatRadioModule,
     MatCheckboxModule,
     MatButtonModule,
-    MatIconModule,
+    NgIconComponent,
     MatDialogModule,
     MatTableModule,
     MatPaginatorModule,
     MatTooltipModule
+  ],
+  providers: [
+    provideIcons({
+      lucideUsers,
+      lucidePlus,
+      lucidePencil,
+      lucideBadgeCheck,
+      lucideContact,
+      lucideCheck,
+    }),
   ],
   templateUrl: './employee-list.component.html',
   styleUrl: './employee-list.component.scss'

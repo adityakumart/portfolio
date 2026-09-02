@@ -2,18 +2,20 @@ import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
-import { MatIconModule } from '@angular/material/icon';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import { lucideHammer } from '@ng-icons/lucide';
 
 @Component({
   selector: 'app-tool-placeholder',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatIconModule],
+  imports: [CommonModule, MatCardModule, NgIconComponent],
+  providers: [provideIcons({ lucideHammer })],
   template: `
     <div class="p-4" style="display: flex; justify-content: center; align-items: center; min-height: 70vh;">
       <mat-card style="max-width: 600px; width: 100%; padding: 32px; text-align: center; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.08);">
         <mat-card-header style="justify-content: center; margin-bottom: 20px; display: flex;">
           <div style="background: rgba(63, 81, 181, 0.08); padding: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-            <mat-icon color="primary" style="font-size: 48px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;">construction</mat-icon>
+            <ng-icon name="lucideHammer" color="var(--primary, #3f51b5)" style="font-size: 48px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;"></ng-icon>
           </div>
         </mat-card-header>
         <mat-card-title style="font-size: 26px; font-weight: 600; margin-bottom: 10px; color: var(--mdc-theme-primary, #3f51b5);">

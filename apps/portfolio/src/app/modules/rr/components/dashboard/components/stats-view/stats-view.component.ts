@@ -2,7 +2,20 @@ import { Component, OnInit, inject, signal, ViewChild, TemplateRef } from '@angu
 import { CommonModule } from '@angular/common';
 import { RRApiService } from '../../../../services/rr-api.service';
 import { MatCardModule } from '@angular/material/card';
-import { MatIconModule } from '@angular/material/icon';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import {
+  lucideCheckCircle,
+  lucideKey,
+  lucideWrench,
+  lucideAlertTriangle,
+  lucideUsers,
+  lucideFuel,
+  lucideGauge,
+  lucideSearchX,
+  lucideCar,
+  lucideCalendarCheck,
+  lucideX,
+} from '@ng-icons/lucide';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -15,10 +28,25 @@ import { IVehicle, IBooking, IRRDashboardStats } from '@portfolio/shared-types';
   imports: [
     CommonModule,
     MatCardModule,
-    MatIconModule,
+    NgIconComponent,
     MatTooltipModule,
     MatDialogModule,
     MatButtonModule
+  ],
+  providers: [
+    provideIcons({
+      lucideCheckCircle,
+      lucideKey,
+      lucideWrench,
+      lucideAlertTriangle,
+      lucideUsers,
+      lucideFuel,
+      lucideGauge,
+      lucideSearchX,
+      lucideCar,
+      lucideCalendarCheck,
+      lucideX,
+    }),
   ],
   templateUrl: './stats-view.component.html',
   styleUrl: './stats-view.component.scss'

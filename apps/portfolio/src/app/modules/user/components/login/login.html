@@ -11,9 +11,10 @@
   <div class="glass-card">
     <div class="auth-header">
       <div class="shield-glow">
-        <mat-icon class="auth-header-icon">
-          {{ mode() === 'login' ? 'lock' : 'person_add' }}
-        </mat-icon>
+        <ng-icon
+          class="auth-header-icon"
+          [name]="mode() === 'login' ? 'lucideLock' : 'lucideUserPlus'"
+        ></ng-icon>
       </div>
       <h2 class="title">
         {{ mode() === 'login' ? 'Welcome Back' : 'Create Account' }}
@@ -51,12 +52,12 @@
     <!-- Feedback Banners -->
     @if (error()) {
     <div class="feedback-banner error-banner">
-      <mat-icon>error_outline</mat-icon>
+      <ng-icon name="lucideAlertCircle"></ng-icon>
       <span>{{ error() }}</span>
     </div>
     } @if (success()) {
     <div class="feedback-banner success-banner">
-      <mat-icon>check_circle_outline</mat-icon>
+      <ng-icon name="lucideCheckCircle"></ng-icon>
       <span>{{ success() }}</span>
     </div>
     }
@@ -75,7 +76,7 @@
           placeholder="First name"
           #firstNameInput="ngModel"
         />
-        <mat-icon matPrefix>person</mat-icon>
+        <ng-icon matPrefix name="lucideUser"></ng-icon>
         @if (firstNameInput.invalid && (firstNameInput.dirty ||
         firstNameInput.touched)) {
         <mat-error>First name is required.</mat-error>
@@ -93,7 +94,7 @@
           placeholder="Last name"
           #lastNameInput="ngModel"
         />
-        <mat-icon matPrefix>person</mat-icon>
+        <ng-icon matPrefix name="lucideUser"></ng-icon>
         @if (lastNameInput.invalid && (lastNameInput.dirty ||
         lastNameInput.touched)) {
         <mat-error>Last name is required.</mat-error>
@@ -114,7 +115,7 @@
           placeholder="your.email@example.com"
           #emailInput="ngModel"
         />
-        <mat-icon matPrefix>email</mat-icon>
+        <ng-icon matPrefix name="lucideMail"></ng-icon>
         @if (emailInput.invalid && (emailInput.dirty || emailInput.touched)) {
         <mat-error>Please enter a valid email address.</mat-error>
         }
@@ -133,7 +134,7 @@
           placeholder="Enter password"
           #passwordInput="ngModel"
         />
-        <mat-icon matPrefix>lock</mat-icon>
+        <ng-icon matPrefix name="lucideLock"></ng-icon>
         <button
           type="button"
           mat-icon-button
@@ -141,9 +142,7 @@
           (click)="showPassword.set(!showPassword())"
           [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
         >
-          <mat-icon>
-            {{ showPassword() ? 'visibility_off' : 'visibility' }}
-          </mat-icon>
+          <ng-icon [name]="showPassword() ? 'lucideEyeOff' : 'lucideEye'"></ng-icon>
         </button>
         @if (passwordInput.invalid && (passwordInput.dirty ||
         passwordInput.touched)) {
@@ -164,7 +163,7 @@
           placeholder="Repeat password"
           #confirmInput="ngModel"
         />
-        <mat-icon matPrefix>lock_reset</mat-icon>
+        <ng-icon matPrefix name="lucideKeyRound"></ng-icon>
         <button
           type="button"
           mat-icon-button
@@ -172,9 +171,7 @@
           (click)="showConfirmPassword.set(!showConfirmPassword())"
           [attr.aria-label]="showConfirmPassword() ? 'Hide password' : 'Show password'"
         >
-          <mat-icon>
-            {{ showConfirmPassword() ? 'visibility_off' : 'visibility' }}
-          </mat-icon>
+          <ng-icon [name]="showConfirmPassword() ? 'lucideEyeOff' : 'lucideEye'"></ng-icon>
         </button>
         @if (confirmInput.invalid && (confirmInput.dirty ||
         confirmInput.touched)) {
@@ -210,7 +207,7 @@
   <div class="glass-card welcome-card">
     <div class="welcome-header">
       <div class="avatar-container">
-        <mat-icon class="avatar-icon">account_circle</mat-icon>
+        <ng-icon name="lucideCircleUser" class="avatar-icon"></ng-icon>
       </div>
       <h2 class="title">
         Welcome back{{ authService.currentUser()?.['first_name'] ? ', ' +
@@ -239,7 +236,7 @@
         class="dashboard-btn"
         routerLink="/"
       >
-        <mat-icon>home</mat-icon> Go to Home
+        <ng-icon name="lucideHome"></ng-icon> Go to Home
       </button>
       <button
         mat-stroked-button
@@ -247,7 +244,7 @@
         class="logout-btn"
         (click)="authService.logout()"
       >
-        <mat-icon>logout</mat-icon> Log Out
+        <ng-icon name="lucideLogOut"></ng-icon> Log Out
       </button>
     </div>
   </div>

@@ -10,7 +10,7 @@
   <!-- Error Detail Panel -->
   @if (errorMessage()) {
     <div class="error-detail-box mb-4 animate-fade-in">
-      <mat-icon class="error-box-icon">warning</mat-icon>
+      <ng-icon class="error-box-icon" name="lucideAlertTriangle"></ng-icon>
       <div class="error-box-content">
         <strong>Generation Error:</strong>
         <p class="error-message-text">{{ errorMessage() }}</p>
@@ -199,13 +199,12 @@
                   <mat-option [value]="level.value">{{ level.label }}</mat-option>
                 }
               </mat-select>
-              <mat-icon
+              <ng-icon
                 matSuffix
                 class="help-icon-tooltip"
                 matTooltip="L - Recovers 7% of data, M - 15%, Q - 25%, H - 30%. Higher levels allow readability even if damaged but make the QR pattern denser."
-              >
-                help_outline
-              </mat-icon>
+                name="lucideHelpCircle"
+              ></ng-icon>
             </mat-form-field>
           </div>
 
@@ -246,7 +245,7 @@
               (click)="downloadQR()"
               class="action-btn"
             >
-              <mat-icon>file_download</mat-icon>
+              <ng-icon name="lucideDownload"></ng-icon>
               Download PNG
             </button>
           </div>

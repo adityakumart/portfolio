@@ -123,13 +123,6 @@
           transform: translateY(-1px);
           box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-
-        mat-icon {
-          margin-right: 4px;
-          font-size: 18px;
-          width: 18px;
-          height: 18px;
-        }
       }
     }
   }
@@ -201,7 +194,10 @@
           font-size: 12px;
           padding: 4px 10px;
           border-radius: 20px;
-          background-color: var(--mat-sys-surface-container-high, rgba(0, 0, 0, 0.04));
+          background-color: var(
+            --mat-sys-surface-container-high,
+            rgba(0, 0, 0, 0.04)
+          );
           color: var(--mat-sys-on-surface-variant, #666);
         }
 
@@ -230,7 +226,10 @@
           flex-direction: column;
 
           ::ng-deep .mat-mdc-form-field-flex {
-            background-color: var(--mat-sys-surface-container-lowest, #fff) !important;
+            background-color: var(
+              --mat-sys-surface-container-lowest,
+              #fff
+            ) !important;
           }
 
           .tool-textarea {
@@ -242,7 +241,10 @@
             color: var(--mat-sys-on-surface, #333);
 
             &.readonly-textarea {
-              background-color: var(--mat-sys-surface-container-low, rgba(0, 0, 0, 0.02));
+              background-color: var(
+                --mat-sys-surface-container-low,
+                rgba(0, 0, 0, 0.02)
+              );
               cursor: default;
             }
 

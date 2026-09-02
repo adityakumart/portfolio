@@ -2,14 +2,14 @@
   <!-- Header -->
   <div class="dialog-header">
     <div class="title-section">
-      <mat-icon class="file-icon">{{ getIconForType() }}</mat-icon>
+      <ng-icon class="file-icon" [name]="getIconForType()"></ng-icon>
       <div class="file-info">
         <h2 class="file-name">{{ data.node.name }}</h2>
         <span class="file-meta">{{ formatSize(data.node.size) }} • {{ formatDate(data.node.lastModified) }}</span>
       </div>
     </div>
     <button mat-icon-button (click)="dialogRef.close()" class="close-btn" aria-label="Close dialog">
-      <mat-icon>close</mat-icon>
+      <ng-icon name="lucideX"></ng-icon>
     </button>
   </div>
 
@@ -32,7 +32,7 @@
     <!-- Audio Preview -->
     @if (previewType === 'audio') {
       <div class="preview-wrapper audio-wrapper">
-        <mat-icon class="audio-large-icon">volume_up</mat-icon>
+        <ng-icon class="audio-large-icon" name="lucideVolume2"></ng-icon>
         <audio [src]="data.downloadUrl" controls class="audio-element"></audio>
       </div>
     }
@@ -54,7 +54,7 @@
           </div>
         } @else if (textError) {
           <div class="error-state">
-            <mat-icon class="error-icon">error_outline</mat-icon>
+            <ng-icon class="error-icon" name="lucideAlertCircle"></ng-icon>
             <p>Unable to load file preview. You can still download the file to view it.</p>
           </div>
         } @else {
@@ -66,7 +66,7 @@
     <!-- Unsupported Preview -->
     @if (previewType === 'unsupported') {
       <div class="preview-wrapper unsupported-wrapper">
-        <mat-icon class="unsupported-large-icon">insert_drive_file</mat-icon>
+        <ng-icon class="unsupported-large-icon" name="lucideFile"></ng-icon>
         <h3>No preview available for this file type</h3>
         <p>This file type (.{{ getExtension() }}) cannot be previewed in the browser. Please download the file to open it.</p>
       </div>
@@ -76,7 +76,7 @@
   <!-- Footer Actions -->
   <mat-dialog-actions align="end" class="dialog-actions">
     <button mat-stroked-button class="action-btn" (click)="download()">
-      <mat-icon>download</mat-icon> Download
+      <ng-icon name="lucideDownload"></ng-icon> Download
     </button>
     <button mat-flat-button color="primary" class="action-btn close-action-btn" (click)="dialogRef.close()">
       Close

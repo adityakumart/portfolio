@@ -1,14 +1,16 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RRApiService } from '../../../../services/rr-api.service';
-import { MatIconModule } from '@angular/material/icon';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import { lucideHistory } from '@ng-icons/lucide';
 import { MatTableModule } from '@angular/material/table';
 import { IBooking } from '@portfolio/shared-types';
 
 @Component({
   selector: 'app-rr-history',
   standalone: true,
-  imports: [CommonModule, MatIconModule, MatTableModule],
+  imports: [CommonModule, NgIconComponent, MatTableModule],
+  providers: [provideIcons({ lucideHistory })],
   templateUrl: './history.component.html',
   styleUrl: './history.component.scss'
 })

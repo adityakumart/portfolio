@@ -17,9 +17,7 @@
         [ngClass]="{ activeCard: inputData.id === selectedFieldId() }"
       >
         <div class="cardPlaceholder">
-          <mat-icon cdkDragHandle class="parentHandler"
-            >drag_indicator</mat-icon
-          >
+          <ng-icon cdkDragHandle class="parentHandler" name="lucideGripVertical"></ng-icon>
         </div>
         @if (inputData.id === selectedFieldId()) {
           <div (click)="fieldSelected(inputData.id)">
@@ -212,13 +210,13 @@
       [matMenuTriggerFor]="menu"
       class="addBtn"
     >
-      <mat-icon>add</mat-icon>
+      <ng-icon name="lucidePlus"></ng-icon>
       Insert new
     </button>
     <mat-menu #menu="matMenu">
       @for (field of addJsonData(); track field) {
         <button mat-menu-item (click)="addInput(field.inputType)">
-          <mat-icon>{{ field.icon }}</mat-icon>
+          <ng-icon [name]="field.icon"></ng-icon>
           {{ field.label }}
         </button>
       }

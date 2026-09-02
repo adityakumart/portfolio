@@ -37,7 +37,7 @@
             [disabled]="form.get('inputJson')?.invalid"
             class="action-btn"
           >
-            <mat-icon>format_align_left</mat-icon>
+            <ng-icon name="lucideAlignLeft"></ng-icon>
             Format
           </button>
 
@@ -48,7 +48,7 @@
             [disabled]="form.get('inputJson')?.invalid"
             class="action-btn"
           >
-            <mat-icon>compress</mat-icon>
+            <ng-icon name="lucideMinimize2"></ng-icon>
             Minify
           </button>
 
@@ -60,7 +60,7 @@
             [disabled]="form.get('inputJson')?.invalid"
             class="action-btn"
           >
-            <mat-icon>fact_check</mat-icon>
+            <ng-icon name="lucideCheckCheck"></ng-icon>
             Validate
           </button>
 
@@ -70,7 +70,7 @@
             (click)="onClear()"
             class="action-btn"
           >
-            <mat-icon>clear_all</mat-icon>
+            <ng-icon name="lucideEraser"></ng-icon>
             Clear
           </button>
         </div>
@@ -87,13 +87,13 @@
           <!-- Validation Status Badge -->
           <span [class]="'status-badge ' + validationState">
             @if (validationState === 'valid') {
-              <mat-icon class="status-icon success-icon">check_circle</mat-icon>
+              <ng-icon class="status-icon success-icon" name="lucideCheckCircle"></ng-icon>
               <span>Valid JSON ({{ parsedType | titlecase }})</span>
             } @else if (validationState === 'invalid') {
-              <mat-icon class="status-icon error-icon">error</mat-icon>
+              <ng-icon class="status-icon error-icon" name="lucideAlertCircle"></ng-icon>
               <span>Invalid JSON</span>
             } @else {
-              <mat-icon class="status-icon idle-icon">help_outline</mat-icon>
+              <ng-icon class="status-icon idle-icon" name="lucideHelpCircle"></ng-icon>
               <span>Unchecked</span>
             }
           </span>
@@ -116,7 +116,7 @@
           <!-- Dynamic Error Detail Panel -->
           @if (validationState === 'invalid' && errorMessage) {
             <div class="error-detail-box">
-              <mat-icon class="error-box-icon">warning</mat-icon>
+              <ng-icon class="error-box-icon" name="lucideAlertTriangle"></ng-icon>
               <div class="error-box-content">
                 <strong>Parsing Error Detail:</strong>
                 <p class="error-message-text">{{ errorMessage }}</p>
@@ -140,7 +140,7 @@
               [disabled]="!form.get('outputJson')?.value"
               [class.copied]="copySuccess"
             >
-              <mat-icon>{{ copySuccess ? 'check_circle' : 'content_copy' }}</mat-icon>
+              <ng-icon [name]="copySuccess ? 'lucideCheckCircle' : 'lucideCopy'"></ng-icon>
             </button>
           </div>
         </mat-card-header>

@@ -44,7 +44,7 @@
                     [disabled]="!form.get('urlInput')?.value"
                     class="action-btn"
                   >
-                    <mat-icon>{{ form.get('urlOperation')?.value === 'encode' ? 'lock' : 'lock_open' }}</mat-icon>
+                    <ng-icon [name]="form.get('urlOperation')?.value === 'encode' ? 'lucideLock' : 'lucideLockOpen'"></ng-icon>
                     {{ form.get('urlOperation')?.value === 'encode' ? 'Encode' : 'Decode' }}
                   </button>
 
@@ -56,7 +56,7 @@
                     class="action-btn"
                     matTooltip="Swap Input and Output fields"
                   >
-                    <mat-icon>swap_vert</mat-icon>
+                    <ng-icon name="lucideArrowUpDown"></ng-icon>
                     Swap
                   </button>
 
@@ -66,7 +66,7 @@
                     (click)="onClearUrl()"
                     class="action-btn"
                   >
-                    <mat-icon>clear_all</mat-icon>
+                    <ng-icon name="lucideEraser"></ng-icon>
                     Clear
                   </button>
                 </div>
@@ -76,7 +76,7 @@
             <!-- Error Detail Box -->
             @if (urlErrorMessage) {
               <div class="error-detail-box mb-4">
-                <mat-icon class="error-box-icon">warning</mat-icon>
+                <ng-icon class="error-box-icon" name="lucideAlertTriangle"></ng-icon>
                 <div class="error-box-content">
                   <strong>Conversion Error:</strong>
                   <p class="error-message-text">{{ urlErrorMessage }}</p>
@@ -126,7 +126,7 @@
                       [disabled]="!form.get('urlOutput')?.value"
                       [class.copied]="copiedField === 'urlOutput'"
                     >
-                      <mat-icon>{{ copiedField === 'urlOutput' ? 'check_circle' : 'content_copy' }}</mat-icon>
+                      <ng-icon [name]="copiedField === 'urlOutput' ? 'lucideCheckCircle' : 'lucideCopy'"></ng-icon>
                     </button>
                   </div>
                 </mat-card-header>
@@ -155,7 +155,7 @@
           <div class="tab-container mt-4">
             <!-- Cryptographic Banner -->
             <div class="crypto-banner mb-4">
-              <mat-icon class="banner-icon">info</mat-icon>
+              <ng-icon class="banner-icon" name="lucideInfo"></ng-icon>
               <div class="banner-content">
                 <strong>One-Way Hash Function:</strong>
                 <p>MD5 is a one-way cryptographic hash function. It generates a fixed 128-bit checksum and <strong>cannot be decoded or decrypted</strong>.</p>
@@ -184,7 +184,7 @@
                     [disabled]="!form.get('md5Input')?.value"
                     class="action-btn"
                   >
-                    <mat-icon>tag</mat-icon>
+                    <ng-icon name="lucideHash"></ng-icon>
                     Generate MD5
                   </button>
 
@@ -194,7 +194,7 @@
                     (click)="onClearMd5()"
                     class="action-btn"
                   >
-                    <mat-icon>clear_all</mat-icon>
+                    <ng-icon name="lucideEraser"></ng-icon>
                     Clear
                   </button>
                 </div>
@@ -239,7 +239,7 @@
                       [disabled]="!form.get('md5Output')?.value"
                       [class.copied]="copiedField === 'md5Output'"
                     >
-                      <mat-icon>{{ copiedField === 'md5Output' ? 'check_circle' : 'content_copy' }}</mat-icon>
+                      <ng-icon [name]="copiedField === 'md5Output' ? 'lucideCheckCircle' : 'lucideCopy'"></ng-icon>
                     </button>
                   </div>
                 </mat-card-header>
@@ -268,7 +268,7 @@
           <div class="tab-container mt-4">
             <!-- Cryptographic Banner -->
             <div class="crypto-banner mb-4">
-              <mat-icon class="banner-icon">security</mat-icon>
+              <ng-icon class="banner-icon" name="lucideShieldCheck"></ng-icon>
               <div class="banner-content">
                 <strong>One-Way Hash Function:</strong>
                 <p>SHA-256 is a one-way cryptographic hash function. It generates a fixed 256-bit secure signature and <strong>cannot be decoded or decrypted</strong>.</p>
@@ -297,7 +297,7 @@
                     [disabled]="!form.get('sha256Input')?.value"
                     class="action-btn"
                   >
-                    <mat-icon>tag</mat-icon>
+                    <ng-icon name="lucideHash"></ng-icon>
                     Generate SHA-256
                   </button>
 
@@ -307,7 +307,7 @@
                     (click)="onClearSha256()"
                     class="action-btn"
                   >
-                    <mat-icon>clear_all</mat-icon>
+                    <ng-icon name="lucideEraser"></ng-icon>
                     Clear
                   </button>
                 </div>
@@ -352,7 +352,7 @@
                       [disabled]="!form.get('sha256Output')?.value"
                       [class.copied]="copiedField === 'sha256Output'"
                     >
-                      <mat-icon>{{ copiedField === 'sha256Output' ? 'check_circle' : 'content_copy' }}</mat-icon>
+                      <ng-icon [name]="copiedField === 'sha256Output' ? 'lucideCheckCircle' : 'lucideCopy'"></ng-icon>
                     </button>
                   </div>
                 </mat-card-header>

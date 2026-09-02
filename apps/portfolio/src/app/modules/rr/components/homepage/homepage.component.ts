@@ -3,13 +3,55 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { RRApiService } from '../../services/rr-api.service';
-import { MatIconModule } from '@angular/material/icon';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import {
+  lucideCar,
+  lucideLayoutDashboard,
+  lucideArrowRight,
+  lucideKey,
+  lucideMap,
+  lucidePlane,
+  lucideGift,
+  lucideBuilding,
+  lucidePalette,
+  lucideFuel,
+  lucideUsers,
+  lucideSearchX,
+  lucideMapPin,
+  lucidePhone,
+  lucideMail,
+  lucideGlobe,
+  lucideX,
+  lucideCheckCircle,
+} from '@ng-icons/lucide';
 import { IVehicle } from '@portfolio/shared-types';
 
 @Component({
   selector: 'app-rr-homepage',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, MatIconModule],
+  imports: [CommonModule, RouterLink, FormsModule, NgIconComponent],
+  providers: [
+    provideIcons({
+      lucideCar,
+      lucideLayoutDashboard,
+      lucideArrowRight,
+      lucideKey,
+      lucideMap,
+      lucidePlane,
+      lucideGift,
+      lucideBuilding,
+      lucidePalette,
+      lucideFuel,
+      lucideUsers,
+      lucideSearchX,
+      lucideMapPin,
+      lucidePhone,
+      lucideMail,
+      lucideGlobe,
+      lucideX,
+      lucideCheckCircle,
+    }),
+  ],
   templateUrl: './homepage.component.html',
   styleUrl: './homepage.component.scss',
 })

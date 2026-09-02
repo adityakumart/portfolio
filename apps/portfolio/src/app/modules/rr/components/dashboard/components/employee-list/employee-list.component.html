@@ -1,13 +1,13 @@
 <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 16px;">
   <div>
     <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--color-cyan-500); font-weight: 800; margin-bottom: 6px; display: inline-flex; align-items: center; gap: 6px;">
-      <mat-icon style="font-size: 14px; width: 14px; height: 14px;">people</mat-icon>
-      <span>Employees &bull; Staff Registry</span>
+      <ng-icon style="font-size: 14px; width: 14px; height: 14px;" name="lucideUsers"></ng-icon>
+      <span>Human Resources &bull; Internal Directory</span>
     </div>
     <h2 style="margin: 0; font-size: 1.85rem; font-weight: 800; color: var(--foreground);">Staff Registry</h2>
   </div>
   <button mat-raised-button color="primary" class="action-btn success" style="padding: 10px 20px; border-radius: 12px;" (click)="openAddEmployeeModal()">
-    <mat-icon>add</mat-icon> Register New Employee
+    <ng-icon name="lucidePlus"></ng-icon> Register New Employee
   </button>
 </div>
 
@@ -15,99 +15,105 @@
   <div class="table-container">
     <table mat-table [dataSource]="dataSource">
 
-      <!-- Employee ID Column -->
-      <ng-container matColumnDef="id">
-        <th mat-header-cell *matHeaderCellDef> Employee ID </th>
-        <td mat-cell *matCellDef="let emp">
-          <span style="font-family: var(--font-mono, monospace); font-weight: 700; color: var(--color-cyan-500);">{{ emp.id }}</span>
-        </td>
-      </ng-container>
+    <!-- Emp ID Column -->
+    <ng-container matColumnDef="id">
+      <th mat-header-cell *matHeaderCellDef> Employee ID </th>
+      <td mat-cell *matCellDef="let e">
+        <span class="mono-val" style="font-weight: 800; color: var(--color-cyan-500);">{{ e.id }}</span>
+      </td>
+    </ng-container>
 
-      <!-- Name Column -->
-      <ng-container matColumnDef="name">
-        <th mat-header-cell *matHeaderCellDef> Name </th>
-        <td mat-cell *matCellDef="let emp">
-          <div style="font-weight: 700; color: var(--foreground);">{{ emp.firstName }} {{ emp.lastName }}</div>
-        </td>
-      </ng-container>
+    <!-- Name Column -->
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef> Staff Full Name </th>
+      <td mat-cell *matCellDef="let e">
+        <div style="font-weight: 700; color: var(--foreground);">{{ e.firstName }} {{ e.lastName }}</div>
+      </td>
+    </ng-container>
 
-      <!-- Role Column -->
-      <ng-container matColumnDef="role">
-        <th mat-header-cell *matHeaderCellDef> Role </th>
-        <td mat-cell *matCellDef="let emp">
-          <span class="badge" [class]="emp.role === 'admin' ? 'status-active' : 'status-available'">
-            {{ emp.role | uppercase }}
-          </span>
-        </td>
-      </ng-container>
+    <!-- Role Column -->
+    <ng-container matColumnDef="role">
+      <th mat-header-cell *matHeaderCellDef> Assigned Role </th>
+      <td mat-cell *matCellDef="let e">
+        <span class="badge" [ngClass]="e.role === 'admin' ? 'status-maintenance' : 'status-rented'" style="font-weight: 800;">
+          {{ e.role | uppercase }}
+        </span>
+      </td>
+    </ng-container>
 
-      <!-- Date of Birth Column -->
-      <ng-container matColumnDef="dob">
-        <th mat-header-cell *matHeaderCellDef> Date of Birth </th>
-        <td mat-cell *matCellDef="let emp"> {{ emp.dob | date:'dd-MM-yyyy':'UTC' }} </td>
-      </ng-container>
+    <!-- DOB Column -->
+    <ng-container matColumnDef="dob">
+      <th mat-header-cell *matHeaderCellDef> Date of Birth </th>
+      <td mat-cell *matCellDef="let e">
+        <span style="font-size: 0.85rem;">{{ (e.dob | date:'dd-MM-yyyy') || 'N/A' }}</span>
+      </td>
+    </ng-container>
 
-      <!-- Phone Column -->
-      <ng-container matColumnDef="phone">
-        <th mat-header-cell *matHeaderCellDef> Phone </th>
-        <td mat-cell *matCellDef="let emp"> {{ emp.phone }} </td>
-      </ng-container>
+    <!-- Phone Column -->
+    <ng-container matColumnDef="phone">
+      <th mat-header-cell *matHeaderCellDef> Contact Phone </th>
+      <td mat-cell *matCellDef="let e">
+        <span style="font-size: 0.85rem;">{{ e.phone }}</span>
+      </td>
+    </ng-container>
 
-      <!-- Email Column -->
-      <ng-container matColumnDef="email">
-        <th mat-header-cell *matHeaderCellDef> Email </th>
-        <td mat-cell *matCellDef="let emp"> {{ emp.email }} </td>
-      </ng-container>
+    <!-- Email Column -->
+    <ng-container matColumnDef="email">
+      <th mat-header-cell *matHeaderCellDef> Email Address </th>
+      <td mat-cell *matCellDef="let e">
+        <span style="font-size: 0.85rem; color: var(--muted-foreground);">{{ e.email }}</span>
+      </td>
+    </ng-container>
 
-      <!-- Login Allowed Column -->
-      <ng-container matColumnDef="allowLogin">
-        <th mat-header-cell *matHeaderCellDef> Login Allowed </th>
-        <td mat-cell *matCellDef="let emp">
-          <span class="badge" [class]="emp.allowLogin ? 'status-completed' : 'status-cancelled'">
-            {{ emp.allowLogin ? 'Allowed' : 'Revoked' }}
-          </span>
-        </td>
-      </ng-container>
+    <!-- Allow Login Column -->
+    <ng-container matColumnDef="allowLogin">
+      <th mat-header-cell *matHeaderCellDef> Portal Access </th>
+      <td mat-cell *matCellDef="let e">
+        <span class="badge" [ngClass]="e.allowLogin ? 'status-available' : 'status-maintenance'">
+          {{ e.allowLogin ? 'Active Permitted' : 'Access Revoked' }}
+        </span>
+      </td>
+    </ng-container>
 
-      <!-- Actions Column -->
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef style="text-align: center;"> Actions </th>
-        <td mat-cell *matCellDef="let emp" style="text-align: center; white-space: nowrap;">
-          <button mat-icon-button class="action-btn" style="border-radius: 50%;" [matTooltip]="'Modify Details'" (click)="openEditEmployeeModal(emp)">
-            <mat-icon style="font-size: 18px; width: 18px; height: 18px; vertical-align: middle;">edit</mat-icon>
-          </button>
-        </td>
-      </ng-container>
+    <!-- Actions Column -->
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef style="text-align: center;"> Actions </th>
+      <td mat-cell *matCellDef="let e" style="text-align: center;">
+        <button mat-icon-button class="action-btn" style="border-radius: 50%;" [matTooltip]="'Modify Staff Information'" (click)="openEditEmployeeModal(e)">
+          <ng-icon style="font-size: 18px; width: 18px; height: 18px; vertical-align: middle;" name="lucidePencil"></ng-icon>
+        </button>
+      </td>
+    </ng-container>
 
-      <!-- Table Rows -->
-      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    <!-- Table Rows -->
+    <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
 
-      <!-- Empty Row -->
-      <tr class="mat-row" *matNoDataRow>
-        <td class="mat-cell" colspan="8" style="text-align: center; color: var(--muted-foreground); padding: 48px 0;">
-          <mat-icon style="font-size: 40px; width: 40px; height: 40px; color: var(--muted-foreground); display: block; margin: 0 auto 12px auto;">people</mat-icon>
-          <span style="font-weight: 600; font-size: 0.95rem;">No registered employees found.</span>
-        </td>
-      </tr>
-    </table>
+    <!-- Empty Row -->
+    <tr class="mat-row" *matNoDataRow>
+      <td class="mat-cell" colspan="8" style="text-align: center; color: var(--muted-foreground); padding: 48px 0;">
+        <ng-icon style="font-size: 40px; width: 40px; height: 40px; color: var(--muted-foreground); display: block; margin: 0 auto 12px auto;" name="lucideUsers"></ng-icon>
+        <span style="font-weight: 600; font-size: 0.95rem;">No staff registered in the employee database.</span>
+      </td>
+    </tr>
+  </table>
   </div>
   <mat-paginator [pageSize]="10" [pageSizeOptions]="[5, 10, 20]" style="background: transparent; color: var(--foreground);" showFirstLastButtons></mat-paginator>
 </div>
 
-<!-- POPUP: ADD/MODIFY EMPLOYEE DIALOG TEMPLATE -->
+<!-- POPUP: ADD/MODIFY EMPLOYEE FORM DIALOG TEMPLATE -->
 <ng-template #employeeFormDialog>
   <h3 mat-dialog-title>
-    <mat-icon style="vertical-align: middle; margin-right: 6px;">badge</mat-icon>
-    <span>{{ editingEmployeeMode() ? 'Modify Staff Account' : 'Register New Staff Account' }}</span>
+    <ng-icon style="vertical-align: middle; margin-right: 6px;" name="lucideBadgeCheck"></ng-icon>
+    <span>{{ editingEmployeeMode() ? 'Modify Staff Record' : 'Register New Desk Agent' }}</span>
   </h3>
   <mat-dialog-content style="max-height: 70vh; overflow-y: auto;">
     <form [formGroup]="employeeFormGroup">
-      <div style="padding-right: 8px;">
+      <div class="booking-sections" style="padding-right: 8px;">
         <div class="booking-card">
           <h3>
-            <mat-icon style="vertical-align: middle; margin-right: 6px;">contact_mail</mat-icon>
-            <span>Employee Personal & Account Details</span>
+            <ng-icon style="vertical-align: middle; margin-right: 6px;" name="lucideContact"></ng-icon>
+            <span>Employee Profile Identity</span>
           </h3>
           <div class="booking-content" style="margin-top: 15px;">
             <mat-form-field appearance="outline">
@@ -200,7 +206,7 @@
   </mat-dialog-content>
   <mat-dialog-actions align="end" style="margin-top: 20px; padding: 12px 24px;">
     <button mat-raised-button color="primary" class="action-btn success" style="margin-right: 12px;" [disabled]="employeeFormGroup.invalid" (click)="saveEmployee($event)">
-      <mat-icon>check</mat-icon>
+      <ng-icon name="lucideCheck"></ng-icon>
       <span>{{ editingEmployeeMode() ? 'Save Changes' : 'Register Account' }}</span>
     </button>
     <button mat-button color="warn" (click)="closeEmployeeFormModal()">Cancel</button>

@@ -9,7 +9,8 @@ import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatIconModule } from '@angular/material/icon';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import { lucideCheckCircle, lucideCopy, lucideRefreshCw } from '@ng-icons/lucide';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
 import { Subject } from 'rxjs';
@@ -31,9 +32,12 @@ export type GeneratorType = 'array' | 'number' | 'objects' | 'uuid' | 'password'
     MatSelectModule,
     MatCheckboxModule,
     MatSnackBarModule,
-    MatIconModule,
+    NgIconComponent,
     MatTooltipModule,
     MatDividerModule,
+  ],
+  providers: [
+    provideIcons({ lucideCheckCircle, lucideCopy, lucideRefreshCw }),
   ],
   templateUrl: './random-generator.component.html',
   styleUrls: ['./random-generator.component.scss'],

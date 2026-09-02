@@ -22,7 +22,7 @@
               [disabled]="!form.get('decimal')?.value && !form.get('binary')?.value && !form.get('octal')?.value && !form.get('hexadecimal')?.value"
               (click)="onClear()"
             >
-              <mat-icon>clear_all</mat-icon>
+              <ng-icon name="lucideEraser"></ng-icon>
               Clear All
             </button>
           </div>
@@ -49,7 +49,7 @@
               matTooltip="Copy Decimal value"
               type="button"
             >
-              <mat-icon>content_copy</mat-icon>
+              <ng-icon name="lucideCopy"></ng-icon>
             </button>
             @if (form.get('decimal')?.hasError('pattern')) {
               <mat-error>Please enter valid digits (0-9) only.</mat-error>
@@ -75,7 +75,7 @@
               matTooltip="Copy Binary value"
               type="button"
             >
-              <mat-icon>content_copy</mat-icon>
+              <ng-icon name="lucideCopy"></ng-icon>
             </button>
             @if (form.get('binary')?.hasError('pattern')) {
               <mat-error>Please enter binary digits (0 and 1) only.</mat-error>
@@ -101,7 +101,7 @@
               matTooltip="Copy Octal value"
               type="button"
             >
-              <mat-icon>content_copy</mat-icon>
+              <ng-icon name="lucideCopy"></ng-icon>
             </button>
             @if (form.get('octal')?.hasError('pattern')) {
               <mat-error>Please enter octal digits (0-7) only.</mat-error>
@@ -126,7 +126,7 @@
               matTooltip="Copy Hexadecimal value"
               type="button"
             >
-              <mat-icon>content_copy</mat-icon>
+              <ng-icon name="lucideCopy"></ng-icon>
             </button>
             @if (form.get('hexadecimal')?.hasError('pattern')) {
               <mat-error>Please enter valid hex characters (0-9, A-F) only.</mat-error>
@@ -146,7 +146,7 @@
         <mat-card-content class="panel-body">
           @if (!explanation()) {
             <div class="empty-state">
-              <mat-icon class="empty-icon">calculate</mat-icon>
+              <ng-icon class="empty-icon" name="lucideCalculator"></ng-icon>
               <p>No conversion active.</p>
               <span>Enter a value in any base on the left to see the step-by-step mathematical conversion breakdown.</span>
             </div>

@@ -5,7 +5,15 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import {
+  lucideBinary,
+  lucideSlidersHorizontal,
+  lucideCopy,
+  lucideShieldCheck,
+  lucideFlaskConical,
+  lucideAlertCircle,
+} from '@ng-icons/lucide';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -33,12 +41,22 @@ export interface RegexOption {
     MatInputModule,
     MatSelectModule,
     MatButtonModule,
-    MatIconModule,
+    NgIconComponent,
     MatCheckboxModule,
     MatButtonToggleModule,
     MatTooltipModule,
     MatSnackBarModule,
     RegexHighlightPipe,
+  ],
+  providers: [
+    provideIcons({
+      lucideBinary,
+      lucideSlidersHorizontal,
+      lucideCopy,
+      lucideShieldCheck,
+      lucideFlaskConical,
+      lucideAlertCircle,
+    }),
   ],
   templateUrl: './regex-tester.component.html',
   styleUrls: ['./regex-tester.component.scss'],

@@ -6,7 +6,18 @@ import {
   MatDialogRef,
 } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import {
+  lucideImage,
+  lucideFileText,
+  lucideVolume2,
+  lucideVideo,
+  lucideFileCode,
+  lucideFile,
+  lucideX,
+  lucideAlertCircle,
+  lucideDownload,
+} from '@ng-icons/lucide';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { HttpClient } from '@angular/common/http';
@@ -19,8 +30,21 @@ import { FileNode } from '@portfolio/shared-types';
     CommonModule,
     MatDialogModule,
     MatButtonModule,
-    MatIconModule,
+    NgIconComponent,
     MatProgressSpinnerModule,
+  ],
+  providers: [
+    provideIcons({
+      lucideImage,
+      lucideFileText,
+      lucideVolume2,
+      lucideVideo,
+      lucideFileCode,
+      lucideFile,
+      lucideX,
+      lucideAlertCircle,
+      lucideDownload,
+    }),
   ],
   templateUrl: './file-preview-dialog.component.html',
   styleUrl: './file-preview-dialog.component.scss',
@@ -124,17 +148,17 @@ export class FilePreviewDialogComponent implements OnInit {
   getIconForType(): string {
     switch (this.previewType) {
       case 'image':
-        return 'image';
+        return 'lucideImage';
       case 'pdf':
-        return 'picture_as_pdf';
+        return 'lucideFileText';
       case 'audio':
-        return 'volume_up';
+        return 'lucideVolume2';
       case 'video':
-        return 'video_library';
+        return 'lucideVideo';
       case 'text':
-        return 'description';
+        return 'lucideFileCode';
       default:
-        return 'insert_drive_file';
+        return 'lucideFile';
     }
   }
 

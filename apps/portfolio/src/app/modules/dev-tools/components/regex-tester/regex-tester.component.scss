@@ -25,7 +25,7 @@
   gap: 12px;
   margin-bottom: 8px;
 
-  mat-icon {
+  ng-icon {
     font-size: 32px;
     height: 32px;
     width: 32px;
@@ -64,7 +64,9 @@
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.02);
   background: var(--card);
   overflow: hidden;
-  transition: transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+  transition:
+    transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1),
+    box-shadow 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
 
   &:hover {
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.04);
@@ -78,7 +80,7 @@
   align-items: center;
   gap: 12px;
 
-  mat-icon {
+  ng-icon {
     color: var(--primary);
   }
 
@@ -310,11 +312,13 @@
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 6px;
-    transition: transform 0.2s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+    transition:
+      transform 0.2s cubic-bezier(0.165, 0.84, 0.44, 1),
+      box-shadow 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
 
     &:hover {
       transform: translateX(3px);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
     }
 
     .token-symbol {

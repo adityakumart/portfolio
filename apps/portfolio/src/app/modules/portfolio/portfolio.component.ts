@@ -7,8 +7,9 @@ import {
   computed,
   ChangeDetectionStrategy,
 } from '@angular/core';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import { lucideSun, lucideMoon, lucideZap } from '@ng-icons/lucide';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { RouterLink } from '@angular/router';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
@@ -33,7 +34,7 @@ import { AwardsComponent } from './sub-components/awards/awards.component';
   styleUrls: ['./portfolio.component.scss'],
   imports: [
     MatTooltipModule,
-    MatIconModule,
+    NgIconComponent,
     MatButtonModule,
     RouterLink,
     HeroComponent,
@@ -45,7 +46,10 @@ import { AwardsComponent } from './sub-components/awards/awards.component';
     AwardsComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [GlobalData],
+  providers: [
+    GlobalData,
+    provideIcons({ lucideSun, lucideMoon, lucideZap }),
+  ],
 })
 export class PortfolioComponent implements OnInit, OnDestroy {
   private destroyed = new Subject<void>();

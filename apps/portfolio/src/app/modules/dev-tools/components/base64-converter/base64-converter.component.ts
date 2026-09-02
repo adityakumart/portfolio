@@ -7,7 +7,18 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatIconModule } from '@angular/material/icon';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import {
+  lucideLock,
+  lucideLockOpen,
+  lucideEraser,
+  lucideAlertTriangle,
+  lucideInfo,
+  lucideFile,
+  lucideCheckCircle,
+  lucideCopy,
+  lucideUploadCloud,
+} from '@ng-icons/lucide';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
 import { Subject, Subscription } from 'rxjs';
@@ -25,9 +36,22 @@ import { Base64Service, FileMetadata } from './services/base64.service';
     MatButtonModule,
     MatRadioModule,
     MatSnackBarModule,
-    MatIconModule,
+    NgIconComponent,
     MatTooltipModule,
     MatDividerModule,
+  ],
+  providers: [
+    provideIcons({
+      lucideLock,
+      lucideLockOpen,
+      lucideEraser,
+      lucideAlertTriangle,
+      lucideInfo,
+      lucideFile,
+      lucideCheckCircle,
+      lucideCopy,
+      lucideUploadCloud,
+    }),
   ],
   templateUrl: './base64-converter.component.html',
   styleUrls: ['./base64-converter.component.scss'],

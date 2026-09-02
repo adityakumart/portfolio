@@ -8,7 +8,19 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatIconModule } from '@angular/material/icon';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import {
+  lucideLock,
+  lucideLockOpen,
+  lucideArrowUpDown,
+  lucideEraser,
+  lucideAlertTriangle,
+  lucideCheckCircle,
+  lucideCopy,
+  lucideInfo,
+  lucideHash,
+  lucideShieldCheck,
+} from '@ng-icons/lucide';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatTabsModule } from '@angular/material/tabs';
@@ -29,11 +41,25 @@ import { EncoderHashService } from './services/encoder-hash.service';
     MatButtonModule,
     MatRadioModule,
     MatSnackBarModule,
-    MatIconModule,
+    NgIconComponent,
     MatTooltipModule,
     MatDividerModule,
     MatTabsModule,
     MatButtonToggleModule,
+  ],
+  providers: [
+    provideIcons({
+      lucideLock,
+      lucideLockOpen,
+      lucideArrowUpDown,
+      lucideEraser,
+      lucideAlertTriangle,
+      lucideCheckCircle,
+      lucideCopy,
+      lucideInfo,
+      lucideHash,
+      lucideShieldCheck,
+    }),
   ],
   templateUrl: './encoder-hash-tools.component.html',
   styleUrls: ['./encoder-hash-tools.component.scss'],

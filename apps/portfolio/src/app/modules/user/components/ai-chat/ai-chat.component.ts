@@ -3,7 +3,23 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import {
+  lucideZap,
+  lucideChevronLeft,
+  lucidePlus,
+  lucideMessageSquare,
+  lucideArrowLeft,
+  lucideMenu,
+  lucideCircleUser,
+  lucideCode,
+  lucidePenLine,
+  lucidePalette,
+  lucideBot,
+  lucideCopy,
+  lucideRefreshCw,
+  lucideSend,
+} from '@ng-icons/lucide';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { AiChatService } from '../../services/ai-chat.service';
@@ -16,8 +32,26 @@ import { AuthService } from '../../services/auth';
     CommonModule,
     RouterLink,
     MatButtonModule,
-    MatIconModule,
+    NgIconComponent,
     MatTooltipModule,
+  ],
+  providers: [
+    provideIcons({
+      lucideZap,
+      lucideChevronLeft,
+      lucidePlus,
+      lucideMessageSquare,
+      lucideArrowLeft,
+      lucideMenu,
+      lucideCircleUser,
+      lucideCode,
+      lucidePenLine,
+      lucidePalette,
+      lucideBot,
+      lucideCopy,
+      lucideRefreshCw,
+      lucideSend,
+    }),
   ],
   templateUrl: './ai-chat.component.html',
   styleUrl: './ai-chat.component.scss',

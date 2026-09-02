@@ -4,13 +4,15 @@ import { FormsModule } from '@angular/forms';
 import { RRApiService } from '../../../../services/rr-api.service';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatIconModule } from '@angular/material/icon';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import { lucideSearch, lucideEraser, lucideAlertCircle } from '@ng-icons/lucide';
 import { ILog } from '@portfolio/shared-types';
 
 @Component({
   selector: 'app-rr-activity-logs',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatFormFieldModule, MatInputModule, MatIconModule],
+  imports: [CommonModule, FormsModule, MatFormFieldModule, MatInputModule, NgIconComponent],
+  providers: [provideIcons({ lucideSearch, lucideEraser, lucideAlertCircle })],
   templateUrl: './activity-logs.component.html',
   styleUrl: './activity-logs.component.scss'
 })

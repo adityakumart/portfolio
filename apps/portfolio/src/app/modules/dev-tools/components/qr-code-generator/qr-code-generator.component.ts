@@ -5,7 +5,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import { lucideAlertTriangle, lucideHelpCircle, lucideDownload } from '@ng-icons/lucide';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -26,10 +27,13 @@ export type ErrorCorrectionLevel = 'L' | 'M' | 'Q' | 'H';
     MatInputModule,
     MatSelectModule,
     MatButtonModule,
-    MatIconModule,
+    NgIconComponent,
     MatTooltipModule,
     MatDividerModule,
     MatSnackBarModule,
+  ],
+  providers: [
+    provideIcons({ lucideAlertTriangle, lucideHelpCircle, lucideDownload }),
   ],
   templateUrl: './qr-code-generator.component.html',
   styleUrls: ['./qr-code-generator.component.scss'],

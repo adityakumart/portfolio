@@ -1,14 +1,14 @@
 <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 16px;">
   <div>
     <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--color-cyan-500); font-weight: 800; margin-bottom: 6px; display: inline-flex; align-items: center; gap: 6px;">
-      <mat-icon style="font-size: 14px; width: 14px; height: 14px;">commute</mat-icon>
+      <ng-icon style="font-size: 14px; width: 14px; height: 14px;" name="lucideCar"></ng-icon>
       <span>Vehicles &bull; Fleet List Registry</span>
     </div>
     <h2 style="margin: 0; font-size: 1.85rem; font-weight: 800; color: var(--foreground);">Fleet Registry</h2>
   </div>
   @if (isAdmin()) {
     <button mat-raised-button color="primary" class="action-btn success" style="padding: 10px 20px; border-radius: 12px;" (click)="openAddVehicleModal()">
-      <mat-icon>add</mat-icon> Register New Vehicle
+      <ng-icon name="lucidePlus"></ng-icon> Register New Vehicle
     </button>
   }
 </div>
@@ -31,15 +31,15 @@
         
         <div class="veh-specs">
           <span class="spec-badge" matTooltip="Capacity">
-            <mat-icon>airline_seat_recline_normal</mat-icon>
+            <ng-icon name="lucideUsers"></ng-icon>
             <span>{{ v.seating }} Seats</span>
           </span>
           <span class="spec-badge" matTooltip="Fuel Type">
-            <mat-icon>local_gas_station</mat-icon>
+            <ng-icon name="lucideFuel"></ng-icon>
             <span>{{ v.fuelType | uppercase }}</span>
           </span>
           <span class="spec-badge" matTooltip="Odometer">
-            <mat-icon>speed</mat-icon>
+            <ng-icon name="lucideGauge"></ng-icon>
             <span>{{ v.odometer }} KM</span>
           </span>
         </div>
@@ -49,10 +49,10 @@
       @if (isAdmin()) {
         <div class="card-actions-overlay">
           <button mat-mini-fab color="primary" class="mini-action-btn" (click)="$event.stopPropagation(); selectedVehicleDetails.set(v); openEditVehicleModal()" matTooltip="Edit Vehicle">
-            <mat-icon>edit</mat-icon>
+            <ng-icon name="lucidePencil"></ng-icon>
           </button>
           <button mat-mini-fab color="warn" class="mini-action-btn danger" (click)="$event.stopPropagation(); deleteVehicle(v.regNo)" matTooltip="Delete Vehicle">
-            <mat-icon>delete</mat-icon>
+            <ng-icon name="lucideTrash2"></ng-icon>
           </button>
         </div>
       }
@@ -60,13 +60,13 @@
   } @empty {
     <div class="empty-fleet-card">
       <div class="empty-icon-wrapper">
-        <mat-icon>directions_car_filled</mat-icon>
+        <ng-icon name="lucideCar"></ng-icon>
       </div>
       <h3>No Vehicles Registered</h3>
       <p>There are currently no vehicles in your fleet registry database.</p>
       @if (isAdmin()) {
         <button mat-raised-button color="primary" class="action-btn success" (click)="openAddVehicleModal()">
-          <mat-icon>add</mat-icon> Register First Vehicle
+          <ng-icon name="lucidePlus"></ng-icon> Register First Vehicle
         </button>
       }
     </div>
@@ -77,7 +77,7 @@
 <ng-template #vehicleDetailsDialog>
   <div class="modal-header-wrapper">
     <h3 mat-dialog-title class="modern-dialog-title">
-      <mat-icon>commute</mat-icon>
+      <ng-icon name="lucideCar"></ng-icon>
       <span>Fleet Vehicle Specification Details</span>
     </h3>
   </div>
@@ -104,14 +104,14 @@
 
           <div class="quick-highlights">
             <div class="highlight-item">
-              <mat-icon>airline_seat_recline_normal</mat-icon>
+              <ng-icon name="lucideUsers"></ng-icon>
               <div class="h-text">
                 <span class="h-val">{{ selectedVehicleDetails()?.seating }} Seats</span>
                 <span class="h-lbl">Capacity</span>
               </div>
             </div>
             <div class="highlight-item">
-              <mat-icon>local_gas_station</mat-icon>
+              <ng-icon name="lucideFuel"></ng-icon>
               <div class="h-text">
                 <span class="h-val">{{ selectedVehicleDetails()?.fuelType | uppercase }}</span>
                 <span class="h-lbl">Fuel Option</span>
@@ -124,7 +124,7 @@
       <!-- Specifications Right Panel -->
       <div class="details-specs-panel">
         <div class="detail-section-title">
-          <mat-icon>info</mat-icon>
+          <ng-icon name="lucideInfo"></ng-icon>
           <span>General Specifications</span>
         </div>
         
@@ -152,7 +152,7 @@
         </div>
 
         <div class="detail-section-title" style="margin-top: 20px;">
-          <mat-icon>fingerprint</mat-icon>
+          <ng-icon name="lucideFingerprint"></ng-icon>
           <span>Registry Identifiers</span>
         </div>
         
@@ -172,20 +172,20 @@
         </div>
 
         <div class="detail-section-title" style="margin-top: 20px;">
-          <mat-icon>verified_user</mat-icon>
+          <ng-icon name="lucideShieldCheck"></ng-icon>
           <span>Compliance Expiries</span>
         </div>
         
         <div class="expiries-flex">
           <div class="expiry-pill">
-            <mat-icon>shield</mat-icon>
+            <ng-icon name="lucideShield"></ng-icon>
             <div class="expiry-content">
               <span class="exp-lbl">Insurance Expiry</span>
               <span class="exp-val">{{ (selectedVehicleDetails()?.insuranceExpiry | date:'dd-MM-yyyy':'UTC') || 'N/A' }}</span>
             </div>
           </div>
           <div class="expiry-pill">
-            <mat-icon>eco</mat-icon>
+            <ng-icon name="lucideLeaf"></ng-icon>
             <div class="expiry-content">
               <span class="exp-lbl">Pollution Expiry</span>
               <span class="exp-val">{{ (selectedVehicleDetails()?.pollutionExpiry | date:'dd-MM-yyyy':'UTC') || 'N/A' }}</span>
@@ -198,7 +198,7 @@
     <!-- PRICING SLABS SECTION -->
     <div class="details-pricing-panel" style="margin-top: 24px;">
       <div class="detail-section-title">
-        <mat-icon>payments</mat-icon>
+        <ng-icon name="lucideCreditCard"></ng-icon>
         <span>Pricing Slabs & Rental Overruns</span>
       </div>
       
@@ -227,14 +227,14 @@
 
       <div class="overrun-rates-wrapper">
         <div class="overrun-item">
-          <mat-icon>add_road</mat-icon>
+          <ng-icon name="lucideMilestone"></ng-icon>
           <div class="overrun-desc">
             <span class="o-val">₹{{ selectedVehicleDetails()?.extraKmPrice || '0' }} / KM</span>
             <span class="o-lbl">Extra KM Overrun Price</span>
           </div>
         </div>
         <div class="overrun-item">
-          <mat-icon>schedule</mat-icon>
+          <ng-icon name="lucideClock"></ng-icon>
           <div class="overrun-desc">
             <span class="o-val">₹{{ selectedVehicleDetails()?.extraHourPrice || '0' }} / HR</span>
             <span class="o-lbl">Extra Hour Overrun Price</span>
@@ -247,10 +247,10 @@
   <mat-dialog-actions align="end" class="modern-dialog-actions">
     @if (isAdmin()) {
       <button mat-raised-button color="primary" class="action-btn" style="margin-right: 12px;" (click)="openEditVehicleModal()">
-        <mat-icon>edit</mat-icon> Modify
+        <ng-icon name="lucidePencil"></ng-icon> Modify
       </button>
       <button mat-raised-button color="warn" class="action-btn danger" style="margin-right: 12px;" (click)="deleteVehicle(selectedVehicleDetails()?.regNo!)">
-        <mat-icon>delete</mat-icon> Delete
+        <ng-icon name="lucideTrash2"></ng-icon> Delete
       </button>
     }
     <button mat-button class="close-btn" (click)="closeVehicleDetailsPopup()">Close</button>
@@ -261,7 +261,7 @@
 <ng-template #vehicleFormDialog>
   <div class="modal-header-wrapper">
     <h3 mat-dialog-title class="modern-dialog-title">
-      <mat-icon>commute</mat-icon>
+      <ng-icon name="lucideCar"></ng-icon>
       <span>{{ editingVehicleMode() ? 'Modify Fleet Vehicle Metadata' : 'Register New Fleet Vehicle' }}</span>
     </h3>
   </div>
@@ -271,7 +271,7 @@
       <div style="padding-right: 4px;">
         <div class="booking-card">
           <h3>
-            <mat-icon>info</mat-icon>
+            <ng-icon name="lucideInfo"></ng-icon>
             <span>Vehicle Metadata & Specifications</span>
           </h3>
           <div class="booking-content" style="margin-top: 15px;">
@@ -394,7 +394,7 @@
 
         <div class="booking-card" style="margin-top: 24px;" formGroupName="pricing">
           <h3>
-            <mat-icon>payments</mat-icon>
+            <ng-icon name="lucideCreditCard"></ng-icon>
             <span>Pricing Slabs & Rental Limits</span>
           </h3>
           <div class="booking-content" style="margin-top: 15px;">
@@ -446,7 +446,7 @@
 
         <div class="booking-card" style="margin-top: 24px;">
           <h3>
-            <mat-icon>more_horiz</mat-icon>
+            <ng-icon name="lucideMoreHorizontal"></ng-icon>
             <span>Additional Overruns & Assets</span>
           </h3>
           <div class="booking-content" style="margin-top: 15px;">
@@ -469,7 +469,7 @@
                      (click)="fileInput.click()" 
                      (dragover)="$event.preventDefault(); $event.stopPropagation();" 
                      (drop)="$event.preventDefault(); $event.stopPropagation(); onFileSelected($event)">
-                  <mat-icon class="upload-icon">cloud_upload</mat-icon>
+                  <ng-icon class="upload-icon" name="lucideUploadCloud"></ng-icon>
                   <span class="upload-text">Drag & Drop or Click to Upload Image</span>
                   <span class="upload-hint">PNG, JPG, JPEG, WEBP up to 5MB</span>
                 </div>
@@ -483,7 +483,7 @@
                       <span class="file-size" style="color: var(--color-cyan-500); font-weight: 700;">Uploading file to R2...</span>
                     } @else {
                       <span class="file-size" style="color: #10b981; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
-                        <mat-icon style="font-size: 14px; width: 14px; height: 14px;">check_circle</mat-icon> Uploaded Successfully
+                        <ng-icon style="font-size: 14px; width: 14px; height: 14px;" name="lucideCheckCircle"></ng-icon> Uploaded Successfully
                       </span>
                     }
                   </div>
@@ -517,7 +517,7 @@
               <!-- Error Display -->
               @if (uploadError()) {
                 <div class="upload-error-message">
-                  <mat-icon>error_outline</mat-icon>
+                  <ng-icon name="lucideAlertCircle"></ng-icon>
                   <span>{{ uploadError() }}</span>
                 </div>
               }
@@ -533,7 +533,7 @@
   
   <mat-dialog-actions align="end" class="modern-dialog-actions">
     <button mat-raised-button color="primary" class="action-btn success" style="margin-right: 12px;" [disabled]="vehicleFormGroup.invalid" (click)="saveVehicle($event)">
-      <mat-icon>check</mat-icon>
+      <ng-icon name="lucideCheck"></ng-icon>
       <span>{{ editingVehicleMode() ? 'Update Vehicle' : 'Register Vehicle' }}</span>
     </button>
     <button mat-button color="warn" class="close-btn" (click)="closeVehicleFormModal()">Cancel</button>

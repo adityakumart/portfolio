@@ -9,7 +9,8 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import { MatIconModule } from '@angular/material/icon';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import { lucideHistory, lucideHome, lucideLogOut } from '@ng-icons/lucide';
 import { AuthService } from '../../../modules/user/services/auth';
 import { InitialsPipe } from '../../pipes/initials.pipe';
 
@@ -19,8 +20,11 @@ import { InitialsPipe } from '../../pipes/initials.pipe';
   imports: [
     CommonModule,
     RouterLink,
-    MatIconModule,
+    NgIconComponent,
     InitialsPipe,
+  ],
+  providers: [
+    provideIcons({ lucideHistory, lucideHome, lucideLogOut }),
   ],
   templateUrl: './profile-menu.component.html',
   styleUrl: './profile-menu.component.scss',

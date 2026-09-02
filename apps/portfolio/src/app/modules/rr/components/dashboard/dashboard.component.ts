@@ -2,7 +2,18 @@ import { Component, OnInit, inject, signal, computed, ViewChild, TemplateRef } f
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { RRApiService } from '../../services/rr-api.service';
-import { MatIconModule } from '@angular/material/icon';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import {
+  lucideCar,
+  lucideChevronDown,
+  lucideUser,
+  lucideHistory,
+  lucideLogOut,
+  lucideShieldAlert,
+  lucideLayoutDashboard,
+  lucideCalendarDays,
+  lucideBadgeCheck,
+} from '@ng-icons/lucide';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 
@@ -14,9 +25,22 @@ import { MatButtonModule } from '@angular/material/button';
     RouterOutlet,
     RouterLink,
     RouterLinkActive,
-    MatIconModule,
+    NgIconComponent,
     MatDialogModule,
     MatButtonModule
+  ],
+  providers: [
+    provideIcons({
+      lucideCar,
+      lucideChevronDown,
+      lucideUser,
+      lucideHistory,
+      lucideLogOut,
+      lucideShieldAlert,
+      lucideLayoutDashboard,
+      lucideCalendarDays,
+      lucideBadgeCheck,
+    }),
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
