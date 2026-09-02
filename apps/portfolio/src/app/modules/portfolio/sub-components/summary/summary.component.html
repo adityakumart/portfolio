@@ -1,43 +1,41 @@
-<section class="summary-grid" aria-label="About Me and Quick Facts">
-  <mat-card class="matCard modern-card summary-card mb-4 reveal-on-scroll">
-    <mat-card-header>
-      <h2 mat-card-title class="gradient-title">About Me</h2>
-    </mat-card-header>
-    <mat-card-content class="mt-3">
-      <div class="summary-text">
-        @for (para of resume().basics.summary; track $index) {
-          <p class="mb-3">{{ para }}</p>
-        }
-      </div>
-    </mat-card-content>
-  </mat-card>
+<section class="mt-7.5 grid grid-cols-1 gap-6" aria-label="About Me and Quick Facts">
+  <div hlmCard class="mb-4 overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-xl reveal-on-scroll">
+    <div hlmCardHeader class="p-0">
+      <h2 hlmCardTitle class="bg-gradient-to-r from-primary to-sky-500 bg-clip-text text-xl font-bold text-transparent">About Me</h2>
+    </div>
+    <div hlmCardContent class="mt-3 p-0 leading-relaxed text-muted-foreground">
+      @for (para of resume().basics.summary; track $index) {
+        <p class="mb-3 text-sm leading-relaxed">{{ para }}</p>
+      }
+    </div>
+  </div>
 
-  <mat-card class="matCard modern-card info-card mb-4 reveal-on-scroll">
-    <mat-card-header>
-      <h2 mat-card-title class="gradient-title">Quick Facts</h2>
-    </mat-card-header>
-    <mat-card-content class="mt-3 info-grid">
-      <div class="info-item">
-        <span>Experience</span>
-        <p>
+  <div hlmCard class="mb-4 overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-xl reveal-on-scroll">
+    <div hlmCardHeader class="p-0">
+      <h2 hlmCardTitle class="bg-gradient-to-r from-primary to-sky-500 bg-clip-text text-xl font-bold text-transparent">Quick Facts</h2>
+    </div>
+    <div hlmCardContent class="mt-3 grid gap-4.5 p-0">
+      <div>
+        <span class="block text-[0.78rem] font-semibold tracking-wider uppercase text-muted-foreground">Experience</span>
+        <p class="mt-1 text-sm leading-relaxed text-foreground">
           8+ years delivering frontend products, UI systems, and responsive
           application experiences.
         </p>
       </div>
-      <div class="info-item">
-        <span>Location</span>
-        <p>
+      <div>
+        <span class="block text-[0.78rem] font-semibold tracking-wider uppercase text-muted-foreground">Location</span>
+        <p class="mt-1 text-sm leading-relaxed text-foreground">
           {{ resume().basics.location.city }},
           {{ resume().basics.location.region }}
         </p>
       </div>
-      <div class="info-item">
-        <span>Specialty</span>
-        <p>
+      <div>
+        <span class="block text-[0.78rem] font-semibold tracking-wider uppercase text-muted-foreground">Specialty</span>
+        <p class="mt-1 text-sm leading-relaxed text-foreground">
           Modern web applications, motion UI, and scalable component-driven
           design.
         </p>
       </div>
-    </mat-card-content>
-  </mat-card>
+    </div>
+  </div>
 </section>

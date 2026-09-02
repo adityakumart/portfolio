@@ -1,12 +1,25 @@
 import { Component, input, ChangeDetectionStrategy } from '@angular/core';
-import { MatCardModule } from '@angular/material/card';
+import {
+  HlmCard,
+  HlmCardHeader,
+  HlmCardTitle,
+  HlmCardContent,
+} from '@spartan-ng/hel/card';
+import { HlmBadge } from '@spartan-ng/hel/badge';
 import { ResumeObject } from '@portfolio/shared-types';
 import { ProjectsComponent } from '../projects/projects.component';
 
 @Component({
   selector: 'app-experience',
   standalone: true,
-  imports: [MatCardModule, ProjectsComponent],
+  imports: [
+    HlmCard,
+    HlmCardHeader,
+    HlmCardTitle,
+    HlmCardContent,
+    HlmBadge,
+    ProjectsComponent,
+  ],
   templateUrl: './experience.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './experience.component.scss',

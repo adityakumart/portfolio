@@ -1,11 +1,17 @@
 import { Component, input, ChangeDetectionStrategy } from '@angular/core';
-import { MatCardModule } from '@angular/material/card';
+import {
+  HlmCard,
+  HlmCardHeader,
+  HlmCardTitle,
+  HlmCardContent,
+} from '@spartan-ng/hel/card';
+import { HlmBadge } from '@spartan-ng/hel/badge';
 import { Education } from '@portfolio/shared-types';
 
 @Component({
   selector: 'app-education',
   standalone: true,
-  imports: [MatCardModule],
+  imports: [HlmCard, HlmCardHeader, HlmCardTitle, HlmCardContent, HlmBadge],
   templateUrl: './education.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './education.component.scss',

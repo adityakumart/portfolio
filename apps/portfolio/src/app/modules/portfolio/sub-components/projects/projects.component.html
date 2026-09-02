@@ -1,24 +1,22 @@
-<div class="projects-container mt-3">
-  <h4 class="mb-3 project-section-title">Key Projects</h4>
+<div class="mt-3">
+  <h4 class="mb-3 text-sm font-semibold tracking-wider uppercase text-foreground">Key Projects</h4>
   @for (project of projects(); track $index) {
-    <div class="project-item mb-3 p-4 rounded-modern reveal-on-scroll">
-      <div
-        class="d-flex justify-content-between flex-wrap align-items-center mb-2"
-      >
-        <h5 class="m-0 font-weight-bold project-title">{{ project.name }}</h5>
-        <span class="project-dates text-muted fs-12"
+    <div class="mb-3 overflow-hidden rounded-2xl border border-border bg-secondary p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl reveal-on-scroll">
+      <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+        <h5 class="m-0 text-base font-bold text-foreground">{{ project.name }}</h5>
+        <span class="text-xs text-muted-foreground"
           >{{ project.startDate }} - {{ project.endDate }}</span
         >
       </div>
-      <p class="project-description mt-2 mb-3 fs-14">
+      <p class="mt-2 mb-3 text-sm leading-relaxed text-muted-foreground">
         {{ project.description }}
       </p>
 
-      <mat-chip-set aria-label="Project Skills">
+      <div class="flex flex-wrap gap-2" role="list" aria-label="Project Skills">
         @for (skill of project.skills; track $index) {
-          <mat-chip class="custom-chip">{{ skill }}</mat-chip>
+          <span hlmBadge variant="outline" class="border-border/60 bg-background/50 px-2.5 py-1 text-xs text-foreground">{{ skill }}</span>
         }
-      </mat-chip-set>
+      </div>
     </div>
   }
 </div>

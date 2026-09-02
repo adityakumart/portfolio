@@ -1,41 +1,42 @@
-<section class="skills-section reveal-on-scroll" aria-label="Technical Skills">
-  <div class="section-heading">
-    <div>
-      <h2 class="section-title">Technical Skills</h2>
-      <p class="section-note">
-        A curated skillset aligned with modern frontend product delivery,
-        interface design, and engineering best practices.
-      </p>
-    </div>
+<section class="py-4 reveal-on-scroll" aria-label="Technical Skills">
+  <div class="mb-4">
+    <h2 class="text-2xl font-bold tracking-tight text-foreground">Technical Skills</h2>
+    <p class="mt-1 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+      A curated skillset aligned with modern frontend product delivery,
+      interface design, and engineering best practices.
+    </p>
   </div>
 
   <div
-    class="skills-grid-container"
+    class="grid gap-4.5"
     [style.grid-template-columns]="'repeat(' + gridColumns() + ', 1fr)'"
   >
     @for (skill of resume().skills; track skill.name) {
-      <div class="skill-grid-item reveal-on-scroll">
-        <mat-card class="skillCard modern-card skill-card-with-accent">
-          <mat-card-header>
-            <h3 mat-card-title class="fs-16 font-weight-bold">{{
+      <div class="reveal-on-scroll">
+        <div hlmCard class="skill-card-with-accent relative min-h-[210px] overflow-hidden rounded-2xl border border-border bg-card p-4 pl-6 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-sky-500 hover:bg-secondary">
+          <div hlmCardHeader class="p-0">
+            <h3 hlmCardTitle class="text-base font-bold text-foreground">{{
               skill.name
             }}</h3>
-          </mat-card-header>
-          <mat-card-content class="mt-3">
-            <div class="skill-chips-container">
+          </div>
+          <div hlmCardContent class="mt-3 p-0">
+            <div class="flex flex-wrap items-center gap-2.5">
               @for (keyword of skill.keywords; track keyword) {
-                <mat-chip
-                  class="skill-chip"
-                  [matTooltip]="keyword.name"
+                <button
+                  type="button"
+                  hlmBadge
+                  variant="secondary"
+                  class="h-9 cursor-pointer rounded-full border border-border px-3.5 text-sm font-medium text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:border-sky-500 hover:bg-sky-500/15 hover:text-foreground active:translate-y-0"
+                  [hlmTooltip]="keyword.name"
                   [attr.aria-label]="keyword.name + ' skill'"
                   (click)="openInNewTab(keyword.url)"
                 >
                   {{ keyword.name }}
-                </mat-chip>
+                </button>
               }
             </div>
-          </mat-card-content>
-        </mat-card>
+          </div>
+        </div>
       </div>
     }
   </div>

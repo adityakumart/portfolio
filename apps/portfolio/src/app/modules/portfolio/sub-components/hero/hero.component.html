@@ -1,44 +1,44 @@
-<section class="hero-panel reveal-on-scroll" aria-label="Hero Introduction">
-  <div class="hero-copy">
-    <span class="eyebrow">Frontend Developer Portfolio</span>
-    <h1 class="hero-title">
-      Hi, I'm <span class="text-gradient">{{ resume().basics.name }}</span>
+<section class="hero-panel relative grid grid-cols-1 gap-7 overflow-hidden rounded-[32px] border border-border bg-card p-6 shadow-2xl md:p-9 lg:grid-cols-[1.7fr_1.3fr] reveal-on-scroll" aria-label="Hero Introduction">
+  <div class="flex flex-col justify-center gap-5">
+    <span class="text-xs font-semibold tracking-[0.35em] uppercase text-muted-foreground">Frontend Developer Portfolio</span>
+    <h1 class="m-0 text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+      Hi, I'm <span class="bg-gradient-to-r from-primary to-sky-500 bg-clip-text text-transparent">{{ resume().basics.name }}</span>
     </h1>
-    <p class="hero-subtitle">
+    <p class="m-0 max-w-[760px] text-base leading-relaxed text-muted-foreground sm:text-lg">
       Building polished, performant interfaces for modern product teams using
       Angular, React, and TypeScript.
     </p>
-    <div class="hero-badges">
-      <span class="hero-badge">Product Group Lead Frontend</span>
-      <span class="hero-badge">Design systems</span>
-      <span class="hero-badge">AI-accelerated delivery</span>
+    <div class="flex flex-wrap gap-3">
+      <span hlmBadge variant="outline" class="border-sky-500 bg-secondary px-4 py-2 text-sm font-medium text-primary transition-transform duration-200 hover:-translate-y-0.5">Product Group Lead Frontend</span>
+      <span hlmBadge variant="outline" class="border-sky-500 bg-secondary px-4 py-2 text-sm font-medium text-primary transition-transform duration-200 hover:-translate-y-0.5">Design systems</span>
+      <span hlmBadge variant="outline" class="border-sky-500 bg-secondary px-4 py-2 text-sm font-medium text-primary transition-transform duration-200 hover:-translate-y-0.5">AI-accelerated delivery</span>
     </div>
-    <div class="hero-links">
+    <div class="mt-2 flex flex-wrap gap-4.5">
       @for (social of resume().basics.socialUrl; track social.name) {
         <a
           [href]="social.url"
           target="_blank"
           rel="noopener noreferrer"
           [attr.aria-label]="social.name + ' Profile'"
-          class="social-link"
+          class="relative text-sm font-semibold text-muted-foreground transition-colors duration-200 hover:text-foreground after:absolute after:bottom-[-3px] after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all after:duration-200 hover:after:w-full"
         >{{ social.name }}</a>
       }
     </div>
   </div>
 
-  <div class="hero-visual">
-    <div class="hero-glow-card">
-      <span class="glow-chip">Featured skillset</span>
-      <h2>Design system driven UI paired with modern frontend architecture.</h2>
-      <p>
+  <div class="flex flex-col justify-center gap-4.5 lg:items-end">
+    <div class="hero-glow-card relative flex min-h-[220px] flex-col justify-center rounded-[28px] border border-border bg-gradient-to-b from-primary/10 to-card p-7 shadow-xl">
+      <span class="mb-4 inline-flex w-fit rounded-full bg-primary/15 px-3.5 py-1.5 text-xs font-semibold tracking-wider uppercase text-primary">Featured skillset</span>
+      <h2 class="mb-3.5 text-xl font-bold leading-snug text-foreground sm:text-2xl">Design system driven UI paired with modern frontend architecture.</h2>
+      <p class="m-0 text-sm leading-relaxed text-muted-foreground">
         Delivering enterprise-grade digital experiences with a strong focus on
         usability, performance, and polished visual storytelling.
       </p>
     </div>
-    <div class="bubble-grid">
-      <span class="bubble">Performance</span>
-      <span class="bubble">Accessibility</span>
-      <span class="bubble">Component architecture</span>
+    <div class="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-[repeat(3,minmax(0,max-content))] lg:justify-end">
+      <span hlmBadge variant="secondary" class="rounded-full border border-border bg-card px-4 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary/10">Performance</span>
+      <span hlmBadge variant="secondary" class="rounded-full border border-border bg-card px-4 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary/10">Accessibility</span>
+      <span hlmBadge variant="secondary" class="rounded-full border border-border bg-card px-4 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary/10">Component architecture</span>
     </div>
   </div>
 </section>
