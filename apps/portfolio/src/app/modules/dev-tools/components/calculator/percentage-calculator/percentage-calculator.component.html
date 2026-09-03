@@ -1,42 +1,40 @@
-<div class="percentage-container">
-  <mat-card class="header-card mb-4">
-    <mat-card-header class="py-3">
-      <mat-card-title>Percentage Difference Calculator</mat-card-title>
-      <mat-card-subtitle>Calculate percentage increase or difference between two values</mat-card-subtitle>
-    </mat-card-header>
-  </mat-card>
+<div class="percentage-container max-w-xl">
+  <div hlmCard class="header-card mb-4 p-5 rounded-2xl border shadow-sm">
+    <h2 class="text-xl font-bold tracking-tight">Percentage Difference Calculator</h2>
+    <p class="text-sm text-muted-foreground mt-1">Calculate percentage increase or difference between two values</p>
+  </div>
 
-  <mat-card class="content-card">
-    <mat-card-content class="pt-4">
-      <div data-layout="row" data-layout-gap="8px">
-        <mat-form-field appearance="outline">
-          <mat-label>Initial Value</mat-label>
-          <input
-            matInput
-            type="number"
-            [ngModel]="initialValue()"
-            (ngModelChange)="initialValue.set($event)"
-            name="initialValue"
-          />
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>Final Value</mat-label>
-          <input
-            matInput
-            type="number"
-            [ngModel]="finalValue()"
-            (ngModelChange)="finalValue.set($event)"
-            name="finalValue"
-          />
-        </mat-form-field>
+  <div hlmCard class="content-card p-5 rounded-2xl border shadow-sm">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Initial Value</label>
+        <input
+          hlmInput
+          type="number"
+          [ngModel]="initialValue()"
+          (ngModelChange)="initialValue.set($event)"
+          name="initialValue"
+          class="w-full text-sm"
+        />
       </div>
 
-      @if (percentageIncrease()) {
-        <div class="result-box mt-3 p-3">
-          <strong>Percentage Difference:</strong> {{ percentageIncrease() }} %
-        </div>
-      }
-    </mat-card-content>
-  </mat-card>
+      <div>
+        <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Final Value</label>
+        <input
+          hlmInput
+          type="number"
+          [ngModel]="finalValue()"
+          (ngModelChange)="finalValue.set($event)"
+          name="finalValue"
+          class="w-full text-sm"
+        />
+      </div>
+    </div>
+
+    @if (percentageIncrease()) {
+      <div class="result-box mt-4 p-4 rounded-xl bg-primary/10 border border-primary/20 text-primary font-semibold text-sm">
+        <strong>Percentage Difference:</strong> {{ percentageIncrease() }} %
+      </div>
+    }
+  </div>
 </div>

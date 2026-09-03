@@ -2,9 +2,10 @@ import { Component, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
+import { HlmInput } from '@spartan-ng/hel/input';
+import { HlmLabel } from '@spartan-ng/hel/label';
+import { HlmButton } from '@spartan-ng/hel/button';
+import { HlmSpinner } from '@spartan-ng/hel/spinner';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideLock,
@@ -20,7 +21,6 @@ import {
   lucideHome,
   lucideLogOut,
 } from '@ng-icons/lucide';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../services/auth';
 
 @Component({
@@ -30,11 +30,11 @@ import { AuthService } from '../../services/auth';
     CommonModule,
     FormsModule,
     RouterLink,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
+    HlmInput,
+    HlmLabel,
+    HlmButton,
+    HlmSpinner,
     NgIconComponent,
-    MatProgressSpinnerModule,
   ],
   providers: [
     provideIcons({

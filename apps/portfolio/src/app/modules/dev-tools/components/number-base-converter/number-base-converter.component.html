@@ -1,160 +1,180 @@
 <div class="base-converter-container">
   <!-- Header Card -->
-  <mat-card class="header-card mb-4">
-    <mat-card-header class="py-3">
-      <mat-card-title>Number Base Converter</mat-card-title>
-      <mat-card-subtitle>Convert values between Decimal, Binary, Octal, and Hexadecimal in real-time, complete with step-by-step mathematical breakdown formulas.</mat-card-subtitle>
-    </mat-card-header>
-  </mat-card>
+  <div hlmCard class="header-card mb-4 p-5 rounded-2xl border shadow-sm">
+    <h2 class="text-xl font-bold tracking-tight">Number Base Converter</h2>
+    <p class="text-sm text-muted-foreground mt-1">Convert values between Decimal, Binary, Octal, and Hexadecimal in real-time, complete with step-by-step mathematical breakdown formulas.</p>
+  </div>
 
   <!-- Main Workspace Grid -->
-  <div class="workspace-layout">
+  <div class="workspace-layout grid grid-cols-1 lg:grid-cols-2 gap-4">
     <!-- Left Column: Inputs -->
     <div class="panel-column">
-      <mat-card class="editor-card" [formGroup]="form">
-        <mat-card-header class="panel-header">
-          <mat-card-title>Number Systems</mat-card-title>
+      <div hlmCard class="editor-card p-5 rounded-2xl border shadow-sm" [formGroup]="form">
+        <div class="panel-header flex items-center justify-between mb-4">
+          <h3 class="text-base font-semibold">Number Systems</h3>
           <div class="header-actions">
             <button
-              mat-stroked-button
-              color="warn"
+              hlmBtn
+              variant="outline"
               type="button"
               [disabled]="!form.get('decimal')?.value && !form.get('binary')?.value && !form.get('octal')?.value && !form.get('hexadecimal')?.value"
               (click)="onClear()"
+              class="flex items-center gap-1.5 text-destructive border-destructive/30 hover:bg-destructive/10"
             >
               <ng-icon name="lucideEraser"></ng-icon>
               Clear All
             </button>
           </div>
-        </mat-card-header>
-        <mat-divider></mat-divider>
+        </div>
+        <div hlmSeparator class="mb-4"></div>
         
-        <mat-card-content class="panel-body">
+        <div class="panel-body space-y-4">
           <!-- Decimal (Base 10) Input -->
-          <mat-form-field appearance="outline" class="w-100 mb-3">
-            <mat-label>Decimal (Base 10)</mat-label>
-            <input
-              matInput
-              type="text"
-              formControlName="decimal"
-              placeholder="e.g. 255"
-              inputmode="numeric"
-              (keydown)="onKeyDown($event, 10)"
-            />
-            <button
-              mat-icon-button
-              matSuffix
-              (click)="copyField('decimal')"
-              [disabled]="!form.get('decimal')?.value"
-              matTooltip="Copy Decimal value"
-              type="button"
-            >
-              <ng-icon name="lucideCopy"></ng-icon>
-            </button>
+          <div class="w-full">
+            <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Decimal (Base 10)</label>
+            <div class="relative flex items-center">
+              <input
+                hlmInput
+                type="text"
+                formControlName="decimal"
+                placeholder="e.g. 255"
+                inputmode="numeric"
+                (keydown)="onKeyDown($event, 10)"
+                class="w-full pr-10 font-mono text-sm"
+              />
+              <button
+                hlmBtn
+                size="icon"
+                variant="ghost"
+                (click)="copyField('decimal')"
+                [disabled]="!form.get('decimal')?.value"
+                hlmTooltip="Copy Decimal value"
+                type="button"
+                class="absolute right-1 h-8 w-8 text-muted-foreground"
+              >
+                <ng-icon name="lucideCopy"></ng-icon>
+              </button>
+            </div>
             @if (form.get('decimal')?.hasError('pattern')) {
-              <mat-error>Please enter valid digits (0-9) only.</mat-error>
+              <span class="text-xs text-destructive mt-1 block">Please enter valid digits (0-9) only.</span>
             }
-          </mat-form-field>
+          </div>
 
           <!-- Binary (Base 2) Input -->
-          <mat-form-field appearance="outline" class="w-100 mb-3">
-            <mat-label>Binary (Base 2)</mat-label>
-            <input
-              matInput
-              type="text"
-              formControlName="binary"
-              placeholder="e.g. 11111111"
-              inputmode="numeric"
-              (keydown)="onKeyDown($event, 2)"
-            />
-            <button
-              mat-icon-button
-              matSuffix
-              (click)="copyField('binary')"
-              [disabled]="!form.get('binary')?.value"
-              matTooltip="Copy Binary value"
-              type="button"
-            >
-              <ng-icon name="lucideCopy"></ng-icon>
-            </button>
+          <div class="w-full">
+            <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Binary (Base 2)</label>
+            <div class="relative flex items-center">
+              <input
+                hlmInput
+                type="text"
+                formControlName="binary"
+                placeholder="e.g. 11111111"
+                (keydown)="onKeyDown($event, 2)"
+                class="w-full pr-10 font-mono text-sm"
+              />
+              <button
+                hlmBtn
+                size="icon"
+                variant="ghost"
+                (click)="copyField('binary')"
+                [disabled]="!form.get('binary')?.value"
+                hlmTooltip="Copy Binary value"
+                type="button"
+                class="absolute right-1 h-8 w-8 text-muted-foreground"
+              >
+                <ng-icon name="lucideCopy"></ng-icon>
+              </button>
+            </div>
             @if (form.get('binary')?.hasError('pattern')) {
-              <mat-error>Please enter binary digits (0 and 1) only.</mat-error>
+              <span class="text-xs text-destructive mt-1 block">Please enter valid binary bits (0 or 1) only.</span>
             }
-          </mat-form-field>
+          </div>
 
           <!-- Octal (Base 8) Input -->
-          <mat-form-field appearance="outline" class="w-100 mb-3">
-            <mat-label>Octal (Base 8)</mat-label>
-            <input
-              matInput
-              type="text"
-              formControlName="octal"
-              placeholder="e.g. 377"
-              inputmode="numeric"
-              (keydown)="onKeyDown($event, 8)"
-            />
-            <button
-              mat-icon-button
-              matSuffix
-              (click)="copyField('octal')"
-              [disabled]="!form.get('octal')?.value"
-              matTooltip="Copy Octal value"
-              type="button"
-            >
-              <ng-icon name="lucideCopy"></ng-icon>
-            </button>
+          <div class="w-full">
+            <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Octal (Base 8)</label>
+            <div class="relative flex items-center">
+              <input
+                hlmInput
+                type="text"
+                formControlName="octal"
+                placeholder="e.g. 377"
+                (keydown)="onKeyDown($event, 8)"
+                class="w-full pr-10 font-mono text-sm"
+              />
+              <button
+                hlmBtn
+                size="icon"
+                variant="ghost"
+                (click)="copyField('octal')"
+                [disabled]="!form.get('octal')?.value"
+                hlmTooltip="Copy Octal value"
+                type="button"
+                class="absolute right-1 h-8 w-8 text-muted-foreground"
+              >
+                <ng-icon name="lucideCopy"></ng-icon>
+              </button>
+            </div>
             @if (form.get('octal')?.hasError('pattern')) {
-              <mat-error>Please enter octal digits (0-7) only.</mat-error>
+              <span class="text-xs text-destructive mt-1 block">Please enter valid octal digits (0-7) only.</span>
             }
-          </mat-form-field>
+          </div>
 
           <!-- Hexadecimal (Base 16) Input -->
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Hexadecimal (Base 16)</mat-label>
-            <input
-              matInput
-              type="text"
-              formControlName="hexadecimal"
-              placeholder="e.g. FF"
-              (keydown)="onKeyDown($event, 16)"
-            />
-            <button
-              mat-icon-button
-              matSuffix
-              (click)="copyField('hexadecimal')"
-              [disabled]="!form.get('hexadecimal')?.value"
-              matTooltip="Copy Hexadecimal value"
-              type="button"
-            >
-              <ng-icon name="lucideCopy"></ng-icon>
-            </button>
+          <div class="w-full">
+            <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Hexadecimal (Base 16)</label>
+            <div class="relative flex items-center">
+              <input
+                hlmInput
+                type="text"
+                formControlName="hexadecimal"
+                placeholder="e.g. FF"
+                (keydown)="onKeyDown($event, 16)"
+                class="w-full pr-10 font-mono text-sm"
+              />
+              <button
+                hlmBtn
+                size="icon"
+                variant="ghost"
+                (click)="copyField('hexadecimal')"
+                [disabled]="!form.get('hexadecimal')?.value"
+                hlmTooltip="Copy Hexadecimal value"
+                type="button"
+                class="absolute right-1 h-8 w-8 text-muted-foreground"
+              >
+                <ng-icon name="lucideCopy"></ng-icon>
+              </button>
+            </div>
             @if (form.get('hexadecimal')?.hasError('pattern')) {
-              <mat-error>Please enter valid hex characters (0-9, A-F) only.</mat-error>
+              <span class="text-xs text-destructive mt-1 block">Please enter valid hex characters (0-9, A-F) only.</span>
             }
-          </mat-form-field>
-        </mat-card-content>
-      </mat-card>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Right Column: Mathematical Walkthrough -->
+    <!-- Right Column: Step-by-Step Breakdown -->
     <div class="panel-column">
-      <mat-card class="editor-card explanation-card">
-        <mat-card-header class="panel-header">
-          <mat-card-title>Mathematical Breakdown</mat-card-title>
-        </mat-card-header>
-        <mat-divider></mat-divider>
-        <mat-card-content class="panel-body">
-          @if (!explanation()) {
-            <div class="empty-state">
-              <ng-icon class="empty-icon" name="lucideCalculator"></ng-icon>
-              <p>No conversion active.</p>
-              <span>Enter a value in any base on the left to see the step-by-step mathematical conversion breakdown.</span>
-            </div>
+      <div hlmCard class="explanation-card p-5 rounded-2xl border shadow-sm h-full flex flex-col">
+        <div class="panel-header flex items-center justify-between mb-4">
+          <h3 class="text-base font-semibold flex items-center gap-2">
+            <ng-icon name="lucideCalculator" class="text-primary"></ng-icon>
+            Mathematical Conversion Breakdown
+          </h3>
+        </div>
+        <div hlmSeparator class="mb-4"></div>
+
+        <div class="panel-body flex-1 overflow-y-auto">
+          @if (explanation()) {
+            <div class="explanation-content font-mono text-xs leading-relaxed space-y-3" [innerHTML]="explanation()"></div>
           } @else {
-            <div class="explanation-container animate-fade-in" [innerHTML]="explanation()"></div>
+            <div class="empty-state p-8 text-center text-muted-foreground flex flex-col items-center justify-center">
+              <ng-icon name="lucideCalculator" class="text-3xl text-muted-foreground/40 mb-2"></ng-icon>
+              <p class="text-sm">Enter a number in any system on the left to see the complete mathematical conversion steps rendered here.</p>
+            </div>
           }
-        </mat-card-content>
-      </mat-card>
+        </div>
+      </div>
     </div>
   </div>
 </div>

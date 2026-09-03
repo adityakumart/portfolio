@@ -10,10 +10,12 @@ import {
   withNoIncrementalHydration,
 } from '@angular/platform-browser';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { provideSpartanHlm } from '@spartan-ng/hel/utils';
 import { AppRoutes } from './app/app-routing.module';
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    provideSpartanHlm(),
     provideZonelessChangeDetection(),
     provideHttpClient(withFetch()),
     provideRouter(AppRoutes, withPreloading(NoPreloading)),

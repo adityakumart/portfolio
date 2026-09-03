@@ -14,6 +14,7 @@ export * from './lib/hlm-card-footer';
 export * from './lib/hlm-card-header';
 export * from './lib/hlm-card-title';
 
+export { HlmCard, HlmCard as HlmCardDirective };
 export const HlmCardImports = [
 	HlmCard,
 	HlmCardAction,

@@ -1,117 +1,114 @@
 <div class="random-generator-container">
   <!-- Header Card -->
-  <mat-card class="header-card mb-4">
-    <mat-card-header class="py-3">
-      <mat-card-title>Random Data Generator</mat-card-title>
-      <mat-card-subtitle>
-        Generate multiple randomized values including Arrays, Numbers, Objects, UUIDs, Passwords, and Cryptographic Hashes for mock data or development testing.
-      </mat-card-subtitle>
-    </mat-card-header>
-  </mat-card>
+  <div hlmCard class="header-card mb-4 p-5 rounded-2xl border shadow-sm">
+    <h2 class="text-xl font-bold tracking-tight">Random Data Generator</h2>
+    <p class="text-sm text-muted-foreground mt-1">
+      Generate multiple randomized values including Arrays, Numbers, Objects, UUIDs, Passwords, and Cryptographic Hashes for mock data or development testing.
+    </p>
+  </div>
 
   <!-- Route Selection Card -->
-  <mat-card class="selector-card mb-4">
-    <mat-card-content class="selector-content py-3">
-      <div class="selector-label">Select Generator Type:</div>
-      <mat-radio-group
-        [value]="generatorType"
-        (change)="onRadioChange($event.value)"
-        color="primary"
-        class="generator-radio-group"
-      >
-        <mat-radio-button value="array">Array</mat-radio-button>
-        <mat-radio-button value="number">Number</mat-radio-button>
-        <mat-radio-button value="objects">Object</mat-radio-button>
-        <mat-radio-button value="uuid">UUID</mat-radio-button>
-        <mat-radio-button value="password">Password</mat-radio-button>
-        <mat-radio-button value="hash">Hash</mat-radio-button>
-      </mat-radio-group>
-    </mat-card-content>
-  </mat-card>
+  <div hlmCard class="selector-card mb-4 p-4 rounded-2xl border shadow-sm">
+    <div class="selector-content flex flex-wrap items-center gap-4">
+      <div class="selector-label text-sm font-semibold text-muted-foreground uppercase tracking-wider">Select Generator Type:</div>
+      <div class="flex flex-wrap items-center gap-4 text-sm">
+        @for (type of generatorTypes; track type) {
+          <label class="flex items-center gap-1.5 cursor-pointer">
+            <input
+              type="radio"
+              name="generatorType"
+              [value]="type"
+              [checked]="generatorType === type"
+              (change)="onRadioChange(type)"
+              class="accent-primary"
+            />
+            <span class="capitalize">{{ type === 'objects' ? 'Object' : type }}</span>
+          </label>
+        }
+      </div>
+    </div>
+  </div>
 
   <!-- Workspace Grid Layout -->
-  <form [formGroup]="settingsForm" class="workspace-layout">
+  <form [formGroup]="settingsForm" class="workspace-layout grid grid-cols-1 lg:grid-cols-2 gap-4">
     <!-- Left Column: Settings Configuration -->
-    <mat-card class="editor-card">
-      <mat-card-header class="card-header-with-actions py-2">
-        <mat-card-title>Generator Configuration</mat-card-title>
-      </mat-card-header>
+    <div hlmCard class="editor-card p-5 rounded-2xl border shadow-sm flex flex-col">
+      <h3 class="text-base font-semibold mb-3">Generator Configuration</h3>
+      <div hlmSeparator class="mb-4"></div>
 
-      <mat-card-content class="card-content-fill p-4">
+      <div class="card-content-fill space-y-4">
         <!-- ARRAY GENERATOR SETTINGS -->
         @if (generatorType === 'array') {
-          <div class="settings-group">
-            <div class="setting-row">
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Element Data Type</mat-label>
-                <mat-select formControlName="arrayType">
-                  <mat-option value="number">Numbers Only</mat-option>
-                  <mat-option value="string">Strings Only</mat-option>
-                  <mat-option value="boolean">Booleans Only</mat-option>
-                  <mat-option value="mixed">Mixed Elements (Numbers, Strings, Booleans)</mat-option>
-                </mat-select>
-              </mat-form-field>
+          <div class="settings-group space-y-4">
+            <div>
+              <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Element Data Type</label>
+              <select hlmInput formControlName="arrayType" class="w-full text-sm">
+                <option value="number">Numbers Only</option>
+                <option value="string">Strings Only</option>
+                <option value="boolean">Booleans Only</option>
+                <option value="mixed">Mixed Elements (Numbers, Strings, Booleans)</option>
+              </select>
             </div>
             
-            <div class="setting-row-two-col">
-              <mat-form-field appearance="outline" class="half-width">
-                <mat-label>Min Elements</mat-label>
-                <input matInput type="number" formControlName="arrayMinElements" />
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Min Elements</label>
+                <input hlmInput type="number" formControlName="arrayMinElements" class="w-full text-sm" />
                 @if (settingsForm.get('arrayMinElements')?.hasError('min')) {
-                  <mat-error>Min elements is 1</mat-error>
+                  <span class="text-xs text-destructive mt-1 block">Min elements is 1</span>
                 }
-              </mat-form-field>
+              </div>
 
-              <mat-form-field appearance="outline" class="half-width">
-                <mat-label>Max Elements</mat-label>
-                <input matInput type="number" formControlName="arrayMaxElements" />
+              <div>
+                <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Max Elements</label>
+                <input hlmInput type="number" formControlName="arrayMaxElements" class="w-full text-sm" />
                 @if (settingsForm.get('arrayMaxElements')?.hasError('max')) {
-                  <mat-error>Max elements is 50</mat-error>
+                  <span class="text-xs text-destructive mt-1 block">Max elements is 50</span>
                 }
-              </mat-form-field>
+              </div>
             </div>
 
-            <div class="setting-row py-2">
-              <mat-checkbox formControlName="arrayUnique" color="primary">
-                Enforce unique elements
-              </mat-checkbox>
+            <div class="py-2">
+              <label class="flex items-center gap-2 cursor-pointer text-sm">
+                <input type="checkbox" formControlName="arrayUnique" class="rounded accent-primary h-4 w-4" />
+                <span>Enforce unique elements</span>
+              </label>
             </div>
           </div>
         }
 
         <!-- NUMBER GENERATOR SETTINGS -->
         @if (generatorType === 'number') {
-          <div class="settings-group">
-            <div class="setting-row-two-col">
-              <mat-form-field appearance="outline" class="half-width">
-                <mat-label>Min Value</mat-label>
-                <input matInput type="number" formControlName="numberMin" />
-              </mat-form-field>
+          <div class="settings-group space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Min Value</label>
+                <input hlmInput type="number" formControlName="numberMin" class="w-full text-sm" />
+              </div>
 
-              <mat-form-field appearance="outline" class="half-width">
-                <mat-label>Max Value</mat-label>
-                <input matInput type="number" formControlName="numberMax" />
-              </mat-form-field>
+              <div>
+                <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Max Value</label>
+                <input hlmInput type="number" formControlName="numberMax" class="w-full text-sm" />
+              </div>
             </div>
 
-            <div class="setting-row py-2">
-              <mat-checkbox formControlName="numberInteger" color="primary">
-                Integer numbers only
-              </mat-checkbox>
+            <div class="py-2">
+              <label class="flex items-center gap-2 cursor-pointer text-sm">
+                <input type="checkbox" formControlName="numberInteger" class="rounded accent-primary h-4 w-4" />
+                <span>Integer numbers only</span>
+              </label>
             </div>
 
             @if (!settingsForm.get('numberInteger')?.value) {
-              <div class="setting-row animate-slide-down">
-                <mat-form-field appearance="outline" class="full-width">
-                  <mat-label>Decimal Precision (Places)</mat-label>
-                  <input matInput type="number" formControlName="numberPrecision" />
-                  @if (settingsForm.get('numberPrecision')?.hasError('min')) {
-                    <mat-error>Precision cannot be negative</mat-error>
-                  }
-                  @if (settingsForm.get('numberPrecision')?.hasError('max')) {
-                    <mat-error>Maximum precision is 10</mat-error>
-                  }
-                </mat-form-field>
+              <div>
+                <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Decimal Precision (Places)</label>
+                <input hlmInput type="number" formControlName="numberPrecision" class="w-full text-sm" />
+                @if (settingsForm.get('numberPrecision')?.hasError('min')) {
+                  <span class="text-xs text-destructive mt-1 block">Precision cannot be negative</span>
+                }
+                @if (settingsForm.get('numberPrecision')?.hasError('max')) {
+                  <span class="text-xs text-destructive mt-1 block">Maximum precision is 10</span>
+                }
               </div>
             }
           </div>
@@ -120,45 +117,50 @@
         <!-- OBJECTS GENERATOR SETTINGS -->
         @if (generatorType === 'objects') {
           <div class="settings-group">
-            <div class="setting-row">
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Object Template Preset</mat-label>
-                <mat-select formControlName="objectPreset">
-                  <mat-option value="user">User Profile record</mat-option>
-                  <mat-option value="product">Product Catalog catalog-item</mat-option>
-                  <mat-option value="transaction">Financial Transaction log</mat-option>
-                </mat-select>
-              </mat-form-field>
+            <div>
+              <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Object Template Preset</label>
+              <select hlmInput formControlName="objectPreset" class="w-full text-sm">
+                <option value="user">User Profile record</option>
+                <option value="product">Product Catalog catalog-item</option>
+                <option value="transaction">Financial Transaction log</option>
+              </select>
             </div>
           </div>
         }
 
         <!-- UUID GENERATOR SETTINGS -->
         @if (generatorType === 'uuid') {
-          <div class="settings-group">
-            <div class="setting-row mb-3">
-              <span class="setting-label">Letter Casing:</span>
-              <mat-radio-group formControlName="uuidCasing" color="primary" class="row-radio-group">
-                <mat-radio-button value="lower">Lowercase</mat-radio-button>
-                <mat-radio-button value="upper">Uppercase</mat-radio-button>
-              </mat-radio-group>
+          <div class="settings-group space-y-4">
+            <div>
+              <span class="block mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Letter Casing:</span>
+              <div class="flex items-center gap-4 text-sm">
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="radio" formControlName="uuidCasing" value="lower" class="accent-primary" />
+                  <span>Lowercase</span>
+                </label>
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="radio" formControlName="uuidCasing" value="upper" class="accent-primary" />
+                  <span>Uppercase</span>
+                </label>
+              </div>
             </div>
 
-            <div class="setting-row py-2">
-              <mat-checkbox formControlName="uuidHyphens" color="primary">
-                Include standard hyphens
-              </mat-checkbox>
+            <div class="py-2">
+              <label class="flex items-center gap-2 cursor-pointer text-sm">
+                <input type="checkbox" formControlName="uuidHyphens" class="rounded accent-primary h-4 w-4" />
+                <span>Include standard hyphens</span>
+              </label>
             </div>
           </div>
         }
 
         <!-- PASSWORD GENERATOR SETTINGS -->
         @if (generatorType === 'password') {
-          <div class="settings-group">
-            <div class="setting-row">
-              <div class="password-metric-row mb-2">
-                <span class="setting-label" style="margin-bottom: 0;">Length: {{ passwordLength }}</span>
-                <span class="strength-badge" [style.color]="passwordStrength.color" style="font-weight: 600; font-size: 13px;">
+          <div class="settings-group space-y-4">
+            <div>
+              <div class="password-metric-row flex items-center justify-between mb-2">
+                <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Length: {{ passwordLength }}</span>
+                <span class="strength-badge font-semibold text-xs" [style.color]="passwordStrength.color">
                   {{ passwordStrength.text }}
                 </span>
               </div>
@@ -168,79 +170,96 @@
                   min="4"
                   max="128"
                   formControlName="passwordLength"
-                  class="password-range-slider"
+                  class="password-range-slider w-full accent-primary"
                 />
               </div>
             </div>
 
-            <div class="setting-row grid-checkboxes">
-              <mat-checkbox formControlName="passwordLowercase" color="primary">Lowercase (a-z)</mat-checkbox>
-              <mat-checkbox formControlName="passwordUppercase" color="primary">Uppercase (A-Z)</mat-checkbox>
-              <mat-checkbox formControlName="passwordNumbers" color="primary">Numbers (0-9)</mat-checkbox>
-              <mat-checkbox formControlName="passwordSymbols" color="primary">Symbols (!@#$...)</mat-checkbox>
+            <div class="grid grid-cols-2 gap-3 text-sm">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" formControlName="passwordLowercase" class="rounded accent-primary h-4 w-4" />
+                <span>Lowercase (a-z)</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" formControlName="passwordUppercase" class="rounded accent-primary h-4 w-4" />
+                <span>Uppercase (A-Z)</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" formControlName="passwordNumbers" class="rounded accent-primary h-4 w-4" />
+                <span>Numbers (0-9)</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" formControlName="passwordSymbols" class="rounded accent-primary h-4 w-4" />
+                <span>Symbols (!@#$...)</span>
+              </label>
             </div>
 
-            <div class="setting-row py-2 mt-2 border-top">
-              <mat-checkbox formControlName="passwordExcludeAmbiguous" color="primary" class="mb-2">
-                Exclude ambiguous (0O, 1lI)
-              </mat-checkbox>
-              <mat-checkbox formControlName="passwordExcludeSimilar" color="primary">
-                Exclude similar (&#123;&#125;[]())
-              </mat-checkbox>
+            <div class="pt-3 border-t space-y-2 text-sm">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" formControlName="passwordExcludeAmbiguous" class="rounded accent-primary h-4 w-4" />
+                <span>Exclude ambiguous (0O, 1lI)</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" formControlName="passwordExcludeSimilar" class="rounded accent-primary h-4 w-4" />
+                <span>Exclude similar (&#123;&#125;[]())</span>
+              </label>
             </div>
           </div>
         }
 
         <!-- HASH GENERATOR SETTINGS -->
         @if (generatorType === 'hash') {
-          <div class="settings-group">
-            <div class="setting-row">
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Hash Algorithm</mat-label>
-                <mat-select formControlName="hashAlgorithm">
-                  <mat-option value="md5">MD5 (128-bit)</mat-option>
-                  <mat-option value="sha1">SHA-1 (160-bit)</mat-option>
-                  <mat-option value="sha256">SHA-256 (256-bit)</mat-option>
-                  <mat-option value="sha512">SHA-512 (512-bit)</mat-option>
-                </mat-select>
-              </mat-form-field>
+          <div class="settings-group space-y-4">
+            <div>
+              <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Hash Algorithm</label>
+              <select hlmInput formControlName="hashAlgorithm" class="w-full text-sm">
+                <option value="md5">MD5 (128-bit)</option>
+                <option value="sha1">SHA-1 (160-bit)</option>
+                <option value="sha256">SHA-256 (256-bit)</option>
+                <option value="sha512">SHA-512 (512-bit)</option>
+              </select>
             </div>
 
-            <div class="setting-row mt-3">
-              <span class="setting-label">Hash Hex Letter Casing:</span>
-              <mat-radio-group formControlName="hashCasing" color="primary" class="row-radio-group">
-                <mat-radio-button value="lower">Lowercase</mat-radio-button>
-                <mat-radio-button value="upper">Uppercase</mat-radio-button>
-              </mat-radio-group>
+            <div>
+              <span class="block mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Hash Hex Letter Casing:</span>
+              <div class="flex items-center gap-4 text-sm">
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="radio" formControlName="hashCasing" value="lower" class="accent-primary" />
+                  <span>Lowercase</span>
+                </label>
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="radio" formControlName="hashCasing" value="upper" class="accent-primary" />
+                  <span>Uppercase</span>
+                </label>
+              </div>
             </div>
           </div>
         }
-      </mat-card-content>
-    </mat-card>
+      </div>
+    </div>
 
     <!-- Right Column: Generated Output Results -->
-    <mat-card class="editor-card">
-      <mat-card-header class="card-header-with-actions py-2">
-        <mat-card-title>Generated Output (5 items)</mat-card-title>
-        <div class="action-buttons-container">
+    <div hlmCard class="editor-card p-5 rounded-2xl border shadow-sm flex flex-col">
+      <div class="card-header-with-actions flex items-center justify-between mb-3">
+        <h3 class="text-base font-semibold">Generated Output (5 items)</h3>
+        <div class="action-buttons-container flex items-center gap-2">
           <button
-            mat-stroked-button
+            hlmBtn
+            variant="outline"
             type="button"
-            color="primary"
-            class="action-btn"
+            class="action-btn flex items-center gap-1.5 text-xs"
             (click)="onCopyAll()"
             [disabled]="generatedOutputs.length === 0"
-            matTooltip="Copy all 5 items to clipboard"
+            hlmTooltip="Copy all 5 items to clipboard"
           >
             <ng-icon [name]="copiedAll ? 'lucideCheckCircle' : 'lucideCopy'"></ng-icon>
             Copy All
           </button>
 
           <button
-            mat-raised-button
+            hlmBtn
             type="button"
-            color="primary"
-            class="action-btn ml-2"
+            class="action-btn flex items-center gap-1.5 text-xs"
             (click)="generate()"
             [disabled]="settingsForm.invalid"
           >
@@ -248,41 +267,45 @@
             Regenerate
           </button>
         </div>
-      </mat-card-header>
+      </div>
+      <div hlmSeparator class="mb-4"></div>
 
-      <mat-card-content class="card-content-fill p-4">
-        <div class="output-list">
+      <div class="card-content-fill flex-1 space-y-4 overflow-y-auto">
+        <div class="output-list space-y-3">
           @for (item of generatedOutputs; track $index) {
-            <div class="output-item-row mb-4 animate-slide-down">
+            <div class="output-item-row animate-slide-down">
               @if (generatorType === 'hash' && hashSeeds[$index]) {
-                <div class="hash-seed-info">
-                  Plain Text Seed: <code>"{{ hashSeeds[$index] }}"</code>
+                <div class="hash-seed-info text-xs text-muted-foreground mb-1">
+                  Plain Text Seed: <code class="font-mono bg-muted/40 px-1 py-0.5 rounded">"{{ hashSeeds[$index] }}"</code>
                 </div>
               }
 
-              <div class="output-input-wrapper">
+              <div class="output-input-wrapper relative flex items-center">
                 @if (generatorType === 'objects' || generatorType === 'array') {
                   <textarea
+                    hlmInput
                     readonly
-                    class="readonly-textarea code-font"
-                    [rows]="generatorType === 'objects' ? 8 : 3"
+                    class="readonly-textarea font-mono text-xs w-full pr-10 bg-muted/20 resize-y"
+                    [rows]="generatorType === 'objects' ? 6 : 2"
                     [value]="item"
                   ></textarea>
                 } @else {
                   <input
+                    hlmInput
                     readonly
                     type="text"
-                    class="readonly-input code-font"
+                    class="readonly-input font-mono text-xs w-full pr-10 bg-muted/20"
                     [value]="item"
                   />
                 }
 
                 <button
-                  mat-icon-button
+                  hlmBtn
+                  size="icon"
+                  variant="ghost"
                   type="button"
-                  color="primary"
-                  class="copy-item-btn"
-                  [matTooltip]="copiedIndex === $index ? 'Copied!' : 'Copy item'"
+                  class="copy-item-btn absolute right-1 h-8 w-8 text-muted-foreground"
+                  [hlmTooltip]="copiedIndex === $index ? 'Copied!' : 'Copy item'"
                   (click)="onCopy(item, $index)"
                   [class.copied]="copiedIndex === $index"
                 >
@@ -292,7 +315,7 @@
             </div>
           }
         </div>
-      </mat-card-content>
-    </mat-card>
+      </div>
+    </div>
   </form>
 </div>

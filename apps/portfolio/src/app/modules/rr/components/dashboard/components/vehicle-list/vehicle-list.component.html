@@ -7,7 +7,7 @@
     <h2 style="margin: 0; font-size: 1.85rem; font-weight: 800; color: var(--foreground);">Fleet Registry</h2>
   </div>
   @if (isAdmin()) {
-    <button mat-raised-button color="primary" class="action-btn success" style="padding: 10px 20px; border-radius: 12px;" (click)="openAddVehicleModal()">
+    <button hlmBtn class="action-btn success flex items-center gap-1.5" (click)="openAddVehicleModal()">
       <ng-icon name="lucidePlus"></ng-icon> Register New Vehicle
     </button>
   }
@@ -15,7 +15,7 @@
 
 <div class="vehicle-grid">
   @for (v of vehicles(); track v.regNo) {
-    <mat-card class="vehicle-card" (click)="viewVehicleDetails(v)">
+    <div hlmCard class="vehicle-card cursor-pointer overflow-hidden border shadow-sm" (click)="viewVehicleDetails(v)">
       <div class="card-img-container">
         <img [src]="getVehicleImage(v)" alt="Vehicle Image" />
         <div class="active-status-badge status-badge-{{ v.status }}">
@@ -24,21 +24,21 @@
         </div>
       </div>
       
-      <div class="card-content">
+      <div class="card-content p-4">
         <div class="veh-type-tag">{{ v.type | uppercase }}</div>
         <div class="veh-title">{{ v.manufacturer }} {{ v.name }}</div>
         <div class="veh-subtitle reg-no">{{ v.regNo }}</div>
         
-        <div class="veh-specs">
-          <span class="spec-badge" matTooltip="Capacity">
+        <div class="veh-specs flex flex-wrap gap-2 mt-3">
+          <span class="spec-badge flex items-center gap-1 text-xs" hlmTooltip="Capacity">
             <ng-icon name="lucideUsers"></ng-icon>
             <span>{{ v.seating }} Seats</span>
           </span>
-          <span class="spec-badge" matTooltip="Fuel Type">
+          <span class="spec-badge flex items-center gap-1 text-xs" hlmTooltip="Fuel Type">
             <ng-icon name="lucideFuel"></ng-icon>
             <span>{{ v.fuelType | uppercase }}</span>
           </span>
-          <span class="spec-badge" matTooltip="Odometer">
+          <span class="spec-badge flex items-center gap-1 text-xs" hlmTooltip="Odometer">
             <ng-icon name="lucideGauge"></ng-icon>
             <span>{{ v.odometer }} KM</span>
           </span>
@@ -48,24 +48,24 @@
       <!-- Quick Action Overlay for Admin -->
       @if (isAdmin()) {
         <div class="card-actions-overlay">
-          <button mat-mini-fab color="primary" class="mini-action-btn" (click)="$event.stopPropagation(); selectedVehicleDetails.set(v); openEditVehicleModal()" matTooltip="Edit Vehicle">
+          <button hlmBtn size="icon" variant="default" class="mini-action-btn h-8 w-8 rounded-full" (click)="$event.stopPropagation(); selectedVehicleDetails.set(v); openEditVehicleModal()" hlmTooltip="Edit Vehicle">
             <ng-icon name="lucidePencil"></ng-icon>
           </button>
-          <button mat-mini-fab color="warn" class="mini-action-btn danger" (click)="$event.stopPropagation(); deleteVehicle(v.regNo)" matTooltip="Delete Vehicle">
+          <button hlmBtn size="icon" variant="destructive" class="mini-action-btn danger h-8 w-8 rounded-full" (click)="$event.stopPropagation(); deleteVehicle(v.regNo)" hlmTooltip="Delete Vehicle">
             <ng-icon name="lucideTrash2"></ng-icon>
           </button>
         </div>
       }
-    </mat-card>
+    </div>
   } @empty {
-    <div class="empty-fleet-card">
-      <div class="empty-icon-wrapper">
-        <ng-icon name="lucideCar"></ng-icon>
+    <div class="empty-fleet-card p-12 text-center border rounded-2xl">
+      <div class="empty-icon-wrapper mb-3">
+        <ng-icon name="lucideCar" class="text-3xl text-muted-foreground"></ng-icon>
       </div>
-      <h3>No Vehicles Registered</h3>
-      <p>There are currently no vehicles in your fleet registry database.</p>
+      <h3 class="text-lg font-bold">No Vehicles Registered</h3>
+      <p class="text-sm text-muted-foreground mb-4">There are currently no vehicles in your fleet registry database.</p>
       @if (isAdmin()) {
-        <button mat-raised-button color="primary" class="action-btn success" (click)="openAddVehicleModal()">
+        <button hlmBtn (click)="openAddVehicleModal()" class="flex items-center gap-1.5 mx-auto">
           <ng-icon name="lucidePlus"></ng-icon> Register First Vehicle
         </button>
       }
@@ -75,467 +75,437 @@
 
 <!-- POPUP 1: VEHICLE DETAILS DIALOG TEMPLATE -->
 <ng-template #vehicleDetailsDialog>
-  <div class="modal-header-wrapper">
-    <h3 mat-dialog-title class="modern-dialog-title">
-      <ng-icon name="lucideCar"></ng-icon>
-      <span>Fleet Vehicle Specification Details</span>
-    </h3>
+  <div class="space-y-4">
+    <div class="flex items-center justify-between pb-3 border-b">
+      <h3 class="text-lg font-bold flex items-center gap-2">
+        <ng-icon name="lucideCar" class="text-primary"></ng-icon>
+        <span>Fleet Vehicle Specification Details</span>
+      </h3>
+    </div>
+    
+    <div class="details-content space-y-4">
+      <div class="details-layout-grid grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- Visual Left Panel -->
+        <div class="details-visual-panel">
+          <div class="visual-card border rounded-2xl overflow-hidden p-3 bg-muted/10">
+            <div class="details-img-container rounded-xl overflow-hidden mb-3">
+              <img [src]="getVehicleImage(selectedVehicleDetails())" alt="Vehicle Image" class="w-full object-cover h-48" />
+            </div>
+            
+            <div class="status-section">
+              <span class="label text-xs text-muted-foreground block mb-1">Rental Availability Status</span>
+              <div class="detail-status-badge badge-{{ selectedVehicleDetails()?.status }}">
+                <span class="status-dot"></span>
+                <span>{{ selectedVehicleDetails()?.status | uppercase }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metadata Right Panel -->
+        <div class="details-info-panel space-y-3 text-sm">
+          <div class="border-b pb-2">
+            <span class="text-xs text-muted-foreground block">Vehicle Identity</span>
+            <span class="font-bold text-base">{{ selectedVehicleDetails()?.manufacturer }} {{ selectedVehicleDetails()?.name }}</span>
+            <span class="font-mono text-xs text-muted-foreground ml-2">({{ selectedVehicleDetails()?.regNo }})</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 text-xs">
+            <div>
+              <span class="text-muted-foreground block">Model Year</span>
+              <span class="font-semibold">{{ selectedVehicleDetails()?.model || 'N/A' }}</span>
+            </div>
+            <div>
+              <span class="text-muted-foreground block">Type</span>
+              <span class="font-semibold">{{ selectedVehicleDetails()?.type | uppercase }}</span>
+            </div>
+            <div>
+              <span class="text-muted-foreground block">Seating</span>
+              <span class="font-semibold">{{ selectedVehicleDetails()?.seating }} Persons</span>
+            </div>
+            <div>
+              <span class="text-muted-foreground block">Fuel</span>
+              <span class="font-semibold">{{ selectedVehicleDetails()?.fuelType | uppercase }}</span>
+            </div>
+            <div>
+              <span class="text-muted-foreground block">Odometer</span>
+              <span class="font-semibold">{{ selectedVehicleDetails()?.odometer }} KM</span>
+            </div>
+            <div>
+              <span class="text-muted-foreground block">Color</span>
+              <span class="font-semibold">{{ selectedVehicleDetails()?.color }}</span>
+            </div>
+            <div>
+              <span class="text-muted-foreground block">Engine Serial</span>
+              <span class="font-mono font-semibold">{{ selectedVehicleDetails()?.engineNo }}</span>
+            </div>
+            <div>
+              <span class="text-muted-foreground block">Chassis Serial</span>
+              <span class="font-mono font-semibold">{{ selectedVehicleDetails()?.chassisNo }}</span>
+            </div>
+          </div>
+
+          <div class="pt-2 border-t">
+            <span class="text-xs font-semibold uppercase text-muted-foreground block mb-2">Compliance Expiries</span>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div class="p-2 rounded-lg bg-muted/20 border">
+                <span class="text-muted-foreground block">Insurance</span>
+                <span class="font-semibold">{{ (selectedVehicleDetails()?.insuranceExpiry | date:'dd-MM-yyyy':'UTC') || 'N/A' }}</span>
+              </div>
+              <div class="p-2 rounded-lg bg-muted/20 border">
+                <span class="text-muted-foreground block">Pollution</span>
+                <span class="font-semibold">{{ (selectedVehicleDetails()?.pollutionExpiry | date:'dd-MM-yyyy':'UTC') || 'N/A' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRICING SLABS SECTION -->
+      <div class="details-pricing-panel pt-3 border-t">
+        <span class="text-xs font-semibold uppercase text-muted-foreground block mb-3">Pricing Slabs & Rental Overruns</span>
+        
+        <div class="pricing-slabs-grid grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs mb-3">
+          <div class="slab-card p-3 rounded-xl border bg-muted/10 text-center">
+            <div class="font-medium text-muted-foreground">24 Hours</div>
+            <div class="text-base font-bold text-primary my-0.5">₹{{ selectedVehicleDetails()?.pricing?.h23?.price || '0' }}</div>
+            <div class="text-muted-foreground">{{ selectedVehicleDetails()?.pricing?.h23?.km || '0' }} KM Limit</div>
+          </div>
+          <div class="slab-card p-3 rounded-xl border bg-muted/10 text-center">
+            <div class="font-medium text-muted-foreground">12 Hours</div>
+            <div class="text-base font-bold text-primary my-0.5">₹{{ selectedVehicleDetails()?.pricing?.h11?.price || '0' }}</div>
+            <div class="text-muted-foreground">{{ selectedVehicleDetails()?.pricing?.h11?.km || '0' }} KM Limit</div>
+          </div>
+          <div class="slab-card p-3 rounded-xl border bg-muted/10 text-center">
+            <div class="font-medium text-muted-foreground">4 Hours</div>
+            <div class="text-base font-bold text-primary my-0.5">₹{{ selectedVehicleDetails()?.pricing?.h3?.price || '0' }}</div>
+            <div class="text-muted-foreground">{{ selectedVehicleDetails()?.pricing?.h3?.km || '0' }} KM Limit</div>
+          </div>
+          <div class="slab-card p-3 rounded-xl border bg-muted/10 text-center">
+            <div class="font-medium text-muted-foreground">1 Hour</div>
+            <div class="text-base font-bold text-primary my-0.5">₹{{ selectedVehicleDetails()?.pricing?.h1?.price || '0' }}</div>
+            <div class="text-muted-foreground">{{ selectedVehicleDetails()?.pricing?.h1?.km || '0' }} KM Limit</div>
+          </div>
+        </div>
+
+        <div class="overrun-rates-wrapper flex flex-wrap gap-4 text-xs">
+          <div class="p-2.5 rounded-xl border bg-muted/10 flex items-center gap-2">
+            <ng-icon name="lucideMilestone" class="text-base text-primary"></ng-icon>
+            <div>
+              <span class="font-bold">₹{{ selectedVehicleDetails()?.extraKmPrice || '0' }} / KM</span>
+              <span class="text-muted-foreground block text-[10px]">Extra KM Overrun</span>
+            </div>
+          </div>
+          <div class="p-2.5 rounded-xl border bg-muted/10 flex items-center gap-2">
+            <ng-icon name="lucideClock" class="text-base text-primary"></ng-icon>
+            <div>
+              <span class="font-bold">₹{{ selectedVehicleDetails()?.extraHourPrice || '0' }} / HR</span>
+              <span class="text-muted-foreground block text-[10px]">Extra Hour Overrun</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="flex items-center justify-end gap-2 pt-3 border-t">
+      @if (isAdmin()) {
+        <button hlmBtn size="sm" class="flex items-center gap-1.5" (click)="openEditVehicleModal()">
+          <ng-icon name="lucidePencil"></ng-icon> Modify
+        </button>
+        <button hlmBtn variant="destructive" size="sm" class="flex items-center gap-1.5" (click)="deleteVehicle(selectedVehicleDetails()?.regNo!)">
+          <ng-icon name="lucideTrash2"></ng-icon> Delete
+        </button>
+      }
+      <button hlmBtn variant="outline" size="sm" (click)="closeVehicleDetailsPopup()">Close</button>
+    </div>
   </div>
-  
-  <mat-dialog-content class="modern-dialog-content">
-    <div class="details-layout-grid">
-      
-      <!-- Visual Left Panel -->
-      <div class="details-visual-panel">
-        <div class="visual-card">
-          <div class="details-img-container">
-            <img [src]="getVehicleImage(selectedVehicleDetails())" alt="Vehicle Image" />
-          </div>
-          
-          <div class="status-section">
-            <span class="label">Rental Availability Status</span>
-            <div class="detail-status-badge badge-{{ selectedVehicleDetails()?.status }}">
-              <span class="status-dot"></span>
-              <span>{{ selectedVehicleDetails()?.status | uppercase }}</span>
-            </div>
-          </div>
-
-          <div class="visual-divider"></div>
-
-          <div class="quick-highlights">
-            <div class="highlight-item">
-              <ng-icon name="lucideUsers"></ng-icon>
-              <div class="h-text">
-                <span class="h-val">{{ selectedVehicleDetails()?.seating }} Seats</span>
-                <span class="h-lbl">Capacity</span>
-              </div>
-            </div>
-            <div class="highlight-item">
-              <ng-icon name="lucideFuel"></ng-icon>
-              <div class="h-text">
-                <span class="h-val">{{ selectedVehicleDetails()?.fuelType | uppercase }}</span>
-                <span class="h-lbl">Fuel Option</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Specifications Right Panel -->
-      <div class="details-specs-panel">
-        <div class="detail-section-title">
-          <ng-icon name="lucideInfo"></ng-icon>
-          <span>General Specifications</span>
-        </div>
-        
-        <div class="specs-grid">
-          <div class="spec-item">
-            <span class="spec-label">Brand & Model</span>
-            <span class="spec-value">{{ selectedVehicleDetails()?.manufacturer }} {{ selectedVehicleDetails()?.name }}</span>
-          </div>
-          <div class="spec-item">
-            <span class="spec-label">Year Model</span>
-            <span class="spec-value">{{ selectedVehicleDetails()?.model }}</span>
-          </div>
-          <div class="spec-item">
-            <span class="spec-label">Engine Class</span>
-            <span class="spec-value">{{ selectedVehicleDetails()?.type }}</span>
-          </div>
-          <div class="spec-item">
-            <span class="spec-label">Odometer Record</span>
-            <span class="spec-value">{{ selectedVehicleDetails()?.odometer }} KM</span>
-          </div>
-          <div class="spec-item">
-            <span class="spec-label">Paint Color</span>
-            <span class="spec-value">{{ selectedVehicleDetails()?.color }}</span>
-          </div>
-        </div>
-
-        <div class="detail-section-title" style="margin-top: 20px;">
-          <ng-icon name="lucideFingerprint"></ng-icon>
-          <span>Registry Identifiers</span>
-        </div>
-        
-        <div class="specs-grid">
-          <div class="spec-item">
-            <span class="spec-label">Plate Number</span>
-            <span class="spec-value mono-val">{{ selectedVehicleDetails()?.regNo }}</span>
-          </div>
-          <div class="spec-item">
-            <span class="spec-label">Engine Number</span>
-            <span class="spec-value mono-val">{{ selectedVehicleDetails()?.engineNo }}</span>
-          </div>
-          <div class="spec-item">
-            <span class="spec-label">Chassis Serial</span>
-            <span class="spec-value mono-val">{{ selectedVehicleDetails()?.chassisNo }}</span>
-          </div>
-        </div>
-
-        <div class="detail-section-title" style="margin-top: 20px;">
-          <ng-icon name="lucideShieldCheck"></ng-icon>
-          <span>Compliance Expiries</span>
-        </div>
-        
-        <div class="expiries-flex">
-          <div class="expiry-pill">
-            <ng-icon name="lucideShield"></ng-icon>
-            <div class="expiry-content">
-              <span class="exp-lbl">Insurance Expiry</span>
-              <span class="exp-val">{{ (selectedVehicleDetails()?.insuranceExpiry | date:'dd-MM-yyyy':'UTC') || 'N/A' }}</span>
-            </div>
-          </div>
-          <div class="expiry-pill">
-            <ng-icon name="lucideLeaf"></ng-icon>
-            <div class="expiry-content">
-              <span class="exp-lbl">Pollution Expiry</span>
-              <span class="exp-val">{{ (selectedVehicleDetails()?.pollutionExpiry | date:'dd-MM-yyyy':'UTC') || 'N/A' }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- PRICING SLABS SECTION -->
-    <div class="details-pricing-panel" style="margin-top: 24px;">
-      <div class="detail-section-title">
-        <ng-icon name="lucideCreditCard"></ng-icon>
-        <span>Pricing Slabs & Rental Overruns</span>
-      </div>
-      
-      <div class="pricing-slabs-grid">
-        <div class="slab-card">
-          <div class="slab-duration">24 Hours</div>
-          <div class="slab-price">₹{{ selectedVehicleDetails()?.pricing?.h23?.price || '0' }}</div>
-          <div class="slab-limit">{{ selectedVehicleDetails()?.pricing?.h23?.km || '0' }} KM Limit</div>
-        </div>
-        <div class="slab-card">
-          <div class="slab-duration">12 Hours</div>
-          <div class="slab-price">₹{{ selectedVehicleDetails()?.pricing?.h11?.price || '0' }}</div>
-          <div class="slab-limit">{{ selectedVehicleDetails()?.pricing?.h11?.km || '0' }} KM Limit</div>
-        </div>
-        <div class="slab-card">
-          <div class="slab-duration">4 Hours</div>
-          <div class="slab-price">₹{{ selectedVehicleDetails()?.pricing?.h3?.price || '0' }}</div>
-          <div class="slab-limit">{{ selectedVehicleDetails()?.pricing?.h3?.km || '0' }} KM Limit</div>
-        </div>
-        <div class="slab-card">
-          <div class="slab-duration">1 Hour</div>
-          <div class="slab-price">₹{{ selectedVehicleDetails()?.pricing?.h1?.price || '0' }}</div>
-          <div class="slab-limit">{{ selectedVehicleDetails()?.pricing?.h1?.km || '0' }} KM Limit</div>
-        </div>
-      </div>
-
-      <div class="overrun-rates-wrapper">
-        <div class="overrun-item">
-          <ng-icon name="lucideMilestone"></ng-icon>
-          <div class="overrun-desc">
-            <span class="o-val">₹{{ selectedVehicleDetails()?.extraKmPrice || '0' }} / KM</span>
-            <span class="o-lbl">Extra KM Overrun Price</span>
-          </div>
-        </div>
-        <div class="overrun-item">
-          <ng-icon name="lucideClock"></ng-icon>
-          <div class="overrun-desc">
-            <span class="o-val">₹{{ selectedVehicleDetails()?.extraHourPrice || '0' }} / HR</span>
-            <span class="o-lbl">Extra Hour Overrun Price</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </mat-dialog-content>
-  
-  <mat-dialog-actions align="end" class="modern-dialog-actions">
-    @if (isAdmin()) {
-      <button mat-raised-button color="primary" class="action-btn" style="margin-right: 12px;" (click)="openEditVehicleModal()">
-        <ng-icon name="lucidePencil"></ng-icon> Modify
-      </button>
-      <button mat-raised-button color="warn" class="action-btn danger" style="margin-right: 12px;" (click)="deleteVehicle(selectedVehicleDetails()?.regNo!)">
-        <ng-icon name="lucideTrash2"></ng-icon> Delete
-      </button>
-    }
-    <button mat-button class="close-btn" (click)="closeVehicleDetailsPopup()">Close</button>
-  </mat-dialog-actions>
 </ng-template>
 
 <!-- POPUP 2: ADD/MODIFY VEHICLE FORM DIALOG TEMPLATE -->
 <ng-template #vehicleFormDialog>
-  <div class="modal-header-wrapper">
-    <h3 mat-dialog-title class="modern-dialog-title">
-      <ng-icon name="lucideCar"></ng-icon>
-      <span>{{ editingVehicleMode() ? 'Modify Fleet Vehicle Metadata' : 'Register New Fleet Vehicle' }}</span>
-    </h3>
-  </div>
-  
-  <mat-dialog-content class="modern-dialog-content" style="max-height: 70vh; overflow-y: auto;">
-    <form [formGroup]="vehicleFormGroup">
-      <div style="padding-right: 4px;">
-        <div class="booking-card">
-          <h3>
-            <ng-icon name="lucideInfo"></ng-icon>
-            <span>Vehicle Metadata & Specifications</span>
-          </h3>
-          <div class="booking-content" style="margin-top: 15px;">
-            <mat-form-field appearance="outline">
-              <mat-label>Registration Plate Number</mat-label>
-              <input matInput formControlName="regNo" [readonly]="editingVehicleMode()" />
-              @if (vehicleFormGroup.get('regNo')?.invalid && vehicleFormGroup.get('regNo')?.touched) {
-                <mat-error>Plate number is required.</mat-error>
-              }
-            </mat-form-field>
+  <div class="space-y-4">
+    <div class="flex items-center justify-between pb-3 border-b">
+      <h3 class="text-lg font-bold flex items-center gap-2">
+        <ng-icon name="lucideCar" class="text-primary"></ng-icon>
+        <span>{{ editingVehicleMode() ? 'Modify Fleet Vehicle Metadata' : 'Register New Fleet Vehicle' }}</span>
+      </h3>
+    </div>
+    
+    <form [formGroup]="vehicleFormGroup" class="space-y-6">
+      <!-- Section 1: Metadata -->
+      <div class="p-4 rounded-xl border bg-card space-y-4">
+        <h4 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+          <ng-icon name="lucideInfo"></ng-icon>
+          <span>Vehicle Metadata & Specifications</span>
+        </h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Registration Plate Number</label>
+            <input hlmInput formControlName="regNo" [readonly]="editingVehicleMode()" class="w-full text-sm" />
+            @if (vehicleFormGroup.get('regNo')?.invalid && vehicleFormGroup.get('regNo')?.touched) {
+              <span class="text-xs text-destructive">Plate number is required.</span>
+            }
+          </div>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Vehicle Model Name</mat-label>
-              <input matInput formControlName="name" />
-              @if (vehicleFormGroup.get('name')?.invalid && vehicleFormGroup.get('name')?.touched) {
-                <mat-error>Name is required.</mat-error>
-              }
-            </mat-form-field>
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Vehicle Model Name</label>
+            <input hlmInput formControlName="name" class="w-full text-sm" />
+            @if (vehicleFormGroup.get('name')?.invalid && vehicleFormGroup.get('name')?.touched) {
+              <span class="text-xs text-destructive">Name is required.</span>
+            }
+          </div>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Manufacturer Name</mat-label>
-              <input matInput formControlName="manufacturer" />
-              @if (vehicleFormGroup.get('manufacturer')?.invalid && vehicleFormGroup.get('manufacturer')?.touched) {
-                <mat-error>Manufacturer is required.</mat-error>
-              }
-            </mat-form-field>
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Manufacturer Name</label>
+            <input hlmInput formControlName="manufacturer" class="w-full text-sm" />
+            @if (vehicleFormGroup.get('manufacturer')?.invalid && vehicleFormGroup.get('manufacturer')?.touched) {
+              <span class="text-xs text-destructive">Manufacturer is required.</span>
+            }
+          </div>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Release Model (YYYY-MM)</mat-label>
-              <input matInput type="month" formControlName="model" />
-              @if (vehicleFormGroup.get('model')?.invalid && vehicleFormGroup.get('model')?.touched) {
-                <mat-error>Required.</mat-error>
-              }
-            </mat-form-field>
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Release Model (YYYY-MM)</label>
+            <input hlmInput type="month" formControlName="model" class="w-full text-sm" />
+            @if (vehicleFormGroup.get('model')?.invalid && vehicleFormGroup.get('model')?.touched) {
+              <span class="text-xs text-destructive">Required.</span>
+            }
+          </div>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Seating Capacity</mat-label>
-              <mat-select formControlName="seating">
-                <mat-option value="5">5 Seater Comfort</mat-option>
-                <mat-option value="7">7 Seater Explorer</mat-option>
-              </mat-select>
-            </mat-form-field>
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Seating Capacity</label>
+            <select hlmInput formControlName="seating" class="w-full text-sm">
+              <option value="5">5 Seater Comfort</option>
+              <option value="7">7 Seater Explorer</option>
+            </select>
+          </div>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Initial Odometer (KM)</mat-label>
-              <input matInput type="number" formControlName="odometer" />
-              @if (vehicleFormGroup.get('odometer')?.invalid && vehicleFormGroup.get('odometer')?.touched) {
-                <mat-error>Must be positive number.</mat-error>
-              }
-            </mat-form-field>
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Initial Odometer (KM)</label>
+            <input hlmInput type="number" formControlName="odometer" class="w-full text-sm" />
+            @if (vehicleFormGroup.get('odometer')?.invalid && vehicleFormGroup.get('odometer')?.touched) {
+              <span class="text-xs text-destructive">Must be positive number.</span>
+            }
+          </div>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Vehicle Type</mat-label>
-              <input matInput formControlName="type" placeholder="e.g. SUV, Sedan" />
-              @if (vehicleFormGroup.get('type')?.invalid && vehicleFormGroup.get('type')?.touched) {
-                <mat-error>Type is required.</mat-error>
-              }
-            </mat-form-field>
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Vehicle Type</label>
+            <input hlmInput formControlName="type" placeholder="e.g. SUV, Sedan" class="w-full text-sm" />
+            @if (vehicleFormGroup.get('type')?.invalid && vehicleFormGroup.get('type')?.touched) {
+              <span class="text-xs text-destructive">Type is required.</span>
+            }
+          </div>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Color</mat-label>
-              <input matInput formControlName="color" />
-              @if (vehicleFormGroup.get('color')?.invalid && vehicleFormGroup.get('color')?.touched) {
-                <mat-error>Color is required.</mat-error>
-              }
-            </mat-form-field>
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Color</label>
+            <input hlmInput formControlName="color" class="w-full text-sm" />
+            @if (vehicleFormGroup.get('color')?.invalid && vehicleFormGroup.get('color')?.touched) {
+              <span class="text-xs text-destructive">Color is required.</span>
+            }
+          </div>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Fuel Configuration</mat-label>
-              <mat-select formControlName="fuelType">
-                <mat-option value="Petrol">Petrol</mat-option>
-                <mat-option value="Diesel">Diesel</mat-option>
-                <mat-option value="Electric">Electric</mat-option>
-                <mat-option value="CNG">CNG</mat-option>
-              </mat-select>
-            </mat-form-field>
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Fuel Configuration</label>
+            <select hlmInput formControlName="fuelType" class="w-full text-sm">
+              <option value="Petrol">Petrol</option>
+              <option value="Diesel">Diesel</option>
+              <option value="Electric">Electric</option>
+              <option value="CNG">CNG</option>
+            </select>
+          </div>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Engine Serial</mat-label>
-              <input matInput formControlName="engineNo" />
-              @if (vehicleFormGroup.get('engineNo')?.invalid && vehicleFormGroup.get('engineNo')?.touched) {
-                <mat-error>Required.</mat-error>
-              }
-            </mat-form-field>
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Engine Serial</label>
+            <input hlmInput formControlName="engineNo" class="w-full text-sm" />
+            @if (vehicleFormGroup.get('engineNo')?.invalid && vehicleFormGroup.get('engineNo')?.touched) {
+              <span class="text-xs text-destructive">Required.</span>
+            }
+          </div>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Chassis Serial</mat-label>
-              <input matInput formControlName="chassisNo" />
-              @if (vehicleFormGroup.get('chassisNo')?.invalid && vehicleFormGroup.get('chassisNo')?.touched) {
-                <mat-error>Required.</mat-error>
-              }
-            </mat-form-field>
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Chassis Serial</label>
+            <input hlmInput formControlName="chassisNo" class="w-full text-sm" />
+            @if (vehicleFormGroup.get('chassisNo')?.invalid && vehicleFormGroup.get('chassisNo')?.touched) {
+              <span class="text-xs text-destructive">Required.</span>
+            }
+          </div>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Insurance Expiry Date</mat-label>
-              <input matInput type="date" formControlName="insuranceExpiry" />
-              @if (vehicleFormGroup.get('insuranceExpiry')?.invalid && vehicleFormGroup.get('insuranceExpiry')?.touched) {
-                <mat-error>Required.</mat-error>
-              }
-            </mat-form-field>
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Insurance Expiry Date</label>
+            <input hlmInput type="date" formControlName="insuranceExpiry" class="w-full text-sm" />
+            @if (vehicleFormGroup.get('insuranceExpiry')?.invalid && vehicleFormGroup.get('insuranceExpiry')?.touched) {
+              <span class="text-xs text-destructive">Required.</span>
+            }
+          </div>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Pollution Expiry Date</mat-label>
-              <input matInput type="date" formControlName="pollutionExpiry" />
-              @if (vehicleFormGroup.get('pollutionExpiry')?.invalid && vehicleFormGroup.get('pollutionExpiry')?.touched) {
-                <mat-error>Required.</mat-error>
-              }
-            </mat-form-field>
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Pollution Expiry Date</label>
+            <input hlmInput type="date" formControlName="pollutionExpiry" class="w-full text-sm" />
+            @if (vehicleFormGroup.get('pollutionExpiry')?.invalid && vehicleFormGroup.get('pollutionExpiry')?.touched) {
+              <span class="text-xs text-destructive">Required.</span>
+            }
+          </div>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Fleet Active Status</mat-label>
-              <mat-select formControlName="status">
-                <mat-option value="available">Available for Rental</mat-option>
-                <mat-option value="maintenance">Maintenance / Service</mat-option>
-                <mat-option value="contract">Corporate Contract</mat-option>
-              </mat-select>
-            </mat-form-field>
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Fleet Active Status</label>
+            <select hlmInput formControlName="status" class="w-full text-sm">
+              <option value="available">Available for Rental</option>
+              <option value="maintenance">Maintenance / Service</option>
+              <option value="contract">Corporate Contract</option>
+            </select>
           </div>
         </div>
+      </div>
 
-        <div class="booking-card" style="margin-top: 24px;" formGroupName="pricing">
-          <h3>
-            <ng-icon name="lucideCreditCard"></ng-icon>
-            <span>Pricing Slabs & Rental Limits</span>
-          </h3>
-          <div class="booking-content" style="margin-top: 15px;">
-            <div formGroupName="h23" style="display:contents;">
-              <mat-form-field appearance="outline">
-                <mat-label>24 Hours Rate (Rs.)</mat-label>
-                <input matInput type="number" formControlName="price" />
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>24 Hours KM Limit</mat-label>
-                <input matInput type="number" formControlName="km" />
-              </mat-form-field>
+      <!-- Section 2: Pricing -->
+      <div class="p-4 rounded-xl border bg-card space-y-4" formGroupName="pricing">
+        <h4 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+          <ng-icon name="lucideCreditCard"></ng-icon>
+          <span>Pricing Slabs & Rental Limits</span>
+        </h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <div formGroupName="h23" class="p-3 rounded-lg border bg-muted/10 space-y-2">
+            <span class="text-xs font-semibold text-muted-foreground block">24 Hours Slab</span>
+            <div>
+              <label hlmLabel class="text-[10px] text-muted-foreground block">Rate (Rs.)</label>
+              <input hlmInput type="number" formControlName="price" class="w-full text-sm h-8" />
             </div>
-
-            <div formGroupName="h11" style="display:contents;">
-              <mat-form-field appearance="outline">
-                <mat-label>12 Hours Rate (Rs.)</mat-label>
-                <input matInput type="number" formControlName="price" />
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>12 Hours KM Limit</mat-label>
-                <input matInput type="number" formControlName="km" />
-              </mat-form-field>
-            </div>
-
-            <div formGroupName="h3" style="display:contents;">
-              <mat-form-field appearance="outline">
-                <mat-label>4 Hours Rate (Rs.)</mat-label>
-                <input matInput type="number" formControlName="price" />
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>4 Hours KM Limit</mat-label>
-                <input matInput type="number" formControlName="km" />
-              </mat-form-field>
-            </div>
-
-            <div formGroupName="h1" style="display:contents;">
-              <mat-form-field appearance="outline">
-                <mat-label>1 Hour Rate (Rs.)</mat-label>
-                <input matInput type="number" formControlName="price" />
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>1 Hour KM Limit</mat-label>
-                <input matInput type="number" formControlName="km" />
-              </mat-form-field>
+            <div>
+              <label hlmLabel class="text-[10px] text-muted-foreground block">KM Limit</label>
+              <input hlmInput type="number" formControlName="km" class="w-full text-sm h-8" />
             </div>
           </div>
-        </div>
 
-        <div class="booking-card" style="margin-top: 24px;">
-          <h3>
-            <ng-icon name="lucideMoreHorizontal"></ng-icon>
-            <span>Additional Overruns & Assets</span>
-          </h3>
-          <div class="booking-content" style="margin-top: 15px;">
-            <mat-form-field appearance="outline">
-              <mat-label>Extra KM Price (Rs./KM)</mat-label>
-              <input matInput type="number" formControlName="extraKmPrice" />
-            </mat-form-field>
+          <div formGroupName="h11" class="p-3 rounded-lg border bg-muted/10 space-y-2">
+            <span class="text-xs font-semibold text-muted-foreground block">12 Hours Slab</span>
+            <div>
+              <label hlmLabel class="text-[10px] text-muted-foreground block">Rate (Rs.)</label>
+              <input hlmInput type="number" formControlName="price" class="w-full text-sm h-8" />
+            </div>
+            <div>
+              <label hlmLabel class="text-[10px] text-muted-foreground block">KM Limit</label>
+              <input hlmInput type="number" formControlName="km" class="w-full text-sm h-8" />
+            </div>
+          </div>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Extra Hour Price (Rs./Hour)</mat-label>
-              <input matInput type="number" formControlName="extraHourPrice" />
-            </mat-form-field>
+          <div formGroupName="h3" class="p-3 rounded-lg border bg-muted/10 space-y-2">
+            <span class="text-xs font-semibold text-muted-foreground block">4 Hours Slab</span>
+            <div>
+              <label hlmLabel class="text-[10px] text-muted-foreground block">Rate (Rs.)</label>
+              <input hlmInput type="number" formControlName="price" class="w-full text-sm h-8" />
+            </div>
+            <div>
+              <label hlmLabel class="text-[10px] text-muted-foreground block">KM Limit</label>
+              <input hlmInput type="number" formControlName="km" class="w-full text-sm h-8" />
+            </div>
+          </div>
 
-            <div class="file-upload-wrapper full-width">
-              <span class="upload-label" style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--muted-foreground); margin-bottom: 6px; display: block; letter-spacing: 0.05em;">Vehicle Asset Image</span>
-              
-              <!-- Dropzone / Selector -->
-              @if (!previewUrl()) {
-                <div class="file-upload-dropzone" 
-                     (click)="fileInput.click()" 
-                     (dragover)="$event.preventDefault(); $event.stopPropagation();" 
-                     (drop)="$event.preventDefault(); $event.stopPropagation(); onFileSelected($event)">
-                  <ng-icon class="upload-icon" name="lucideUploadCloud"></ng-icon>
-                  <span class="upload-text">Drag & Drop or Click to Upload Image</span>
-                  <span class="upload-hint">PNG, JPG, JPEG, WEBP up to 5MB</span>
-                </div>
-              } @else {
-                <!-- Preview & Upload Status Card -->
-                <div class="upload-preview-container">
-                  <img [src]="previewUrl()!" alt="Vehicle Preview" class="preview-image" />
-                  <div class="file-info">
-                    <span class="file-name">{{ selectedFileName() }}</span>
-                    @if (isUploading()) {
-                      <span class="file-size" style="color: var(--color-cyan-500); font-weight: 700;">Uploading file to R2...</span>
-                    } @else {
-                      <span class="file-size" style="color: #10b981; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
-                        <ng-icon style="font-size: 14px; width: 14px; height: 14px;" name="lucideCheckCircle"></ng-icon> Uploaded Successfully
-                      </span>
-                    }
-                  </div>
-                  
-                  <div class="action-buttons">
-                    @if (!isUploading()) {
-                      <button hlmBtn variant="outline" size="sm" type="button" (click)="fileInput.click(); $event.stopPropagation()" style="border-radius: 8px;">
-                        Replace
-                      </button>
-                      <button hlmBtn variant="destructive" size="sm" type="button" (click)="clearSelectedImage(); $event.stopPropagation()" style="border-radius: 8px;">
-                        Clear
-                      </button>
-                    }
-                  </div>
-                </div>
-              }
-
-              <!-- Progress Bar -->
-              @if (isUploading()) {
-                <div class="upload-progress-container" style="margin-top: 10px;">
-                  <div class="progress-header">
-                    <span>Uploading...</span>
-                    <span>{{ uploadProgress() }}%</span>
-                  </div>
-                  <div class="progress-bar-bg">
-                    <div class="progress-bar-fill" [style.width.%]="uploadProgress()"></div>
-                  </div>
-                </div>
-              }
-
-              <!-- Error Display -->
-              @if (uploadError()) {
-                <div class="upload-error-message">
-                  <ng-icon name="lucideAlertCircle"></ng-icon>
-                  <span>{{ uploadError() }}</span>
-                </div>
-              }
-
-              <!-- Hidden Input -->
-              <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" style="display: none;" />
+          <div formGroupName="h1" class="p-3 rounded-lg border bg-muted/10 space-y-2">
+            <span class="text-xs font-semibold text-muted-foreground block">1 Hour Slab</span>
+            <div>
+              <label hlmLabel class="text-[10px] text-muted-foreground block">Rate (Rs.)</label>
+              <input hlmInput type="number" formControlName="price" class="w-full text-sm h-8" />
+            </div>
+            <div>
+              <label hlmLabel class="text-[10px] text-muted-foreground block">KM Limit</label>
+              <input hlmInput type="number" formControlName="km" class="w-full text-sm h-8" />
             </div>
           </div>
         </div>
       </div>
+
+      <!-- Section 3: Overruns & Assets -->
+      <div class="p-4 rounded-xl border bg-card space-y-4">
+        <h4 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+          <ng-icon name="lucideMoreHorizontal"></ng-icon>
+          <span>Additional Overruns & Assets</span>
+        </h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Extra KM Price (Rs./KM)</label>
+            <input hlmInput type="number" formControlName="extraKmPrice" class="w-full text-sm" />
+          </div>
+
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Extra Hour Price (Rs./Hour)</label>
+            <input hlmInput type="number" formControlName="extraHourPrice" class="w-full text-sm" />
+          </div>
+
+          <div class="sm:col-span-2">
+            <span class="text-xs text-muted-foreground uppercase font-semibold block mb-2">Vehicle Asset Image</span>
+            
+            <!-- Dropzone / Selector -->
+            @if (!previewUrl()) {
+              <div class="file-upload-dropzone p-6 border-2 border-dashed rounded-xl text-center cursor-pointer hover:border-primary transition-colors" 
+                   (click)="fileInput.click()" 
+                   (dragover)="$event.preventDefault(); $event.stopPropagation();" 
+                   (drop)="$event.preventDefault(); $event.stopPropagation(); onFileSelected($event)">
+                <ng-icon class="upload-icon text-3xl text-muted-foreground mb-1" name="lucideUploadCloud"></ng-icon>
+                <span class="upload-text text-sm font-semibold block">Drag & Drop or Click to Upload Image</span>
+                <span class="upload-hint text-xs text-muted-foreground">PNG, JPG, JPEG, WEBP up to 5MB</span>
+              </div>
+            } @else {
+              <!-- Preview & Upload Status Card -->
+              <div class="upload-preview-container p-4 border rounded-xl flex items-center justify-between gap-4">
+                <img [src]="previewUrl()!" alt="Vehicle Preview" class="preview-image h-16 w-16 object-cover rounded-lg" />
+                <div class="file-info flex-1 text-xs">
+                  <span class="file-name font-semibold block">{{ selectedFileName() }}</span>
+                  @if (isUploading()) {
+                    <span class="file-size text-primary font-bold">Uploading file to R2...</span>
+                  } @else {
+                    <span class="file-size text-emerald-500 font-bold inline-flex items-center gap-1">
+                      <ng-icon name="lucideCheckCircle"></ng-icon> Uploaded Successfully
+                    </span>
+                  }
+                </div>
+                
+                <div class="action-buttons flex items-center gap-2">
+                  @if (!isUploading()) {
+                    <button hlmBtn variant="outline" size="sm" type="button" (click)="fileInput.click(); $event.stopPropagation()">
+                      Replace
+                    </button>
+                    <button hlmBtn variant="destructive" size="sm" type="button" (click)="clearSelectedImage(); $event.stopPropagation()">
+                      Clear
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Progress Bar -->
+            @if (isUploading()) {
+              <div class="upload-progress-container mt-2">
+                <div class="progress-header flex justify-between text-xs text-muted-foreground mb-1">
+                  <span>Uploading...</span>
+                  <span>{{ uploadProgress() }}%</span>
+                </div>
+                <div class="progress-bar-bg h-2 rounded-full bg-muted overflow-hidden">
+                  <div class="progress-bar-fill h-full bg-primary" [style.width.%]="uploadProgress()"></div>
+                </div>
+              </div>
+            }
+
+            <!-- Error Display -->
+            @if (uploadError()) {
+              <div class="upload-error-message text-xs text-destructive mt-2 flex items-center gap-1">
+                <ng-icon name="lucideAlertCircle"></ng-icon>
+                <span>{{ uploadError() }}</span>
+              </div>
+            }
+
+            <!-- Hidden Input -->
+            <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" style="display: none;" />
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-3 border-t">
+        <button hlmBtn class="action-btn success flex items-center gap-1.5" [disabled]="vehicleFormGroup.invalid" (click)="saveVehicle($event)">
+          <ng-icon name="lucideCheck"></ng-icon>
+          <span>{{ editingVehicleMode() ? 'Update Vehicle' : 'Register Vehicle' }}</span>
+        </button>
+        <button hlmBtn variant="outline" class="close-btn" (click)="closeVehicleFormModal()">Cancel</button>
+      </div>
     </form>
-  </mat-dialog-content>
-  
-  <mat-dialog-actions align="end" class="modern-dialog-actions">
-    <button mat-raised-button color="primary" class="action-btn success" style="margin-right: 12px;" [disabled]="vehicleFormGroup.invalid" (click)="saveVehicle($event)">
-      <ng-icon name="lucideCheck"></ng-icon>
-      <span>{{ editingVehicleMode() ? 'Update Vehicle' : 'Register Vehicle' }}</span>
-    </button>
-    <button mat-button color="warn" class="close-btn" (click)="closeVehicleFormModal()">Cancel</button>
-  </mat-dialog-actions>
+  </div>
 </ng-template>

@@ -1,157 +1,140 @@
 <div class="json-to-typescript-container">
   <!-- Header Section -->
-  <mat-card class="header-card mb-4">
-    <mat-card-header class="py-3">
-      <mat-card-title>JSON to TypeScript Interface Generator</mat-card-title>
-      <mat-card-subtitle
-        >Convert your JSON objects into strongly-typed TypeScript
-        interfaces</mat-card-subtitle
-      >
-    </mat-card-header>
-  </mat-card>
+  <div hlmCard class="header-card mb-4 p-5 rounded-2xl border shadow-sm">
+    <h2 class="text-xl font-bold tracking-tight">JSON to TypeScript Interface Generator</h2>
+    <p class="text-sm text-muted-foreground mt-1">
+      Convert your JSON objects into strongly-typed TypeScript interfaces
+    </p>
+  </div>
 
   <!-- Main Content -->
-  <div
-    class="content-wrapper"
-    fxLayout="row"
-    fxLayoutGap="24px"
-    fxLayoutAlign="stretch stretch"
-  >
+  <div class="content-wrapper grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
     <!-- Input Section -->
-    <mat-card fxFlex="1 1 50%">
-      <mat-card-header>
-        <mat-card-title class="pb-3">Input JSON</mat-card-title>
-      </mat-card-header>
+    <div hlmCard class="p-5 rounded-2xl border shadow-sm flex flex-col">
+      <h3 class="text-base font-semibold mb-3">Input JSON</h3>
+      <div hlmSeparator class="mb-4"></div>
 
-      <mat-card-content>
-        <form [formGroup]="form">
-          <!-- Interface Name Input -->
-          <mat-form-field class="full-width" appearance="outline">
-            <mat-label>Interface Name</mat-label>
-            <input
-              matInput
-              formControlName="interfaceName"
-              placeholder="e.g., User, Product, Response"
-              type="text"
-            />
-            @if (interfaceName?.hasError('required')) {
-              <mat-error>
-                Interface name is required
-              </mat-error>
-            }
-            @if (interfaceName?.hasError('pattern')) {
-              <mat-error>
-                Must start with letter, $, or _ and contain only alphanumeric
-                characters
-              </mat-error>
-            }
-          </mat-form-field>
-
-          <!-- JSON Input TextArea -->
-          <mat-form-field
-            class="full-width textarea-field"
-            appearance="outline"
-          >
-            <mat-label>Paste your JSON here</mat-label>
-            <textarea
-              matInput
-              formControlName="jsonInput"
-              placeholder='{"name": "John", "age": 30, "email": "john@example.com"}'
-              rows="12"
-              class="json-textarea"
-            ></textarea>
-            @if (jsonInput?.hasError('required')) {
-              <mat-error>
-                JSON input is required
-              </mat-error>
-            }
-            @if (jsonInput?.hasError('invalidJson')) {
-              <mat-error>
-                Please enter valid JSON format
-              </mat-error>
-            }
-          </mat-form-field>
-
-          <!-- Action Buttons -->
-          <div class="button-group" fxLayout="row" fxLayoutGap="12px">
-            <button
-              mat-raised-button
-              color="primary"
-              (click)="generateInterface()"
-              [disabled]="form.invalid || isLoading"
-              fxFlex="1"
-            >
-              <ng-icon name="lucideSparkles"></ng-icon>
-              <span class="button-text">Generate Interface</span>
-            </button>
-
-            <button mat-stroked-button (click)="clearInput()" fxFlex="1">
-              <ng-icon name="lucideTrash2"></ng-icon>
-              <span class="button-text">Clear</span>
-            </button>
-          </div>
-
-          <!-- Loading Indicator -->
-          @if (isLoading) {
-            <div
-              class="loading-indicator"
-              fxLayout="row"
-              fxLayoutAlign="center center"
-            >
-              <mat-spinner diameter="24"></mat-spinner>
-              <span class="loading-text">Processing...</span>
-            </div>
+      <form [formGroup]="form" class="space-y-4">
+        <!-- Interface Name Input -->
+        <div>
+          <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Interface Name</label>
+          <input
+            hlmInput
+            formControlName="interfaceName"
+            placeholder="e.g., User, Product, Response"
+            type="text"
+            class="w-full text-sm"
+          />
+          @if (interfaceName?.hasError('required')) {
+            <span class="text-xs text-destructive mt-1 block">Interface name is required</span>
           }
-        </form>
-      </mat-card-content>
-    </mat-card>
+          @if (interfaceName?.hasError('pattern')) {
+            <span class="text-xs text-destructive mt-1 block">Must start with letter, $, or _ and contain only alphanumeric characters</span>
+          }
+        </div>
+
+        <!-- JSON Input TextArea -->
+        <div>
+          <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Paste your JSON here</label>
+          <textarea
+            hlmInput
+            formControlName="jsonInput"
+            placeholder='{"name": "John", "age": 30, "email": "john@example.com"}'
+            rows="12"
+            class="json-textarea font-mono text-xs w-full resize-y"
+          ></textarea>
+          @if (jsonInput?.hasError('required')) {
+            <span class="text-xs text-destructive mt-1 block">JSON input is required</span>
+          }
+          @if (jsonInput?.hasError('invalidJson')) {
+            <span class="text-xs text-destructive mt-1 block">Please enter valid JSON format</span>
+          }
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="button-group flex items-center gap-3 pt-2">
+          <button
+            hlmBtn
+            type="button"
+            (click)="generateInterface()"
+            [disabled]="form.invalid || isLoading"
+            class="flex-1 flex items-center justify-center gap-1.5"
+          >
+            <ng-icon name="lucideSparkles"></ng-icon>
+            <span class="button-text">Generate Interface</span>
+          </button>
+
+          <button
+            hlmBtn
+            variant="outline"
+            type="button"
+            (click)="clearInput()"
+            class="flex items-center gap-1.5"
+          >
+            <ng-icon name="lucideTrash2"></ng-icon>
+            <span class="button-text">Clear</span>
+          </button>
+        </div>
+
+        <!-- Loading Indicator -->
+        @if (isLoading) {
+          <div class="loading-indicator flex items-center justify-center gap-2 p-3 bg-muted/20 rounded-xl text-muted-foreground text-sm">
+            <hlm-spinner class="w-4 h-4"></hlm-spinner>
+            <span class="loading-text">Processing...</span>
+          </div>
+        }
+      </form>
+    </div>
 
     <!-- Output Section -->
     @if (showOutput) {
-      <mat-card class="output-section" fxFlex="1 1 50%">
-        <mat-card-header>
-          <mat-card-title class="section-title"
-            >Generated TypeScript Interface</mat-card-title
-          >
-        </mat-card-header>
-
-        <mat-card-content>
-          <!-- Output Display -->
-          <pre class="interface-output">{{ generatedInterface }}</pre>
-
+      <div hlmCard class="output-section p-5 rounded-2xl border shadow-sm flex flex-col">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-base font-semibold">Generated TypeScript Interface</h3>
           <!-- Action Buttons -->
-          <div class="output-button-group" fxLayout="row" fxLayoutGap="8px">
+          <div class="output-button-group flex items-center gap-1">
             <button
-              mat-icon-button
-              matTooltip="Copy to Clipboard"
-              color="accent"
+              hlmBtn
+              size="icon"
+              variant="ghost"
+              hlmTooltip="Copy to Clipboard"
               (click)="copyToClipboard()"
               [class.copied]="copySuccess"
+              class="h-8 w-8 text-primary"
             >
               <ng-icon [name]="copySuccess ? 'lucideCheckCircle' : 'lucideCopy'"></ng-icon>
             </button>
 
             <button
-              mat-icon-button
-              matTooltip="Download as .ts file"
-              color="accent"
+              hlmBtn
+              size="icon"
+              variant="ghost"
+              hlmTooltip="Download as .ts file"
               (click)="downloadInterface()"
+              class="h-8 w-8 text-primary"
             >
               <ng-icon name="lucideDownload"></ng-icon>
             </button>
 
-            <mat-divider [vertical]="true"></mat-divider>
+            <div hlmSeparator class="h-4 w-px mx-1" orientation="vertical"></div>
 
             <button
-              mat-icon-button
-              matTooltip="Close"
+              hlmBtn
+              size="icon"
+              variant="ghost"
+              hlmTooltip="Close"
               (click)="showOutput = false"
+              class="h-8 w-8 text-muted-foreground"
             >
               <ng-icon name="lucideX"></ng-icon>
             </button>
           </div>
-        </mat-card-content>
-      </mat-card>
+        </div>
+        <div hlmSeparator class="mb-4"></div>
+
+        <!-- Output Display -->
+        <pre class="interface-output font-mono text-xs p-4 bg-muted/20 rounded-xl overflow-x-auto leading-relaxed border">{{ generatedInterface }}</pre>
+      </div>
     }
   </div>
 </div>

@@ -6,7 +6,7 @@
         <ng-icon class="brand-icon" name="lucideZap"></ng-icon>
         <span class="brand-name">AI Space</span>
       </div>
-      <button mat-icon-button (click)="toggleSidebar()" class="toggle-btn mobile-only" title="Close sidebar">
+      <button hlmBtn size="icon" variant="ghost" (click)="toggleSidebar()" class="toggle-btn mobile-only" title="Close sidebar">
         <ng-icon name="lucideChevronLeft"></ng-icon>
       </button>
     </div>
@@ -44,7 +44,7 @@
     </div>
 
     <div class="sidebar-footer">
-      <button mat-button class="back-profile-btn" routerLink="/user">
+      <button hlmBtn variant="ghost" class="back-profile-btn" routerLink="/user">
         <ng-icon name="lucideArrowLeft"></ng-icon>
         <span>Back to Profile</span>
       </button>
@@ -61,7 +61,7 @@
     <!-- Header -->
     <header class="chat-header">
       <div class="header-left">
-        <button mat-icon-button (click)="toggleSidebar()" class="toggle-sidebar-btn" aria-label="Toggle Sidebar">
+        <button hlmBtn size="icon" variant="ghost" (click)="toggleSidebar()" class="toggle-sidebar-btn" aria-label="Toggle Sidebar">
           <ng-icon name="lucideMenu"></ng-icon>
         </button>
         <div class="chat-title-info">
@@ -77,7 +77,7 @@
         </div>
       </div>
       <div class="header-right font-controls">
-        <button mat-icon-button routerLink="/user" title="Account settings">
+        <button hlmBtn size="icon" variant="ghost" routerLink="/user" title="Account settings">
           <ng-icon name="lucideCircleUser"></ng-icon>
         </button>
       </div>
@@ -149,11 +149,11 @@
                       </div>
                     }
                   </div>
-                  <button mat-icon-button class="copy-bubble-btn" (click)="copyToClipboard(msg.text)" title="Copy message">
+                  <button hlmBtn size="icon" variant="ghost" class="copy-bubble-btn" (click)="copyToClipboard(msg.text)" title="Copy message">
                     <ng-icon name="lucideCopy"></ng-icon>
                   </button>
                   @if (msg.role === 'user' && messages()[$index + 1]?.status === 'error') {
-                    <button mat-icon-button class="retry-bubble-btn" (click)="onRetry(msg.text, $index + 1)" title="Retry prompt">
+                    <button hlmBtn size="icon" variant="ghost" class="retry-bubble-btn" (click)="onRetry(msg.text, $index + 1)" title="Retry prompt">
                       <ng-icon name="lucideRefreshCw"></ng-icon>
                     </button>
                   }
@@ -181,7 +181,9 @@
           [class.active]="currentPrompt().trim().length > 0 && !isStreaming()"
           [disabled]="currentPrompt().trim().length === 0 || isStreaming()" 
           (click)="onSend()"
-          mat-icon-button
+          hlmBtn
+          size="icon"
+          variant="ghost"
         >
           <ng-icon name="lucideSend"></ng-icon>
         </button>

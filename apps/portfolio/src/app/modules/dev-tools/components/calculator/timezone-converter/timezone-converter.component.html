@@ -1,116 +1,98 @@
-<div class="timezone-container">
-  <mat-card class="header-card mb-4">
-    <mat-card-header class="py-3">
-      <mat-card-title>Timezone Converter</mat-card-title>
-      <mat-card-subtitle>Convert date and time between different timezones instantly</mat-card-subtitle>
-    </mat-card-header>
-  </mat-card>
+<div class="timezone-container max-w-3xl">
+  <!-- Header Card -->
+  <div hlmCard class="header-card mb-4 p-5 rounded-2xl border shadow-sm">
+    <h2 class="text-xl font-bold tracking-tight">Timezone Converter</h2>
+    <p class="text-sm text-muted-foreground mt-1">Convert date and time between different timezones instantly</p>
+  </div>
 
-  <mat-card class="content-card">
-    <mat-card-content class="pt-4">
-      <form [formGroup]="timeForm">
-        <div data-layout="row wrap" data-layout-align="start start" class="mb-4">
-          <div class="fromToText pt-2">From</div>
-          <div
-            data-layout="row wrap"
-            data-layout-align="start start"
-            data-layout-gap="8px"
-            style="width: calc(100% - 50px)"
-          >
-            <mat-form-field appearance="outline" class="datePickerWidth">
-              <mat-label>Date</mat-label>
-              <input
-                matInput
-                [matDatepicker]="matFromDate"
-                placeholder="Start date"
-                formControlName="fromDate"
-              />
-              <mat-datepicker-toggle
-                matSuffix
-                [for]="matFromDate"
-              ></mat-datepicker-toggle>
-              <mat-datepicker #matFromDate startView="year"></mat-datepicker>
-              @if (timeForm.controls.fromDate.hasError('matDatepickerParse')) {
-                <mat-error>Invalid From Zone Date</mat-error>
+  <div hlmCard class="content-card p-5 rounded-2xl border shadow-sm">
+    <form [formGroup]="timeForm" class="space-y-6">
+      <!-- From Section -->
+      <div class="space-y-3">
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">From</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label hlmLabel class="block mb-1.5 text-xs text-muted-foreground">Date</label>
+            <input
+              hlmInput
+              type="date"
+              formControlName="fromDate"
+              class="w-full text-sm"
+            />
+          </div>
+
+          <div>
+            <label hlmLabel class="block mb-1.5 text-xs text-muted-foreground">Time</label>
+            <input
+              hlmInput
+              type="time"
+              formControlName="fromTime"
+              class="w-full text-sm"
+            />
+          </div>
+
+          <div>
+            <label hlmLabel class="block mb-1.5 text-xs text-muted-foreground">Time Zone</label>
+            <input
+              hlmInput
+              type="text"
+              formControlName="fromTimeZone"
+              list="fromTimeZonesList"
+              placeholder="Search time zone..."
+              class="w-full text-sm"
+            />
+            <datalist id="fromTimeZonesList">
+              @for (timeZone of timeZones; track timeZone.abbr + timeZone.text) {
+                <option [value]="timeZone.abbr + ' - ' + timeZone.text">{{ timeZone.abbr }} - {{ timeZone.text }}</option>
               }
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="timePickerWidth">
-              <mat-label>Time</mat-label>
-              <input
-                matInput
-                [matTimepicker]="fromTimePicker"
-                formControlName="fromTime"
-              />
-              <mat-timepicker-toggle
-                matSuffix
-                [for]="fromTimePicker"
-              ></mat-timepicker-toggle>
-              <mat-timepicker interval="15min" #fromTimePicker></mat-timepicker>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="timeZoneWidth">
-              <mat-label>Time Zone</mat-label>
-              <input
-                type="text"
-                aria-label="Time Zone"
-                matInput
-                formControlName="fromTimeZone"
-                name="fromTimeZone"
-                [matAutocomplete]="fromTimeZoneAutocomplete"
-              />
-              <mat-autocomplete #fromTimeZoneAutocomplete="matAutocomplete">
-                @for (timeZone of filteredFromTimeZones | async; track timeZone) {
-                  <mat-option [value]="timeZone.abbr + ' - ' + timeZone.text"
-                    >{{ timeZone.abbr }} - {{ timeZone.text }}</mat-option
-                  >
-                }
-              </mat-autocomplete>
-            </mat-form-field>
+            </datalist>
           </div>
         </div>
+      </div>
 
-        <div data-layout="row" data-layout-align="center start" class="mb-4">
-          <div class="fromToText pt-2">To</div>
-          <div
-            data-layout="row wrap"
-            data-layout-align="start start"
-            data-layout-gap="8px"
-            style="width: calc(100% - 50px)"
-          >
-            <mat-form-field appearance="outline" style="width: 100%">
-              <mat-label>Time Zone</mat-label>
-              <input
-                type="text"
-                aria-label="Time Zone"
-                matInput
-                formControlName="toTimeZone"
-                name="toTimeZone"
-                [matAutocomplete]="toTimeZoneAutocomplete"
-              />
-              <mat-autocomplete #toTimeZoneAutocomplete="matAutocomplete">
-                @for (timeZone of filteredToTimeZones | async; track timeZone) {
-                  <mat-option [value]="timeZone.abbr + ' - ' + timeZone.text"
-                    >{{ timeZone.abbr }} - {{ timeZone.text }}</mat-option
-                  >
-                }
-              </mat-autocomplete>
-            </mat-form-field>
-          </div>
+      <div hlmSeparator></div>
+
+      <!-- To Section -->
+      <div class="space-y-3">
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">To</h3>
+        <div>
+          <label hlmLabel class="block mb-1.5 text-xs text-muted-foreground">Target Time Zone</label>
+          <input
+            hlmInput
+            type="text"
+            formControlName="toTimeZone"
+            list="toTimeZonesList"
+            placeholder="Search target time zone..."
+            class="w-full text-sm"
+          />
+          <datalist id="toTimeZonesList">
+            @for (timeZone of timeZones; track timeZone.abbr + timeZone.text) {
+              <option [value]="timeZone.abbr + ' - ' + timeZone.text">{{ timeZone.abbr }} - {{ timeZone.text }}</option>
+            }
+          </datalist>
         </div>
+      </div>
 
-        <div class="mb-4">
-          <button mat-raised-button color="primary" type="button" (click)="calculate()">
-            <ng-icon name="lucideClock"></ng-icon> Convert
-          </button>
+      <!-- Action Button -->
+      <div class="pt-2">
+        <button
+          hlmBtn
+          type="button"
+          (click)="calculate()"
+          class="w-full sm:w-auto flex items-center justify-center gap-1.5"
+        >
+          <ng-icon name="lucideClock"></ng-icon>
+          Convert Timezone
+        </button>
+      </div>
+
+      <!-- Results Display -->
+      @if (formattedDate()) {
+        <div class="result-box p-4 rounded-xl bg-primary/10 border border-primary/20 text-primary">
+          <span class="block text-xs uppercase font-semibold text-muted-foreground mb-1">Converted Date & Time</span>
+          <span class="text-lg font-bold">{{ formattedDate() }}</span>
         </div>
-
-        @if (formattedDate()) {
-          <div class="result-box p-3">
-            <strong>Converted Time:</strong> {{ formattedDate() }}
-          </div>
-        }
-      </form>
-    </mat-card-content>
-  </mat-card>
+      }
+    </form>
+  </div>
 </div>

@@ -1,36 +1,32 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { MatCardModule } from '@angular/material/card';
+import { HlmCardDirective } from '@spartan-ng/hel/card';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { lucideHammer } from '@ng-icons/lucide';
 
 @Component({
   selector: 'app-tool-placeholder',
   standalone: true,
-  imports: [CommonModule, MatCardModule, NgIconComponent],
+  imports: [CommonModule, HlmCardDirective, NgIconComponent],
   providers: [provideIcons({ lucideHammer })],
   template: `
-    <div class="p-4" style="display: flex; justify-content: center; align-items: center; min-height: 70vh;">
-      <mat-card style="max-width: 600px; width: 100%; padding: 32px; text-align: center; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.08);">
-        <mat-card-header style="justify-content: center; margin-bottom: 20px; display: flex;">
-          <div style="background: rgba(63, 81, 181, 0.08); padding: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-            <ng-icon name="lucideHammer" color="var(--primary, #3f51b5)" style="font-size: 48px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;"></ng-icon>
-          </div>
-        </mat-card-header>
-        <mat-card-title style="font-size: 26px; font-weight: 600; margin-bottom: 10px; color: var(--mdc-theme-primary, #3f51b5);">
+    <div class="p-4 flex justify-center items-center min-h-[70vh]">
+      <div hlmCard class="max-w-[600px] w-full p-8 text-center rounded-2xl border shadow-sm flex flex-col items-center">
+        <div class="mb-5 bg-primary/10 p-5 rounded-full flex items-center justify-center">
+          <ng-icon name="lucideHammer" class="text-4xl text-primary flex items-center justify-center"></ng-icon>
+        </div>
+        <h2 class="text-2xl font-bold mb-2 text-primary">
           {{ toolName }} Tool
-        </mat-card-title>
-        <mat-card-subtitle style="font-size: 16px; color: var(--mdc-theme-text-secondary-on-background, #666); margin-bottom: 24px;">
+        </h2>
+        <h3 class="text-sm font-medium text-muted-foreground mb-6">
           Category: {{ categoryName }}
-        </mat-card-subtitle>
-        <mat-card-content>
-          <p style="font-size: 15px; line-height: 1.6; color: var(--mdc-theme-text-primary-on-background, #333); margin: 0;">
-            The <strong>{{ toolName }}</strong> developer tool is currently under construction.
-            Once implemented, it will render here dynamically.
-          </p>
-        </mat-card-content>
-      </mat-card>
+        </h3>
+        <p class="text-sm leading-relaxed text-muted-foreground max-w-md">
+          The <strong>{{ toolName }}</strong> developer tool is currently under construction.
+          Once implemented, it will render here dynamically.
+        </p>
+      </div>
     </div>
   `
 })

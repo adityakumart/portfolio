@@ -1,18 +1,16 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatRadioModule } from '@angular/material/radio';
-import { MatSelectModule } from '@angular/material/select';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { HlmCardDirective } from '@spartan-ng/hel/card';
+import { HlmInputDirective } from '@spartan-ng/hel/input';
+import { HlmLabelDirective } from '@spartan-ng/hel/label';
+import { HlmButtonDirective } from '@spartan-ng/hel/button';
+import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
+import { HlmSeparatorDirective } from '@spartan-ng/hel/separator';
+import { toast } from '@spartan-ng/hel/sonner';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { lucideCheckCircle, lucideCopy, lucideRefreshCw } from '@ng-icons/lucide';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatDividerModule } from '@angular/material/divider';
 import { Subject } from 'rxjs';
 import { takeUntil, filter } from 'rxjs/operators';
 import { RandomGeneratorService } from './services/random-generator.service';
@@ -23,18 +21,15 @@ export type GeneratorType = 'array' | 'number' | 'objects' | 'uuid' | 'password'
   selector: 'app-random-generator',
   standalone: true,
   imports: [
+    CommonModule,
     ReactiveFormsModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatRadioModule,
-    MatSelectModule,
-    MatCheckboxModule,
-    MatSnackBarModule,
+    HlmCardDirective,
+    HlmInputDirective,
+    HlmLabelDirective,
+    HlmButtonDirective,
+    HlmTooltipImports,
+    HlmSeparatorDirective,
     NgIconComponent,
-    MatTooltipModule,
-    MatDividerModule,
   ],
   providers: [
     provideIcons({ lucideCheckCircle, lucideCopy, lucideRefreshCw }),
@@ -47,9 +42,9 @@ export class RandomGeneratorComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
-  private snackBar = inject(MatSnackBar);
   private generatorService = inject(RandomGeneratorService);
 
+  readonly generatorTypes: GeneratorType[] = ['array', 'number', 'objects', 'uuid', 'password', 'hash'];
   generatorType: GeneratorType = 'uuid';
   settingsForm!: FormGroup;
   generatedOutputs: string[] = [];
@@ -254,7 +249,7 @@ export class RandomGeneratorComponent implements OnInit, OnDestroy {
             })
           );
           break;
-        case 'hash':
+        case 'hash': {
           const hashRes = this.generatorService.generateHash({
             algorithm: formVal.hashAlgorithm,
             casing: formVal.hashCasing,
@@ -262,6 +257,7 @@ export class RandomGeneratorComponent implements OnInit, OnDestroy {
           outputs.push(hashRes.hash);
           seeds.push(hashRes.seed);
           break;
+        }
       }
     }
 
@@ -314,18 +310,12 @@ export class RandomGeneratorComponent implements OnInit, OnDestroy {
    * Helper to display snackbar notifications.
    */
   private showSnackBar(message: string, type: 'success' | 'error' | 'info'): void {
-    const panelClass =
-      type === 'success'
-        ? 'success-snackbar'
-        : type === 'error'
-        ? 'error-snackbar'
-        : 'info-snackbar';
-
-    this.snackBar.open(message, 'Close', {
-      duration: 2500,
-      horizontalPosition: 'end',
-      verticalPosition: 'bottom',
-      panelClass: [panelClass],
-    });
+    if (type === 'success') {
+      toast.success(message);
+    } else if (type === 'error') {
+      toast.error(message);
+    } else {
+      toast.info(message);
+    }
   }
 }

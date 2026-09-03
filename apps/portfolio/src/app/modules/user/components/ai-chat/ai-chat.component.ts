@@ -2,7 +2,8 @@ import { Component, inject, signal, computed, effect, ElementRef, ViewChild, Aft
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { MatButtonModule } from '@angular/material/button';
+import { HlmButtonDirective } from '@spartan-ng/hel/button';
+import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideZap,
@@ -20,7 +21,6 @@ import {
   lucideRefreshCw,
   lucideSend,
 } from '@ng-icons/lucide';
-import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { AiChatService } from '../../services/ai-chat.service';
 import { AuthService } from '../../services/auth';
@@ -31,9 +31,9 @@ import { AuthService } from '../../services/auth';
   imports: [
     CommonModule,
     RouterLink,
-    MatButtonModule,
+    HlmButtonDirective,
+    HlmTooltipImports,
     NgIconComponent,
-    MatTooltipModule,
   ],
   providers: [
     provideIcons({

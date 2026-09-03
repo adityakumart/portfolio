@@ -13,57 +13,48 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { provideNativeDateAdapter } from '@angular/material/core';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatTableModule } from '@angular/material/table';
-
+import { HlmCardDirective } from '@spartan-ng/hel/card';
+import { HlmInputDirective } from '@spartan-ng/hel/input';
+import { HlmLabelDirective } from '@spartan-ng/hel/label';
+import { HlmButtonDirective } from '@spartan-ng/hel/button';
+import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
+import { HlmSeparatorDirective } from '@spartan-ng/hel/separator';
+import { HlmDialogService } from '@spartan-ng/hel/dialog';
 import { ExperienceService } from './experience.service';
 import { UserExperienceRecord } from '@portfolio/shared-types';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { lucideList, lucidePlus, lucideTrash2 } from '@ng-icons/lucide';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { ErrorMessageComponent } from '../../../../../shared/components/error-message.component';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ExperienceListDialogComponent } from './experience-list-dialog.component';
-import { CommonMaterialModule } from '../../../../../shared/Material/common-material.module';
-import { MatDividerModule } from '@angular/material/divider';
-import { MatCardModule } from '@angular/material/card';
 
 @Component({
   selector: 'app-experience',
   templateUrl: './experience.component.html',
   styleUrl: './experience.component.scss',
   providers: [
-    provideNativeDateAdapter(),
     provideIcons({ lucideList, lucidePlus, lucideTrash2 }),
   ],
   imports: [
     CommonModule,
-    MatButtonModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatTableModule,
-    MatDatepickerModule,
     ReactiveFormsModule,
+    HlmCardDirective,
+    HlmInputDirective,
+    HlmLabelDirective,
+    HlmButtonDirective,
+    HlmTooltipImports,
+    HlmSeparatorDirective,
     NgIconComponent,
-    MatTooltipModule,
     ErrorMessageComponent,
-    MatDialogModule,
-    CommonMaterialModule,
-    MatDividerModule,
-    MatCardModule,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ExperienceComponent implements OnInit {
   private fb = inject(FormBuilder);
   private expService = inject(ExperienceService);
-
-  private dialog = inject(MatDialog);
+  private dialogService = inject(HlmDialogService);
   private cdr = inject(ChangeDetectorRef);
+
+  maxDate = new Date().toISOString().split('T')[0];
 
   experienceForm: FormGroup = this.fb.group({
     id: [null],
@@ -119,11 +110,11 @@ export class ExperienceComponent implements OnInit {
       ...(formValue.id ? { id: formValue.id } : {}),
       name: formValue.name,
       email: formValue.email,
-      experience: formValue.experience,
-      totalDays: totalDays,
+      totalDays,
       displayYears: calculatedExp.years,
       displayMonths: calculatedExp.months,
       displayDays: calculatedExp.days,
+      experience: formValue.experience,
     };
 
     const saveObs = formValue.id
@@ -143,12 +134,12 @@ export class ExperienceComponent implements OnInit {
   }
 
   openListDialog() {
-    const dialogRef = this.dialog.open(ExperienceListDialogComponent, {
-      width: '800px',
-      data: { records: this.expService.experiences() },
+    const dialogRef = this.dialogService.open(ExperienceListDialogComponent, {
+      contentClass: 'max-w-3xl w-full p-0 overflow-hidden',
+      context: { records: this.expService.experiences() },
     });
 
-    dialogRef.afterClosed().subscribe((result) => {
+    dialogRef.closed$.subscribe((result: any) => {
       if (result) {
         if (result.action === 'edit') {
           this.editRecord(result.record);
@@ -164,8 +155,8 @@ export class ExperienceComponent implements OnInit {
     record.experience.forEach((exp) => {
       const group = this.createDateRangeGroup();
       group.patchValue({
-        start: exp.start ? new Date(exp.start) : null,
-        end: exp.end ? new Date(exp.end) : null,
+        start: exp.start ? new Date(exp.start).toISOString().split('T')[0] : '',
+        end: exp.end ? new Date(exp.end).toISOString().split('T')[0] : '',
       });
       this.experienceFormArray.push(group);
     });
@@ -178,21 +169,22 @@ export class ExperienceComponent implements OnInit {
   }
 
   getComputedExperience(): string {
-    const total = this.expService.calculateTotalExperience(
-      this.experienceForm.value.experience,
+    const expArray = this.experienceForm.get('experience')?.value;
+    if (!expArray || expArray.length === 0) return '';
+
+    const validExp = expArray.filter(
+      (e: { start: string; end: string }) => e.start && e.end,
     );
-    if (total.years || total.months || total.days) {
-      return `${total.years} Years, ${total.months} Months, ${total.days} Days`;
-    }
-    return ``;
+    if (validExp.length === 0) return '';
+
+    const result = this.expService.calculateTotalExperience(validExp);
+    return `${result.years} Years, ${result.months} Months, ${result.days} Days`;
   }
 
-  displayedColumns: string[] = ['index', 'start', 'end', 'experience'];
-  readonly maxDate = new Date();
-
-  reset = () => {
+  reset() {
     this.experienceForm.reset();
     this.experienceFormArray.clear();
-    this.experienceFormArray.push(this.createDateRangeGroup());
-  };
+    this.addDateRangeRow();
+    this.cdr.markForCheck();
+  }
 }

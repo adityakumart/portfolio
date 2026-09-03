@@ -1,379 +1,416 @@
 <div class="encoder-hash-container">
   <!-- Header Card -->
-  <mat-card class="header-card mb-4">
-    <mat-card-header class="py-3">
-      <mat-card-title>URL & Cryptographic Hash Tools</mat-card-title>
-      <mat-card-subtitle>
-        Perform real-time URL component encoding/decoding and generate MD5 or SHA-256 secure cryptographic hashes.
-      </mat-card-subtitle>
-    </mat-card-header>
-  </mat-card>
+  <div hlmCard class="header-card mb-4 p-5 rounded-2xl border shadow-sm">
+    <h2 class="text-xl font-bold tracking-tight">URL & Cryptographic Hash Tools</h2>
+    <p class="text-sm text-muted-foreground mt-1">
+      Perform real-time URL component encoding/decoding and generate MD5 or SHA-256 secure cryptographic hashes.
+    </p>
+  </div>
 
-  <form [formGroup]="form" class="tools-form">
+  <form [formGroup]="form" class="tools-form space-y-4">
     <!-- Tabs Selector -->
-    <mat-tab-group
-      [selectedIndex]="activeTabIndex"
-      (selectedIndexChange)="onTabChange($event)"
-      color="primary"
-      class="tools-tabs mb-4"
-      dynamicHeight
-    >
-      <!-- URL Tab -->
-      <mat-tab label="URL Encoder/Decoder">
-        <ng-template matTabContent>
-          <div class="tab-container mt-4">
-            <!-- URL Controls Toolbar -->
-            <mat-card class="toolbar-card mb-4">
-              <mat-card-content class="toolbar-content">
-                <div class="controls-group">
-                  <div class="control-item">
-                    <span class="control-label">Operation</span>
-                    <mat-radio-group formControlName="urlOperation" color="primary" class="operation-radio-group">
-                      <mat-radio-button value="encode">Encode</mat-radio-button>
-                      <mat-radio-button value="decode">Decode</mat-radio-button>
-                    </mat-radio-group>
-                  </div>
-                </div>
+    <div class="flex items-center gap-2 border-b pb-2 mb-4">
+      <button
+        type="button"
+        hlmBtn
+        [variant]="activeTabIndex === 0 ? 'default' : 'ghost'"
+        (click)="onTabChange(0)"
+        class="text-sm"
+      >
+        URL Encoder/Decoder
+      </button>
+      <button
+        type="button"
+        hlmBtn
+        [variant]="activeTabIndex === 1 ? 'default' : 'ghost'"
+        (click)="onTabChange(1)"
+        class="text-sm"
+      >
+        MD5 Hasher
+      </button>
+      <button
+        type="button"
+        hlmBtn
+        [variant]="activeTabIndex === 2 ? 'default' : 'ghost'"
+        (click)="onTabChange(2)"
+        class="text-sm"
+      >
+        SHA-256 Hasher
+      </button>
+    </div>
 
-                <div class="actions-group">
-                  <button
-                    mat-raised-button
-                    color="primary"
-                    type="button"
-                    (click)="processUrl()"
-                    [disabled]="!form.get('urlInput')?.value"
-                    class="action-btn"
-                  >
-                    <ng-icon [name]="form.get('urlOperation')?.value === 'encode' ? 'lucideLock' : 'lucideLockOpen'"></ng-icon>
-                    {{ form.get('urlOperation')?.value === 'encode' ? 'Encode' : 'Decode' }}
-                  </button>
-
-                  <button
-                    mat-stroked-button
-                    type="button"
-                    (click)="onSwapUrl()"
-                    [disabled]="!form.get('urlInput')?.value && !form.get('urlOutput')?.value"
-                    class="action-btn"
-                    matTooltip="Swap Input and Output fields"
-                  >
-                    <ng-icon name="lucideArrowUpDown"></ng-icon>
-                    Swap
-                  </button>
-
-                  <button
-                    mat-button
-                    type="button"
-                    (click)="onClearUrl()"
-                    class="action-btn"
-                  >
-                    <ng-icon name="lucideEraser"></ng-icon>
-                    Clear
-                  </button>
-                </div>
-              </mat-card-content>
-            </mat-card>
-
-            <!-- Error Detail Box -->
-            @if (urlErrorMessage) {
-              <div class="error-detail-box mb-4">
-                <ng-icon class="error-box-icon" name="lucideAlertTriangle"></ng-icon>
-                <div class="error-box-content">
-                  <strong>Conversion Error:</strong>
-                  <p class="error-message-text">{{ urlErrorMessage }}</p>
-                </div>
-              </div>
-            }
-
-            <!-- URL Workspace -->
-            <div class="workspace-layout">
-              <!-- Input -->
-              <mat-card class="editor-card">
-                <mat-card-header class="card-header-with-actions py-2">
-                  <mat-card-title>
-                    {{ form.get('urlOperation')?.value === 'encode' ? 'Plain Text Input' : 'URL Encoded Input' }}
-                  </mat-card-title>
-                  <span class="char-count-badge">
-                    {{ form.get('urlInput')?.value?.length || 0 }} chars
-                  </span>
-                </mat-card-header>
-
-                <mat-card-content class="card-content-fill">
-                  <mat-form-field appearance="outline" class="full-width textarea-field" subscriptSizing="dynamic">
-                    <textarea
-                      matInput
-                      formControlName="urlInput"
-                      [placeholder]="form.get('urlOperation')?.value === 'encode' ? 'Type or paste plain text here to URL encode...' : 'Paste URL encoded text here to URL decode...'"
-                      rows="14"
-                      class="tool-textarea"
-                    ></textarea>
-                  </mat-form-field>
-                </mat-card-content>
-              </mat-card>
-
-              <!-- Output -->
-              <mat-card class="editor-card">
-                <mat-card-header class="card-header-with-actions py-2">
-                  <mat-card-title>
-                    {{ form.get('urlOperation')?.value === 'encode' ? 'URL Encoded Output' : 'Decoded Text Output' }}
-                  </mat-card-title>
-                  
-                  <div class="output-actions">
-                    <button
-                      mat-icon-button
-                      matTooltip="Copy Output to Clipboard"
-                      type="button"
-                      (click)="onCopy(form.get('urlOutput')?.value, 'urlOutput')"
-                      [disabled]="!form.get('urlOutput')?.value"
-                      [class.copied]="copiedField === 'urlOutput'"
-                    >
-                      <ng-icon [name]="copiedField === 'urlOutput' ? 'lucideCheckCircle' : 'lucideCopy'"></ng-icon>
-                    </button>
-                  </div>
-                </mat-card-header>
-
-                <mat-card-content class="card-content-fill">
-                  <mat-form-field appearance="outline" class="full-width textarea-field" subscriptSizing="dynamic">
-                    <textarea
-                      matInput
-                      formControlName="urlOutput"
-                      [placeholder]="form.get('urlOperation')?.value === 'encode' ? 'URL-encoded string will appear here...' : 'Decoded plain text will appear here...'"
-                      rows="14"
-                      readonly
-                      class="tool-textarea readonly-textarea"
-                    ></textarea>
-                  </mat-form-field>
-                </mat-card-content>
-              </mat-card>
-            </div>
-          </div>
-        </ng-template>
-      </mat-tab>
-
-      <!-- MD5 Tab -->
-      <mat-tab label="MD5 Hasher">
-        <ng-template matTabContent>
-          <div class="tab-container mt-4">
-            <!-- Cryptographic Banner -->
-            <div class="crypto-banner mb-4">
-              <ng-icon class="banner-icon" name="lucideInfo"></ng-icon>
-              <div class="banner-content">
-                <strong>One-Way Hash Function:</strong>
-                <p>MD5 is a one-way cryptographic hash function. It generates a fixed 128-bit checksum and <strong>cannot be decoded or decrypted</strong>.</p>
+    <!-- URL Tab -->
+    @if (activeTabIndex === 0) {
+      <div class="tab-container space-y-4">
+        <!-- URL Controls Toolbar -->
+        <div hlmCard class="toolbar-card p-4 rounded-2xl border shadow-sm">
+          <div class="toolbar-content flex flex-wrap items-center justify-between gap-4">
+            <div class="controls-group flex items-center gap-4">
+              <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Operation</span>
+              <div class="flex items-center gap-4 text-sm">
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="radio" formControlName="urlOperation" value="encode" class="accent-primary" />
+                  <span>Encode</span>
+                </label>
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="radio" formControlName="urlOperation" value="decode" class="accent-primary" />
+                  <span>Decode</span>
+                </label>
               </div>
             </div>
 
-            <!-- MD5 Controls Toolbar -->
-            <mat-card class="toolbar-card mb-4">
-              <mat-card-content class="toolbar-content">
-                <div class="controls-group">
-                  <div class="control-item">
-                    <span class="control-label">Hex Case</span>
-                    <mat-button-toggle-group formControlName="md5Case" color="primary">
-                      <mat-button-toggle value="lower">lowercase</mat-button-toggle>
-                      <mat-button-toggle value="upper">UPPERCASE</mat-button-toggle>
-                    </mat-button-toggle-group>
-                  </div>
-                </div>
+            <div class="actions-group flex items-center gap-2">
+              <button
+                hlmBtn
+                size="sm"
+                type="button"
+                (click)="processUrl()"
+                [disabled]="!form.get('urlInput')?.value"
+                class="action-btn flex items-center gap-1.5"
+              >
+                <ng-icon [name]="form.get('urlOperation')?.value === 'encode' ? 'lucideLock' : 'lucideLockOpen'"></ng-icon>
+                {{ form.get('urlOperation')?.value === 'encode' ? 'Encode' : 'Decode' }}
+              </button>
 
-                <div class="actions-group">
-                  <button
-                    mat-raised-button
-                    color="primary"
-                    type="button"
-                    (click)="processMd5()"
-                    [disabled]="!form.get('md5Input')?.value"
-                    class="action-btn"
-                  >
-                    <ng-icon name="lucideHash"></ng-icon>
-                    Generate MD5
-                  </button>
+              <button
+                hlmBtn
+                variant="outline"
+                size="sm"
+                type="button"
+                (click)="onSwapUrl()"
+                [disabled]="!form.get('urlInput')?.value && !form.get('urlOutput')?.value"
+                class="action-btn flex items-center gap-1.5"
+                hlmTooltip="Swap Input and Output fields"
+              >
+                <ng-icon name="lucideArrowUpDown"></ng-icon>
+                Swap
+              </button>
 
-                  <button
-                    mat-button
-                    type="button"
-                    (click)="onClearMd5()"
-                    class="action-btn"
-                  >
-                    <ng-icon name="lucideEraser"></ng-icon>
-                    Clear
-                  </button>
-                </div>
-              </mat-card-content>
-            </mat-card>
-
-            <!-- MD5 Workspace -->
-            <div class="workspace-layout">
-              <!-- Input -->
-              <mat-card class="editor-card">
-                <mat-card-header class="card-header-with-actions py-2">
-                  <mat-card-title>Plain Text Input</mat-card-title>
-                  <span class="char-count-badge">
-                    {{ form.get('md5Input')?.value?.length || 0 }} chars
-                  </span>
-                </mat-card-header>
-
-                <mat-card-content class="card-content-fill">
-                  <mat-form-field appearance="outline" class="full-width textarea-field" subscriptSizing="dynamic">
-                    <textarea
-                      matInput
-                      formControlName="md5Input"
-                      placeholder="Type or paste text here to generate MD5 hash..."
-                      rows="14"
-                      class="tool-textarea"
-                    ></textarea>
-                  </mat-form-field>
-                </mat-card-content>
-              </mat-card>
-
-              <!-- Output -->
-              <mat-card class="editor-card">
-                <mat-card-header class="card-header-with-actions py-2">
-                  <mat-card-title>MD5 Hash Output (128-bit / 32 hex chars)</mat-card-title>
-                  
-                  <div class="output-actions">
-                    <button
-                      mat-icon-button
-                      matTooltip="Copy MD5 Hash"
-                      type="button"
-                      (click)="onCopy(form.get('md5Output')?.value, 'md5Output')"
-                      [disabled]="!form.get('md5Output')?.value"
-                      [class.copied]="copiedField === 'md5Output'"
-                    >
-                      <ng-icon [name]="copiedField === 'md5Output' ? 'lucideCheckCircle' : 'lucideCopy'"></ng-icon>
-                    </button>
-                  </div>
-                </mat-card-header>
-
-                <mat-card-content class="card-content-fill">
-                  <mat-form-field appearance="outline" class="full-width textarea-field" subscriptSizing="dynamic">
-                    <textarea
-                      matInput
-                      formControlName="md5Output"
-                      placeholder="MD5 hash will appear here dynamically..."
-                      rows="14"
-                      readonly
-                      class="tool-textarea readonly-textarea code-font"
-                    ></textarea>
-                  </mat-form-field>
-                </mat-card-content>
-              </mat-card>
+              <button
+                hlmBtn
+                variant="ghost"
+                size="sm"
+                type="button"
+                (click)="onClearUrl()"
+                class="action-btn flex items-center gap-1.5"
+              >
+                <ng-icon name="lucideEraser"></ng-icon>
+                Clear
+              </button>
             </div>
           </div>
-        </ng-template>
-      </mat-tab>
+        </div>
 
-      <!-- SHA-256 Tab -->
-      <mat-tab label="SHA-256 Hasher">
-        <ng-template matTabContent>
-          <div class="tab-container mt-4">
-            <!-- Cryptographic Banner -->
-            <div class="crypto-banner mb-4">
-              <ng-icon class="banner-icon" name="lucideShieldCheck"></ng-icon>
-              <div class="banner-content">
-                <strong>One-Way Hash Function:</strong>
-                <p>SHA-256 is a one-way cryptographic hash function. It generates a fixed 256-bit secure signature and <strong>cannot be decoded or decrypted</strong>.</p>
+        <!-- Error Detail Box -->
+        @if (urlErrorMessage) {
+          <div class="error-detail-box p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive flex items-start gap-3">
+            <ng-icon class="error-box-icon text-lg shrink-0 mt-0.5" name="lucideAlertTriangle"></ng-icon>
+            <div class="error-box-content">
+              <strong>Conversion Error:</strong>
+              <p class="error-message-text text-sm mt-0.5">{{ urlErrorMessage }}</p>
+            </div>
+          </div>
+        }
+
+        <!-- URL Workspace -->
+        <div class="workspace-layout grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <!-- Input -->
+          <div hlmCard class="editor-card p-5 rounded-2xl border shadow-sm flex flex-col">
+            <div class="card-header-with-actions flex items-center justify-between mb-3">
+              <h3 class="text-base font-semibold">
+                {{ form.get('urlOperation')?.value === 'encode' ? 'Plain Text Input' : 'URL Encoded Input' }}
+              </h3>
+              <span class="char-count-badge text-xs text-muted-foreground">
+                {{ form.get('urlInput')?.value?.length || 0 }} chars
+              </span>
+            </div>
+            <div hlmSeparator class="mb-4"></div>
+
+            <div class="card-content-fill flex-1 flex flex-col">
+              <textarea
+                hlmInput
+                formControlName="urlInput"
+                [placeholder]="form.get('urlOperation')?.value === 'encode' ? 'Type or paste plain text here to encode...' : 'Type or paste URL encoded string here to decode...'"
+                rows="14"
+                class="tool-textarea font-mono text-xs w-full flex-1 resize-y"
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Output -->
+          <div hlmCard class="editor-card p-5 rounded-2xl border shadow-sm flex flex-col">
+            <div class="card-header-with-actions flex items-center justify-between mb-3">
+              <h3 class="text-base font-semibold">
+                {{ form.get('urlOperation')?.value === 'encode' ? 'URL Encoded Output' : 'Decoded Plain Text Output' }}
+              </h3>
+              
+              <div class="output-actions">
+                <button
+                  hlmBtn
+                  size="icon"
+                  variant="ghost"
+                  hlmTooltip="Copy URL Output"
+                  type="button"
+                  (click)="onCopy(form.get('urlOutput')?.value, 'urlOutput')"
+                  [disabled]="!form.get('urlOutput')?.value"
+                  [class.copied]="copiedField === 'urlOutput'"
+                  class="h-8 w-8 text-primary"
+                >
+                  <ng-icon [name]="copiedField === 'urlOutput' ? 'lucideCheckCircle' : 'lucideCopy'"></ng-icon>
+                </button>
+              </div>
+            </div>
+            <div hlmSeparator class="mb-4"></div>
+
+            <div class="card-content-fill flex-1 flex flex-col">
+              <textarea
+                hlmInput
+                formControlName="urlOutput"
+                placeholder="Processed result will appear here..."
+                rows="14"
+                readonly
+                class="tool-textarea readonly-textarea font-mono text-xs w-full flex-1 resize-y bg-muted/20"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- MD5 Tab -->
+    @if (activeTabIndex === 1) {
+      <div class="tab-container space-y-4">
+        <!-- Cryptographic Banner -->
+        <div class="crypto-banner p-4 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-700 dark:text-sky-300 flex items-start gap-3">
+          <ng-icon class="banner-icon text-xl shrink-0 mt-0.5" name="lucideInfo"></ng-icon>
+          <div class="banner-content text-xs leading-relaxed">
+            <strong>One-Way Hash Function:</strong>
+            <p>MD5 is a one-way cryptographic hash function. It generates a fixed 128-bit checksum and <strong>cannot be decoded or decrypted</strong>.</p>
+          </div>
+        </div>
+
+        <!-- MD5 Controls Toolbar -->
+        <div hlmCard class="toolbar-card p-4 rounded-2xl border shadow-sm">
+          <div class="toolbar-content flex flex-wrap items-center justify-between gap-4">
+            <div class="controls-group flex items-center gap-4">
+              <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Hex Case</span>
+              <div class="flex items-center gap-4 text-sm">
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="radio" formControlName="md5Case" value="lower" class="accent-primary" />
+                  <span>lowercase</span>
+                </label>
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="radio" formControlName="md5Case" value="upper" class="accent-primary" />
+                  <span>UPPERCASE</span>
+                </label>
               </div>
             </div>
 
-            <!-- SHA-256 Controls Toolbar -->
-            <mat-card class="toolbar-card mb-4">
-              <mat-card-content class="toolbar-content">
-                <div class="controls-group">
-                  <div class="control-item">
-                    <span class="control-label">Hex Case</span>
-                    <mat-button-toggle-group formControlName="sha256Case" color="primary">
-                      <mat-button-toggle value="lower">lowercase</mat-button-toggle>
-                      <mat-button-toggle value="upper">UPPERCASE</mat-button-toggle>
-                    </mat-button-toggle-group>
-                  </div>
-                </div>
+            <div class="actions-group flex items-center gap-2">
+              <button
+                hlmBtn
+                size="sm"
+                type="button"
+                (click)="processMd5()"
+                [disabled]="!form.get('md5Input')?.value"
+                class="action-btn flex items-center gap-1.5"
+              >
+                <ng-icon name="lucideHash"></ng-icon>
+                Generate MD5
+              </button>
 
-                <div class="actions-group">
-                  <button
-                    mat-raised-button
-                    color="primary"
-                    type="button"
-                    (click)="processSha256()"
-                    [disabled]="!form.get('sha256Input')?.value"
-                    class="action-btn"
-                  >
-                    <ng-icon name="lucideHash"></ng-icon>
-                    Generate SHA-256
-                  </button>
-
-                  <button
-                    mat-button
-                    type="button"
-                    (click)="onClearSha256()"
-                    class="action-btn"
-                  >
-                    <ng-icon name="lucideEraser"></ng-icon>
-                    Clear
-                  </button>
-                </div>
-              </mat-card-content>
-            </mat-card>
-
-            <!-- SHA-256 Workspace -->
-            <div class="workspace-layout">
-              <!-- Input -->
-              <mat-card class="editor-card">
-                <mat-card-header class="card-header-with-actions py-2">
-                  <mat-card-title>Plain Text Input</mat-card-title>
-                  <span class="char-count-badge">
-                    {{ form.get('sha256Input')?.value?.length || 0 }} chars
-                  </span>
-                </mat-card-header>
-
-                <mat-card-content class="card-content-fill">
-                  <mat-form-field appearance="outline" class="full-width textarea-field" subscriptSizing="dynamic">
-                    <textarea
-                      matInput
-                      formControlName="sha256Input"
-                      placeholder="Type or paste text here to generate SHA-256 hash..."
-                      rows="14"
-                      class="tool-textarea"
-                    ></textarea>
-                  </mat-form-field>
-                </mat-card-content>
-              </mat-card>
-
-              <!-- Output -->
-              <mat-card class="editor-card">
-                <mat-card-header class="card-header-with-actions py-2">
-                  <mat-card-title>SHA-256 Hash Output (256-bit / 64 hex chars)</mat-card-title>
-                  
-                  <div class="output-actions">
-                    <button
-                      mat-icon-button
-                      matTooltip="Copy SHA-256 Hash"
-                      type="button"
-                      (click)="onCopy(form.get('sha256Output')?.value, 'sha256Output')"
-                      [disabled]="!form.get('sha256Output')?.value"
-                      [class.copied]="copiedField === 'sha256Output'"
-                    >
-                      <ng-icon [name]="copiedField === 'sha256Output' ? 'lucideCheckCircle' : 'lucideCopy'"></ng-icon>
-                    </button>
-                  </div>
-                </mat-card-header>
-
-                <mat-card-content class="card-content-fill">
-                  <mat-form-field appearance="outline" class="full-width textarea-field" subscriptSizing="dynamic">
-                    <textarea
-                      matInput
-                      formControlName="sha256Output"
-                      placeholder="SHA-256 hash will appear here dynamically..."
-                      rows="14"
-                      readonly
-                      class="tool-textarea readonly-textarea code-font"
-                    ></textarea>
-                  </mat-form-field>
-                </mat-card-content>
-              </mat-card>
+              <button
+                hlmBtn
+                variant="ghost"
+                size="sm"
+                type="button"
+                (click)="onClearMd5()"
+                class="action-btn flex items-center gap-1.5"
+              >
+                <ng-icon name="lucideEraser"></ng-icon>
+                Clear
+              </button>
             </div>
           </div>
-        </ng-template>
-      </mat-tab>
-    </mat-tab-group>
+        </div>
+
+        <!-- MD5 Workspace -->
+        <div class="workspace-layout grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <!-- Input -->
+          <div hlmCard class="editor-card p-5 rounded-2xl border shadow-sm flex flex-col">
+            <div class="card-header-with-actions flex items-center justify-between mb-3">
+              <h3 class="text-base font-semibold">Plain Text Input</h3>
+              <span class="char-count-badge text-xs text-muted-foreground">
+                {{ form.get('md5Input')?.value?.length || 0 }} chars
+              </span>
+            </div>
+            <div hlmSeparator class="mb-4"></div>
+
+            <div class="card-content-fill flex-1 flex flex-col">
+              <textarea
+                hlmInput
+                formControlName="md5Input"
+                placeholder="Type or paste text here to generate MD5 hash..."
+                rows="14"
+                class="tool-textarea font-mono text-xs w-full flex-1 resize-y"
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Output -->
+          <div hlmCard class="editor-card p-5 rounded-2xl border shadow-sm flex flex-col">
+            <div class="card-header-with-actions flex items-center justify-between mb-3">
+              <h3 class="text-base font-semibold">MD5 Hash Output (128-bit / 32 hex chars)</h3>
+              
+              <div class="output-actions">
+                <button
+                  hlmBtn
+                  size="icon"
+                  variant="ghost"
+                  hlmTooltip="Copy MD5 Hash"
+                  type="button"
+                  (click)="onCopy(form.get('md5Output')?.value, 'md5Output')"
+                  [disabled]="!form.get('md5Output')?.value"
+                  [class.copied]="copiedField === 'md5Output'"
+                  class="h-8 w-8 text-primary"
+                >
+                  <ng-icon [name]="copiedField === 'md5Output' ? 'lucideCheckCircle' : 'lucideCopy'"></ng-icon>
+                </button>
+              </div>
+            </div>
+            <div hlmSeparator class="mb-4"></div>
+
+            <div class="card-content-fill flex-1 flex flex-col">
+              <textarea
+                hlmInput
+                formControlName="md5Output"
+                placeholder="MD5 hash string will appear here..."
+                rows="14"
+                readonly
+                class="tool-textarea readonly-textarea font-mono text-xs w-full flex-1 resize-y bg-muted/20"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- SHA-256 Tab -->
+    @if (activeTabIndex === 2) {
+      <div class="tab-container space-y-4">
+        <!-- Cryptographic Banner -->
+        <div class="crypto-banner p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 flex items-start gap-3">
+          <ng-icon class="banner-icon text-xl shrink-0 mt-0.5" name="lucideShieldCheck"></ng-icon>
+          <div class="banner-content text-xs leading-relaxed">
+            <strong>Secure Hashing Standard (NIST):</strong>
+            <p>SHA-256 belongs to the SHA-2 family and computes a 256-bit collision-resistant digest. It is cryptographically irreversible.</p>
+          </div>
+        </div>
+
+        <!-- SHA-256 Controls Toolbar -->
+        <div hlmCard class="toolbar-card p-4 rounded-2xl border shadow-sm">
+          <div class="toolbar-content flex flex-wrap items-center justify-between gap-4">
+            <div class="controls-group flex items-center gap-4">
+              <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Hex Case</span>
+              <div class="flex items-center gap-4 text-sm">
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="radio" formControlName="sha256Case" value="lower" class="accent-primary" />
+                  <span>lowercase</span>
+                </label>
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="radio" formControlName="sha256Case" value="upper" class="accent-primary" />
+                  <span>UPPERCASE</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="actions-group flex items-center gap-2">
+              <button
+                hlmBtn
+                size="sm"
+                type="button"
+                (click)="processSha256()"
+                [disabled]="!form.get('sha256Input')?.value"
+                class="action-btn flex items-center gap-1.5"
+              >
+                <ng-icon name="lucideHash"></ng-icon>
+                Generate SHA-256
+              </button>
+
+              <button
+                hlmBtn
+                variant="ghost"
+                size="sm"
+                type="button"
+                (click)="onClearSha256()"
+                class="action-btn flex items-center gap-1.5"
+              >
+                <ng-icon name="lucideEraser"></ng-icon>
+                Clear
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SHA-256 Workspace -->
+        <div class="workspace-layout grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <!-- Input -->
+          <div hlmCard class="editor-card p-5 rounded-2xl border shadow-sm flex flex-col">
+            <div class="card-header-with-actions flex items-center justify-between mb-3">
+              <h3 class="text-base font-semibold">Plain Text Input</h3>
+              <span class="char-count-badge text-xs text-muted-foreground">
+                {{ form.get('sha256Input')?.value?.length || 0 }} chars
+              </span>
+            </div>
+            <div hlmSeparator class="mb-4"></div>
+
+            <div class="card-content-fill flex-1 flex flex-col">
+              <textarea
+                hlmInput
+                formControlName="sha256Input"
+                placeholder="Type or paste text here to generate SHA-256 hash..."
+                rows="14"
+                class="tool-textarea font-mono text-xs w-full flex-1 resize-y"
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Output -->
+          <div hlmCard class="editor-card p-5 rounded-2xl border shadow-sm flex flex-col">
+            <div class="card-header-with-actions flex items-center justify-between mb-3">
+              <h3 class="text-base font-semibold">SHA-256 Hash Output (256-bit / 64 hex chars)</h3>
+              
+              <div class="output-actions">
+                <button
+                  hlmBtn
+                  size="icon"
+                  variant="ghost"
+                  hlmTooltip="Copy SHA-256 Hash"
+                  type="button"
+                  (click)="onCopy(form.get('sha256Output')?.value, 'sha256Output')"
+                  [disabled]="!form.get('sha256Output')?.value"
+                  [class.copied]="copiedField === 'sha256Output'"
+                  class="h-8 w-8 text-primary"
+                >
+                  <ng-icon [name]="copiedField === 'sha256Output' ? 'lucideCheckCircle' : 'lucideCopy'"></ng-icon>
+                </button>
+              </div>
+            </div>
+            <div hlmSeparator class="mb-4"></div>
+
+            <div class="card-content-fill flex-1 flex flex-col">
+              <textarea
+                hlmInput
+                formControlName="sha256Output"
+                placeholder="SHA-256 hash string will appear here..."
+                rows="14"
+                readonly
+                class="tool-textarea readonly-textarea font-mono text-xs w-full flex-1 resize-y bg-muted/20"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
   </form>
 </div>

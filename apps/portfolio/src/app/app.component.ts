@@ -12,10 +12,12 @@ import { ThemeService } from './theme.service';
 import { GlobalData } from '../shared/data/GlobalData';
 import { appRoutingList } from './shared/data/routes';
 
+import { HlmToaster } from '@spartan-ng/hel/sonner';
+
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, HlmToaster],
   templateUrl: './app.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './app.component.scss',

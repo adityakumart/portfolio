@@ -1,129 +1,120 @@
 <div class="qr-generator-container" [formGroup]="form">
   <!-- Header Card -->
-  <mat-card class="header-card mb-4">
-    <mat-card-header class="py-3">
-      <mat-card-title>QR Code Generator</mat-card-title>
-      <mat-card-subtitle>Generate customized QR Codes for websites, emails, WiFi details, contact cards, and text messages. Design with custom dimensions and colors.</mat-card-subtitle>
-    </mat-card-header>
-  </mat-card>
+  <div hlmCard class="header-card mb-4 p-5 rounded-2xl border shadow-sm">
+    <h2 class="text-xl font-bold tracking-tight">QR Code Generator</h2>
+    <p class="text-sm text-muted-foreground mt-1">Generate customized QR Codes for websites, emails, WiFi details, contact cards, and text messages. Design with custom dimensions and colors.</p>
+  </div>
 
   <!-- Error Detail Panel -->
   @if (errorMessage()) {
-    <div class="error-detail-box mb-4 animate-fade-in">
-      <ng-icon class="error-box-icon" name="lucideAlertTriangle"></ng-icon>
+    <div class="error-detail-box mb-4 p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive flex items-start gap-3">
+      <ng-icon class="error-box-icon text-lg shrink-0 mt-0.5" name="lucideAlertTriangle"></ng-icon>
       <div class="error-box-content">
         <strong>Generation Error:</strong>
-        <p class="error-message-text">{{ errorMessage() }}</p>
+        <p class="error-message-text text-sm mt-0.5">{{ errorMessage() }}</p>
       </div>
     </div>
   }
 
   <!-- Main Workspace Grid -->
-  <div class="workspace-layout">
+  <div class="workspace-layout grid grid-cols-1 lg:grid-cols-2 gap-4">
     <!-- Left Column: Settings and Context Input -->
-    <div class="panel-column">
-      <mat-card class="editor-card">
-        <mat-card-header class="panel-header">
-          <mat-card-title>QR Content & Templates</mat-card-title>
-        </mat-card-header>
-        <mat-divider></mat-divider>
-        <mat-card-content class="panel-body">
+    <div class="panel-column space-y-4">
+      <div hlmCard class="editor-card p-5 rounded-2xl border shadow-sm">
+        <h3 class="text-base font-semibold mb-3">QR Content & Templates</h3>
+        <div hlmSeparator class="mb-4"></div>
+
+        <div class="panel-body space-y-3">
           <!-- Data Type Selection -->
-          <mat-form-field appearance="outline" class="w-100 mt-3 mb-2">
-            <mat-label>QR Code Type</mat-label>
-            <mat-select formControlName="dataType">
+          <div class="w-full">
+            <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">QR Code Type</label>
+            <select hlmInput formControlName="dataType" class="w-full text-sm">
               @for (type of dataTypes; track type.value) {
-                <mat-option [value]="type.value">{{ type.label }}</mat-option>
+                <option [value]="type.value">{{ type.label }}</option>
               }
-            </mat-select>
-          </mat-form-field>
+            </select>
+          </div>
 
           <!-- Context Sub-forms -->
           <div class="template-inputs-box">
             @switch (form.get('dataType')?.value) {
               <!-- URL Template -->
               @case ('url') {
-                <div formGroupName="urlData" class="animate-fade-in">
-                  <mat-form-field appearance="outline" class="w-100">
-                    <mat-label>Target URL / Website Link</mat-label>
-                    <input matInput type="url" formControlName="url" placeholder="https://example.com" />
-                  </mat-form-field>
+                <div formGroupName="urlData" class="w-full">
+                  <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Target URL / Website Link</label>
+                  <input hlmInput type="url" formControlName="url" placeholder="https://example.com" class="w-full text-sm" />
                 </div>
               }
 
               <!-- Plain Text Template -->
               @case ('text') {
-                <div formGroupName="textData" class="animate-fade-in">
-                  <mat-form-field appearance="outline" class="w-100">
-                    <mat-label>Plain Text Content</mat-label>
-                    <textarea matInput rows="4" formControlName="text" placeholder="Type messages or credentials..."></textarea>
-                  </mat-form-field>
+                <div formGroupName="textData" class="w-full">
+                  <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Plain Text Content</label>
+                  <textarea hlmInput rows="4" formControlName="text" placeholder="Type messages or credentials..." class="w-full text-sm font-mono"></textarea>
                 </div>
               }
 
               <!-- Email Template -->
               @case ('email') {
-                <div formGroupName="emailData" class="animate-fade-in email-grid">
-                  <mat-form-field appearance="outline" class="w-100">
-                    <mat-label>Recipient Email Address</mat-label>
-                    <input matInput type="email" formControlName="email" placeholder="john.doe@example.com" />
-                  </mat-form-field>
-                  <mat-form-field appearance="outline" class="w-100">
-                    <mat-label>Subject Line (Optional)</mat-label>
-                    <input matInput type="text" formControlName="subject" placeholder="Feedback or Info Request" />
-                  </mat-form-field>
-                  <mat-form-field appearance="outline" class="w-100">
-                    <mat-label>Email Body (Optional)</mat-label>
-                    <textarea matInput rows="3" formControlName="body" placeholder="Write initial greeting..."></textarea>
-                  </mat-form-field>
+                <div formGroupName="emailData" class="space-y-3">
+                  <div>
+                    <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Recipient Email Address</label>
+                    <input hlmInput type="email" formControlName="email" placeholder="john.doe@example.com" class="w-full text-sm" />
+                  </div>
+                  <div>
+                    <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Subject Line (Optional)</label>
+                    <input hlmInput type="text" formControlName="subject" placeholder="Feedback or Info Request" class="w-full text-sm" />
+                  </div>
+                  <div>
+                    <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Email Body (Optional)</label>
+                    <textarea hlmInput rows="3" formControlName="body" placeholder="Write initial greeting..." class="w-full text-sm"></textarea>
+                  </div>
                 </div>
               }
 
               <!-- Phone Call Template -->
               @case ('phone') {
-                <div formGroupName="phoneData" class="animate-fade-in">
-                  <mat-form-field appearance="outline" class="w-100">
-                    <mat-label>Phone Number</mat-label>
-                    <input matInput type="tel" formControlName="phone" placeholder="e.g. +1234567890" />
-                  </mat-form-field>
+                <div formGroupName="phoneData" class="w-full">
+                  <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Phone Number</label>
+                  <input hlmInput type="tel" formControlName="phone" placeholder="e.g. +1234567890" class="w-full text-sm" />
                 </div>
               }
 
               <!-- SMS Text Template -->
               @case ('sms') {
-                <div formGroupName="smsData" class="animate-fade-in sms-grid">
-                  <mat-form-field appearance="outline" class="w-100">
-                    <mat-label>Recipient Phone Number</mat-label>
-                    <input matInput type="tel" formControlName="phone" placeholder="e.g. +1234567890" />
-                  </mat-form-field>
-                  <mat-form-field appearance="outline" class="w-100">
-                    <mat-label>Text Message Body</mat-label>
-                    <textarea matInput rows="3" formControlName="message" placeholder="Type SMS body..."></textarea>
-                  </mat-form-field>
+                <div formGroupName="smsData" class="space-y-3">
+                  <div>
+                    <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Recipient Phone Number</label>
+                    <input hlmInput type="tel" formControlName="phone" placeholder="e.g. +1234567890" class="w-full text-sm" />
+                  </div>
+                  <div>
+                    <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Text Message Body</label>
+                    <textarea hlmInput rows="3" formControlName="message" placeholder="Type SMS body..." class="w-full text-sm"></textarea>
+                  </div>
                 </div>
               }
 
               <!-- WiFi Template -->
               @case ('wifi') {
-                <div formGroupName="wifiData" class="animate-fade-in wifi-grid">
-                  <mat-form-field appearance="outline" class="w-100">
-                    <mat-label>Network SSID (SSID Name)</mat-label>
-                    <input matInput type="text" formControlName="ssid" placeholder="My Home Network" />
-                  </mat-form-field>
-                  <div class="split-row">
-                    <mat-form-field appearance="outline" class="flex-grow">
-                      <mat-label>Security Type</mat-label>
-                      <mat-select formControlName="encryption">
-                        <mat-option value="WPA">WPA/WPA2</mat-option>
-                        <mat-option value="WEP">WEP</mat-option>
-                        <mat-option value="nopass">Unsecured (No Password)</mat-option>
-                      </mat-select>
-                    </mat-form-field>
+                <div formGroupName="wifiData" class="space-y-3">
+                  <div>
+                    <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Network SSID (SSID Name)</label>
+                    <input hlmInput type="text" formControlName="ssid" placeholder="My Home Network" class="w-full text-sm" />
+                  </div>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Security Type</label>
+                      <select hlmInput formControlName="encryption" class="w-full text-sm">
+                        <option value="WPA">WPA/WPA2</option>
+                        <option value="WEP">WEP</option>
+                        <option value="nopass">Unsecured (No Password)</option>
+                      </select>
+                    </div>
                     @if (form.get('wifiData.encryption')?.value !== 'nopass') {
-                      <mat-form-field appearance="outline" class="flex-grow">
-                        <mat-label>Password</mat-label>
-                        <input matInput type="text" formControlName="password" placeholder="SSID Credentials" />
-                      </mat-form-field>
+                      <div>
+                        <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Password</label>
+                        <input hlmInput type="text" formControlName="password" placeholder="SSID Credentials" class="w-full text-sm" />
+                      </div>
                     }
                   </div>
                 </div>
@@ -131,133 +122,132 @@
 
               <!-- Contact Card (vCard) Template -->
               @case ('vcard') {
-                <div formGroupName="vcardData" class="animate-fade-in vcard-grid">
-                  <div class="split-row">
-                    <mat-form-field appearance="outline" class="flex-grow">
-                      <mat-label>First Name</mat-label>
-                      <input matInput type="text" formControlName="firstName" placeholder="John" />
-                    </mat-form-field>
-                    <mat-form-field appearance="outline" class="flex-grow">
-                      <mat-label>Last Name</mat-label>
-                      <input matInput type="text" formControlName="lastName" placeholder="Doe" />
-                    </mat-form-field>
+                <div formGroupName="vcardData" class="space-y-3">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">First Name</label>
+                      <input hlmInput type="text" formControlName="firstName" placeholder="John" class="w-full text-sm" />
+                    </div>
+                    <div>
+                      <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Last Name</label>
+                      <input hlmInput type="text" formControlName="lastName" placeholder="Doe" class="w-full text-sm" />
+                    </div>
                   </div>
-                  <div class="split-row">
-                    <mat-form-field appearance="outline" class="flex-grow">
-                      <mat-label>Organization</mat-label>
-                      <input matInput type="text" formControlName="org" placeholder="Google" />
-                    </mat-form-field>
-                    <mat-form-field appearance="outline" class="flex-grow">
-                      <mat-label>Job Title</mat-label>
-                      <input matInput type="text" formControlName="title" placeholder="Engineer" />
-                    </mat-form-field>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Organization</label>
+                      <input hlmInput type="text" formControlName="org" placeholder="Company" class="w-full text-sm" />
+                    </div>
+                    <div>
+                      <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Job Title</label>
+                      <input hlmInput type="text" formControlName="title" placeholder="Engineer" class="w-full text-sm" />
+                    </div>
                   </div>
-                  <mat-form-field appearance="outline" class="w-100">
-                    <mat-label>Phone Number</mat-label>
-                    <input matInput type="tel" formControlName="phone" placeholder="+1234567890" />
-                  </mat-form-field>
-                  <mat-form-field appearance="outline" class="w-100">
-                    <mat-label>Email Address</mat-label>
-                    <input matInput type="email" formControlName="email" placeholder="john.doe@example.com" />
-                  </mat-form-field>
-                  <mat-form-field appearance="outline" class="w-100">
-                    <mat-label>Website URL</mat-label>
-                    <input matInput type="url" formControlName="url" placeholder="https://example.com" />
-                  </mat-form-field>
+                  <div>
+                    <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Phone Number</label>
+                    <input hlmInput type="tel" formControlName="phone" placeholder="+1234567890" class="w-full text-sm" />
+                  </div>
+                  <div>
+                    <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Email Address</label>
+                    <input hlmInput type="email" formControlName="email" placeholder="john.doe@example.com" class="w-full text-sm" />
+                  </div>
+                  <div>
+                    <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Website URL</label>
+                    <input hlmInput type="url" formControlName="url" placeholder="https://example.com" class="w-full text-sm" />
+                  </div>
                 </div>
               }
             }
           </div>
 
           <!-- Raw QR Code Output -->
-          <mat-form-field appearance="outline" class="w-100 mt-2">
-            <mat-label>Compiled Raw Data (Read Only)</mat-label>
-            <textarea matInput rows="3" readonly formControlName="qrData" class="code-textarea" placeholder="WIFI:S:MyNetwork;T:WPA;..."></textarea>
-          </mat-form-field>
-        </mat-card-content>
-      </mat-card>
+          <div class="w-full pt-2">
+            <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Compiled Raw Data (Read Only)</label>
+            <textarea hlmInput rows="3" readonly formControlName="qrData" class="w-full font-mono text-xs bg-muted/30" placeholder="WIFI:S:MyNetwork;T:WPA;..."></textarea>
+          </div>
+        </div>
+      </div>
 
       <!-- Design settings Card -->
-      <mat-card class="editor-card mt-4">
-        <mat-card-header class="panel-header">
-          <mat-card-title>Design & Styling Configurations</mat-card-title>
-        </mat-card-header>
-        <mat-divider></mat-divider>
-        <mat-card-content class="panel-body">
-          <div class="design-inputs-grid mt-3">
+      <div hlmCard class="editor-card p-5 rounded-2xl border shadow-sm">
+        <h3 class="text-base font-semibold mb-3">Design & Styling Configurations</h3>
+        <div hlmSeparator class="mb-4"></div>
+
+        <div class="panel-body space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <!-- Dimensions -->
-            <mat-form-field appearance="outline" class="flex-grow">
-              <mat-label>Size (px)</mat-label>
-              <input matInput type="number" formControlName="size" placeholder="250" />
-            </mat-form-field>
+            <div>
+              <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Size (px)</label>
+              <input hlmInput type="number" formControlName="size" placeholder="250" class="w-full text-sm" />
+            </div>
 
             <!-- Error Correction Level -->
-            <mat-form-field appearance="outline" class="flex-grow">
-              <mat-label>Error Correction Level</mat-label>
-              <mat-select formControlName="errorCorrection">
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label hlmLabel class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Error Correction Level</label>
+                <ng-icon
+                  class="help-icon-tooltip text-muted-foreground cursor-help"
+                  hlmTooltip="L - Recovers 7% of data, M - 15%, Q - 25%, H - 30%. Higher levels allow readability even if damaged but make the QR pattern denser."
+                  name="lucideHelpCircle"
+                ></ng-icon>
+              </div>
+              <select hlmInput formControlName="errorCorrection" class="w-full text-sm">
                 @for (level of errorLevels; track level.value) {
-                  <mat-option [value]="level.value">{{ level.label }}</mat-option>
+                  <option [value]="level.value">{{ level.label }}</option>
                 }
-              </mat-select>
-              <ng-icon
-                matSuffix
-                class="help-icon-tooltip"
-                matTooltip="L - Recovers 7% of data, M - 15%, Q - 25%, H - 30%. Higher levels allow readability even if damaged but make the QR pattern denser."
-                name="lucideHelpCircle"
-              ></ng-icon>
-            </mat-form-field>
+              </select>
+            </div>
           </div>
 
-          <div class="color-picker-row mt-2">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
             <!-- Foreground Color Picker -->
-            <div class="color-control-item">
-              <span class="color-label">Foreground Color</span>
-              <div class="picker-input-wrapper">
-                <input type="color" formControlName="foregroundColor" class="native-picker" />
-                <input matInput type="text" formControlName="foregroundColor" class="hex-text" readonly />
+            <div>
+              <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Foreground Color</label>
+              <div class="flex items-center gap-2">
+                <input type="color" formControlName="foregroundColor" class="h-9 w-9 rounded-lg border cursor-pointer" />
+                <input hlmInput type="text" formControlName="foregroundColor" class="font-mono text-sm flex-1" readonly />
               </div>
             </div>
 
             <!-- Background Color Picker -->
-            <div class="color-control-item">
-              <span class="color-label">Background Color</span>
-              <div class="picker-input-wrapper">
-                <input type="color" formControlName="backgroundColor" class="native-picker" />
-                <input matInput type="text" formControlName="backgroundColor" class="hex-text" readonly />
+            <div>
+              <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Background Color</label>
+              <div class="flex items-center gap-2">
+                <input type="color" formControlName="backgroundColor" class="h-9 w-9 rounded-lg border cursor-pointer" />
+                <input hlmInput type="text" formControlName="backgroundColor" class="font-mono text-sm flex-1" readonly />
               </div>
             </div>
           </div>
-        </mat-card-content>
-      </mat-card>
+        </div>
+      </div>
     </div>
 
     <!-- Right Column: Live Preview & Actions -->
     <div class="panel-column">
-      <mat-card class="editor-card preview-card">
-        <mat-card-header class="panel-header">
-          <mat-card-title>QR Code Preview</mat-card-title>
+      <div hlmCard class="editor-card preview-card p-5 rounded-2xl border shadow-sm flex flex-col h-full">
+        <div class="panel-header flex items-center justify-between mb-4">
+          <h3 class="text-base font-semibold">QR Code Preview</h3>
           <div class="header-actions">
             <button
-              mat-raised-button
-              color="primary"
+              hlmBtn
               type="button"
               [disabled]="!!errorMessage() || !form.get('qrData')?.value"
               (click)="downloadQR()"
-              class="action-btn"
+              class="action-btn flex items-center gap-1.5"
             >
               <ng-icon name="lucideDownload"></ng-icon>
               Download PNG
             </button>
           </div>
-        </mat-card-header>
-        <mat-divider></mat-divider>
-        <mat-card-content class="panel-body preview-body">
-          <div class="qr-canvas-frame">
-            <!-- Canvas target representing the rendered QR Code -->
+        </div>
+        <div hlmSeparator class="mb-4"></div>
+
+        <div class="panel-body preview-body flex-1 flex items-center justify-center p-6 bg-muted/20 rounded-xl border border-dashed">
+          <div class="qr-canvas-frame p-4 bg-white rounded-xl shadow-md">
             <canvas #qrCanvas></canvas>
           </div>
-        </mat-card-content>
-      </mat-card>
+        </div>
+      </div>
     </div>
   </div>
 </div>

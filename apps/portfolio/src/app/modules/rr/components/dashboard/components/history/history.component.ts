@@ -3,13 +3,12 @@ import { CommonModule } from '@angular/common';
 import { RRApiService } from '../../../../services/rr-api.service';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { lucideHistory } from '@ng-icons/lucide';
-import { MatTableModule } from '@angular/material/table';
 import { IBooking } from '@portfolio/shared-types';
 
 @Component({
   selector: 'app-rr-history',
   standalone: true,
-  imports: [CommonModule, NgIconComponent, MatTableModule],
+  imports: [CommonModule, NgIconComponent],
   providers: [provideIcons({ lucideHistory })],
   templateUrl: './history.component.html',
   styleUrl: './history.component.scss'
@@ -17,16 +16,6 @@ import { IBooking } from '@portfolio/shared-types';
 export class RRHistoryComponent implements OnInit {
   private rrApi = inject(RRApiService);
   bookings = signal<IBooking[]>([]);
-
-  displayedColumns = [
-    'id',
-    'renterName',
-    'vehicleDetails',
-    'createdAt',
-    'finalRentalAmount',
-    'vehicleOdometerEnd',
-    'status'
-  ];
 
   historyBookings = computed(() =>
     this.bookings().filter((b) => b.status === 'completed' || b.status === 'cancelled')

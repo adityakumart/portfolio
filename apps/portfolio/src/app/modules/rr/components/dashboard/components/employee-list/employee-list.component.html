@@ -6,209 +6,201 @@
     </div>
     <h2 style="margin: 0; font-size: 1.85rem; font-weight: 800; color: var(--foreground);">Staff Registry</h2>
   </div>
-  <button mat-raised-button color="primary" class="action-btn success" style="padding: 10px 20px; border-radius: 12px;" (click)="openAddEmployeeModal()">
+  <button hlmBtn class="action-btn success flex items-center gap-1.5" (click)="openAddEmployeeModal()">
     <ng-icon name="lucidePlus"></ng-icon> Register New Employee
   </button>
 </div>
 
-<div class="table-card-wrapper">
-  <div class="table-container">
-    <table mat-table [dataSource]="dataSource">
-
-    <!-- Emp ID Column -->
-    <ng-container matColumnDef="id">
-      <th mat-header-cell *matHeaderCellDef> Employee ID </th>
-      <td mat-cell *matCellDef="let e">
-        <span class="mono-val" style="font-weight: 800; color: var(--color-cyan-500);">{{ e.id }}</span>
-      </td>
-    </ng-container>
-
-    <!-- Name Column -->
-    <ng-container matColumnDef="name">
-      <th mat-header-cell *matHeaderCellDef> Staff Full Name </th>
-      <td mat-cell *matCellDef="let e">
-        <div style="font-weight: 700; color: var(--foreground);">{{ e.firstName }} {{ e.lastName }}</div>
-      </td>
-    </ng-container>
-
-    <!-- Role Column -->
-    <ng-container matColumnDef="role">
-      <th mat-header-cell *matHeaderCellDef> Assigned Role </th>
-      <td mat-cell *matCellDef="let e">
-        <span class="badge" [ngClass]="e.role === 'admin' ? 'status-maintenance' : 'status-rented'" style="font-weight: 800;">
-          {{ e.role | uppercase }}
-        </span>
-      </td>
-    </ng-container>
-
-    <!-- DOB Column -->
-    <ng-container matColumnDef="dob">
-      <th mat-header-cell *matHeaderCellDef> Date of Birth </th>
-      <td mat-cell *matCellDef="let e">
-        <span style="font-size: 0.85rem;">{{ (e.dob | date:'dd-MM-yyyy') || 'N/A' }}</span>
-      </td>
-    </ng-container>
-
-    <!-- Phone Column -->
-    <ng-container matColumnDef="phone">
-      <th mat-header-cell *matHeaderCellDef> Contact Phone </th>
-      <td mat-cell *matCellDef="let e">
-        <span style="font-size: 0.85rem;">{{ e.phone }}</span>
-      </td>
-    </ng-container>
-
-    <!-- Email Column -->
-    <ng-container matColumnDef="email">
-      <th mat-header-cell *matHeaderCellDef> Email Address </th>
-      <td mat-cell *matCellDef="let e">
-        <span style="font-size: 0.85rem; color: var(--muted-foreground);">{{ e.email }}</span>
-      </td>
-    </ng-container>
-
-    <!-- Allow Login Column -->
-    <ng-container matColumnDef="allowLogin">
-      <th mat-header-cell *matHeaderCellDef> Portal Access </th>
-      <td mat-cell *matCellDef="let e">
-        <span class="badge" [ngClass]="e.allowLogin ? 'status-available' : 'status-maintenance'">
-          {{ e.allowLogin ? 'Active Permitted' : 'Access Revoked' }}
-        </span>
-      </td>
-    </ng-container>
-
-    <!-- Actions Column -->
-    <ng-container matColumnDef="actions">
-      <th mat-header-cell *matHeaderCellDef style="text-align: center;"> Actions </th>
-      <td mat-cell *matCellDef="let e" style="text-align: center;">
-        <button mat-icon-button class="action-btn" style="border-radius: 50%;" [matTooltip]="'Modify Staff Information'" (click)="openEditEmployeeModal(e)">
-          <ng-icon style="font-size: 18px; width: 18px; height: 18px; vertical-align: middle;" name="lucidePencil"></ng-icon>
-        </button>
-      </td>
-    </ng-container>
-
-    <!-- Table Rows -->
-    <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-
-    <!-- Empty Row -->
-    <tr class="mat-row" *matNoDataRow>
-      <td class="mat-cell" colspan="8" style="text-align: center; color: var(--muted-foreground); padding: 48px 0;">
-        <ng-icon style="font-size: 40px; width: 40px; height: 40px; color: var(--muted-foreground); display: block; margin: 0 auto 12px auto;" name="lucideUsers"></ng-icon>
-        <span style="font-weight: 600; font-size: 0.95rem;">No staff registered in the employee database.</span>
-      </td>
-    </tr>
-  </table>
+<div class="table-card-wrapper border rounded-2xl overflow-hidden shadow-sm bg-card">
+  <div class="table-container overflow-x-auto">
+    <table class="w-full text-xs text-left">
+      <thead class="bg-muted/40 uppercase font-semibold text-muted-foreground">
+        <tr>
+          <th class="p-3">Employee ID</th>
+          <th class="p-3">Staff Full Name</th>
+          <th class="p-3">Assigned Role</th>
+          <th class="p-3">Date of Birth</th>
+          <th class="p-3">Contact Phone</th>
+          <th class="p-3">Email Address</th>
+          <th class="p-3">Portal Access</th>
+          <th class="p-3 text-center">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y">
+        @for (e of pagedEmployees(); track e.id) {
+          <tr class="hover:bg-muted/10 transition-colors">
+            <td class="p-3">
+              <span class="mono-val font-bold font-mono text-primary">{{ e.id }}</span>
+            </td>
+            <td class="p-3">
+              <div class="font-bold">{{ e.firstName }} {{ e.lastName }}</div>
+            </td>
+            <td class="p-3">
+              <span class="badge font-bold" [ngClass]="e.role === 'admin' ? 'status-maintenance' : 'status-rented'">
+                {{ e.role | uppercase }}
+              </span>
+            </td>
+            <td class="p-3">
+              <span>{{ (e.dob | date:'dd-MM-yyyy') || 'N/A' }}</span>
+            </td>
+            <td class="p-3">
+              <span>{{ e.phone }}</span>
+            </td>
+            <td class="p-3 text-muted-foreground">
+              <span>{{ e.email }}</span>
+            </td>
+            <td class="p-3">
+              <span class="badge" [ngClass]="e.allowLogin ? 'status-available' : 'status-maintenance'">
+                {{ e.allowLogin ? 'Active Permitted' : 'Access Revoked' }}
+              </span>
+            </td>
+            <td class="p-3 text-center">
+              <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 rounded-full" hlmTooltip="Modify Staff Information" (click)="openEditEmployeeModal(e)">
+                <ng-icon name="lucidePencil"></ng-icon>
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="8" class="text-center text-muted-foreground py-12">
+              <ng-icon name="lucideUsers" class="text-4xl mx-auto block mb-2 text-muted-foreground"></ng-icon>
+              <span class="font-semibold text-sm">No staff registered in the employee database.</span>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
   </div>
-  <mat-paginator [pageSize]="10" [pageSizeOptions]="[5, 10, 20]" style="background: transparent; color: var(--foreground);" showFirstLastButtons></mat-paginator>
+
+  <!-- Pagination footer -->
+  <div class="p-4 border-t flex items-center justify-between text-xs text-muted-foreground">
+    <div>
+      Showing {{ pagedEmployees().length }} of {{ employees().length }} employees
+    </div>
+    <div class="flex items-center gap-2">
+      <button hlmBtn variant="outline" size="sm" [disabled]="currentPage() === 0" (click)="prevPage()">
+        Previous
+      </button>
+      <span>Page {{ currentPage() + 1 }} of {{ totalPages() }}</span>
+      <button hlmBtn variant="outline" size="sm" [disabled]="currentPage() >= totalPages() - 1" (click)="nextPage()">
+        Next
+      </button>
+    </div>
+  </div>
 </div>
 
 <!-- POPUP: ADD/MODIFY EMPLOYEE FORM DIALOG TEMPLATE -->
 <ng-template #employeeFormDialog>
-  <h3 mat-dialog-title>
-    <ng-icon style="vertical-align: middle; margin-right: 6px;" name="lucideBadgeCheck"></ng-icon>
-    <span>{{ editingEmployeeMode() ? 'Modify Staff Record' : 'Register New Desk Agent' }}</span>
-  </h3>
-  <mat-dialog-content style="max-height: 70vh; overflow-y: auto;">
-    <form [formGroup]="employeeFormGroup">
-      <div class="booking-sections" style="padding-right: 8px;">
-        <div class="booking-card">
-          <h3>
-            <ng-icon style="vertical-align: middle; margin-right: 6px;" name="lucideContact"></ng-icon>
-            <span>Employee Profile Identity</span>
-          </h3>
-          <div class="booking-content" style="margin-top: 15px;">
-            <mat-form-field appearance="outline">
-              <mat-label>First Name</mat-label>
-              <input matInput formControlName="firstName" />
-              @if (employeeFormGroup.get('firstName')?.invalid && employeeFormGroup.get('firstName')?.touched) {
-                <mat-error>Required (letters only).</mat-error>
-              }
-            </mat-form-field>
+  <div class="space-y-4">
+    <div class="flex items-center justify-between pb-3 border-b">
+      <h3 class="text-lg font-bold flex items-center gap-2">
+        <ng-icon name="lucideBadgeCheck" class="text-primary"></ng-icon>
+        <span>{{ editingEmployeeMode() ? 'Modify Staff Record' : 'Register New Desk Agent' }}</span>
+      </h3>
+    </div>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Last Name</mat-label>
-              <input matInput formControlName="lastName" />
-              @if (employeeFormGroup.get('lastName')?.invalid && employeeFormGroup.get('lastName')?.touched) {
-                <mat-error>Required (letters only).</mat-error>
-              }
-            </mat-form-field>
+    <form [formGroup]="employeeFormGroup" class="space-y-4">
+      <div class="p-4 rounded-xl border bg-card space-y-4">
+        <h4 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+          <ng-icon name="lucideContact"></ng-icon>
+          <span>Employee Profile Identity</span>
+        </h4>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Date of Birth</mat-label>
-              <input matInput type="date" formControlName="dob" />
-              @if (employeeFormGroup.get('dob')?.invalid && employeeFormGroup.get('dob')?.touched) {
-                <mat-error>Required.</mat-error>
-              }
-            </mat-form-field>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">First Name</label>
+            <input hlmInput formControlName="firstName" class="w-full text-sm" />
+            @if (employeeFormGroup.get('firstName')?.invalid && employeeFormGroup.get('firstName')?.touched) {
+              <span class="text-xs text-destructive">Required (letters only).</span>
+            }
+          </div>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Phone Number</mat-label>
-              <input matInput formControlName="phone" maxlength="10" />
-              @if (employeeFormGroup.get('phone')?.invalid && employeeFormGroup.get('phone')?.touched) {
-                <mat-error>Must be 10 digits.</mat-error>
-              }
-            </mat-form-field>
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Last Name</label>
+            <input hlmInput formControlName="lastName" class="w-full text-sm" />
+            @if (employeeFormGroup.get('lastName')?.invalid && employeeFormGroup.get('lastName')?.touched) {
+              <span class="text-xs text-destructive">Required (letters only).</span>
+            }
+          </div>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Alternative Phone</mat-label>
-              <input matInput formControlName="altPhone" maxlength="10" />
-              @if (employeeFormGroup.get('altPhone')?.invalid && employeeFormGroup.get('altPhone')?.touched) {
-                <mat-error>Must be 10 digits.</mat-error>
-              }
-            </mat-form-field>
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Date of Birth</label>
+            <input hlmInput type="date" formControlName="dob" class="w-full text-sm" />
+            @if (employeeFormGroup.get('dob')?.invalid && employeeFormGroup.get('dob')?.touched) {
+              <span class="text-xs text-destructive">Required.</span>
+            }
+          </div>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Email Address</mat-label>
-              <input matInput type="email" formControlName="email" />
-              @if (employeeFormGroup.get('email')?.invalid && employeeFormGroup.get('email')?.touched) {
-                <mat-error>Please enter valid email.</mat-error>
-              }
-            </mat-form-field>
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Phone Number</label>
+            <input hlmInput formControlName="phone" maxlength="10" class="w-full text-sm" />
+            @if (employeeFormGroup.get('phone')?.invalid && employeeFormGroup.get('phone')?.touched) {
+              <span class="text-xs text-destructive">Must be 10 digits.</span>
+            }
+          </div>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Aadhar Number</mat-label>
-              <input matInput formControlName="aadhar" maxlength="12" />
-              @if (employeeFormGroup.get('aadhar')?.invalid && employeeFormGroup.get('aadhar')?.touched) {
-                <mat-error>Must be exactly 12 digits.</mat-error>
-              }
-            </mat-form-field>
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Alternative Phone</label>
+            <input hlmInput formControlName="altPhone" maxlength="10" class="w-full text-sm" />
+            @if (employeeFormGroup.get('altPhone')?.invalid && employeeFormGroup.get('altPhone')?.touched) {
+              <span class="text-xs text-destructive">Must be 10 digits.</span>
+            }
+          </div>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Driving License Number</mat-label>
-              <input matInput formControlName="dl" maxlength="16" />
-              @if (employeeFormGroup.get('dl')?.invalid && employeeFormGroup.get('dl')?.touched) {
-                <mat-error>Must be exactly 16 characters.</mat-error>
-              }
-            </mat-form-field>
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Email Address</label>
+            <input hlmInput type="email" formControlName="email" class="w-full text-sm" />
+            @if (employeeFormGroup.get('email')?.invalid && employeeFormGroup.get('email')?.touched) {
+              <span class="text-xs text-destructive">Please enter valid email.</span>
+            }
+          </div>
 
-            <mat-form-field appearance="outline">
-              <mat-label>System Access Role</mat-label>
-              <mat-select formControlName="role">
-                <mat-option value="employee">Employee Agent</mat-option>
-                <mat-option value="admin">System Administrator</mat-option>
-              </mat-select>
-            </mat-form-field>
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Aadhar Number</label>
+            <input hlmInput formControlName="aadhar" maxlength="12" class="w-full text-sm" />
+            @if (employeeFormGroup.get('aadhar')?.invalid && employeeFormGroup.get('aadhar')?.touched) {
+              <span class="text-xs text-destructive">Must be exactly 12 digits.</span>
+            }
+          </div>
 
-            <div class="field" style="flex-direction: row; align-items: center; gap: 10px; margin-top: 15px;">
-              <mat-checkbox formControlName="allowLogin" id="empAllowLogin">Allow Dashboard Login</mat-checkbox>
-            </div>
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Driving License Number</label>
+            <input hlmInput formControlName="dl" maxlength="16" class="w-full text-sm" />
+            @if (employeeFormGroup.get('dl')?.invalid && employeeFormGroup.get('dl')?.touched) {
+              <span class="text-xs text-destructive">Must be exactly 16 characters.</span>
+            }
+          </div>
 
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Residential Address</mat-label>
-              <textarea matInput formControlName="address" rows="2"></textarea>
-              @if (employeeFormGroup.get('address')?.invalid && employeeFormGroup.get('address')?.touched) {
-                <mat-error>Address is required.</mat-error>
-              }
-            </mat-form-field>
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">System Access Role</label>
+            <select hlmInput formControlName="role" class="w-full text-sm">
+              <option value="employee">Employee Agent</option>
+              <option value="admin">System Administrator</option>
+            </select>
+          </div>
+
+          <div class="flex items-center gap-2 pt-6">
+            <input type="checkbox" formControlName="allowLogin" id="empAllowLogin" class="rounded accent-primary h-4 w-4" />
+            <label hlmLabel for="empAllowLogin" class="text-xs cursor-pointer">Allow Dashboard Login</label>
+          </div>
+
+          <div class="sm:col-span-2">
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Residential Address</label>
+            <textarea hlmInput formControlName="address" rows="2" class="w-full text-sm"></textarea>
+            @if (employeeFormGroup.get('address')?.invalid && employeeFormGroup.get('address')?.touched) {
+              <span class="text-xs text-destructive">Address is required.</span>
+            }
           </div>
         </div>
       </div>
+
+      <div class="flex items-center justify-end gap-2 pt-3 border-t">
+        <button hlmBtn class="action-btn success flex items-center gap-1.5" [disabled]="employeeFormGroup.invalid" (click)="saveEmployee($event)">
+          <ng-icon name="lucideCheck"></ng-icon>
+          <span>{{ editingEmployeeMode() ? 'Save Changes' : 'Register Account' }}</span>
+        </button>
+        <button hlmBtn variant="outline" (click)="closeEmployeeFormModal()">Cancel</button>
+      </div>
     </form>
-  </mat-dialog-content>
-  <mat-dialog-actions align="end" style="margin-top: 20px; padding: 12px 24px;">
-    <button mat-raised-button color="primary" class="action-btn success" style="margin-right: 12px;" [disabled]="employeeFormGroup.invalid" (click)="saveEmployee($event)">
-      <ng-icon name="lucideCheck"></ng-icon>
-      <span>{{ editingEmployeeMode() ? 'Save Changes' : 'Register Account' }}</span>
-    </button>
-    <button mat-button color="warn" (click)="closeEmployeeFormModal()">Cancel</button>
-  </mat-dialog-actions>
+  </div>
 </ng-template>

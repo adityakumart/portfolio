@@ -1,91 +1,102 @@
 <div class="json-formatter-container">
   <!-- Header Card -->
-  <mat-card class="header-card mb-4">
-    <mat-card-header class="py-3">
-      <mat-card-title>JSON Formatter & Validator</mat-card-title>
-      <mat-card-subtitle>Validate, format, minify, and sort JSON keys</mat-card-subtitle>
-    </mat-card-header>
-  </mat-card>
+  <div hlmCard class="header-card mb-4 p-5 rounded-2xl border shadow-sm">
+    <h2 class="text-xl font-bold tracking-tight">JSON Formatter & Validator</h2>
+    <p class="text-sm text-muted-foreground mt-1">Validate, format, minify, and sort JSON keys</p>
+  </div>
 
-  <form [formGroup]="form" class="formatter-form">
+  <form [formGroup]="form" class="formatter-form space-y-4">
     <!-- Toolbar Section -->
-    <mat-card class="toolbar-card mb-4">
-      <mat-card-content class="toolbar-content">
+    <div hlmCard class="toolbar-card p-4 rounded-2xl border shadow-sm">
+      <div class="toolbar-content flex flex-wrap items-center justify-between gap-4">
         <!-- Configuration Controls -->
-        <div class="controls-group">
-          <mat-form-field appearance="outline" class="indent-select" subscriptSizing="dynamic">
-            <mat-label>Indentation</mat-label>
-            <mat-select formControlName="selectedIndent">
-              <mat-option value="2">2 Spaces</mat-option>
-              <mat-option value="4">4 Spaces</mat-option>
-              <mat-option value="tab">Tab</mat-option>
-            </mat-select>
-          </mat-form-field>
+        <div class="controls-group flex flex-wrap items-center gap-4">
+          <div class="flex items-center gap-2">
+            <label hlmLabel class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Indentation</label>
+            <select hlmInput formControlName="selectedIndent" class="h-9 text-xs">
+              <option value="2">2 Spaces</option>
+              <option value="4">4 Spaces</option>
+              <option value="tab">Tab</option>
+            </select>
+          </div>
 
-          <mat-checkbox formControlName="sortKeys" class="sort-checkbox">
-            Sort Keys Alphabetically
-          </mat-checkbox>
+          <label class="flex items-center gap-2 cursor-pointer text-sm">
+            <input type="checkbox" formControlName="sortKeys" class="rounded accent-primary h-4 w-4" />
+            <span>Sort Keys Alphabetically</span>
+          </label>
         </div>
 
         <!-- Action Buttons -->
-        <div class="actions-group">
+        <div class="actions-group flex flex-wrap items-center gap-2">
           <button
-            mat-raised-button
-            color="primary"
+            hlmBtn
+            size="sm"
             type="button"
             (click)="onFormat()"
             [disabled]="form.get('inputJson')?.invalid"
-            class="action-btn"
+            class="action-btn flex items-center gap-1.5"
           >
             <ng-icon name="lucideAlignLeft"></ng-icon>
             Format
           </button>
 
           <button
-            mat-stroked-button
+            hlmBtn
+            variant="outline"
+            size="sm"
             type="button"
             (click)="onMinify()"
             [disabled]="form.get('inputJson')?.invalid"
-            class="action-btn"
+            class="action-btn flex items-center gap-1.5"
           >
             <ng-icon name="lucideMinimize2"></ng-icon>
             Minify
           </button>
 
           <button
-            mat-raised-button
-            color="accent"
+            hlmBtn
+            variant="secondary"
+            size="sm"
             type="button"
             (click)="onValidate()"
             [disabled]="form.get('inputJson')?.invalid"
-            class="action-btn"
+            class="action-btn flex items-center gap-1.5"
           >
             <ng-icon name="lucideCheckCheck"></ng-icon>
             Validate
           </button>
 
           <button
-            mat-button
+            hlmBtn
+            variant="ghost"
+            size="sm"
             type="button"
             (click)="onClear()"
-            class="action-btn"
+            class="action-btn flex items-center gap-1.5"
           >
             <ng-icon name="lucideEraser"></ng-icon>
             Clear
           </button>
         </div>
-      </mat-card-content>
-    </mat-card>
+      </div>
+    </div>
 
     <!-- Main Workspace Split-Screen Layout -->
-    <div class="workspace-layout">
+    <div class="workspace-layout grid grid-cols-1 lg:grid-cols-2 gap-4">
       <!-- Input Section -->
-      <mat-card class="editor-card">
-        <mat-card-header class="card-header-with-actions py-2">
-          <mat-card-title>Input JSON</mat-card-title>
+      <div hlmCard class="editor-card p-5 rounded-2xl border shadow-sm flex flex-col h-full">
+        <div class="card-header-with-actions flex items-center justify-between mb-3">
+          <h3 class="text-base font-semibold">Input JSON</h3>
           
           <!-- Validation Status Badge -->
-          <span [class]="'status-badge ' + validationState">
+          <span [class]="'status-badge inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-0.5 rounded-full ' + validationState"
+            [class.bg-emerald-500-10]="validationState === 'valid'"
+            [class.text-emerald-500]="validationState === 'valid'"
+            [class.bg-destructive-10]="validationState === 'invalid'"
+            [class.text-destructive]="validationState === 'invalid'"
+            [class.bg-muted]="validationState === 'idle'"
+            [class.text-muted-foreground]="validationState === 'idle'"
+          >
             @if (validationState === 'valid') {
               <ng-icon class="status-icon success-icon" name="lucideCheckCircle"></ng-icon>
               <span>Valid JSON ({{ parsedType | titlecase }})</span>
@@ -97,67 +108,68 @@
               <span>Unchecked</span>
             }
           </span>
-        </mat-card-header>
+        </div>
+        <div hlmSeparator class="mb-4"></div>
 
-        <mat-card-content class="card-content-fill">
-          <mat-form-field appearance="outline" class="full-width textarea-field" subscriptSizing="dynamic">
-            <textarea
-              matInput
-              formControlName="inputJson"
-              placeholder='Paste your raw JSON string here... e.g. {"name": "Alice", "age": 25}'
-              rows="20"
-              class="json-textarea"
-            ></textarea>
-            @if (form.get('inputJson')?.hasError('required') && form.get('inputJson')?.touched) {
-              <mat-error>JSON input is required</mat-error>
-            }
-          </mat-form-field>
+        <div class="card-content-fill flex-1 flex flex-col space-y-3">
+          <textarea
+            hlmInput
+            formControlName="inputJson"
+            placeholder='Paste your raw JSON string here... e.g. {"name": "Alice", "age": 25}'
+            rows="18"
+            class="json-textarea font-mono text-xs w-full flex-1 resize-y"
+          ></textarea>
+          @if (form.get('inputJson')?.hasError('required') && form.get('inputJson')?.touched) {
+            <span class="text-xs text-destructive">JSON input is required</span>
+          }
 
           <!-- Dynamic Error Detail Panel -->
           @if (validationState === 'invalid' && errorMessage) {
-            <div class="error-detail-box">
-              <ng-icon class="error-box-icon" name="lucideAlertTriangle"></ng-icon>
+            <div class="error-detail-box p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-start gap-2">
+              <ng-icon class="error-box-icon text-base shrink-0 mt-0.5" name="lucideAlertTriangle"></ng-icon>
               <div class="error-box-content">
                 <strong>Parsing Error Detail:</strong>
-                <p class="error-message-text">{{ errorMessage }}</p>
+                <p class="error-message-text mt-0.5">{{ errorMessage }}</p>
               </div>
             </div>
           }
-        </mat-card-content>
-      </mat-card>
+        </div>
+      </div>
 
       <!-- Output Section -->
-      <mat-card class="editor-card">
-        <mat-card-header class="card-header-with-actions py-2">
-          <mat-card-title>Formatted JSON Output</mat-card-title>
+      <div hlmCard class="editor-card p-5 rounded-2xl border shadow-sm flex flex-col h-full">
+        <div class="card-header-with-actions flex items-center justify-between mb-3">
+          <h3 class="text-base font-semibold">Formatted JSON Output</h3>
           
           <div class="output-actions">
             <button
-              mat-icon-button
-              matTooltip="Copy to Clipboard"
+              hlmBtn
+              size="icon"
+              variant="ghost"
+              hlmTooltip="Copy to Clipboard"
               type="button"
               (click)="onCopy()"
               [disabled]="!form.get('outputJson')?.value"
               [class.copied]="copySuccess"
+              class="h-8 w-8 text-primary"
             >
               <ng-icon [name]="copySuccess ? 'lucideCheckCircle' : 'lucideCopy'"></ng-icon>
             </button>
           </div>
-        </mat-card-header>
+        </div>
+        <div hlmSeparator class="mb-4"></div>
 
-        <mat-card-content class="card-content-fill">
-          <mat-form-field appearance="outline" class="full-width textarea-field" subscriptSizing="dynamic">
-            <textarea
-              matInput
-              formControlName="outputJson"
-              placeholder="Formatted, minified, or sorted JSON output will appear here..."
-              rows="20"
-              readonly
-              class="json-textarea readonly-textarea"
-            ></textarea>
-          </mat-form-field>
-        </mat-card-content>
-      </mat-card>
+        <div class="card-content-fill flex-1 flex flex-col">
+          <textarea
+            hlmInput
+            formControlName="outputJson"
+            placeholder="Formatted, minified, or sorted JSON output will appear here..."
+            rows="18"
+            readonly
+            class="json-textarea readonly-textarea font-mono text-xs w-full flex-1 resize-y bg-muted/20"
+          ></textarea>
+        </div>
+      </div>
     </div>
   </form>
 </div>

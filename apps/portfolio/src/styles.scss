@@ -1,6 +1,3 @@
-@use 'themes' as themes;
-@use '@angular/material' as mat;
-
 @layer theme, base, components, utilities;
 @import 'tailwindcss/theme.css' layer(theme);
 @import 'tailwindcss/preflight.css' layer(base);
@@ -51,30 +48,11 @@
   --radius-sm: calc(var(--radius) - 4px);
 }
 
-/* You can add global styles to this file, and also import other style files */
-
-// Apply the core structural styles (typography, etc.) for all components.
-// We only need to do this once.
-@include mat.core-theme(themes.$light-theme);
-
-// DEFAULT THEME (Light)
-// Apply the color styles for all Angular Material components.
-@include mat.all-component-themes(themes.$light-theme);
-
-// DARK THEME OVERRIDE
-// When the `.dark` class is applied to a parent (e.g. html),
-// it will override the color styles for all components inside.
-.dark {
-  @include mat.all-component-colors(themes.$dark-theme);
-}
-
 html,
-body,
-body.mat-typography {
+body {
   height: 100%;
 }
-body,
-body.mat-typography {
+body {
   margin: 0;
   font-family: var(--font-sans);
 }

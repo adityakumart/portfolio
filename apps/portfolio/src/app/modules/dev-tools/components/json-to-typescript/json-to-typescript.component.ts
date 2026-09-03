@@ -13,11 +13,14 @@ import {
   AbstractControl,
   ValidationErrors,
 } from '@angular/forms';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatButtonModule } from '@angular/material/button';
-import { MatInputModule } from '@angular/material/input';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatCardModule } from '@angular/material/card';
+import { HlmCardDirective } from '@spartan-ng/hel/card';
+import { HlmInputDirective } from '@spartan-ng/hel/input';
+import { HlmLabelDirective } from '@spartan-ng/hel/label';
+import { HlmButtonDirective } from '@spartan-ng/hel/button';
+import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
+import { HlmSeparatorDirective } from '@spartan-ng/hel/separator';
+import { HlmSpinnerComponent } from '@spartan-ng/hel/spinner';
+import { toast } from '@spartan-ng/hel/sonner';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideSparkles,
@@ -27,9 +30,6 @@ import {
   lucideDownload,
   lucideX,
 } from '@ng-icons/lucide';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatDividerModule } from '@angular/material/divider';
 import { Subject } from 'rxjs';
 import { JsonTransformerService } from './services/json-transformer.service';
 
@@ -42,15 +42,14 @@ import { JsonTransformerService } from './services/json-transformer.service';
   standalone: true,
   imports: [
     ReactiveFormsModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatCardModule,
-    MatButtonModule,
+    HlmCardDirective,
+    HlmInputDirective,
+    HlmLabelDirective,
+    HlmButtonDirective,
+    HlmTooltipImports,
+    HlmSeparatorDirective,
+    HlmSpinnerComponent,
     NgIconComponent,
-    MatSnackBarModule,
-    MatTooltipModule,
-    MatProgressSpinnerModule,
-    MatDividerModule,
   ],
   providers: [
     provideIcons({
@@ -69,7 +68,6 @@ import { JsonTransformerService } from './services/json-transformer.service';
 export class JsonToTypeScriptComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private jsonTransformer = inject(JsonTransformerService);
-  private snackBar = inject(MatSnackBar);
 
   form!: FormGroup;
   generatedInterface = '';
@@ -207,24 +205,11 @@ export class JsonToTypeScriptComponent implements OnInit, OnDestroy {
    * Displays an error message via snackbar
    */
   private showErrorMessage(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 5000,
-      horizontalPosition: 'end',
-      verticalPosition: 'bottom',
-      panelClass: ['error-snackbar'],
-    });
+    toast.error(message);
   }
 
-  /**
-   * Displays a success message via snackbar
-   */
   private showSuccessMessage(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 3000,
-      horizontalPosition: 'end',
-      verticalPosition: 'bottom',
-      panelClass: ['success-snackbar'],
-    });
+    toast.success(message);
   }
 
   /**
