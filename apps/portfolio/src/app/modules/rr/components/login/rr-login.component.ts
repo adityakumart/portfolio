@@ -2,10 +2,14 @@ import { Component, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { HlmInputDirective } from '@spartan-ng/hel/input';
-import { HlmLabelDirective } from '@spartan-ng/hel/label';
-import { HlmButtonDirective } from '@spartan-ng/hel/button';
-import { HlmSpinnerComponent } from '@spartan-ng/hel/spinner';
+import { HlmCardImports } from '@spartan-ng/hel/card';
+import { HlmTabsImports } from '@spartan-ng/hel/tabs';
+import { HlmInputImports } from '@spartan-ng/hel/input';
+import { HlmLabelImports } from '@spartan-ng/hel/label';
+import { HlmButtonImports } from '@spartan-ng/hel/button';
+import { HlmSpinnerImports } from '@spartan-ng/hel/spinner';
+import { HlmBadgeImports } from '@spartan-ng/hel/badge';
+import { HlmSeparatorImports } from '@spartan-ng/hel/separator';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideShieldCheck,
@@ -19,6 +23,8 @@ import {
   lucideEyeOff,
   lucideEye,
   lucideArrowLeft,
+  lucideZap,
+  lucideSparkles,
 } from '@ng-icons/lucide';
 import { RRApiService } from '../../services/rr-api.service';
 
@@ -29,10 +35,14 @@ import { RRApiService } from '../../services/rr-api.service';
     CommonModule,
     ReactiveFormsModule,
     RouterLink,
-    HlmInputDirective,
-    HlmLabelDirective,
-    HlmButtonDirective,
-    HlmSpinnerComponent,
+    HlmCardImports,
+    HlmTabsImports,
+    HlmInputImports,
+    HlmLabelImports,
+    HlmButtonImports,
+    HlmSpinnerImports,
+    HlmBadgeImports,
+    HlmSeparatorImports,
     NgIconComponent,
   ],
   providers: [
@@ -48,6 +58,8 @@ import { RRApiService } from '../../services/rr-api.service';
       lucideEyeOff,
       lucideEye,
       lucideArrowLeft,
+      lucideZap,
+      lucideSparkles,
     }),
   ],
   templateUrl: './rr-login.component.html',
@@ -60,12 +72,12 @@ export class RRLoginComponent {
   // Form Groups
   employeeFormGroup = new FormGroup({
     empId: new FormControl('', [Validators.required, Validators.pattern(/^RRA[0-9]{3}$/)]),
-    dob: new FormControl('', [Validators.required])
+    dob: new FormControl('', [Validators.required]),
   });
 
   adminFormGroup = new FormGroup({
     adminUsername: new FormControl('', [Validators.required]),
-    adminPassword: new FormControl('', [Validators.required, Validators.minLength(4)])
+    adminPassword: new FormControl('', [Validators.required, Validators.minLength(4)]),
   });
 
   // State Signals
@@ -150,7 +162,7 @@ export class RRLoginComponent {
     this.setRole('admin');
     this.adminFormGroup.patchValue({
       adminUsername: 'admin@rams-cars.com',
-      adminPassword: 'AdminPD'
+      adminPassword: 'AdminPD',
     });
   }
 
@@ -158,7 +170,7 @@ export class RRLoginComponent {
     this.setRole('employee');
     this.employeeFormGroup.patchValue({
       empId: 'RRA002',
-      dob: '1990-05-15'
+      dob: '1990-05-15',
     });
   }
 }
