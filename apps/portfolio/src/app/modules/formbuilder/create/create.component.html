@@ -1,225 +1,161 @@
 <div id="formDiv">
-  <!--  (cdkDropListDropped)="drop($event)" -->
   <div
     cdkDropList
-    class="parent mb-2 p-5 mt-2"
+    class="parent mb-2 p-5 mt-2 space-y-4"
     (cdkDropListDropped)="drop($event)"
     #fieldsList
   >
     @for (inputData of jsonData(); track inputData; let i = $index) {
-      <mat-card
+      <div
+        hlmCard
         cdkDragLockAxis="y"
         cdkDrag
-        class="parentCard px-4 pb-2"
+        class="parentCard p-4 rounded-xl border shadow-sm relative"
         cdkDragBoundary=".parent"
         (cdkDragEnded)="dragging = false"
         (cdkDragStarted)="dragging = true"
-        [ngClass]="{ activeCard: inputData.id === selectedFieldId() }"
+        [class.ring-2]="inputData.id === selectedFieldId()"
+        [class.ring-primary]="inputData.id === selectedFieldId()"
       >
-        <div class="cardPlaceholder">
-          <ng-icon cdkDragHandle class="parentHandler" name="lucideGripVertical"></ng-icon>
+        <div class="cardPlaceholder mb-2 cursor-grab active:cursor-grabbing text-muted-foreground">
+          <ng-icon cdkDragHandle class="parentHandler text-lg" name="lucideGripVertical"></ng-icon>
         </div>
         @if (inputData.id === selectedFieldId()) {
-          <div (click)="fieldSelected(inputData.id)">
-            <mat-form-field appearance="fill">
-              <mat-label>Input</mat-label>
+          <div (click)="fieldSelected(inputData.id)" class="space-y-3">
+            <div>
+              <label hlmLabel class="block mb-1 text-xs text-muted-foreground">Question Label</label>
               <input
-                matInput
-                placeholder="Input"
+                hlmInput
+                placeholder="Question title"
                 [value]="'Question ' + inputData.id"
+                class="w-full text-sm font-semibold"
               />
-            </mat-form-field>
-            <div [ngClass]="{ hideElement: dragging }" class="dataDiv">
+            </div>
+            <div [ngClass]="{ hideElement: dragging }" class="dataDiv pt-1">
               @if (inputData.inputType === 'text') {
-                <div class="pb-2">
-                  <!-- Input -->
-                  <mat-form-field appearance="fill">
-                    <mat-label>Input</mat-label>
-                    <input matInput placeholder="Input" />
-                  </mat-form-field>
+                <div>
+                  <input hlmInput placeholder="Text input placeholder..." class="w-full text-sm" />
                 </div>
               }
               @if (inputData.inputType === 'textarea') {
-                <div class="pb-2">
-                  <mat-form-field appearance="fill">
-                    <mat-label>Textarea</mat-label>
-                    <textarea matInput placeholder=""></textarea>
-                  </mat-form-field>
+                <div>
+                  <textarea hlmInput placeholder="Long text answer..." rows="3" class="w-full text-sm"></textarea>
                 </div>
               }
               @if (inputData.inputType === 'select') {
-                <div class="pb-2">
-                  <!-- Select -->
-                  <mat-form-field appearance="fill">
-                    <mat-label>Select</mat-label>
-                    <mat-select>
-                      <mat-option value="Option 1">Option 1</mat-option>
-                      <mat-option value="Option 2">Option 2</mat-option>
-                      <mat-option value="Option 3">Option 3</mat-option>
-                    </mat-select>
-                  </mat-form-field>
+                <div>
+                  <select hlmInput class="w-full text-sm">
+                    <option value="Option 1">Option 1</option>
+                    <option value="Option 2">Option 2</option>
+                    <option value="Option 3">Option 3</option>
+                  </select>
                 </div>
               }
               @if (inputData.inputType === 'radio') {
-                <div class="pb-2">
-                  <mat-radio-group aria-label="Select an option">
-                    <mat-radio-button value="1">Option 1</mat-radio-button>
-                    <mat-radio-button value="2">Option 2</mat-radio-button>
-                  </mat-radio-group>
+                <div class="space-y-2 text-sm">
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="preview_radio_{{inputData.id}}" value="1" class="accent-primary" />
+                    <span>Option 1</span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="preview_radio_{{inputData.id}}" value="2" class="accent-primary" />
+                    <span>Option 2</span>
+                  </label>
                 </div>
               }
               @if (inputData.inputType === 'date') {
-                <div class="pb-2">
-                  <!-- Datepicker - Single -->
-                  <mat-form-field appearance="fill" appMonthYear>
-                    <mat-label>Choose a date</mat-label>
-                    <input matInput [matDatepicker]="picker" />
-                    <mat-hint>MM/DD/YYYY</mat-hint>
-                    <mat-datepicker-toggle
-                      matSuffix
-                      [for]="picker"
-                    ></mat-datepicker-toggle>
-                    <mat-datepicker
-                      #picker
-                      startView="multi-year"
-                    ></mat-datepicker>
-                  </mat-form-field>
+                <div>
+                  <input hlmInput type="date" class="w-full text-sm" />
                 </div>
               }
               @if (inputData.inputType === 'dateRange') {
-                <div class="pb-2">
-                  <!-- Datepicker- Range -->
-                  <mat-form-field appearance="fill">
-                    <mat-label>Enter a date range</mat-label>
-                    <mat-date-range-input [rangePicker]="rangepicker">
-                      <input matStartDate placeholder="Start date" />
-                      <input matEndDate placeholder="End date" />
-                    </mat-date-range-input>
-                    <mat-hint>MM/DD/YYYY – MM/DD/YYYY</mat-hint>
-                    <mat-datepicker-toggle
-                      matSuffix
-                      [for]="rangepicker"
-                    ></mat-datepicker-toggle>
-                    <mat-date-range-picker #rangepicker></mat-date-range-picker>
-                  </mat-form-field>
+                <div class="grid grid-cols-2 gap-3">
+                  <input hlmInput type="date" placeholder="Start date" class="text-sm" />
+                  <input hlmInput type="date" placeholder="End date" class="text-sm" />
                 </div>
               }
               @if (inputData.inputType === 'checkBox') {
-                <div class="pb-2">
-                  <!-- Checkbox -->
-                  <mat-checkbox class="example-margin">Checked</mat-checkbox>
+                <div class="text-sm">
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" class="rounded accent-primary h-4 w-4" />
+                    <span>Option checkbox choice</span>
+                  </label>
+                </div>
+              }
+              @if (inputData.inputType === 'phone') {
+                <div>
+                  <input hlmInput type="tel" placeholder="+1 (555) 000-0000" class="w-full text-sm" />
                 </div>
               }
             </div>
           </div>
         } @else {
-          <div (click)="fieldSelected(inputData.id)">
-            <div class="pb-2">Question {{ i + 1 }}</div>
-            <div [ngClass]="{ hideElement: dragging }" class="dataDiv">
+          <div (click)="fieldSelected(inputData.id)" class="space-y-2 cursor-pointer">
+            <div class="font-semibold text-sm">Question {{ i + 1 }}</div>
+            <div [ngClass]="{ hideElement: dragging }" class="dataDiv opacity-70 pointer-events-none">
               @if (inputData.inputType === 'text') {
-                <div class="pb-2">
-                  <!-- Input -->
-                  <mat-form-field appearance="fill">
-                    <mat-label>Input</mat-label>
-                    <input matInput placeholder="Input" />
-                  </mat-form-field>
-                </div>
+                <input hlmInput placeholder="Short answer" class="w-full text-sm h-8" disabled />
               }
               @if (inputData.inputType === 'textarea') {
-                <div class="pb-2">
-                  <mat-form-field appearance="fill">
-                    <mat-label>Textarea</mat-label>
-                    <textarea matInput placeholder=""></textarea>
-                  </mat-form-field>
-                </div>
+                <textarea hlmInput placeholder="Long answer" rows="2" class="w-full text-sm" disabled></textarea>
               }
               @if (inputData.inputType === 'select') {
-                <div class="pb-2">
-                  <!-- Select -->
-                  <mat-form-field appearance="fill">
-                    <mat-label>Select</mat-label>
-                    <mat-select>
-                      <mat-option value="Option 1">Option 1</mat-option>
-                      <mat-option value="Option 2">Option 2</mat-option>
-                      <mat-option value="Option 3">Option 3</mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
+                <select hlmInput class="w-full text-sm h-8" disabled>
+                  <option>Dropdown select</option>
+                </select>
               }
               @if (inputData.inputType === 'radio') {
-                <div class="pb-2">
-                  <mat-radio-group aria-label="Select an option">
-                    <mat-radio-button value="1">Option 1</mat-radio-button>
-                    <mat-radio-button value="2">Option 2</mat-radio-button>
-                  </mat-radio-group>
+                <div class="space-y-1 text-xs text-muted-foreground">
+                  <div>○ Option 1</div>
+                  <div>○ Option 2</div>
                 </div>
               }
               @if (inputData.inputType === 'date') {
-                <div class="pb-2">
-                  <!-- Datepicker - Single -->
-                  <mat-form-field appearance="fill" appMonthYear>
-                    <mat-label>Choose a date</mat-label>
-                    <input matInput [matDatepicker]="picker" />
-                    <mat-hint>MM/DD/YYYY</mat-hint>
-                    <mat-datepicker-toggle
-                      matSuffix
-                      [for]="picker"
-                    ></mat-datepicker-toggle>
-                    <mat-datepicker
-                      #picker
-                      startView="multi-year"
-                    ></mat-datepicker>
-                  </mat-form-field>
-                </div>
+                <input hlmInput type="date" class="w-full text-sm h-8" disabled />
               }
               @if (inputData.inputType === 'dateRange') {
-                <div class="pb-2">
-                  <!-- Datepicker- Range -->
-                  <mat-form-field appearance="fill">
-                    <mat-label>Enter a date range</mat-label>
-                    <mat-date-range-input [rangePicker]="rangepicker">
-                      <input matStartDate placeholder="Start date" />
-                      <input matEndDate placeholder="End date" />
-                    </mat-date-range-input>
-                    <mat-hint>MM/DD/YYYY – MM/DD/YYYY</mat-hint>
-                    <mat-datepicker-toggle
-                      matSuffix
-                      [for]="rangepicker"
-                    ></mat-datepicker-toggle>
-                    <mat-date-range-picker #rangepicker></mat-date-range-picker>
-                  </mat-form-field>
+                <div class="grid grid-cols-2 gap-2">
+                  <input hlmInput type="date" class="text-sm h-8" disabled />
+                  <input hlmInput type="date" class="text-sm h-8" disabled />
                 </div>
               }
               @if (inputData.inputType === 'checkBox') {
-                <div class="pb-2">
-                  <!-- Checkbox -->
-                  <mat-checkbox class="example-margin">Checked</mat-checkbox>
-                </div>
+                <div class="text-xs text-muted-foreground">☐ Multiple choice option</div>
+              }
+              @if (inputData.inputType === 'phone') {
+                <input hlmInput type="tel" placeholder="Phone" class="w-full text-sm h-8" disabled />
               }
             </div>
           </div>
         }
-        <div class="custom-placeholder" *cdkDragPlaceholder></div>
-      </mat-card>
+        <div class="custom-placeholder border-2 border-dashed border-primary/40 rounded-xl my-2 p-8" *cdkDragPlaceholder></div>
+      </div>
     }
   </div>
-  <div class="p-2 bg-grey">
+
+  <div class="p-4 bg-muted/20 border-t flex items-center justify-between">
     <button
-      mat-raised-button
-      color="primary"
-      [matMenuTriggerFor]="menu"
-      class="addBtn"
+      hlmBtn
+      type="button"
+      [hlmDropdownMenuTrigger]="menu"
+      class="addBtn flex items-center gap-1.5"
     >
       <ng-icon name="lucidePlus"></ng-icon>
       Insert new
     </button>
-    <mat-menu #menu="matMenu">
-      @for (field of addJsonData(); track field) {
-        <button mat-menu-item (click)="addInput(field.inputType)">
-          <ng-icon [name]="field.icon"></ng-icon>
-          {{ field.label }}
-        </button>
-      }
-    </mat-menu>
+    <ng-template #menu>
+      <div hlmDropdownMenu class="w-56 p-1 bg-popover border rounded-xl shadow-lg">
+        @for (field of addJsonData(); track field.inputType) {
+          <button
+            hlmDropdownMenuItem
+            (click)="addInput(field.inputType)"
+            class="flex items-center gap-2 w-full px-3 py-2 text-xs rounded-lg hover:bg-muted transition-colors text-left"
+          >
+            <ng-icon [name]="field.icon"></ng-icon>
+            <span>{{ field.label }}</span>
+          </button>
+        }
+      </div>
+    </ng-template>
   </div>
 </div>

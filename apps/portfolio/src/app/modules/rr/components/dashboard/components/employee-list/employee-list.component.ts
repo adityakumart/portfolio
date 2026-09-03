@@ -1,17 +1,14 @@
-import { Component, OnInit, inject, signal, ViewChild, TemplateRef, effect } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ViewChild, TemplateRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
 import { RRApiService } from '../../../../services/rr-api.service';
 import { IEmployee } from '@portfolio/shared-types';
-
-// Material Imports
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatRadioModule } from '@angular/material/radio';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatButtonModule } from '@angular/material/button';
+import { HlmCardDirective } from '@spartan-ng/hel/card';
+import { HlmInputDirective } from '@spartan-ng/hel/input';
+import { HlmLabelDirective } from '@spartan-ng/hel/label';
+import { HlmButtonDirective } from '@spartan-ng/hel/button';
+import { HlmDialogService } from '@spartan-ng/hel/dialog';
+import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideUsers,
@@ -21,10 +18,6 @@ import {
   lucideContact,
   lucideCheck,
 } from '@ng-icons/lucide';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatTableModule, MatTableDataSource } from '@angular/material/table';
-import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
-import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-rr-employee-list',
@@ -32,18 +25,13 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatRadioModule,
-    MatCheckboxModule,
-    MatButtonModule,
+    FormsModule,
+    HlmCardDirective,
+    HlmInputDirective,
+    HlmLabelDirective,
+    HlmButtonDirective,
+    HlmTooltipImports,
     NgIconComponent,
-    MatDialogModule,
-    MatTableModule,
-    MatPaginatorModule,
-    MatTooltipModule
   ],
   providers: [
     provideIcons({
@@ -61,35 +49,23 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 export class RREmployeeListComponent implements OnInit {
   private rrApi = inject(RRApiService);
   private fb = inject(FormBuilder);
-  private dialog = inject(MatDialog);
+  private dialog = inject(HlmDialogService);
 
   @ViewChild('employeeFormDialog') employeeFormDialog!: TemplateRef<any>;
 
-  // MatTable Configuration
-  dataSource = new MatTableDataSource<IEmployee>([]);
-  displayedColumns: string[] = [
-    'id',
-    'name',
-    'role',
-    'dob',
-    'phone',
-    'email',
-    'allowLogin',
-    'actions',
-  ];
-
-  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
-    this.dataSource.paginator = paginator;
-  }
-
-  constructor() {
-    effect(() => {
-      this.dataSource.data = this.employees();
-    });
-  }
-
   // Collections data
   employees = signal<IEmployee[]>([]);
+
+  // Pagination state
+  currentPage = signal(0);
+  pageSize = signal(10);
+
+  pagedEmployees = computed(() => {
+    const start = this.currentPage() * this.pageSize();
+    return this.employees().slice(start, start + this.pageSize());
+  });
+
+  totalPages = computed(() => Math.ceil(this.employees().length / this.pageSize()) || 1);
 
   // Modals signals
   editingEmployeeMode = signal<boolean>(false);
@@ -137,32 +113,28 @@ export class RREmployeeListComponent implements OnInit {
       allowLogin: true
     });
     this.dialog.open(this.employeeFormDialog, {
-      width: '800px',
-      maxWidth: '95vw',
-      maxHeight: '90vh'
+      contentClass: 'max-w-3xl w-full p-6 max-h-[85vh] overflow-y-auto',
     });
   }
 
-  openEditEmployeeModal(emp: any) {
+  openEditEmployeeModal(e: IEmployee) {
     this.editingEmployeeMode.set(true);
     this.employeeFormGroup.reset({
-      id: emp.id,
-      firstName: emp.firstName,
-      lastName: emp.lastName,
-      dob: emp.dob,
-      phone: emp.phone,
-      altPhone: emp.altPhone || '',
-      email: emp.email,
-      aadhar: emp.aadhar,
-      dl: emp.dl,
-      role: emp.role || 'employee',
-      allowLogin: emp.allowLogin !== undefined ? emp.allowLogin : true,
-      address: emp.address
+      id: e.id,
+      firstName: e.firstName,
+      lastName: e.lastName,
+      dob: e.dob ? new Date(e.dob).toISOString().split('T')[0] : '',
+      phone: e.phone,
+      altPhone: e.altPhone,
+      email: e.email,
+      aadhar: e.aadhar,
+      dl: e.dl,
+      role: e.role,
+      allowLogin: e.allowLogin,
+      address: e.address
     });
     this.dialog.open(this.employeeFormDialog, {
-      width: '800px',
-      maxWidth: '95vw',
-      maxHeight: '90vh'
+      contentClass: 'max-w-3xl w-full p-6 max-h-[85vh] overflow-y-auto',
     });
   }
 
@@ -174,20 +146,33 @@ export class RREmployeeListComponent implements OnInit {
     e.preventDefault();
     if (this.employeeFormGroup.invalid) return;
 
+    const payload = this.employeeFormGroup.value;
+
     try {
       if (this.editingEmployeeMode()) {
-        const id = this.employeeFormGroup.value.id;
-        await this.rrApi.updateEmployee(id, this.employeeFormGroup.value);
-        alert('Employee updated successfully.');
+        await this.rrApi.updateEmployee(payload.id, payload);
+        alert('Employee details updated.');
       } else {
-        await this.rrApi.createEmployee(this.employeeFormGroup.value);
+        await this.rrApi.createEmployee(payload);
         alert('Employee registered successfully.');
       }
       this.closeEmployeeFormModal();
       this.loadEmployees();
     } catch (err: any) {
-      console.error(err);
-      alert(err.error?.message || 'Error saving employee.');
+      alert(err.message || 'Operation failed.');
+    }
+  }
+
+  // Pagination controls
+  nextPage() {
+    if (this.currentPage() < this.totalPages() - 1) {
+      this.currentPage.update((p) => p + 1);
+    }
+  }
+
+  prevPage() {
+    if (this.currentPage() > 0) {
+      this.currentPage.update((p) => p - 1);
     }
   }
 }

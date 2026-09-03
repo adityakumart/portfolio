@@ -1,36 +1,41 @@
 <div class="regex-tester-container">
   <!-- Title section -->
-  <div class="title-section">
-    <ng-icon name="lucideBinary"></ng-icon>
-    <h1>Regex Builder & Tester</h1>
+  <div class="title-section flex items-center gap-2 mb-2">
+    <ng-icon name="lucideBinary" class="text-2xl text-primary"></ng-icon>
+    <h1 class="text-2xl font-bold tracking-tight">Regex Builder & Tester</h1>
   </div>
-  <p class="intro-text">
+  <p class="intro-text text-sm text-muted-foreground mb-6">
     Select predefined regular expressions, customize their strict rules, and test strings in real-time with visual matching feedback.
   </p>
 
-  <form [formGroup]="form" class="grid-layout">
+  <form [formGroup]="form" class="grid-layout grid grid-cols-1 lg:grid-cols-2 gap-6">
     <!-- Configuration Card -->
-    <mat-card class="config-card">
-      <div class="card-header">
-        <ng-icon name="lucideSlidersHorizontal"></ng-icon>
-        <h2>Configuration & Rules</h2>
+    <div hlmCard class="config-card p-5 rounded-2xl border shadow-sm flex flex-col">
+      <div class="card-header flex items-center gap-2 mb-4">
+        <ng-icon name="lucideSlidersHorizontal" class="text-primary"></ng-icon>
+        <h2 class="text-base font-semibold">Configuration & Rules</h2>
       </div>
 
-      <div class="card-content">
+      <div class="card-content space-y-4">
         <!-- Pattern row -->
         <div class="pattern-row">
-          <div class="pattern-field-container">
-            <mat-form-field appearance="outline">
-              <mat-label>Regex Pattern</mat-label>
-              <input matInput type="text" formControlName="pattern" placeholder="Enter regular expression" />
-              <span matSuffix style="font-family: var(--font-mono, monospace); color: var(--muted-foreground); margin-right: 8px; font-weight: 500;">/{{ activeFlags }}</span>
-            </mat-form-field>
-
+          <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Regex Pattern</label>
+          <div class="pattern-field-container relative flex items-center">
+            <input
+              hlmInput
+              type="text"
+              formControlName="pattern"
+              placeholder="Enter regular expression"
+              class="w-full pr-24 font-mono text-sm"
+            />
+            <span class="absolute right-10 font-mono text-xs text-muted-foreground font-semibold">/{{ activeFlags }}</span>
             <button
-              mat-icon-button
+              hlmBtn
+              size="icon"
+              variant="ghost"
               type="button"
-              class="btn-copy"
-              matTooltip="Copy Regex to Clipboard"
+              class="btn-copy absolute right-1 h-8 w-8 text-muted-foreground"
+              hlmTooltip="Copy Regex to Clipboard"
               (click)="copyPattern()"
             >
               <ng-icon name="lucideCopy"></ng-icon>
@@ -39,54 +44,76 @@
         </div>
 
         <!-- Controls row (Category & Flags side-by-side) -->
-        <div class="controls-row">
-          <mat-form-field appearance="outline">
-            <mat-label>Regex Category</mat-label>
-            <mat-select formControlName="category">
+        <div class="controls-row grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
+          <div>
+            <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Regex Category</label>
+            <select hlmInput formControlName="category" class="w-full text-sm">
               @for (opt of regexOptions; track opt.id) {
-                <mat-option [value]="opt.id">
+                <option [value]="opt.id">
                   {{ opt.name }}
-                </mat-option>
+                </option>
               }
-            </mat-select>
-          </mat-form-field>
+            </select>
+          </div>
 
           <div class="flags-container">
-            <span class="flags-label">Flags:</span>
-            <mat-button-toggle-group multiple formControlName="flags" class="premium-toggle-group">
-              <mat-button-toggle value="g" matTooltip="Global Search (g)">g</mat-button-toggle>
-              <mat-button-toggle value="i" matTooltip="Case Insensitive (i)">i</mat-button-toggle>
-              <mat-button-toggle value="m" matTooltip="Multiline (m)">m</mat-button-toggle>
-            </mat-button-toggle-group>
+            <span class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Flags:</span>
+            <div class="flex items-center gap-1.5">
+              @for (flag of ['g', 'i', 'm']; track flag) {
+                <button
+                  type="button"
+                  hlmBtn
+                  size="sm"
+                  [variant]="hasFlag(flag) ? 'default' : 'outline'"
+                  (click)="toggleFlag(flag)"
+                  [hlmTooltip]="flag === 'g' ? 'Global Search (g)' : (flag === 'i' ? 'Case Insensitive (i)' : 'Multiline (m)')"
+                  class="h-9 w-9 p-0 font-mono text-xs font-bold"
+                >
+                  {{ flag }}
+                </button>
+              }
+            </div>
           </div>
         </div>
 
         <!-- Interactive Password Rules Customizer -->
         @if (showPasswordBuilder) {
-          <div class="password-builder-panel">
-            <h3>
-              <ng-icon name="lucideShieldCheck"></ng-icon>
+          <div class="password-builder-panel p-4 rounded-xl bg-muted/20 border space-y-3">
+            <h3 class="text-sm font-semibold flex items-center gap-1.5">
+              <ng-icon name="lucideShieldCheck" class="text-primary"></ng-icon>
               Password Rule Builder
             </h3>
 
-            <div class="rules-grid">
-              <mat-checkbox formControlName="passRequireUppercase">Uppercase (A-Z)</mat-checkbox>
-              <mat-checkbox formControlName="passRequireLowercase">Lowercase (a-z)</mat-checkbox>
-              <mat-checkbox formControlName="passRequireDigit">Digits (0-9)</mat-checkbox>
-              <mat-checkbox formControlName="passRequireSpecial">Special Character</mat-checkbox>
+            <div class="rules-grid grid grid-cols-2 gap-3 text-sm">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" formControlName="passRequireUppercase" class="rounded accent-primary h-4 w-4" />
+                <span>Uppercase (A-Z)</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" formControlName="passRequireLowercase" class="rounded accent-primary h-4 w-4" />
+                <span>Lowercase (a-z)</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" formControlName="passRequireDigit" class="rounded accent-primary h-4 w-4" />
+                <span>Digits (0-9)</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" formControlName="passRequireSpecial" class="rounded accent-primary h-4 w-4" />
+                <span>Special Character</span>
+              </label>
             </div>
 
-            <div class="length-control">
-              <mat-form-field appearance="outline">
-                <mat-label>Min Length</mat-label>
-                <input matInput type="number" formControlName="passMinLength" min="1" max="100" />
-              </mat-form-field>
-              <span class="intro-text" style="margin: 0;">characters</span>
+            <div class="length-control flex items-center gap-3 pt-2">
+              <div class="w-32">
+                <label hlmLabel class="block mb-1 text-xs font-semibold text-muted-foreground">Min Length</label>
+                <input hlmInput type="number" formControlName="passMinLength" min="1" max="100" class="w-full text-sm" />
+              </div>
+              <span class="text-xs text-muted-foreground mt-4">characters</span>
             </div>
 
-            <div class="instructions-note">
+            <div class="instructions-note text-xs text-muted-foreground bg-muted/40 p-3 rounded-lg space-y-1">
               <strong>How to modify this regex manually:</strong>
-              <ul>
+              <ul class="list-disc list-inside space-y-0.5">
                 <li>Minimum length: Adjust the <code>{{ '{' }}{{ form.get('passMinLength')?.value || 8 }},{{ '}' }}</code> quantifier at the end.</li>
                 <li>At least one uppercase: Remove condition by deleting <code>(?=.*?[A-Z])</code>.</li>
                 <li>At least one lowercase: Remove condition by deleting <code>(?=.*?[a-z])</code>.</li>
@@ -98,22 +125,21 @@
         }
 
         <!-- Explanation Block -->
-        <!-- Explanation Block -->
         @if (selectedOption?.explanation || parsedTokens.length > 0) {
-          <div class="explanation-block">
+          <div class="explanation-block space-y-3 pt-2">
             @if (selectedOption?.explanation) {
-              <p class="explanation-text">{{ selectedOption?.explanation }}</p>
+              <p class="explanation-text text-xs text-muted-foreground whitespace-pre-line leading-relaxed bg-muted/20 p-3 rounded-xl">{{ selectedOption?.explanation }}</p>
             }
 
             <!-- Dynamic Visual Token Breakdown -->
             @if (parsedTokens.length > 0) {
               <div class="token-breakdown-section">
-                <span class="breakdown-label">Regex Breakdown</span>
-                <div class="token-list">
+                <span class="breakdown-label block mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Regex Breakdown</span>
+                <div class="token-list flex flex-wrap gap-1.5">
                   @for (tok of parsedTokens; track $index) {
-                    <div class="token-chip">
-                      <span class="token-symbol" [class]="tok.type">{{ tok.token }}</span>
-                      <span class="token-desc">{{ tok.meaning }}</span>
+                    <div class="token-chip inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border bg-muted/30 text-xs">
+                      <span class="token-symbol font-mono font-bold text-primary">{{ tok.token }}</span>
+                      <span class="token-desc text-muted-foreground">{{ tok.meaning }}</span>
                     </div>
                   }
                 </div>
@@ -122,24 +148,26 @@
           </div>
         }
       </div>
-    </mat-card>
+    </div>
 
     <!-- Testing & Highlight Playground Card -->
-    <mat-card class="tester-card">
-      <div class="card-header">
-        <ng-icon name="lucideFlaskConical"></ng-icon>
-        <h2>Interactive Playground</h2>
+    <div hlmCard class="tester-card p-5 rounded-2xl border shadow-sm flex flex-col">
+      <div class="card-header flex items-center gap-2 mb-4">
+        <ng-icon name="lucideFlaskConical" class="text-primary"></ng-icon>
+        <h2 class="text-base font-semibold">Interactive Playground</h2>
       </div>
 
-      <div class="card-content">
-        <div class="tester-playground">
-          <div class="editor-label-row">
-            <h3>Test Text Area</h3>
+      <div class="card-content flex-1 flex flex-col space-y-3">
+        <div class="tester-playground flex-1 flex flex-col">
+          <div class="editor-label-row flex items-center justify-between mb-2">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Test Text Area</h3>
             @if (testTextStatus) {
               <div
-                class="status-badge"
-                [class.valid]="testTextStatus === 'match'"
-                [class.invalid]="testTextStatus === 'nomatch'"
+                class="status-badge text-xs font-bold px-2.5 py-0.5 rounded-full"
+                [class.text-emerald-500]="testTextStatus === 'match'"
+                [class.bg-emerald-500-10]="testTextStatus === 'match'"
+                [class.text-destructive]="testTextStatus === 'nomatch'"
+                [class.bg-destructive-10]="testTextStatus === 'nomatch'"
               >
                 {{ testTextStatus === 'match' ? 'Match Found' : 'No Match' }}
               </div>
@@ -147,11 +175,11 @@
           </div>
 
           <!-- Overlapping highlights input container -->
-          <div class="regex-editor-container">
-            <div class="editor-highlight" #highlightLayer [innerHTML]="form.get('testText')?.value | regexHighlight:form.get('pattern')?.value:activeFlags">
+          <div class="regex-editor-container relative flex-1 min-h-[260px] border rounded-xl overflow-hidden bg-background">
+            <div class="editor-highlight absolute inset-0 p-3 font-mono text-sm whitespace-pre-wrap pointer-events-none" #highlightLayer [innerHTML]="form.get('testText')?.value | regexHighlight:form.get('pattern')?.value:activeFlags">
             </div>
             <textarea
-              class="editor-textarea"
+              class="editor-textarea absolute inset-0 w-full h-full p-3 font-mono text-sm bg-transparent resize-none text-transparent caret-foreground focus:outline-none"
               #textareaLayer
               formControlName="testText"
               placeholder="Type or paste your test text here to verify regex matches..."
@@ -161,14 +189,13 @@
         </div>
 
         <!-- Syntax error alerts -->
-        <!-- Syntax error alerts -->
         @if (regexError) {
-          <div class="regex-error-msg">
-            <ng-icon name="lucideAlertCircle"></ng-icon>
+          <div class="regex-error-msg p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center gap-2">
+            <ng-icon name="lucideAlertCircle" class="text-base shrink-0"></ng-icon>
             <span>Invalid Regular Expression: {{ regexError }}</span>
           </div>
         }
       </div>
-    </mat-card>
+    </div>
   </form>
 </div>

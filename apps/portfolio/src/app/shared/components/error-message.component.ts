@@ -5,6 +5,19 @@ import { AbstractControl } from '@angular/forms';
   selector: 'app-error-message',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.Eager,
+  host: {
+    class: 'block text-xs text-destructive mt-1',
+    '[class.hidden]': '!errorMessage',
+  },
+  styles: `
+    :host {
+      display: block;
+      color: var(--destructive, #dc2626);
+    }
+    :host(.hidden) {
+      display: none;
+    }
+  `,
   template: `{{ errorMessage }}`,
 })
 export class ErrorMessageComponent {
@@ -12,7 +25,7 @@ export class ErrorMessageComponent {
   @Input({ required: true }) control!: AbstractControl | null;
 
   /** Name of the field to display in default error messages */
-  @Input() fieldName: string = 'Field';
+  @Input() fieldName = 'Field';
 
   /** Optional overrides for specific error keys */
   @Input() customMessages?: Record<string, string>;

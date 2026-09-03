@@ -1,15 +1,14 @@
 import { Component, OnInit, OnDestroy, AfterViewInit, ChangeDetectionStrategy, ViewChild, ElementRef, signal, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatButtonModule } from '@angular/material/button';
+import { HlmCardDirective } from '@spartan-ng/hel/card';
+import { HlmInputDirective } from '@spartan-ng/hel/input';
+import { HlmLabelDirective } from '@spartan-ng/hel/label';
+import { HlmButtonDirective } from '@spartan-ng/hel/button';
+import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
+import { HlmSeparatorDirective } from '@spartan-ng/hel/separator';
+import { toast } from '@spartan-ng/hel/sonner';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { lucideAlertTriangle, lucideHelpCircle, lucideDownload } from '@ng-icons/lucide';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatDividerModule } from '@angular/material/divider';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Subject } from 'rxjs';
 import { takeUntil, debounceTime } from 'rxjs/operators';
 import * as QRCode from 'qrcode';
@@ -22,15 +21,13 @@ export type ErrorCorrectionLevel = 'L' | 'M' | 'Q' | 'H';
   standalone: true,
   imports: [
     ReactiveFormsModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatButtonModule,
+    HlmCardDirective,
+    HlmInputDirective,
+    HlmLabelDirective,
+    HlmButtonDirective,
+    HlmTooltipImports,
+    HlmSeparatorDirective,
     NgIconComponent,
-    MatTooltipModule,
-    MatDividerModule,
-    MatSnackBarModule,
   ],
   providers: [
     provideIcons({ lucideAlertTriangle, lucideHelpCircle, lucideDownload }),
@@ -41,7 +38,6 @@ export type ErrorCorrectionLevel = 'L' | 'M' | 'Q' | 'H';
 })
 export class QrCodeGeneratorComponent implements OnInit, OnDestroy, AfterViewInit {
   private fb = inject(FormBuilder);
-  private snackBar = inject(MatSnackBar);
 
   @ViewChild('qrCanvas', { static: false }) canvasRef!: ElementRef<HTMLCanvasElement>;
 
@@ -323,18 +319,12 @@ export class QrCodeGeneratorComponent implements OnInit, OnDestroy, AfterViewIni
    * Helper to display snackbar alerts.
    */
   private showSnackBar(message: string, type: 'success' | 'error' | 'info'): void {
-    const panelClass =
-      type === 'success'
-        ? 'success-snackbar'
-        : type === 'error'
-        ? 'error-snackbar'
-        : 'info-snackbar';
-
-    this.snackBar.open(message, 'Close', {
-      duration: 3000,
-      horizontalPosition: 'end',
-      verticalPosition: 'bottom',
-      panelClass: [panelClass],
-    });
+    if (type === 'success') {
+      toast.success(message);
+    } else if (type === 'error') {
+      toast.error(message);
+    } else {
+      toast.info(message);
+    }
   }
 }

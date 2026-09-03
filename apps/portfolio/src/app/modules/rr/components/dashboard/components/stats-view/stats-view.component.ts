@@ -1,7 +1,10 @@
 import { Component, OnInit, inject, signal, ViewChild, TemplateRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RRApiService } from '../../../../services/rr-api.service';
-import { MatCardModule } from '@angular/material/card';
+import { HlmCardDirective } from '@spartan-ng/hel/card';
+import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
+import { HlmDialogService } from '@spartan-ng/hel/dialog';
+import { HlmButtonDirective } from '@spartan-ng/hel/button';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideCheckCircle,
@@ -16,9 +19,6 @@ import {
   lucideCalendarCheck,
   lucideX,
 } from '@ng-icons/lucide';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatButtonModule } from '@angular/material/button';
 import { Router } from '@angular/router';
 import { IVehicle, IBooking, IRRDashboardStats } from '@portfolio/shared-types';
 
@@ -27,11 +27,10 @@ import { IVehicle, IBooking, IRRDashboardStats } from '@portfolio/shared-types';
   standalone: true,
   imports: [
     CommonModule,
-    MatCardModule,
+    HlmCardDirective,
+    HlmTooltipImports,
+    HlmButtonDirective,
     NgIconComponent,
-    MatTooltipModule,
-    MatDialogModule,
-    MatButtonModule
   ],
   providers: [
     provideIcons({
@@ -53,7 +52,7 @@ import { IVehicle, IBooking, IRRDashboardStats } from '@portfolio/shared-types';
 })
 export class RRStatsViewComponent implements OnInit {
   private rrApi = inject(RRApiService);
-  private dialog = inject(MatDialog);
+  private dialog = inject(HlmDialogService);
   private router = inject(Router);
 
   @ViewChild('detailsDialog') detailsDialog!: TemplateRef<any>;
@@ -139,11 +138,12 @@ export class RRStatsViewComponent implements OnInit {
     }
 
     this.dialog.open(this.detailsDialog, {
-      width: '850px',
-      maxWidth: '95vw',
-      maxHeight: '85vh',
-      panelClass: 'modern-dialog-panel'
+      contentClass: 'max-w-4xl w-full p-6 max-h-[85vh] overflow-y-auto',
     });
+  }
+
+  closeDetailsModal() {
+    this.dialog.closeAll();
   }
 
   bookVehicle(vehicle: any, event: Event) {

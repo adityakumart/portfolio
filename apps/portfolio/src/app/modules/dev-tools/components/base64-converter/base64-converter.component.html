@@ -1,157 +1,165 @@
 <div class="base64-container">
   <!-- Header Card -->
-  <mat-card class="header-card mb-4">
-    <mat-card-header class="py-3">
-      <mat-card-title>Base64 Encoder & Decoder</mat-card-title>
-      <mat-card-subtitle>Encode text and files to Base64, or decode Base64 strings back to text and preview media content.</mat-card-subtitle>
-    </mat-card-header>
-  </mat-card>
+  <div hlmCard class="header-card mb-4 p-5 rounded-2xl border shadow-sm">
+    <h2 class="text-xl font-bold tracking-tight">Base64 Encoder & Decoder</h2>
+    <p class="text-sm text-muted-foreground mt-1">Encode text and files to Base64, or decode Base64 strings back to text and preview media content.</p>
+  </div>
 
   <form [formGroup]="form" class="base64-form">
     <!-- Toolbar Section -->
-    <mat-card class="toolbar-card mb-4">
-      <mat-card-content class="toolbar-content">
+    <div hlmCard class="toolbar-card mb-4 p-4 rounded-2xl border shadow-sm">
+      <div class="toolbar-content flex flex-wrap items-center justify-between gap-4">
         <!-- Configuration Controls -->
-        <div class="controls-group">
-          <div class="control-item">
-            <span class="control-label">Mode</span>
-            <mat-radio-group formControlName="mode" color="primary" class="mode-radio-group">
-              <mat-radio-button value="text">Text Mode</mat-radio-button>
-              <mat-radio-button value="file">File Mode</mat-radio-button>
-            </mat-radio-group>
+        <div class="controls-group flex flex-wrap items-center gap-6">
+          <div class="control-item flex items-center gap-3">
+            <span class="control-label text-sm font-semibold text-muted-foreground uppercase tracking-wider">Mode</span>
+            <div class="flex items-center gap-4 text-sm">
+              <label class="flex items-center gap-1.5 cursor-pointer">
+                <input type="radio" formControlName="mode" value="text" class="accent-primary" />
+                <span>Text Mode</span>
+              </label>
+              <label class="flex items-center gap-1.5 cursor-pointer">
+                <input type="radio" formControlName="mode" value="file" class="accent-primary" />
+                <span>File Mode</span>
+              </label>
+            </div>
           </div>
 
           <!-- Operation selection - only shown for text mode -->
           @if (form.get('mode')?.value === 'text') {
-            <mat-divider [vertical]="true" class="control-divider"></mat-divider>
-            <div class="control-item">
-              <span class="control-label">Operation</span>
-              <mat-radio-group formControlName="operation" color="primary" class="operation-radio-group">
-                <mat-radio-button value="encode">Encode</mat-radio-button>
-                <mat-radio-button value="decode">Decode</mat-radio-button>
-              </mat-radio-group>
+            <div hlmSeparator class="h-6 w-px" orientation="vertical"></div>
+            <div class="control-item flex items-center gap-3">
+              <span class="control-label text-sm font-semibold text-muted-foreground uppercase tracking-wider">Operation</span>
+              <div class="flex items-center gap-4 text-sm">
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="radio" formControlName="operation" value="encode" class="accent-primary" />
+                  <span>Encode</span>
+                </label>
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="radio" formControlName="operation" value="decode" class="accent-primary" />
+                  <span>Decode</span>
+                </label>
+              </div>
             </div>
           }
         </div>
 
         <!-- Action Buttons -->
-        <div class="actions-group">
+        <div class="actions-group flex items-center gap-2">
           @if (form.get('mode')?.value === 'text') {
             <button
-              mat-raised-button
-              color="primary"
+              hlmBtn
               type="button"
               (click)="onProcessText()"
               [disabled]="!form.get('inputText')?.value"
-              class="action-btn"
+              class="action-btn flex items-center gap-1.5"
             >
               <ng-icon [name]="form.get('operation')?.value === 'encode' ? 'lucideLock' : 'lucideLockOpen'"></ng-icon>
               {{ form.get('operation')?.value === 'encode' ? 'Encode' : 'Decode' }}
             </button>
 
             <button
-              mat-button
+              hlmBtn
+              variant="outline"
               type="button"
               (click)="onClearText()"
-              class="action-btn"
+              class="action-btn flex items-center gap-1.5"
             >
               <ng-icon name="lucideEraser"></ng-icon>
               Clear
             </button>
           } @else {
             <button
-              mat-button
+              hlmBtn
+              variant="outline"
               type="button"
               (click)="onClearFile()"
               [disabled]="!selectedFile"
-              class="action-btn"
+              class="action-btn flex items-center gap-1.5"
             >
               <ng-icon name="lucideEraser"></ng-icon>
               Clear File
             </button>
           }
         </div>
-      </mat-card-content>
-    </mat-card>
+      </div>
+    </div>
 
     <!-- Error Detail Panel -->
     @if (errorMessage) {
-      <div class="error-detail-box mb-4">
-        <ng-icon class="error-box-icon" name="lucideAlertTriangle"></ng-icon>
+      <div class="error-detail-box mb-4 p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive flex items-start gap-3">
+        <ng-icon class="error-box-icon text-lg shrink-0 mt-0.5" name="lucideAlertTriangle"></ng-icon>
         <div class="error-box-content">
           <strong>Process Error:</strong>
-          <p class="error-message-text">{{ errorMessage }}</p>
+          <p class="error-message-text text-sm mt-0.5">{{ errorMessage }}</p>
         </div>
       </div>
     }
 
     <!-- Dynamic Metadata / Visual Preview Section -->
     @if (metadataLabel || (previewUrl && isImagePreview)) {
-      <mat-card class="preview-card mb-4">
-        <mat-card-header class="py-2">
-          <mat-card-title>Decoded File Info & Visual Preview</mat-card-title>
-        </mat-card-header>
-        <mat-card-content class="preview-content">
+      <div hlmCard class="preview-card mb-4 p-4 rounded-2xl border shadow-sm">
+        <h3 class="text-base font-semibold mb-2">Decoded File Info & Visual Preview</h3>
+        <div class="preview-content">
           @if (metadataLabel) {
-            <div class="metadata-badge">
+            <div class="metadata-badge inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
               <ng-icon class="info-icon" name="lucideInfo"></ng-icon>
               <span class="metadata-text">{{ metadataLabel }}</span>
             </div>
           }
 
           @if (previewUrl && isImagePreview) {
-            <div class="preview-frame mt-3">
-              <img [src]="previewUrl" alt="Decoded preview image" class="img-preview" />
+            <div class="preview-frame mt-3 border rounded-xl overflow-hidden max-w-sm">
+              <img [src]="previewUrl" alt="Decoded preview image" class="img-preview w-full h-auto" />
             </div>
           } @else if (previewUrl && !isImagePreview) {
-            <div class="binary-placeholder mt-3">
-              <ng-icon class="placeholder-icon" name="lucideFile"></ng-icon>
+            <div class="binary-placeholder mt-3 p-4 border border-dashed rounded-xl flex items-center gap-3 text-muted-foreground text-sm">
+              <ng-icon class="placeholder-icon text-xl" name="lucideFile"></ng-icon>
               <p class="placeholder-text">Binary format detected. Previews are only supported for image files.</p>
             </div>
           }
-        </mat-card-content>
-      </mat-card>
+        </div>
+      </div>
     }
 
     <!-- Main Workspace Split-Screen Layout -->
-    <div class="workspace-layout">
+    <div class="workspace-layout grid grid-cols-1 md:grid-cols-2 gap-4">
       <!-- TEXT MODE WORKSPACE -->
       @if (form.get('mode')?.value === 'text') {
         <!-- Input Section -->
-        <mat-card class="editor-card">
-          <mat-card-header class="card-header-with-actions py-2">
-            <mat-card-title>
+        <div hlmCard class="editor-card p-4 rounded-2xl border shadow-sm flex flex-col">
+          <div class="card-header-with-actions flex items-center justify-between mb-2">
+            <h3 class="text-sm font-semibold">
               {{ form.get('operation')?.value === 'encode' ? 'Plain Text Input' : 'Base64 Input' }}
-            </mat-card-title>
-            <span class="char-count-badge">
+            </h3>
+            <span class="char-count-badge text-xs text-muted-foreground">
               {{ form.get('inputText')?.value?.length || 0 }} chars
             </span>
-          </mat-card-header>
+          </div>
 
-          <mat-card-content class="card-content-fill">
-            <mat-form-field appearance="outline" class="full-width textarea-field" subscriptSizing="dynamic">
-              <textarea
-                matInput
-                formControlName="inputText"
-                [placeholder]="form.get('operation')?.value === 'encode' ? 'Type or paste plain text here to encode...' : 'Paste Base64 or Data URI here to decode...'"
-                rows="18"
-                class="base64-textarea"
-              ></textarea>
-            </mat-form-field>
-          </mat-card-content>
-        </mat-card>
+          <div class="card-content-fill flex-1">
+            <textarea
+              hlmInput
+              formControlName="inputText"
+              [placeholder]="form.get('operation')?.value === 'encode' ? 'Type or paste plain text here to encode...' : 'Paste Base64 or Data URI here to decode...'"
+              rows="16"
+              class="base64-textarea w-full font-mono text-sm resize-y"
+            ></textarea>
+          </div>
+        </div>
 
         <!-- Output Section -->
-        <mat-card class="editor-card">
-          <mat-card-header class="card-header-with-actions py-2">
-            <mat-card-title>
+        <div hlmCard class="editor-card p-4 rounded-2xl border shadow-sm flex flex-col">
+          <div class="card-header-with-actions flex items-center justify-between mb-2">
+            <h3 class="text-sm font-semibold">
               {{ form.get('operation')?.value === 'encode' ? 'Base64 Output' : 'Decoded Text Output' }}
-            </mat-card-title>
-            
+            </h3>
             <div class="output-actions">
               <button
-                mat-icon-button
-                matTooltip="Copy to Clipboard"
+                hlmBtn
+                size="icon"
+                variant="ghost"
+                hlmTooltip="Copy to Clipboard"
                 type="button"
                 (click)="onCopy(form.get('outputText')?.value, 'outputText')"
                 [disabled]="!form.get('outputText')?.value"
@@ -160,35 +168,31 @@
                 <ng-icon [name]="copiedField === 'outputText' ? 'lucideCheckCircle' : 'lucideCopy'"></ng-icon>
               </button>
             </div>
-          </mat-card-header>
+          </div>
 
-          <mat-card-content class="card-content-fill">
-            <mat-form-field appearance="outline" class="full-width textarea-field" subscriptSizing="dynamic">
-              <textarea
-                matInput
-                formControlName="outputText"
-                [placeholder]="form.get('operation')?.value === 'encode' ? 'Base64 encoded string will appear here...' : 'Decoded plain text will appear here...'"
-                rows="18"
-                readonly
-                class="base64-textarea readonly-textarea"
-              ></textarea>
-            </mat-form-field>
-          </mat-card-content>
-        </mat-card>
+          <div class="card-content-fill flex-1">
+            <textarea
+              hlmInput
+              formControlName="outputText"
+              [placeholder]="form.get('operation')?.value === 'encode' ? 'Base64 encoded string will appear here...' : 'Decoded plain text will appear here...'"
+              rows="16"
+              readonly
+              class="base64-textarea readonly-textarea w-full font-mono text-sm resize-y bg-muted/30"
+            ></textarea>
+          </div>
+        </div>
       }
 
       <!-- FILE MODE WORKSPACE -->
       @if (form.get('mode')?.value === 'file') {
         <!-- Left Side: Upload Input -->
-        <mat-card class="editor-card">
-          <mat-card-header class="py-2">
-            <mat-card-title>Upload Source File</mat-card-title>
-          </mat-card-header>
+        <div hlmCard class="editor-card p-4 rounded-2xl border shadow-sm flex flex-col">
+          <h3 class="text-sm font-semibold mb-2">Upload Source File</h3>
 
-          <mat-card-content class="card-content-fill">
+          <div class="card-content-fill flex-1 flex flex-col">
             <!-- Drag and drop zone -->
             <div 
-              class="drop-zone"
+              class="drop-zone border-2 border-dashed rounded-xl p-8 text-center cursor-pointer hover:border-primary transition-colors flex-1 flex flex-col items-center justify-center"
               [class.dragover]="isDragOver"
               (dragover)="onDragOver($event)"
               (dragleave)="onDragLeave($event)"
@@ -201,40 +205,40 @@
                 (change)="onFileSelected($event)" 
                 style="display: none;" 
               />
-              <ng-icon class="upload-icon" name="lucideUploadCloud"></ng-icon>
-              <p class="upload-text">Drag & drop files here, or <span class="browse-link">browse</span></p>
-              <p class="upload-hint">Maximum file size: 15MB. Support for images, PDFs, text, and binary formats.</p>
+              <ng-icon class="upload-icon text-4xl text-muted-foreground mb-2" name="lucideUploadCloud"></ng-icon>
+              <p class="upload-text text-sm">Drag & drop files here, or <span class="browse-link text-primary font-medium underline">browse</span></p>
+              <p class="upload-hint text-xs text-muted-foreground mt-1">Maximum file size: 15MB. Support for images, PDFs, text, and binary formats.</p>
             </div>
 
             <!-- Selected File Metadata -->
             @if (selectedFile) {
-              <div class="file-info-panel">
-                <ng-icon class="file-icon" name="lucideFile"></ng-icon>
-                <div class="file-details">
-                  <div class="file-name">{{ selectedFile.name }}</div>
-                  <div class="file-meta">
+              <div class="file-info-panel mt-3 p-3 bg-muted/40 rounded-xl flex items-center gap-3">
+                <ng-icon class="file-icon text-xl text-primary" name="lucideFile"></ng-icon>
+                <div class="file-details text-xs">
+                  <div class="file-name font-medium">{{ selectedFile.name }}</div>
+                  <div class="file-meta text-muted-foreground">
                     Size: {{ formatBytes(selectedFile.size) }} | Type: {{ selectedFile.type || 'unknown' }}
                   </div>
                 </div>
               </div>
             }
-          </mat-card-content>
-        </mat-card>
+          </div>
+        </div>
 
         <!-- Right Side: Base64 Code Snippet Results -->
-        <mat-card class="editor-card">
-          <mat-card-header class="py-2">
-            <mat-card-title>Encoded File Output</mat-card-title>
-          </mat-card-header>
+        <div hlmCard class="editor-card p-4 rounded-2xl border shadow-sm flex flex-col gap-4">
+          <h3 class="text-sm font-semibold mb-1">Encoded File Output</h3>
 
-          <mat-card-content class="card-content-fill gap-4">
+          <div class="card-content-fill flex flex-col gap-4 flex-1">
             <!-- Raw Base64 string group -->
-            <div class="output-subgroup">
-              <div class="subgroup-header">
-                <span class="subgroup-title">Raw Base64 string</span>
+            <div class="output-subgroup flex flex-col">
+              <div class="subgroup-header flex items-center justify-between mb-1">
+                <span class="subgroup-title text-xs font-semibold text-muted-foreground">Raw Base64 string</span>
                 <button
-                  mat-icon-button
-                  matTooltip="Copy Raw Base64"
+                  hlmBtn
+                  size="icon"
+                  variant="ghost"
+                  hlmTooltip="Copy Raw Base64"
                   type="button"
                   (click)="onCopy(form.get('rawBase64')?.value, 'rawBase64')"
                   [disabled]="!form.get('rawBase64')?.value"
@@ -243,25 +247,25 @@
                   <ng-icon [name]="copiedField === 'rawBase64' ? 'lucideCheckCircle' : 'lucideCopy'"></ng-icon>
                 </button>
               </div>
-              <mat-form-field appearance="outline" class="full-width textarea-field" subscriptSizing="dynamic">
-                <textarea
-                  matInput
-                  formControlName="rawBase64"
-                  placeholder="Raw base64 data will show up here after selecting a file..."
-                  rows="6"
-                  readonly
-                  class="base64-textarea code-font readonly-textarea"
-                ></textarea>
-              </mat-form-field>
+              <textarea
+                hlmInput
+                formControlName="rawBase64"
+                placeholder="Raw base64 data will show up here after selecting a file..."
+                rows="6"
+                readonly
+                class="base64-textarea code-font readonly-textarea w-full font-mono text-xs resize-y bg-muted/30"
+              ></textarea>
             </div>
 
             <!-- Complete CSS/HTML Data URI group -->
-            <div class="output-subgroup">
-              <div class="subgroup-header">
-                <span class="subgroup-title">Full Data URI (HTML/CSS compatible)</span>
+            <div class="output-subgroup flex flex-col">
+              <div class="subgroup-header flex items-center justify-between mb-1">
+                <span class="subgroup-title text-xs font-semibold text-muted-foreground">Full Data URI (HTML/CSS compatible)</span>
                 <button
-                  mat-icon-button
-                  matTooltip="Copy Data URI"
+                  hlmBtn
+                  size="icon"
+                  variant="ghost"
+                  hlmTooltip="Copy Data URI"
                   type="button"
                   (click)="onCopy(form.get('outputDataUri')?.value, 'outputDataUri')"
                   [disabled]="!form.get('outputDataUri')?.value"
@@ -270,19 +274,17 @@
                   <ng-icon [name]="copiedField === 'outputDataUri' ? 'lucideCheckCircle' : 'lucideCopy'"></ng-icon>
                 </button>
               </div>
-              <mat-form-field appearance="outline" class="full-width textarea-field" subscriptSizing="dynamic">
-                <textarea
-                  matInput
-                  formControlName="outputDataUri"
-                  placeholder="Data URI schema (data:image/png;base64,...) will show up here..."
-                  rows="6"
-                  readonly
-                  class="base64-textarea code-font readonly-textarea"
-                ></textarea>
-              </mat-form-field>
+              <textarea
+                hlmInput
+                formControlName="outputDataUri"
+                placeholder="Data URI schema (data:image/png;base64,...) will show up here..."
+                rows="6"
+                readonly
+                class="base64-textarea code-font readonly-textarea w-full font-mono text-xs resize-y bg-muted/30"
+              ></textarea>
             </div>
-          </mat-card-content>
-        </mat-card>
+          </div>
+        </div>
       }
     </div>
   </form>

@@ -3,93 +3,61 @@ import {
   signal,
   ChangeDetectionStrategy,
   inject,
+  OnInit,
 } from '@angular/core';
-import { provideNativeDateAdapter } from '@angular/material/core';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatFormFieldModule } from '@angular/material/form-field';
 import {
   FormControl,
   FormGroup,
   FormsModule,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { MatInputModule } from '@angular/material/input';
-import { MatTimepickerModule } from '@angular/material/timepicker';
 import { DateTime } from 'luxon';
-import { MatSelectModule } from '@angular/material/select';
 import {
   TimeZoneInterface,
   TimeZonesList,
 } from '../../../../../../shared/data/timeszones';
-import { MatButtonModule } from '@angular/material/button';
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { Observable } from 'rxjs';
-import { map, startWith } from 'rxjs/operators';
-import { AsyncPipe } from '@angular/common';
 import { ToastrService } from '../../../../../shared/services/toaster.service';
-import { MatCardModule } from '@angular/material/card';
+import { HlmCardDirective } from '@spartan-ng/hel/card';
+import { HlmInputDirective } from '@spartan-ng/hel/input';
+import { HlmLabelDirective } from '@spartan-ng/hel/label';
+import { HlmButtonDirective } from '@spartan-ng/hel/button';
+import { HlmSeparatorDirective } from '@spartan-ng/hel/separator';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { lucideClock } from '@ng-icons/lucide';
 
 @Component({
   selector: 'app-timezone-converter',
+  standalone: true,
   imports: [
     FormsModule,
-    MatDatepickerModule,
-    MatFormFieldModule,
     ReactiveFormsModule,
-    MatInputModule,
-    MatSelectModule,
-    MatTimepickerModule,
-    MatButtonModule,
-    MatAutocompleteModule,
-    AsyncPipe,
-    MatCardModule,
+    HlmCardDirective,
+    HlmInputDirective,
+    HlmLabelDirective,
+    HlmButtonDirective,
+    HlmSeparatorDirective,
     NgIconComponent,
   ],
   providers: [
-    provideNativeDateAdapter(),
     provideIcons({ lucideClock }),
   ],
   templateUrl: './timezone-converter.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './timezone-converter.component.scss',
 })
-export class TimezoneConverterComponent {
-  filteredFromTimeZones: Observable<TimeZoneInterface[]>;
-  filteredToTimeZones: Observable<TimeZoneInterface[]>;
-
+export class TimezoneConverterComponent implements OnInit {
   formattedDate = signal('');
 
   timeForm = new FormGroup({
-    fromDate: new FormControl<Date>(new Date()),
-    fromTime: new FormControl<Date>(new Date()),
+    fromDate: new FormControl<string>(new Date().toISOString().split('T')[0]),
+    fromTime: new FormControl<string>(new Date().toTimeString().substring(0, 5)),
     fromTimeZone: new FormControl<string>(''),
-    // toDate: new FormControl<Date | null>(new Date()),
-    // toTime: new FormControl<string>(DateTime.now().toFormat('hh:mm a')),
     toTimeZone: new FormControl<string>(''),
   });
 
   timeZones = TimeZonesList;
 
   private toastr = inject(ToastrService);
-
-  constructor() {
-    this.filteredFromTimeZones =
-      this.timeForm.controls.fromTimeZone.valueChanges.pipe(
-        startWith(''),
-        map((zone) =>
-          zone ? this._filterFromTimes(zone) : this.timeZones.slice(),
-        ),
-      );
-    this.filteredToTimeZones =
-      this.timeForm.controls.toTimeZone.valueChanges.pipe(
-        startWith(''),
-        map((zone) =>
-          zone ? this._filterToTimes(zone) : this.timeZones.slice(),
-        ),
-      );
-  }
 
   ngOnInit() {
     for (let i = 0; i < TimeZonesList.length; i++) {
@@ -118,61 +86,39 @@ export class TimezoneConverterComponent {
     )?.utc[0];
 
     if (!this.timeForm.value.fromDate) {
-      this.toastr.open('Please enter From Date from dropdown.');
+      this.toastr.open('Please enter From Date.');
       return;
     }
     if (!this.timeForm.value.fromTime) {
-      this.toastr.open('Please enter From Time from dropdown.');
+      this.toastr.open('Please enter From Time.');
       return;
     }
     if (!fromZone) {
-      this.toastr.open('Please select From Time Zone from dropdown.');
+      this.toastr.open('Please select From Time Zone.');
       return;
     }
     if (!toZone) {
-      this.toastr.open('Please select To Time Zone from dropdown.');
+      this.toastr.open('Please select To Time Zone.');
       return;
     }
 
-    const time = DateTime.fromFormat(
-      this.timeForm.value.fromTime.toTimeString().substring(0, 5),
-      'HH:mm',
-    );
-    const fromDate = DateTime.fromJSDate(this.timeForm.value.fromDate as Date, {
+    const [hour, minute] = (this.timeForm.value.fromTime || '00:00')
+      .split(':')
+      .map(Number);
+    const fromDate = DateTime.fromISO(this.timeForm.value.fromDate as string, {
       zone: fromZone,
     }).set({
-      hour: time.hour,
-      minute: time.minute,
+      hour,
+      minute,
     });
+
     if (!fromDate.isValid) {
       this.toastr.open('Please enter valid From Date.');
-      return;
-    }
-
-    if (!time.isValid) {
-      this.toastr.open('Please enter valid From Time.');
       return;
     }
 
     this.formattedDate.set(
       fromDate.setZone(toZone).toFormat('dd-MM-yyyy hh:mm a '),
     );
-    // serverDateTime.setZone(dateTime.toFormat("z").toString()).toFormat(dateFormatToReturn)
   };
-
-  private _filterFromTimes(value: string): TimeZoneInterface[] {
-    const filterValue = value.toLowerCase();
-
-    return this.timeZones.filter((zone) =>
-      (zone.abbr + ' - ' + zone.text).toLowerCase().includes(filterValue),
-    );
-  }
-
-  private _filterToTimes(value: string): TimeZoneInterface[] {
-    const filterValue = value.toLowerCase();
-
-    return this.timeZones.filter((zone) =>
-      (zone.abbr + ' - ' + zone.text).toLowerCase().includes(filterValue),
-    );
-  }
 }

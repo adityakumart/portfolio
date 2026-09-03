@@ -140,7 +140,9 @@
         </div>
         <div class="upload-percentage">{{ fileService.uploadProgress() }}%</div>
       </div>
-      <mat-progress-bar mode="determinate" [value]="fileService.uploadProgress() || 0"></mat-progress-bar>
+      <hlm-progress [value]="fileService.uploadProgress() || 0">
+        <hlm-progress-indicator />
+      </hlm-progress>
     </div>
   }
 
@@ -163,7 +165,7 @@
     <!-- Loading State -->
     @if (fileService.loading()) {
       <div class="loading-state">
-        <mat-spinner diameter="40"></mat-spinner>
+        <hlm-spinner class="text-4xl text-primary"></hlm-spinner>
         <p>Loading directory contents...</p>
       </div>
     } @else {
@@ -327,7 +329,7 @@
                 (click)="runAiAnalysis()"
               >
                 @if (fileService.aiAnalyzing()) {
-                  <mat-spinner diameter="18" class="btn-spinner"></mat-spinner>
+                  <hlm-spinner class="size-4 mr-1.5 btn-spinner"></hlm-spinner>
                   <span>Analyzing with Gemini...</span>
                 } @else {
                   <ng-icon name="lucideSparkles" class="btn-icon"></ng-icon>

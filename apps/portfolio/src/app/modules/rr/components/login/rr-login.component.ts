@@ -2,9 +2,10 @@ import { Component, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
+import { HlmInputDirective } from '@spartan-ng/hel/input';
+import { HlmLabelDirective } from '@spartan-ng/hel/label';
+import { HlmButtonDirective } from '@spartan-ng/hel/button';
+import { HlmSpinnerComponent } from '@spartan-ng/hel/spinner';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideShieldCheck,
@@ -19,7 +20,6 @@ import {
   lucideEye,
   lucideArrowLeft,
 } from '@ng-icons/lucide';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { RRApiService } from '../../services/rr-api.service';
 
 @Component({
@@ -29,11 +29,11 @@ import { RRApiService } from '../../services/rr-api.service';
     CommonModule,
     ReactiveFormsModule,
     RouterLink,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
+    HlmInputDirective,
+    HlmLabelDirective,
+    HlmButtonDirective,
+    HlmSpinnerComponent,
     NgIconComponent,
-    MatProgressSpinnerModule,
   ],
   providers: [
     provideIcons({

@@ -10,9 +10,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { HlmDialogService } from '@spartan-ng/hel/dialog';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideFolder,
@@ -40,6 +38,8 @@ import {
 } from '@ng-icons/lucide';
 import { HlmButton } from '@spartan-ng/hel/button';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
+import { HlmProgressImports } from '@spartan-ng/hel/progress';
+import { HlmSpinner } from '@spartan-ng/hel/spinner';
 import { FileManagerService } from '../../services/file-manager.service';
 import { AuthService } from '../../services/auth';
 import { FileNode } from '@portfolio/shared-types';
@@ -51,12 +51,11 @@ import { FilePreviewDialogComponent } from './file-preview-dialog.component';
   imports: [
     CommonModule,
     FormsModule,
-    MatProgressBarModule,
-    MatProgressSpinnerModule,
-    MatDialogModule,
     NgIconComponent,
     HlmButton,
     HlmTooltipImports,
+    HlmProgressImports,
+    HlmSpinner,
   ],
   providers: [
     provideIcons({
@@ -91,7 +90,7 @@ import { FilePreviewDialogComponent } from './file-preview-dialog.component';
 export class FileManagerComponent implements OnInit {
   fileService = inject(FileManagerService);
   authService = inject(AuthService);
-  private dialog = inject(MatDialog);
+  private dialog = inject(HlmDialogService);
 
   // UI State Signals
   showFolderInput = signal<boolean>(false);
@@ -164,13 +163,11 @@ export class FileManagerComponent implements OnInit {
     try {
       const url = await this.fileService.getDownloadUrl(node.path);
       this.dialog.open(FilePreviewDialogComponent, {
-        data: {
+        context: {
           node,
           downloadUrl: url,
         },
-        width: '800px',
-        maxWidth: '90vw',
-        panelClass: 'glass-dialog-panel',
+        contentClass: 'w-[90vw] max-w-[800px] p-0 border-0 bg-transparent shadow-none',
       });
     } catch (err: any) {
       console.error('Failed to open preview dialog:', err);

@@ -1,25 +1,26 @@
-import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
+import { Component, ChangeDetectionStrategy, input } from '@angular/core';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { lucideX } from '@ng-icons/lucide';
-import {
-  MAT_SNACK_BAR_DATA,
-  MatSnackBarRef,
-} from '@angular/material/snack-bar';
+import { HlmButtonDirective } from '@spartan-ng/hel/button';
 
 @Component({
   selector: 'app-snackbar',
-  imports: [MatButtonModule, NgIconComponent],
+  standalone: true,
+  imports: [HlmButtonDirective, NgIconComponent],
   providers: [provideIcons({ lucideX })],
-  templateUrl: './snackbar.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
-  styleUrl: './snackbar.component.scss',
+  template: `
+    <div class="flex items-center justify-between gap-2 p-3 text-sm">
+      <span>{{ message() }}</span>
+      <button hlmBtn variant="ghost" size="icon" (click)="close()">
+        <ng-icon name="lucideX" class="text-sm"></ng-icon>
+      </button>
+    </div>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SnackbarComponent {
-  public data = inject(MAT_SNACK_BAR_DATA);
-  private snackBarRef = inject<MatSnackBarRef<SnackbarComponent>>(MatSnackBarRef);
+  message = input<string>('');
+  action = input<string>('Close');
 
-  close() {
-    this.snackBarRef.dismiss();
-  }
+  close() {}
 }

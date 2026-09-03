@@ -1,9 +1,12 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
+import { HlmCardDirective } from '@spartan-ng/hel/card';
+import { HlmInputDirective } from '@spartan-ng/hel/input';
+import { HlmLabelDirective } from '@spartan-ng/hel/label';
+import { HlmButtonDirective } from '@spartan-ng/hel/button';
+import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
+import { HlmSeparatorDirective } from '@spartan-ng/hel/separator';
+import { toast } from '@spartan-ng/hel/sonner';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucidePlay,
@@ -21,9 +24,6 @@ import {
   lucidePalette,
   lucideList,
 } from '@ng-icons/lucide';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatTableModule } from '@angular/material/table';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
@@ -34,14 +34,13 @@ import { JwtDecoderService, DecodedJwt, ClaimInfo } from './services/jwt-decoder
   standalone: true,
   imports: [
     ReactiveFormsModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
+    HlmCardDirective,
+    HlmInputDirective,
+    HlmLabelDirective,
+    HlmButtonDirective,
+    HlmTooltipImports,
+    HlmSeparatorDirective,
     NgIconComponent,
-    MatTooltipModule,
-    MatTableModule,
-    MatSnackBarModule,
   ],
   providers: [
     provideIcons({
@@ -69,7 +68,6 @@ export class JwtDecoderComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private jwtDecoderService = inject(JwtDecoderService);
   private clipboard = inject(Clipboard);
-  private snackBar = inject(MatSnackBar);
   private cdr = inject(ChangeDetectorRef);
 
   form!: FormGroup;
@@ -208,18 +206,12 @@ export class JwtDecoderComponent implements OnInit, OnDestroy {
    * Displays toast message indicators.
    */
   private showSnackBar(message: string, type: 'success' | 'error' | 'info'): void {
-    const panelClass =
-      type === 'success'
-        ? 'success-snackbar'
-        : type === 'error'
-        ? 'error-snackbar'
-        : 'info-snackbar';
-
-    this.snackBar.open(message, 'Close', {
-      duration: 3000,
-      horizontalPosition: 'end',
-      verticalPosition: 'bottom',
-      panelClass: [panelClass]
-    });
+    if (type === 'success') {
+      toast.success(message);
+    } else if (type === 'error') {
+      toast.error(message);
+    } else {
+      toast.info(message);
+    }
   }
 }

@@ -1,53 +1,57 @@
-<div class="converter-container">
-  <div class="controls">
-    <mat-form-field appearance="outline" class="delimiter-select">
-      <mat-label>Delimiter</mat-label>
-      <mat-select [(ngModel)]="selectedDelimiter">
+<div class="converter-container space-y-4">
+  <div class="controls flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl border shadow-sm bg-card">
+    <div class="flex items-center gap-3">
+      <label hlmLabel class="text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">Delimiter</label>
+      <select hlmInput [(ngModel)]="selectedDelimiter" class="text-sm h-9">
         @for (delimiter of delimiters; track delimiter.value) {
-          <mat-option [value]="delimiter.value">{{ delimiter.viewValue }}</mat-option>
+          <option [value]="delimiter.value">{{ delimiter.viewValue }}</option>
         }
-      </mat-select>
-    </mat-form-field>
+      </select>
+    </div>
 
-    <div class="actions">
-      <button mat-flat-button color="primary" (click)="handleJsonToCsv()">JSON to CSV</button>
-      <button mat-flat-button color="primary" (click)="handleCsvToJson()">CSV to JSON</button>
-      <button mat-stroked-button (click)="copyJson()" [disabled]="!outputText()">Copy JSON</button>
-      <button mat-stroked-button (click)="copyCsv()" [disabled]="!outputText()">Copy CSV</button>
-      <button mat-icon-button (click)="clear()" aria-label="Clear all fields">
-        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0z" fill="none"/><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+    <div class="actions flex flex-wrap items-center gap-2">
+      <button hlmBtn size="sm" (click)="handleJsonToCsv()">JSON to CSV</button>
+      <button hlmBtn size="sm" (click)="handleCsvToJson()">CSV to JSON</button>
+      <button hlmBtn variant="outline" size="sm" (click)="copyJson()" [disabled]="!outputText()">Copy JSON</button>
+      <button hlmBtn variant="outline" size="sm" (click)="copyCsv()" [disabled]="!outputText()">Copy CSV</button>
+      <button hlmBtn variant="ghost" size="icon" (click)="clear()" aria-label="Clear all fields" class="h-8 w-8 text-destructive hover:bg-destructive/10">
+        <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor"><path d="M0 0h24v24H0z" fill="none"/><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
       </button>
     </div>
   </div>
 
   @if (error()) {
-    <div class="error-panel">
+    <div class="error-panel p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm">
       <strong>Error:</strong> {{ error() }}
     </div>
   }
 
-  <div class="io-grid">
-    <mat-form-field appearance="outline" class="textarea-wrapper">
-      <mat-label>Input</mat-label>
-      <textarea matInput
-                cdkTextareaAutosize
-                cdkAutosizeMinRows="10"
-                cdkAutosizeMaxRows="20"
-                [(ngModel)]="inputText"
-                placeholder="Paste your JSON or CSV here..."></textarea>
-    </mat-form-field>
+  <div class="io-grid grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="space-y-1.5">
+      <label hlmLabel class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Input</label>
+      <textarea
+        hlmInput
+        rows="14"
+        [(ngModel)]="inputText"
+        placeholder="Paste your JSON or CSV here..."
+        class="w-full font-mono text-xs resize-y"
+      ></textarea>
+    </div>
 
-    <mat-form-field appearance="outline" class="textarea-wrapper">
-      <mat-label>Output</mat-label>
-      @if (metadata(); as meta) {
-        <div matSuffix class="metadata-label">Converted: {{ meta.rows }} rows, {{ meta.cols }} columns</div>
-      }
-      <textarea matInput
-                cdkTextareaAutosize
-                cdkAutosizeMinRows="10"
-                cdkAutosizeMaxRows="20"
-                [readonly]="true"
-                [ngModel]="outputText()"></textarea>
-    </mat-form-field>
+    <div class="space-y-1.5">
+      <div class="flex items-center justify-between">
+        <label hlmLabel class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Output</label>
+        @if (metadata(); as meta) {
+          <span class="text-xs text-muted-foreground font-mono">Converted: {{ meta.rows }} rows, {{ meta.cols }} columns</span>
+        }
+      </div>
+      <textarea
+        hlmInput
+        rows="14"
+        [readonly]="true"
+        [ngModel]="outputText()"
+        class="w-full font-mono text-xs resize-y bg-muted/20"
+      ></textarea>
+    </div>
   </div>
 </div>

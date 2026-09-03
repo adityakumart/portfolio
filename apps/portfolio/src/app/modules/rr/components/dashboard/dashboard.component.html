@@ -132,48 +132,50 @@
 
   <!-- POPUP: VIEW PROFILE POPUP -->
   <ng-template #profileInfoDialog>
-    <h3 mat-dialog-title>Desk Agent Profile</h3>
-    <mat-dialog-content>
-      <div class="booking-content" style="margin-top: 15px">
-        <div class="field">
-          <label>Agent Identifier</label>
-          <input type="text" [value]="currentUser()?.id" readonly disabled />
+    <div class="space-y-4">
+      <h3 class="text-lg font-bold">Desk Agent Profile</h3>
+      <div class="space-y-3">
+        <div>
+          <label class="text-xs text-muted-foreground block mb-1">Agent Identifier</label>
+          <input hlmInput type="text" [value]="currentUser()?.id" readonly disabled class="w-full text-sm" />
         </div>
-        <div class="field">
-          <label>Full Legal Name</label>
+        <div>
+          <label class="text-xs text-muted-foreground block mb-1">Full Legal Name</label>
           <input
+            hlmInput
             type="text"
             [value]="currentUser()?.firstName + ' ' + currentUser()?.lastName"
             readonly
             disabled
+            class="w-full text-sm"
           />
         </div>
-        <div class="field">
-          <label>Registered Email Address</label>
-          <input type="text" [value]="currentUser()?.email" readonly disabled />
+        <div>
+          <label class="text-xs text-muted-foreground block mb-1">Registered Email Address</label>
+          <input hlmInput type="text" [value]="currentUser()?.email" readonly disabled class="w-full text-sm" />
         </div>
-        <div class="field">
-          <label>Authorized System Role</label>
+        <div>
+          <label class="text-xs text-muted-foreground block mb-1">Authorized System Role</label>
           <input
+            hlmInput
             type="text"
             [value]="currentUser()?.role | uppercase"
             readonly
             disabled
+            class="w-full text-sm"
           />
         </div>
       </div>
-    </mat-dialog-content>
-    <mat-dialog-actions
-      align="end"
-      style="margin-top: 20px; padding-bottom: 8px"
-    >
-      <button
-        mat-raised-button
-        class="action-btn"
-        (click)="closeProfilePopup()"
-      >
-        Dismiss
-      </button>
-    </mat-dialog-actions>
+      <div class="flex justify-end pt-2">
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          (click)="closeProfilePopup()"
+        >
+          Dismiss
+        </button>
+      </div>
+    </div>
   </ng-template>
 </div>

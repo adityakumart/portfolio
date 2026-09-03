@@ -1,100 +1,85 @@
 import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import {
-  MAT_DIALOG_DATA,
-  MatDialogModule,
-  MatDialogRef,
-} from '@angular/material/dialog';
+import { HlmButtonDirective } from '@spartan-ng/hel/button';
+import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
+import { BrnDialogRef, injectBrnDialogContext } from '@spartan-ng/brain/dialog';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { lucidePencil, lucideTrash2 } from '@ng-icons/lucide';
-import { MatTableModule } from '@angular/material/table';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { UserExperienceRecord } from '@portfolio/shared-types';
 
 @Component({
   selector: 'app-experience-list-dialog',
   standalone: true,
   imports: [
-    MatDialogModule,
-    MatTableModule,
-    MatButtonModule,
+    HlmButtonDirective,
+    HlmTooltipImports,
     NgIconComponent,
-    MatTooltipModule,
   ],
   providers: [
     provideIcons({ lucidePencil, lucideTrash2 }),
   ],
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `
-    <h2 mat-dialog-title>Saved Experiences</h2>
-    <mat-dialog-content>
-      <table
-        mat-table
-        [dataSource]="data.records"
-        class="mat-elevation-z1"
-        style="width: 100%; margin-top: 8px;"
-      >
-        <ng-container matColumnDef="name">
-          <th mat-header-cell *matHeaderCellDef>Name</th>
-          <td mat-cell *matCellDef="let element">{{ element.name }}</td>
-        </ng-container>
-
-        <ng-container matColumnDef="email">
-          <th mat-header-cell *matHeaderCellDef>Email</th>
-          <td mat-cell *matCellDef="let element">{{ element.email }}</td>
-        </ng-container>
-
-        <ng-container matColumnDef="experience">
-          <th mat-header-cell *matHeaderCellDef>Total Experience</th>
-          <td mat-cell *matCellDef="let element">
-            {{ element.displayYears }} Y, {{ element.displayMonths }} M,
-            {{ element.displayDays }} D
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="action">
-          <th mat-header-cell *matHeaderCellDef>Action</th>
-          <td mat-cell *matCellDef="let element">
-            <button
-              mat-icon-button
-              color="primary"
-              (click)="onAction('edit', element)"
-              matTooltip="Edit"
-            >
-              <ng-icon name="lucidePencil"></ng-icon>
-            </button>
-            <button
-              mat-icon-button
-              color="warn"
-              (click)="onAction('delete', element)"
-              matTooltip="Delete"
-            >
-              <ng-icon name="lucideTrash2"></ng-icon>
-            </button>
-          </td>
-        </ng-container>
-
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-      </table>
-      @if (data.records.length === 0) {
-        <div class="p-4" style="text-align: center; color: var(--mat-sys-on-surface-variant, #666);">
-          No records found.
-        </div>
-      }
-    </mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close>Close</button>
-    </mat-dialog-actions>
+    <div class="p-6">
+      <h2 class="text-xl font-bold tracking-tight mb-4">Saved Experiences</h2>
+      <div class="border rounded-xl overflow-hidden mb-4">
+        <table class="w-full text-xs text-left">
+          <thead class="bg-muted/40 uppercase font-semibold text-muted-foreground">
+            <tr>
+              <th class="p-3">Name</th>
+              <th class="p-3">Email</th>
+              <th class="p-3">Total Experience</th>
+              <th class="p-3 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y">
+            @for (element of context.records; track element.id || $index) {
+              <tr class="hover:bg-muted/10 transition-colors">
+                <td class="p-3 font-medium">{{ element.name }}</td>
+                <td class="p-3 text-muted-foreground">{{ element.email }}</td>
+                <td class="p-3">{{ element.displayYears }} Y, {{ element.displayMonths }} M, {{ element.displayDays }} D</td>
+                <td class="p-3 text-right space-x-1">
+                  <button
+                    hlmBtn
+                    size="icon"
+                    variant="ghost"
+                    (click)="onAction('edit', element)"
+                    hlmTooltip="Edit"
+                    class="h-7 w-7 text-primary"
+                  >
+                    <ng-icon name="lucidePencil"></ng-icon>
+                  </button>
+                  <button
+                    hlmBtn
+                    size="icon"
+                    variant="ghost"
+                    (click)="onAction('delete', element)"
+                    hlmTooltip="Delete"
+                    class="h-7 w-7 text-destructive"
+                  >
+                    <ng-icon name="lucideTrash2"></ng-icon>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        @if (context.records.length === 0) {
+          <div class="p-6 text-center text-muted-foreground text-xs">
+            No records found.
+          </div>
+        }
+      </div>
+      <div class="flex justify-end">
+        <button hlmBtn variant="outline" size="sm" (click)="dialogRef?.close()">Close</button>
+      </div>
+    </div>
   `,
 })
 export class ExperienceListDialogComponent {
-  public dialogRef = inject<MatDialogRef<ExperienceListDialogComponent>>(MatDialogRef);
-  public data = inject<{ records: UserExperienceRecord[] }>(MAT_DIALOG_DATA);
-
-  displayedColumns: string[] = ['name', 'email', 'experience', 'action'];
+  public dialogRef = inject(BrnDialogRef, { optional: true });
+  public context = injectBrnDialogContext<{ records: UserExperienceRecord[] }>({ optional: true }) || { records: [] };
 
   onAction(action: string, record: UserExperienceRecord) {
-    this.dialogRef.close({ action, record });
+    this.dialogRef?.close({ action, record });
   }
 }

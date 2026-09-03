@@ -1,11 +1,8 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  MAT_DIALOG_DATA,
-  MatDialogModule,
-  MatDialogRef,
-} from '@angular/material/dialog';
-import { MatButtonModule } from '@angular/material/button';
+import { BrnDialogRef, injectBrnDialogContext } from '@spartan-ng/brain/dialog';
+import { HlmButtonDirective } from '@spartan-ng/hel/button';
+import { HlmSpinnerComponent } from '@spartan-ng/hel/spinner';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideImage,
@@ -18,7 +15,6 @@ import {
   lucideAlertCircle,
   lucideDownload,
 } from '@ng-icons/lucide';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { HttpClient } from '@angular/common/http';
 import { FileNode } from '@portfolio/shared-types';
@@ -28,10 +24,9 @@ import { FileNode } from '@portfolio/shared-types';
   standalone: true,
   imports: [
     CommonModule,
-    MatDialogModule,
-    MatButtonModule,
+    HlmButtonDirective,
     NgIconComponent,
-    MatProgressSpinnerModule,
+    HlmSpinnerComponent,
   ],
   providers: [
     provideIcons({
@@ -50,8 +45,8 @@ import { FileNode } from '@portfolio/shared-types';
   styleUrl: './file-preview-dialog.component.scss',
 })
 export class FilePreviewDialogComponent implements OnInit {
-  dialogRef = inject(MatDialogRef<FilePreviewDialogComponent>);
-  data = inject<{ node: FileNode; downloadUrl: string }>(MAT_DIALOG_DATA);
+  dialogRef = inject(BrnDialogRef, { optional: true });
+  data = injectBrnDialogContext<{ node: FileNode; downloadUrl: string }>({ optional: true }) || { node: {} as FileNode, downloadUrl: '' };
   sanitizer = inject(DomSanitizer);
   http = inject(HttpClient);
 

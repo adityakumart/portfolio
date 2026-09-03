@@ -1,8 +1,6 @@
 import {
   Component,
   OnInit,
-  AfterViewInit,
-  ViewChild,
   ChangeDetectionStrategy,
   signal,
   computed,
@@ -16,13 +14,13 @@ import {
   ReactiveFormsModule,
   FormsModule,
 } from '@angular/forms';
-import { MatTableModule, MatTableDataSource } from '@angular/material/table';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatButtonModule } from '@angular/material/button';
-import { MatInputModule } from '@angular/material/input';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatCardModule } from '@angular/material/card';
+import { HlmCardDirective } from '@spartan-ng/hel/card';
+import { HlmInputDirective } from '@spartan-ng/hel/input';
+import { HlmLabelDirective } from '@spartan-ng/hel/label';
+import { HlmButtonDirective } from '@spartan-ng/hel/button';
+import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
+import { HlmSeparatorDirective } from '@spartan-ng/hel/separator';
+import { toast } from '@spartan-ng/hel/sonner';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideTable,
@@ -31,11 +29,9 @@ import {
   lucideTrash2,
   lucideDownload,
   lucideCheckCircle,
+  lucideChevronLeft,
+  lucideChevronRight,
 } from '@ng-icons/lucide';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatSelectModule } from '@angular/material/select';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatDividerModule } from '@angular/material/divider';
 
 interface ProcessedLine {
   index: number;
@@ -49,18 +45,13 @@ interface ProcessedLine {
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatCardModule,
-    MatButtonModule,
+    HlmCardDirective,
+    HlmInputDirective,
+    HlmLabelDirective,
+    HlmButtonDirective,
+    HlmTooltipImports,
+    HlmSeparatorDirective,
     NgIconComponent,
-    MatSnackBarModule,
-    MatTooltipModule,
-    MatTableModule,
-    MatPaginatorModule,
-    MatSelectModule,
-    MatCheckboxModule,
-    MatDividerModule,
   ],
   providers: [
     provideIcons({
@@ -70,15 +61,16 @@ interface ProcessedLine {
       lucideTrash2,
       lucideDownload,
       lucideCheckCircle,
+      lucideChevronLeft,
+      lucideChevronRight,
     }),
   ],
   templateUrl: './line-splitter.component.html',
   styleUrls: ['./line-splitter.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LineSplitterComponent implements OnInit, AfterViewInit {
+export class LineSplitterComponent implements OnInit {
   private fb = inject(FormBuilder);
-  private snackBar = inject(MatSnackBar);
 
   // Form group for reactive inputs
   form!: FormGroup;
@@ -92,11 +84,9 @@ export class LineSplitterComponent implements OnInit, AfterViewInit {
   customDelimiter = signal<string>('');
   copiedLines = signal<{ [key: number]: boolean }>({});
 
-  // Displayed columns for the mat-table
-  displayedColumns: string[] = ['index', 'content', 'actions'];
-  dataSource = new MatTableDataSource<ProcessedLine>([]);
-
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  // Pagination state
+  pageIndex = signal<number>(0);
+  pageSize = signal<number>(10);
 
   // Computed signals for data derivation
   readonly processedLines = computed<ProcessedLine[]>(() => {
@@ -151,6 +141,13 @@ export class LineSplitterComponent implements OnInit, AfterViewInit {
   readonly totalCount = computed(() => this.processedLines().length);
   readonly charCount = computed(() => this.inputText().length);
 
+  readonly totalPages = computed(() => Math.max(1, Math.ceil(this.totalCount() / this.pageSize())));
+
+  readonly paginatedLines = computed(() => {
+    const start = this.pageIndex() * this.pageSize();
+    return this.processedLines().slice(start, start + this.pageSize());
+  });
+
   readonly emptyCount = computed(() => {
     const text = this.inputText();
     if (!text) return 0;
@@ -180,9 +177,10 @@ export class LineSplitterComponent implements OnInit, AfterViewInit {
   });
 
   constructor() {
-    // Automatically update table source data when processedLines updates
     effect(() => {
-      this.dataSource.data = this.processedLines();
+      // Access processedLines to trigger dependency tracking
+      this.processedLines();
+      this.pageIndex.set(0);
     });
   }
 
@@ -213,13 +211,26 @@ export class LineSplitterComponent implements OnInit, AfterViewInit {
     });
   }
 
-  ngAfterViewInit(): void {
-    this.dataSource.paginator = this.paginator;
+  nextPage(): void {
+    if (this.pageIndex() + 1 < this.totalPages()) {
+      this.pageIndex.update((p) => p + 1);
+    }
   }
 
-  /**
-   * Sanitizes input to only allow standard keyboard keys (printable ASCII and whitespace)
-   */
+  prevPage(): void {
+    if (this.pageIndex() > 0) {
+      this.pageIndex.update((p) => p - 1);
+    }
+  }
+
+  onPageSizeChange(event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    if (target) {
+      this.pageSize.set(Number(target.value));
+      this.pageIndex.set(0);
+    }
+  }
+
   sanitizeInput(event: Event): void {
     const inputEl = event.target as HTMLTextAreaElement;
     if (!inputEl) return;
@@ -240,119 +251,88 @@ export class LineSplitterComponent implements OnInit, AfterViewInit {
 
       this.form.get('textInput')?.setValue(cleanedValue, { emitEvent: true });
 
-      // Restore cursor position on the next tick to ensure DOM is updated
       setTimeout(() => {
-        inputEl.selectionStart = selectionStart - removedBeforeCursor;
-        inputEl.selectionEnd = selectionEnd - removedBeforeCursor;
-      });
+        const newCursorPos = Math.max(0, selectionStart - removedBeforeCursor);
+        inputEl.setSelectionRange(newCursorPos, newCursorPos);
+      }, 0);
     }
   }
 
-  /**
-   * Copies a single line content to clipboard
-   */
   copyLine(content: string, index: number): void {
-    navigator.clipboard.writeText(content).then(
-      () => {
-        this.copiedLines.update((state) => ({ ...state, [index]: true }));
-        this.showSuccessMessage(`Copied line #${index}`);
+    if (!navigator.clipboard) {
+      this.showErrorMessage('Clipboard API not supported in your browser.');
+      return;
+    }
+
+    navigator.clipboard
+      .writeText(content)
+      .then(() => {
+        this.copiedLines.update((current) => ({
+          ...current,
+          [index]: true,
+        }));
+
         setTimeout(() => {
-          this.copiedLines.update((state) => {
-            const newState = { ...state };
-            delete newState[index];
-            return newState;
-          });
-        }, 2000);
-      },
-      () => {
-        this.showErrorMessage(`Failed to copy line #${index}`);
-      },
-    );
+          this.copiedLines.update((current) => ({
+            ...current,
+            [index]: false,
+          }));
+        }, 1500);
+
+        this.showSuccessMessage(`Line ${index} copied to clipboard`);
+      })
+      .catch((err) => {
+        this.showErrorMessage('Failed to copy line to clipboard.');
+      });
   }
 
-  /**
-   * Copies all processed lines joined by the active delimiter to clipboard
-   */
   copyAllLines(): void {
-    const lines = this.processedLines().map((l) => l.content);
-    if (lines.length === 0) {
-      this.showErrorMessage('No lines to copy');
+    const lines = this.processedLines();
+    if (lines.length === 0) return;
+
+    const joinedText = lines.map((l) => l.content).join('\n');
+    if (!navigator.clipboard) {
+      this.showErrorMessage('Clipboard API not supported in your browser.');
       return;
     }
 
-    let delimiter = '\n';
-    const type = this.delimiterType();
-    if (type === 'comma') delimiter = ',';
-    else if (type === 'semicolon') delimiter = ';';
-    else if (type === 'space') delimiter = ' ';
-    else if (type === 'custom') delimiter = this.customDelimiter() || '\n';
-
-    const outputText = lines.join(delimiter);
-
-    navigator.clipboard.writeText(outputText).then(
-      () => {
-        this.showSuccessMessage('Copied all lines to clipboard!');
-      },
-      () => {
-        this.showErrorMessage('Failed to copy lines');
-      },
-    );
+    navigator.clipboard
+      .writeText(joinedText)
+      .then(() => {
+        this.showSuccessMessage(
+          `All ${lines.length} lines copied to clipboard`,
+        );
+      })
+      .catch(() => {
+        this.showErrorMessage('Failed to copy lines.');
+      });
   }
 
-  /**
-   * Resets input fields and options to default
-   */
   clearInput(): void {
-    this.form.patchValue({
-      textInput: '',
-      trim: true,
-      ignoreEmpty: true,
-      unique: false,
-      delimiter: 'newline',
-      customDelim: '',
-    });
-    this.showSuccessMessage('Cleared input and settings');
+    this.form.get('textInput')?.setValue('');
+    this.inputText.set('');
+    this.showSuccessMessage('Input cleared');
   }
 
-  /**
-   * Downloads the processed lines as a .txt file
-   */
-  downloadAsTxt(): void {
-    const lines = this.processedLines().map((l) => l.content);
-    if (lines.length === 0) {
-      this.showErrorMessage('No content to download');
-      return;
-    }
-
-    let delimiter = '\n';
-    const type = this.delimiterType();
-    if (type === 'comma') delimiter = ',';
-    else if (type === 'semicolon') delimiter = ';';
-    else if (type === 'space') delimiter = ' ';
-    else if (type === 'custom') delimiter = this.customDelimiter() || '\n';
-
-    const outputText = lines.join(delimiter);
-    this.triggerDownload(outputText, 'split-lines.txt', 'text/plain');
-  }
-
-  /**
-   * Downloads the processed lines as a .csv file
-   */
   downloadAsCsv(): void {
     const lines = this.processedLines();
-    if (lines.length === 0) {
-      this.showErrorMessage('No content to download');
-      return;
-    }
+    if (lines.length === 0) return;
 
-    // Generate CSV contents escaping quotes
     let csvContent = 'Line Number,Content\n';
-    lines.forEach((line) => {
-      const escapedContent = `"${line.content.replace(/"/g, '""')}"`;
-      csvContent += `${line.index},${escapedContent}\n`;
+    lines.forEach((l) => {
+      const escapedContent = `"${l.content.replace(/"/g, '""')}"`;
+      csvContent += `${l.index},${escapedContent}\n`;
     });
 
     this.triggerDownload(csvContent, 'split-lines.csv', 'text/csv');
+  }
+
+  downloadAsTxt(): void {
+    const lines = this.processedLines();
+    if (lines.length === 0) return;
+
+    const txtContent = lines.map((l) => l.content).join('\n');
+    this.triggerDownload(txtContent, 'split-lines.txt', 'text/plain');
   }
 
   private triggerDownload(
@@ -374,20 +354,10 @@ export class LineSplitterComponent implements OnInit, AfterViewInit {
   }
 
   private showSuccessMessage(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 3000,
-      horizontalPosition: 'end',
-      verticalPosition: 'bottom',
-      panelClass: ['success-snackbar'],
-    });
+    toast.success(message);
   }
 
   private showErrorMessage(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 5000,
-      horizontalPosition: 'end',
-      verticalPosition: 'bottom',
-      panelClass: ['error-snackbar'],
-    });
+    toast.error(message);
   }
 }

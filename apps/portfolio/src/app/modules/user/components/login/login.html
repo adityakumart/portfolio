@@ -1,10 +1,7 @@
 <div class="auth-container">
   @if (authService.currentUser() === undefined) {
-  <div class="glass-card loading-card">
-    <mat-progress-spinner
-      mode="indeterminate"
-      diameter="48"
-    ></mat-progress-spinner>
+  <div class="glass-card loading-card flex flex-col items-center justify-center p-8">
+    <hlm-spinner class="h-10 w-10 text-primary mb-4" />
     <p class="loading-text">Checking authentication state...</p>
   </div>
   } @else if (authService.currentUser() === null) {
@@ -27,10 +24,6 @@
 
     <!-- Toggle Slider -->
     <div class="auth-toggle-container">
-      <!-- <div
-        class="auth-toggle-slider"
-        [class.signup-mode]="mode() === 'signup'"
-      ></div> -->
       <button
         type="button"
         class="auth-toggle-btn"
@@ -65,139 +58,149 @@
     <!-- Auth Form -->
     <form (submit)="onSubmit()" class="auth-form" #authForm="ngForm">
       @if (mode() === 'signup') {
-      <mat-form-field appearance="outline" class="full-width animate-field">
-        <mat-label>First Name</mat-label>
-        <input
-          matInput
-          [ngModel]="firstName()"
-          (ngModelChange)="firstName.set($event)"
-          name="firstName"
-          required
-          placeholder="First name"
-          #firstNameInput="ngModel"
-        />
-        <ng-icon matPrefix name="lucideUser"></ng-icon>
-        @if (firstNameInput.invalid && (firstNameInput.dirty ||
-        firstNameInput.touched)) {
-        <mat-error>First name is required.</mat-error>
+      <div class="full-width mb-3 animate-field">
+        <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">First Name</label>
+        <div class="relative flex items-center">
+          <ng-icon name="lucideUser" class="absolute left-3 text-muted-foreground pointer-events-none text-base"></ng-icon>
+          <input
+            hlmInput
+            class="pl-10 w-full"
+            [ngModel]="firstName()"
+            (ngModelChange)="firstName.set($event)"
+            name="firstName"
+            required
+            placeholder="First name"
+            #firstNameInput="ngModel"
+          />
+        </div>
+        @if (firstNameInput.invalid && (firstNameInput.dirty || firstNameInput.touched)) {
+          <span class="text-xs text-destructive mt-1 block">First name is required.</span>
         }
-      </mat-form-field>
+      </div>
 
-      <mat-form-field appearance="outline" class="full-width animate-field">
-        <mat-label>Last Name</mat-label>
-        <input
-          matInput
-          [ngModel]="lastName()"
-          (ngModelChange)="lastName.set($event)"
-          name="lastName"
-          required
-          placeholder="Last name"
-          #lastNameInput="ngModel"
-        />
-        <ng-icon matPrefix name="lucideUser"></ng-icon>
-        @if (lastNameInput.invalid && (lastNameInput.dirty ||
-        lastNameInput.touched)) {
-        <mat-error>Last name is required.</mat-error>
+      <div class="full-width mb-3 animate-field">
+        <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Last Name</label>
+        <div class="relative flex items-center">
+          <ng-icon name="lucideUser" class="absolute left-3 text-muted-foreground pointer-events-none text-base"></ng-icon>
+          <input
+            hlmInput
+            class="pl-10 w-full"
+            [ngModel]="lastName()"
+            (ngModelChange)="lastName.set($event)"
+            name="lastName"
+            required
+            placeholder="Last name"
+            #lastNameInput="ngModel"
+          />
+        </div>
+        @if (lastNameInput.invalid && (lastNameInput.dirty || lastNameInput.touched)) {
+          <span class="text-xs text-destructive mt-1 block">Last name is required.</span>
         }
-      </mat-form-field>
+      </div>
       }
 
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Email Address</mat-label>
-        <input
-          matInput
-          [ngModel]="email()"
-          (ngModelChange)="email.set($event)"
-          name="email"
-          type="email"
-          required
-          email
-          placeholder="your.email@example.com"
-          #emailInput="ngModel"
-        />
-        <ng-icon matPrefix name="lucideMail"></ng-icon>
+      <div class="full-width mb-3">
+        <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Email Address</label>
+        <div class="relative flex items-center">
+          <ng-icon name="lucideMail" class="absolute left-3 text-muted-foreground pointer-events-none text-base"></ng-icon>
+          <input
+            hlmInput
+            class="pl-10 w-full"
+            [ngModel]="email()"
+            (ngModelChange)="email.set($event)"
+            name="email"
+            type="email"
+            required
+            email
+            placeholder="your.email@example.com"
+            #emailInput="ngModel"
+          />
+        </div>
         @if (emailInput.invalid && (emailInput.dirty || emailInput.touched)) {
-        <mat-error>Please enter a valid email address.</mat-error>
+          <span class="text-xs text-destructive mt-1 block">Please enter a valid email address.</span>
         }
-      </mat-form-field>
+      </div>
 
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Password</mat-label>
-        <input
-          matInput
-          [ngModel]="password()"
-          (ngModelChange)="password.set($event)"
-          name="password"
-          [type]="showPassword() ? 'text' : 'password'"
-          required
-          minlength="6"
-          placeholder="Enter password"
-          #passwordInput="ngModel"
-        />
-        <ng-icon matPrefix name="lucideLock"></ng-icon>
-        <button
-          type="button"
-          mat-icon-button
-          matSuffix
-          (click)="showPassword.set(!showPassword())"
-          [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
-        >
-          <ng-icon [name]="showPassword() ? 'lucideEyeOff' : 'lucideEye'"></ng-icon>
-        </button>
-        @if (passwordInput.invalid && (passwordInput.dirty ||
-        passwordInput.touched)) {
-        <mat-error>Password must be at least 6 characters long.</mat-error>
+      <div class="full-width mb-3">
+        <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Password</label>
+        <div class="relative flex items-center">
+          <ng-icon name="lucideLock" class="absolute left-3 text-muted-foreground pointer-events-none text-base"></ng-icon>
+          <input
+            hlmInput
+            class="pl-10 pr-10 w-full"
+            [ngModel]="password()"
+            (ngModelChange)="password.set($event)"
+            name="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            required
+            minlength="6"
+            placeholder="Enter password"
+            #passwordInput="ngModel"
+          />
+          <button
+            type="button"
+            hlmBtn
+            variant="ghost"
+            size="icon"
+            class="absolute right-1 h-8 w-8 text-muted-foreground"
+            (click)="showPassword.set(!showPassword())"
+            [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+          >
+            <ng-icon [name]="showPassword() ? 'lucideEyeOff' : 'lucideEye'"></ng-icon>
+          </button>
+        </div>
+        @if (passwordInput.invalid && (passwordInput.dirty || passwordInput.touched)) {
+          <span class="text-xs text-destructive mt-1 block">Password must be at least 6 characters long.</span>
         }
-      </mat-form-field>
+      </div>
 
       @if (mode() === 'signup') {
-      <mat-form-field appearance="outline" class="full-width animate-field">
-        <mat-label>Confirm Password</mat-label>
-        <input
-          matInput
-          [ngModel]="confirmPassword()"
-          (ngModelChange)="confirmPassword.set($event)"
-          name="confirmPassword"
-          [type]="showConfirmPassword() ? 'text' : 'password'"
-          required
-          placeholder="Repeat password"
-          #confirmInput="ngModel"
-        />
-        <ng-icon matPrefix name="lucideKeyRound"></ng-icon>
-        <button
-          type="button"
-          mat-icon-button
-          matSuffix
-          (click)="showConfirmPassword.set(!showConfirmPassword())"
-          [attr.aria-label]="showConfirmPassword() ? 'Hide password' : 'Show password'"
-        >
-          <ng-icon [name]="showConfirmPassword() ? 'lucideEyeOff' : 'lucideEye'"></ng-icon>
-        </button>
-        @if (confirmInput.invalid && (confirmInput.dirty ||
-        confirmInput.touched)) {
-        <mat-error>Please confirm your password.</mat-error>
-        } @if (confirmInput.valid && password() !== confirmPassword() &&
-        (confirmInput.dirty || confirmInput.touched)) {
-        <mat-error>Passwords do not match.</mat-error>
+      <div class="full-width mb-3 animate-field">
+        <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Confirm Password</label>
+        <div class="relative flex items-center">
+          <ng-icon name="lucideKeyRound" class="absolute left-3 text-muted-foreground pointer-events-none text-base"></ng-icon>
+          <input
+            hlmInput
+            class="pl-10 pr-10 w-full"
+            [ngModel]="confirmPassword()"
+            (ngModelChange)="confirmPassword.set($event)"
+            name="confirmPassword"
+            [type]="showConfirmPassword() ? 'text' : 'password'"
+            required
+            placeholder="Repeat password"
+            #confirmInput="ngModel"
+          />
+          <button
+            type="button"
+            hlmBtn
+            variant="ghost"
+            size="icon"
+            class="absolute right-1 h-8 w-8 text-muted-foreground"
+            (click)="showConfirmPassword.set(!showConfirmPassword())"
+            [attr.aria-label]="showConfirmPassword() ? 'Hide password' : 'Show password'"
+          >
+            <ng-icon [name]="showConfirmPassword() ? 'lucideEyeOff' : 'lucideEye'"></ng-icon>
+          </button>
+        </div>
+        @if (confirmInput.invalid && (confirmInput.dirty || confirmInput.touched)) {
+          <span class="text-xs text-destructive mt-1 block">Please confirm your password.</span>
+        } @if (confirmInput.valid && password() !== confirmPassword() && (confirmInput.dirty || confirmInput.touched)) {
+          <span class="text-xs text-destructive mt-1 block">Passwords do not match.</span>
         }
-      </mat-form-field>
+      </div>
       }
 
       <button
-        mat-raised-button
-        color="primary"
-        class="submit-btn"
+        hlmBtn
+        class="submit-btn w-full"
         type="submit"
         [disabled]="loading() || authForm.invalid || (mode() === 'signup' && password() !== confirmPassword())"
       >
-        <div class="spinner-container">
+        <div class="spinner-container flex items-center justify-center">
           @if (loading()) {
-          <mat-progress-spinner
-            mode="indeterminate"
-            diameter="24"
-          ></mat-progress-spinner>
+            <hlm-spinner class="h-5 w-5 mr-2" />
           } @else {
-          <span>{{ mode() === 'login' ? 'Sign In' : 'Create Account' }}</span>
+            <span>{{ mode() === 'login' ? 'Sign In' : 'Create Account' }}</span>
           }
         </div>
       </button>
@@ -229,19 +232,18 @@
       </div>
     </div>
 
-    <div class="action-buttons">
+    <div class="action-buttons flex gap-3 mt-4">
       <button
-        mat-raised-button
-        color="primary"
-        class="dashboard-btn"
+        hlmBtn
+        class="dashboard-btn flex-1 flex items-center justify-center gap-2"
         routerLink="/"
       >
         <ng-icon name="lucideHome"></ng-icon> Go to Home
       </button>
       <button
-        mat-stroked-button
-        color="warn"
-        class="logout-btn"
+        hlmBtn
+        variant="destructive"
+        class="logout-btn flex items-center justify-center gap-2"
         (click)="authService.logout()"
       >
         <ng-icon name="lucideLogOut"></ng-icon> Log Out
@@ -249,11 +251,8 @@
     </div>
   </div>
   } @else {
-  <div class="glass-card loading-card">
-    <mat-progress-spinner
-      mode="indeterminate"
-      diameter="48"
-    ></mat-progress-spinner>
+  <div class="glass-card loading-card flex flex-col items-center justify-center p-8">
+    <hlm-spinner class="h-10 w-10 text-primary mb-4" />
     <p class="loading-text">Checking authentication state...</p>
   </div>
   }

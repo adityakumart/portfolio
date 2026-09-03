@@ -1,10 +1,11 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatButtonModule } from '@angular/material/button';
+import { HlmCardDirective } from '@spartan-ng/hel/card';
+import { HlmInputDirective } from '@spartan-ng/hel/input';
+import { HlmLabelDirective } from '@spartan-ng/hel/label';
+import { HlmButtonDirective } from '@spartan-ng/hel/button';
+import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
+import { toast } from '@spartan-ng/hel/sonner';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideBinary,
@@ -14,10 +15,6 @@ import {
   lucideFlaskConical,
   lucideAlertCircle,
 } from '@ng-icons/lucide';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatButtonToggleModule } from '@angular/material/button-toggle';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
@@ -36,16 +33,12 @@ export interface RegexOption {
   standalone: true,
   imports: [
     ReactiveFormsModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatButtonModule,
+    HlmCardDirective,
+    HlmInputDirective,
+    HlmLabelDirective,
+    HlmButtonDirective,
+    HlmTooltipImports,
     NgIconComponent,
-    MatCheckboxModule,
-    MatButtonToggleModule,
-    MatTooltipModule,
-    MatSnackBarModule,
     RegexHighlightPipe,
   ],
   providers: [
@@ -65,7 +58,6 @@ export interface RegexOption {
 export class RegexTesterComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private clipboard = inject(Clipboard);
-  private snackBar = inject(MatSnackBar);
   private cdr = inject(ChangeDetectorRef);
 
   form!: FormGroup;
@@ -74,6 +66,21 @@ export class RegexTesterComponent implements OnInit, OnDestroy {
   selectedOption: RegexOption | null = null;
   showPasswordBuilder = false;
   parsedTokens: { token: string; meaning: string; type: 'anchor' | 'quantifier' | 'set' | 'group' | 'literal' }[] = [];
+
+  toggleFlag(flag: string): void {
+    const current: string[] = this.form.get('flags')?.value || [];
+    const idx = current.indexOf(flag);
+    if (idx > -1) {
+      current.splice(idx, 1);
+    } else {
+      current.push(flag);
+    }
+    this.form.patchValue({ flags: [...current] });
+  }
+
+  hasFlag(flag: string): boolean {
+    return (this.form?.get('flags')?.value || []).includes(flag);
+  }
 
   private destroy$ = new Subject<void>();
 
@@ -637,12 +644,7 @@ info@sub.domain.co`],
     const pattern = this.form.get('pattern')?.value;
     if (pattern) {
       this.clipboard.copy(pattern);
-      this.snackBar.open('Pattern copied to clipboard!', 'Dismiss', {
-        duration: 2000,
-        horizontalPosition: 'center',
-        verticalPosition: 'bottom',
-        panelClass: ['clipboard-snackbar'],
-      });
+      toast.success('Pattern copied to clipboard!');
     }
   }
 

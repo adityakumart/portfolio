@@ -2,17 +2,13 @@ import { Component, OnInit, inject, signal, computed, ViewChild, TemplateRef } f
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
 import { RRApiService } from '../../../../services/rr-api.service';
-import { HlmButton } from '@spartan-ng/hel/button';
+import { HlmButtonDirective } from '@spartan-ng/hel/button';
+import { HlmCardDirective } from '@spartan-ng/hel/card';
+import { HlmInputDirective } from '@spartan-ng/hel/input';
+import { HlmLabelDirective } from '@spartan-ng/hel/label';
+import { HlmDialogService } from '@spartan-ng/hel/dialog';
+import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
 import { IVehicle } from '@portfolio/shared-types';
-
-// Material Imports
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatRadioModule } from '@angular/material/radio';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatButtonModule } from '@angular/material/button';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideCar,
@@ -36,8 +32,6 @@ import {
   lucideAlertCircle,
   lucideCheck,
 } from '@ng-icons/lucide';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-rr-vehicle-list',
@@ -46,17 +40,12 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatRadioModule,
-    MatCheckboxModule,
-    MatButtonModule,
+    HlmCardDirective,
+    HlmInputDirective,
+    HlmLabelDirective,
+    HlmButtonDirective,
+    HlmTooltipImports,
     NgIconComponent,
-    MatDialogModule,
-    MatTooltipModule,
-    HlmButton
   ],
   providers: [
     provideIcons({
@@ -88,7 +77,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 export class RRVehicleListComponent implements OnInit {
   private rrApi = inject(RRApiService);
   private fb = inject(FormBuilder);
-  private dialog = inject(MatDialog);
+  private dialog = inject(HlmDialogService);
 
   @ViewChild('vehicleDetailsDialog') vehicleDetailsDialog!: TemplateRef<any>;
   @ViewChild('vehicleFormDialog') vehicleFormDialog!: TemplateRef<any>;
@@ -178,8 +167,7 @@ export class RRVehicleListComponent implements OnInit {
   viewVehicleDetails(v: any) {
     this.selectedVehicleDetails.set(v);
     this.dialog.open(this.vehicleDetailsDialog, {
-      width: '600px',
-      maxWidth: '90vw'
+      contentClass: 'max-w-xl w-full p-6 max-h-[90vh] overflow-y-auto',
     });
   }
 
@@ -199,9 +187,7 @@ export class RRVehicleListComponent implements OnInit {
       status: 'available'
     });
     this.dialog.open(this.vehicleFormDialog, {
-      width: '800px',
-      maxWidth: '95vw',
-      maxHeight: '90vh'
+      contentClass: 'max-w-3xl w-full p-6 max-h-[90vh] overflow-y-auto',
     });
   }
 
@@ -246,9 +232,7 @@ export class RRVehicleListComponent implements OnInit {
       this.selectedFileName.set('Current vehicle image');
     }
     this.dialog.open(this.vehicleFormDialog, {
-      width: '800px',
-      maxWidth: '95vw',
-      maxHeight: '90vh'
+      contentClass: 'max-w-3xl w-full p-6 max-h-[90vh] overflow-y-auto',
     });
   }
 

@@ -1,15 +1,15 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
+import { HlmCardDirective } from '@spartan-ng/hel/card';
+import { HlmInputDirective } from '@spartan-ng/hel/input';
+import { HlmLabelDirective } from '@spartan-ng/hel/label';
+import { HlmButtonDirective } from '@spartan-ng/hel/button';
+import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
+import { HlmSeparatorDirective } from '@spartan-ng/hel/separator';
+import { toast } from '@spartan-ng/hel/sonner';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { lucideEraser, lucideCopy, lucideCalculator } from '@ng-icons/lucide';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatDividerModule } from '@angular/material/divider';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -20,14 +20,13 @@ import { takeUntil } from 'rxjs/operators';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
+    HlmCardDirective,
+    HlmInputDirective,
+    HlmLabelDirective,
+    HlmButtonDirective,
+    HlmTooltipImports,
+    HlmSeparatorDirective,
     NgIconComponent,
-    MatTooltipModule,
-    MatDividerModule,
-    MatSnackBarModule,
   ],
   providers: [
     provideIcons({ lucideEraser, lucideCopy, lucideCalculator }),
@@ -38,7 +37,6 @@ import { takeUntil } from 'rxjs/operators';
 })
 export class NumberBaseConverterComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
-  private snackBar = inject(MatSnackBar);
   private clipboard = inject(Clipboard);
 
   form!: FormGroup;
@@ -373,18 +371,12 @@ export class NumberBaseConverterComponent implements OnInit, OnDestroy {
   }
 
   private showSnackBar(message: string, type: 'success' | 'error' | 'info'): void {
-    const panelClass =
-      type === 'success'
-        ? 'success-snackbar'
-        : type === 'error'
-        ? 'error-snackbar'
-        : 'info-snackbar';
-
-    this.snackBar.open(message, 'Close', {
-      duration: 3000,
-      horizontalPosition: 'end',
-      verticalPosition: 'bottom',
-      panelClass: [panelClass],
-    });
+    if (type === 'success') {
+      toast.success(message);
+    } else if (type === 'error') {
+      toast.error(message);
+    } else {
+      toast.info(message);
+    }
   }
 }

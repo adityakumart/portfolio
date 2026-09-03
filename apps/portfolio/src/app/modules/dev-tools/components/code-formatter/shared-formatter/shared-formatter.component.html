@@ -1,167 +1,179 @@
 @if (config) {
   <div class="code-formatter-container">
-  <!-- Header Card -->
-  <mat-card class="header-card mb-4">
-    <mat-card-header class="py-3">
-      <mat-card-title>{{ config.title }}</mat-card-title>
-      <mat-card-subtitle>{{ config.subtitle }}</mat-card-subtitle>
-    </mat-card-header>
-  </mat-card>
+    <!-- Header Card -->
+    <div hlmCard class="header-card mb-4 p-5 rounded-2xl border shadow-sm">
+      <h2 class="text-xl font-bold tracking-tight">{{ config.title }}</h2>
+      <p class="text-sm text-muted-foreground mt-1">{{ config.subtitle }}</p>
+    </div>
 
-  <form [formGroup]="form" class="formatter-form">
-    <!-- Toolbar Section -->
-    <mat-card class="toolbar-card mb-4">
-      <mat-card-content class="toolbar-content">
-        <!-- Configuration Controls -->
-        <div class="controls-group">
-          <mat-form-field appearance="outline" class="indent-select" subscriptSizing="dynamic">
-            <mat-label>Indentation</mat-label>
-            <mat-select formControlName="selectedIndent">
-              <mat-option value="2">2 Spaces</mat-option>
-              <mat-option value="4">4 Spaces</mat-option>
-              <mat-option value="tab">Tab</mat-option>
-            </mat-select>
-          </mat-form-field>
+    <form [formGroup]="form" class="formatter-form space-y-4">
+      <!-- Toolbar Section -->
+      <div hlmCard class="toolbar-card p-4 rounded-2xl border shadow-sm">
+        <div class="toolbar-content flex flex-wrap items-center justify-between gap-4">
+          <!-- Configuration Controls -->
+          <div class="controls-group flex flex-wrap items-center gap-4">
+            <div class="flex items-center gap-2">
+              <label hlmLabel class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Indentation</label>
+              <select hlmInput formControlName="selectedIndent" class="h-9 text-xs">
+                <option value="2">2 Spaces</option>
+                <option value="4">4 Spaces</option>
+                <option value="tab">Tab</option>
+              </select>
+            </div>
 
-          @if (config.showSortOption) {
-            <mat-checkbox formControlName="sortKeys" class="sort-checkbox">
-              {{ config.sortOptionLabel }}
-            </mat-checkbox>
-          }
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="actions-group">
-          <button
-            mat-raised-button
-            color="primary"
-            type="button"
-            (click)="onFormat()"
-            [disabled]="form.get('inputCode')?.invalid"
-            class="action-btn"
-          >
-            <ng-icon name="lucideAlignLeft"></ng-icon>
-            Format
-          </button>
-
-          <button
-            mat-stroked-button
-            type="button"
-            (click)="onMinify()"
-            [disabled]="form.get('inputCode')?.invalid"
-            class="action-btn"
-          >
-            <ng-icon name="lucideMinimize2"></ng-icon>
-            Minify
-          </button>
-
-          <button
-            mat-raised-button
-            color="accent"
-            type="button"
-            (click)="onValidate()"
-            [disabled]="form.get('inputCode')?.invalid"
-            class="action-btn"
-          >
-            <ng-icon name="lucideCheckCheck"></ng-icon>
-            Validate
-          </button>
-
-          <button
-            mat-button
-            type="button"
-            (click)="onClear()"
-            class="action-btn"
-          >
-            <ng-icon name="lucideEraser"></ng-icon>
-            Clear
-          </button>
-        </div>
-      </mat-card-content>
-    </mat-card>
-
-    <!-- Main Workspace Split-Screen Layout -->
-    <div class="workspace-layout">
-      <!-- Input Section -->
-      <mat-card class="editor-card">
-        <mat-card-header class="card-header-with-actions py-2">
-          <mat-card-title>Input {{ config.language | uppercase }}</mat-card-title>
-          
-          <!-- Validation Status Badge -->
-          <span [class]="'status-badge ' + validationState">
-            @if (validationState === 'valid') {
-              <ng-icon class="status-icon success-icon" name="lucideCheckCircle"></ng-icon>
-              <span>Valid {{ config.language | uppercase }}</span>
-            } @else if (validationState === 'invalid') {
-              <ng-icon class="status-icon error-icon" name="lucideAlertCircle"></ng-icon>
-              <span>Invalid {{ config.language | uppercase }}</span>
-            } @else {
-              <ng-icon class="status-icon idle-icon" name="lucideHelpCircle"></ng-icon>
-              <span>Unchecked</span>
+            @if (config.showSortOption) {
+              <label class="flex items-center gap-2 cursor-pointer text-sm">
+                <input type="checkbox" formControlName="sortKeys" class="rounded accent-primary h-4 w-4" />
+                <span>{{ config.sortOptionLabel }}</span>
+              </label>
             }
-          </span>
-        </mat-card-header>
+          </div>
 
-        <mat-card-content class="card-content-fill">
-          <mat-form-field appearance="outline" class="full-width textarea-field" subscriptSizing="dynamic">
+          <!-- Action Buttons -->
+          <div class="actions-group flex flex-wrap items-center gap-2">
+            <button
+              hlmBtn
+              size="sm"
+              type="button"
+              (click)="onFormat()"
+              [disabled]="form.get('inputCode')?.invalid"
+              class="action-btn flex items-center gap-1.5"
+            >
+              <ng-icon name="lucideAlignLeft"></ng-icon>
+              Format
+            </button>
+
+            <button
+              hlmBtn
+              variant="outline"
+              size="sm"
+              type="button"
+              (click)="onMinify()"
+              [disabled]="form.get('inputCode')?.invalid"
+              class="action-btn flex items-center gap-1.5"
+            >
+              <ng-icon name="lucideMinimize2"></ng-icon>
+              Minify
+            </button>
+
+            <button
+              hlmBtn
+              variant="secondary"
+              size="sm"
+              type="button"
+              (click)="onValidate()"
+              [disabled]="form.get('inputCode')?.invalid"
+              class="action-btn flex items-center gap-1.5"
+            >
+              <ng-icon name="lucideCheckCheck"></ng-icon>
+              Validate
+            </button>
+
+            <button
+              hlmBtn
+              variant="ghost"
+              size="sm"
+              type="button"
+              (click)="onClear()"
+              class="action-btn flex items-center gap-1.5"
+            >
+              <ng-icon name="lucideEraser"></ng-icon>
+              Clear
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Workspace Split-Screen Layout -->
+      <div class="workspace-layout grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <!-- Input Section -->
+        <div hlmCard class="editor-card p-5 rounded-2xl border shadow-sm flex flex-col h-full">
+          <div class="card-header-with-actions flex items-center justify-between mb-3">
+            <h3 class="text-base font-semibold">Input {{ config.language | uppercase }}</h3>
+            
+            <!-- Validation Status Badge -->
+            <span [class]="'status-badge inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-0.5 rounded-full ' + validationState"
+              [class.bg-emerald-500-10]="validationState === 'valid'"
+              [class.text-emerald-500]="validationState === 'valid'"
+              [class.bg-destructive-10]="validationState === 'invalid'"
+              [class.text-destructive]="validationState === 'invalid'"
+              [class.bg-muted]="validationState === 'idle'"
+              [class.text-muted-foreground]="validationState === 'idle'"
+            >
+              @if (validationState === 'valid') {
+                <ng-icon class="status-icon success-icon" name="lucideCheckCircle"></ng-icon>
+                <span>Valid {{ config.language | uppercase }}</span>
+              } @else if (validationState === 'invalid') {
+                <ng-icon class="status-icon error-icon" name="lucideAlertCircle"></ng-icon>
+                <span>Invalid {{ config.language | uppercase }}</span>
+              } @else {
+                <ng-icon class="status-icon idle-icon" name="lucideHelpCircle"></ng-icon>
+                <span>Unchecked</span>
+              }
+            </span>
+          </div>
+          <div hlmSeparator class="mb-4"></div>
+
+          <div class="card-content-fill flex-1 flex flex-col space-y-3">
             <textarea
-              matInput
+              hlmInput
               formControlName="inputCode"
               [placeholder]="config.inputPlaceholder"
               rows="20"
-              class="code-textarea"
+              class="code-textarea font-mono text-xs w-full flex-1 resize-y"
             ></textarea>
             @if (form.get('inputCode')?.hasError('required') && form.get('inputCode')?.touched) {
-              <mat-error>{{ config.language | uppercase }} input is required</mat-error>
+              <span class="text-xs text-destructive">{{ config.language | uppercase }} input is required</span>
             }
-          </mat-form-field>
 
-          <!-- Dynamic Error Detail Panel -->
-          @if (validationState === 'invalid' && errorMessage) {
-            <div class="error-detail-box">
-              <ng-icon class="error-box-icon" name="lucideAlertTriangle"></ng-icon>
-              <div class="error-box-content">
-                <strong>Parsing Error Detail:</strong>
-                <p class="error-message-text">{{ errorMessage }}</p>
+            <!-- Dynamic Error Detail Panel -->
+            @if (validationState === 'invalid' && errorMessage) {
+              <div class="error-detail-box p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-start gap-2">
+                <ng-icon class="error-box-icon text-base shrink-0 mt-0.5" name="lucideAlertTriangle"></ng-icon>
+                <div class="error-box-content">
+                  <strong>Parsing Error Detail:</strong>
+                  <p class="error-message-text mt-0.5">{{ errorMessage }}</p>
+                </div>
               </div>
-            </div>
-          }
-        </mat-card-content>
-      </mat-card>
-
-      <!-- Output Section -->
-      <mat-card class="editor-card">
-        <mat-card-header class="card-header-with-actions py-2">
-          <mat-card-title>Formatted {{ config.language | uppercase }} Output</mat-card-title>
-          
-          <div class="output-actions">
-            <button
-              mat-icon-button
-              matTooltip="Copy to Clipboard"
-              type="button"
-              (click)="onCopy()"
-              [disabled]="!form.get('outputCode')?.value"
-              [class.copied]="copySuccess"
-            >
-              <ng-icon [name]="copySuccess ? 'lucideCheckCircle' : 'lucideCopy'"></ng-icon>
-            </button>
+            }
           </div>
-        </mat-card-header>
+        </div>
 
-        <mat-card-content class="card-content-fill">
-          <mat-form-field appearance="outline" class="full-width textarea-field" subscriptSizing="dynamic">
+        <!-- Output Section -->
+        <div hlmCard class="editor-card p-5 rounded-2xl border shadow-sm flex flex-col h-full">
+          <div class="card-header-with-actions flex items-center justify-between mb-3">
+            <h3 class="text-base font-semibold">Formatted {{ config.language | uppercase }} Output</h3>
+            
+            <div class="output-actions">
+              <button
+                hlmBtn
+                size="icon"
+                variant="ghost"
+                hlmTooltip="Copy to Clipboard"
+                type="button"
+                (click)="onCopy()"
+                [disabled]="!outputText"
+                [class.copied]="copySuccess"
+                class="h-8 w-8 text-primary"
+              >
+                <ng-icon [name]="copySuccess ? 'lucideCheckCircle' : 'lucideCopy'"></ng-icon>
+              </button>
+            </div>
+          </div>
+          <div hlmSeparator class="mb-4"></div>
+
+          <div class="card-content-fill flex-1 flex flex-col">
             <textarea
-              matInput
-              formControlName="outputCode"
-              [placeholder]="config.outputPlaceholder"
+              hlmInput
+              [value]="outputText"
+              [placeholder]="'Formatted, minified, or validated ' + (config.language | uppercase) + ' output will appear here...'"
               rows="20"
               readonly
-              class="code-textarea readonly-textarea"
+              class="code-textarea readonly-textarea font-mono text-xs w-full flex-1 resize-y bg-muted/20"
             ></textarea>
-          </mat-form-field>
-        </mat-card-content>
-      </mat-card>
-    </div>
-  </form>
+          </div>
+        </div>
+      </div>
+    </form>
   </div>
 }

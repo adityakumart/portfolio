@@ -6,10 +6,11 @@
       <div class="header-left">
         @if (!isEmbedded) {
           <button
-            mat-icon-button
-            color="primary"
+            hlmBtn
+            size="icon"
+            variant="ghost"
             routerLink="/user"
-            matTooltip="Back to Profile"
+            hlmTooltip="Back to Profile"
             class="back-btn"
           >
             <ng-icon name="lucideArrowLeft"></ng-icon>
@@ -26,12 +27,12 @@
       
       <div class="header-right">
         <button
-          mat-stroked-button
-          color="warn"
+          hlmBtn
+          variant="outline"
           (click)="onClearChat()"
           [disabled]="chatService.messages().length <= 1 && !chatService.isLoading()"
-          matTooltip="Clear Conversation History"
-          class="clear-btn"
+          hlmTooltip="Clear Conversation History"
+          class="clear-btn text-destructive border-destructive/30 hover:bg-destructive/10"
         >
           <ng-icon name="lucideTrash2"></ng-icon> Clear Chat
         </button>
@@ -127,12 +128,12 @@
           </span>
           
           <button
-            mat-fab
-            color="primary"
-            class="send-fab-btn"
+            hlmBtn
+            size="icon"
+            class="send-fab-btn rounded-full"
             (click)="onSend()"
             [disabled]="!currentPrompt().trim() || chatService.isLoading()"
-            matTooltip="Send Prompt (Enter)"
+            hlmTooltip="Send Prompt (Enter)"
           >
             <ng-icon name="lucideSend"></ng-icon>
           </button>

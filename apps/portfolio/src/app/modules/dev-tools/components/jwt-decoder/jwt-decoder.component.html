@@ -1,27 +1,24 @@
 <div class="jwt-decoder-container">
   <!-- Header Card -->
-  <mat-card class="header-card mb-4">
-    <mat-card-header class="py-3">
-      <mat-card-title id="jwt-decoder-title">JWT Decoder</mat-card-title>
-      <mat-card-subtitle>Decode JSON Web Tokens (JWT) client-side in real-time, dissecting headers, payloads, and signatures with mapped claims.</mat-card-subtitle>
-    </mat-card-header>
-  </mat-card>
+  <div hlmCard class="header-card mb-4 p-5 rounded-2xl border shadow-sm">
+    <h2 class="text-xl font-bold tracking-tight" id="jwt-decoder-title">JWT Decoder</h2>
+    <p class="text-sm text-muted-foreground mt-1">Decode JSON Web Tokens (JWT) client-side in real-time, dissecting headers, payloads, and signatures with mapped claims.</p>
+  </div>
 
-  <form [formGroup]="form" class="jwt-form">
+  <form [formGroup]="form" class="jwt-form space-y-4">
     <!-- Toolbar Section -->
-    <mat-card class="toolbar-card mb-4">
-      <mat-card-content class="toolbar-content">
+    <div hlmCard class="toolbar-card p-4 rounded-2xl border shadow-sm">
+      <div class="toolbar-content flex flex-wrap items-center justify-between gap-4">
         <div class="controls-group">
-          <span class="control-label">Decode JSON Web Tokens securely (100% Client-Side)</span>
+          <span class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Decode JSON Web Tokens securely (100% Client-Side)</span>
         </div>
 
-        <div class="actions-group">
+        <div class="actions-group flex items-center gap-2">
           <button
-            mat-raised-button
-            color="primary"
+            hlmBtn
             type="button"
             (click)="onLoadDemo()"
-            class="action-btn"
+            class="action-btn flex items-center gap-1.5"
             id="load-demo-btn"
           >
             <ng-icon name="lucidePlay"></ng-icon>
@@ -29,249 +26,256 @@
           </button>
 
           <button
-            mat-button
+            hlmBtn
+            variant="outline"
             type="button"
             (click)="onClear()"
             [disabled]="!form.get('tokenInput')?.value"
-            class="action-btn"
+            class="action-btn flex items-center gap-1.5"
             id="clear-btn"
           >
             <ng-icon name="lucideEraser"></ng-icon>
             Clear
           </button>
         </div>
-      </mat-card-content>
-    </mat-card>
+      </div>
+    </div>
 
     <!-- Error Detail Panel -->
     @if (errorMessage) {
-      <div class="error-detail-box mb-4" id="jwt-error-box">
-        <ng-icon class="error-box-icon" name="lucideAlertCircle"></ng-icon>
+      <div class="error-detail-box p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive flex items-start gap-3" id="jwt-error-box">
+        <ng-icon class="error-box-icon text-lg shrink-0 mt-0.5" name="lucideAlertCircle"></ng-icon>
         <div class="error-box-content">
           <strong>Malformed Token Exception</strong>
-          <p class="error-message-text">{{ errorMessage }}</p>
+          <p class="error-message-text text-sm mt-0.5">{{ errorMessage }}</p>
         </div>
       </div>
     }
 
     <!-- Main Workspace Layout -->
-    <div class="workspace-layout">
+    <div class="workspace-layout grid grid-cols-1 lg:grid-cols-2 gap-4">
       <!-- Input Panel (Left Column) -->
       <div class="input-column">
-        <mat-card class="editor-card">
-          <mat-card-header class="card-header-with-actions">
-            <mat-card-title>Encoded Token (Paste here)</mat-card-title>
-          </mat-card-header>
+        <div hlmCard class="editor-card p-5 rounded-2xl border shadow-sm flex flex-col h-full">
+          <h3 class="text-base font-semibold mb-3">Encoded Token (Paste here)</h3>
+          <div hlmSeparator class="mb-4"></div>
           
-          <mat-card-content class="card-content-fill">
-            <mat-form-field appearance="outline" class="full-width textarea-field">
-              <textarea
-                matInput
-                formControlName="tokenInput"
-                placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
-                rows="10"
-                class="jwt-textarea"
-                id="jwt-input-textarea"
-              ></textarea>
-            </mat-form-field>
+          <div class="card-content-fill flex-1 flex flex-col space-y-4">
+            <textarea
+              hlmInput
+              formControlName="tokenInput"
+              placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+              rows="10"
+              class="jwt-textarea font-mono text-xs w-full resize-y"
+              id="jwt-input-textarea"
+            ></textarea>
 
             <!-- Color-Coded Token Segment Split Visualizer -->
             @if (tokenPartHeader || tokenPartPayload || tokenPartSignature) {
-              <div class="visualizer-section">
-                <span class="section-title">Color-Coded Token Structure:</span>
-                <div class="token-split-display" id="token-split-display">
+              <div class="visualizer-section pt-2">
+                <span class="block mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Color-Coded Token Structure:</span>
+                <div class="token-split-display font-mono text-xs p-3 rounded-xl bg-muted/20 border break-all leading-relaxed" id="token-split-display">
                   @if (tokenPartHeader) {
-                    <span class="token-segment segment-header" matTooltip="Header (Algorithm & Type)">{{ tokenPartHeader }}</span>
+                    <span class="token-segment text-rose-500 font-semibold" hlmTooltip="Header (Algorithm & Type)">{{ tokenPartHeader }}</span>
                   }
                   @if (tokenPartPayload) {
-                    <span class="token-dot">.</span>
-                    <span class="token-segment segment-payload" matTooltip="Payload (Claims & User Data)">{{ tokenPartPayload }}</span>
+                    <span class="token-dot text-muted-foreground">.</span>
+                    <span class="token-segment text-indigo-500 font-semibold" hlmTooltip="Payload (Claims & User Data)">{{ tokenPartPayload }}</span>
                   }
                   @if (tokenPartSignature) {
-                    <span class="token-dot">.</span>
-                    <span class="token-segment segment-signature" matTooltip="Signature (Cryptographic Verification)">{{ tokenPartSignature }}</span>
+                    <span class="token-dot text-muted-foreground">.</span>
+                    <span class="token-segment text-emerald-500 font-semibold" hlmTooltip="Signature (Cryptographic Verification)">{{ tokenPartSignature }}</span>
                   }
                 </div>
               </div>
             }
-          </mat-card-content>
-        </mat-card>
+          </div>
+        </div>
       </div>
 
       <!-- Output Panel (Right Column) -->
       <div class="output-column">
         @if (decodedToken) {
-          <div class="decoded-sections">
+          <div class="decoded-sections space-y-4">
             <!-- Header Section (Coral/Red) -->
-            <mat-card class="decoded-card border-header mb-4">
-              <div class="decoded-card-header">
-                <span class="card-title text-header">
+            <div hlmCard class="decoded-card p-5 rounded-2xl border border-rose-500/30 shadow-sm">
+              <div class="decoded-card-header flex items-center justify-between mb-3">
+                <span class="card-title text-rose-500 font-semibold text-xs uppercase tracking-wider flex items-center gap-1.5">
                   <ng-icon name="lucideSettings"></ng-icon>
                   HEADER: ALGORITHM & TOKEN TYPE
                 </span>
-                <div class="card-actions">
+                <div class="card-actions flex items-center gap-1">
                   <button
-                    mat-icon-button
+                    hlmBtn
+                    size="icon"
+                    variant="ghost"
                     (click)="onCopy(decodedToken.headerRaw, 'headerRaw')"
                     [class.copied]="copiedSection === 'headerRaw'"
-                    matTooltip="Copy Raw Encoded Header"
+                    hlmTooltip="Copy Raw Encoded Header"
+                    class="h-7 w-7 text-muted-foreground"
                   >
                     <ng-icon [name]="copiedSection === 'headerRaw' ? 'lucideCheck' : 'lucideCopy'"></ng-icon>
                   </button>
                   <button
-                    mat-icon-button
+                    hlmBtn
+                    size="icon"
+                    variant="ghost"
                     (click)="onCopy(formatJson(decodedToken.header), 'headerJson')"
                     [class.copied]="copiedSection === 'headerJson'"
-                    matTooltip="Copy Formatted Header JSON"
+                    hlmTooltip="Copy Formatted Header JSON"
+                    class="h-7 w-7 text-muted-foreground"
                   >
                     <ng-icon [name]="copiedSection === 'headerJson' ? 'lucideClipboardCheck' : 'lucideCode'"></ng-icon>
                   </button>
                 </div>
               </div>
-              <mat-card-content class="decoded-card-content">
-                <pre class="json-code text-header-dark">{{ formatJson(decodedToken.header) }}</pre>
-              </mat-card-content>
-            </mat-card>
+              <div hlmSeparator class="mb-3"></div>
+              <pre class="json-code text-rose-600 dark:text-rose-400 font-mono text-xs bg-rose-500/5 p-3 rounded-xl overflow-x-auto leading-relaxed">{{ formatJson(decodedToken.header) }}</pre>
+            </div>
 
             <!-- Payload Section (Purple/Indigo) -->
-            <mat-card class="decoded-card border-payload mb-4">
-              <div class="decoded-card-header">
-                <span class="card-title text-payload">
+            <div hlmCard class="decoded-card p-5 rounded-2xl border border-indigo-500/30 shadow-sm">
+              <div class="decoded-card-header flex items-center justify-between mb-3">
+                <span class="card-title text-indigo-500 font-semibold text-xs uppercase tracking-wider flex items-center gap-1.5">
                   <ng-icon name="lucideUser"></ng-icon>
                   PAYLOAD: DATA & CLAIMS
                 </span>
-                <div class="card-actions">
+                <div class="card-actions flex items-center gap-1">
                   <button
-                    mat-icon-button
+                    hlmBtn
+                    size="icon"
+                    variant="ghost"
                     (click)="onCopy(decodedToken.payloadRaw, 'payloadRaw')"
                     [class.copied]="copiedSection === 'payloadRaw'"
-                    matTooltip="Copy Raw Encoded Payload"
+                    hlmTooltip="Copy Raw Encoded Payload"
+                    class="h-7 w-7 text-muted-foreground"
                   >
                     <ng-icon [name]="copiedSection === 'payloadRaw' ? 'lucideCheck' : 'lucideCopy'"></ng-icon>
                   </button>
                   <button
-                    mat-icon-button
+                    hlmBtn
+                    size="icon"
+                    variant="ghost"
                     (click)="onCopy(formatJson(decodedToken.payload), 'payloadJson')"
                     [class.copied]="copiedSection === 'payloadJson'"
-                    matTooltip="Copy Formatted Payload JSON"
+                    hlmTooltip="Copy Formatted Payload JSON"
+                    class="h-7 w-7 text-muted-foreground"
                   >
                     <ng-icon [name]="copiedSection === 'payloadJson' ? 'lucideClipboardCheck' : 'lucideCode'"></ng-icon>
                   </button>
                 </div>
               </div>
-              <mat-card-content class="decoded-card-content">
-                <pre class="json-code text-payload-dark">{{ formatJson(decodedToken.payload) }}</pre>
-              </mat-card-content>
-            </mat-card>
+              <div hlmSeparator class="mb-3"></div>
+              <pre class="json-code text-indigo-600 dark:text-indigo-400 font-mono text-xs bg-indigo-500/5 p-3 rounded-xl overflow-x-auto leading-relaxed">{{ formatJson(decodedToken.payload) }}</pre>
+            </div>
 
             <!-- Signature Section (Teal/Green) -->
-            <mat-card class="decoded-card border-signature mb-4">
-              <div class="decoded-card-header">
-                <span class="card-title text-signature">
+            <div hlmCard class="decoded-card p-5 rounded-2xl border border-emerald-500/30 shadow-sm">
+              <div class="decoded-card-header flex items-center justify-between mb-3">
+                <span class="card-title text-emerald-500 font-semibold text-xs uppercase tracking-wider flex items-center gap-1.5">
                   <ng-icon name="lucideShieldCheck"></ng-icon>
                   SIGNATURE: VERIFICATION
                 </span>
                 <div class="card-actions">
                   <button
-                    mat-icon-button
+                    hlmBtn
+                    size="icon"
+                    variant="ghost"
                     (click)="onCopy(decodedToken.signatureRaw, 'signature')"
                     [class.copied]="copiedSection === 'signature'"
-                    matTooltip="Copy Raw Signature"
+                    hlmTooltip="Copy Raw Signature"
+                    class="h-7 w-7 text-muted-foreground"
                   >
                     <ng-icon [name]="copiedSection === 'signature' ? 'lucideCheck' : 'lucideCopy'"></ng-icon>
                   </button>
                 </div>
               </div>
-              <mat-card-content class="decoded-card-content">
-                <div class="signature-display">
-                  <pre class="signature-code text-signature-dark">{{ decodedToken.signature }}</pre>
-                  <div class="signature-explanation">
-                    <p class="explanation-title">Signature Scheme Verification</p>
-                    <p class="explanation-detail">
-                      The signature certifies that the token was signed with a secure algorithm (such as <strong>{{ decodedToken.header.alg || 'HS256' }}</strong>). Note that cryptographic signature validation must be executed securely on a backend server, as the verification secrets/keys should never be exposed in client-side code.
-                    </p>
-                  </div>
+              <div hlmSeparator class="mb-3"></div>
+              <div class="signature-display space-y-3">
+                <pre class="signature-code text-emerald-600 dark:text-emerald-400 font-mono text-xs bg-emerald-500/5 p-3 rounded-xl overflow-x-auto break-all">{{ decodedToken.signature }}</pre>
+                <div class="signature-explanation p-3 bg-muted/20 rounded-xl text-xs text-muted-foreground leading-relaxed">
+                  <p class="font-semibold text-foreground mb-1">Signature Scheme Verification</p>
+                  <p>
+                    The signature certifies that the token was signed with a secure algorithm (such as <strong>{{ decodedToken.header.alg || 'HS256' }}</strong>). Note that cryptographic signature validation must be executed securely on a backend server, as the verification secrets/keys should never be exposed in client-side code.
+                  </p>
                 </div>
-              </mat-card-content>
-            </mat-card>
+              </div>
+            </div>
           </div>
         } @else {
           <!-- Empty State / Instructions Panel -->
-          <mat-card class="placeholder-card">
-            <mat-card-content class="placeholder-content">
-              <div class="placeholder-icon-container">
-                <ng-icon class="large-icon" name="lucideKey"></ng-icon>
+          <div hlmCard class="placeholder-card p-8 rounded-2xl border shadow-sm text-center flex flex-col items-center justify-center h-full">
+            <div class="placeholder-icon-container p-4 bg-primary/10 rounded-full mb-3">
+              <ng-icon class="large-icon text-3xl text-primary" name="lucideKey"></ng-icon>
+            </div>
+            <h3 class="text-base font-semibold mb-1">Awaiting Token Input</h3>
+            <p class="text-xs text-muted-foreground max-w-sm mb-6">Paste a JWT token in the input area or load the demo token to inspect its visual decoding and mapped claims.</p>
+            <div class="placeholder-benefits space-y-2 text-xs text-muted-foreground text-left">
+              <div class="benefit-item flex items-center gap-2">
+                <ng-icon name="lucideShield" class="text-primary"></ng-icon>
+                <span>100% Client-Side decoding protects secret payloads</span>
               </div>
-              <h3>Awaiting Token Input</h3>
-              <p>Paste a JWT token in the input area or load the demo token to inspect its visual decoding and mapped claims.</p>
-              <div class="placeholder-benefits">
-                <div class="benefit-item">
-                  <ng-icon name="lucideShield"></ng-icon>
-                  <span>100% Client-Side decoding protects secret payloads</span>
-                </div>
-                <div class="benefit-item">
-                  <ng-icon name="lucidePalette"></ng-icon>
-                  <span>Color-coded sections match standard specifications</span>
-                </div>
-                <div class="benefit-item">
-                  <ng-icon name="lucideList"></ng-icon>
-                  <span>Registered claims maps expose human-readable labels</span>
-                </div>
+              <div class="benefit-item flex items-center gap-2">
+                <ng-icon name="lucidePalette" class="text-primary"></ng-icon>
+                <span>Color-coded sections match standard specifications</span>
               </div>
-            </mat-card-content>
-          </mat-card>
+              <div class="benefit-item flex items-center gap-2">
+                <ng-icon name="lucideList" class="text-primary"></ng-icon>
+                <span>Registered claims maps expose human-readable labels</span>
+              </div>
+            </div>
+          </div>
         }
       </div>
     </div>
 
     <!-- Registered Claims Mapping Section (Full Width Table) -->
     @if (decodedToken && claimsDataSource.length > 0) {
-      <mat-card class="claims-card mt-4">
-        <mat-card-header class="claims-header">
-          <mat-card-title>
-            <ng-icon name="lucideList"></ng-icon>
-            Payload Claims Analysis & Interpretations
-          </mat-card-title>
-          <mat-card-subtitle>
-            Iterated fields from the JWT Payload mapped against standard registered specifications.
-          </mat-card-subtitle>
-        </mat-card-header>
+      <div hlmCard class="claims-card mt-4 p-5 rounded-2xl border shadow-sm">
+        <h3 class="text-base font-semibold flex items-center gap-1.5 mb-1">
+          <ng-icon name="lucideList" class="text-primary"></ng-icon>
+          Payload Claims Analysis & Interpretations
+        </h3>
+        <p class="text-xs text-muted-foreground mb-3">
+          Iterated fields from the JWT Payload mapped against standard registered specifications.
+        </p>
+        <div hlmSeparator class="mb-4"></div>
         
-        <mat-card-content class="claims-table-wrapper">
-          <table mat-table [dataSource]="claimsDataSource" class="claims-table" id="jwt-claims-table">
-            
-            <!-- Key Column -->
-            <ng-container matColumnDef="key">
-              <th mat-header-cell *matHeaderCellDef> Claim </th>
-              <td mat-cell *matCellDef="let claim" class="claim-key-cell">
-                <span class="badge" [class.badge-registered]="claim.isRegistered" [class.badge-custom]="!claim.isRegistered">
-                  {{ claim.key }}
-                </span>
-              </td>
-            </ng-container>
-
-            <!-- Name / Value Column -->
-            <ng-container matColumnDef="value">
-              <th mat-header-cell *matHeaderCellDef> Mapped Property & Value </th>
-              <td mat-cell *matCellDef="let claim" class="claim-value-cell">
-                <div class="property-name">{{ claim.name }}</div>
-                <div class="property-value">{{ claim.formattedValue }}</div>
-              </td>
-            </ng-container>
-
-            <!-- Description Column -->
-            <ng-container matColumnDef="description">
-              <th mat-header-cell *matHeaderCellDef> Standard Specification Description </th>
-              <td mat-cell *matCellDef="let claim" class="claim-description-cell">
-                {{ claim.description }}
-              </td>
-            </ng-container>
-
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="claim-row"></tr>
+        <div class="claims-table-wrapper border rounded-xl overflow-hidden">
+          <table class="w-full text-xs text-left" id="jwt-claims-table">
+            <thead class="bg-muted/40 uppercase font-semibold text-muted-foreground">
+              <tr>
+                <th class="p-3 w-32">Claim</th>
+                <th class="p-3 w-64">Mapped Property & Value</th>
+                <th class="p-3">Standard Specification Description</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y">
+              @for (claim of claimsDataSource; track claim.key) {
+                <tr class="hover:bg-muted/10 transition-colors">
+                  <td class="p-3">
+                    <span class="inline-block px-2 py-0.5 rounded-full font-mono text-xs font-semibold"
+                      [class.bg-primary-10]="claim.isRegistered"
+                      [class.text-primary]="claim.isRegistered"
+                      [class.bg-muted]="!claim.isRegistered"
+                      [class.text-muted-foreground]="!claim.isRegistered"
+                    >
+                      {{ claim.key }}
+                    </span>
+                  </td>
+                  <td class="p-3">
+                    <div class="property-name font-semibold">{{ claim.name }}</div>
+                    <div class="property-value font-mono text-muted-foreground break-all">{{ claim.formattedValue }}</div>
+                  </td>
+                  <td class="p-3 text-muted-foreground leading-relaxed">
+                    {{ claim.description }}
+                  </td>
+                </tr>
+              }
+            </tbody>
           </table>
-        </mat-card-content>
-      </mat-card>
+        </div>
+      </div>
     }
   </form>
 </div>

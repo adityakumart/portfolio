@@ -112,118 +112,117 @@
 
       <!-- Employee Login Form -->
       @if (selectedRole() === 'employee') {
-        <form [formGroup]="employeeFormGroup" (submit)="onEmployeeSubmit()" class="auth-form">
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Employee ID</mat-label>
-            <input
-              matInput
-              formControlName="empId"
-              placeholder="e.g. RRA002"
-            />
-            <ng-icon matPrefix name="lucideBadgeCheck"></ng-icon>
+        <form [formGroup]="employeeFormGroup" (submit)="onEmployeeSubmit()" class="auth-form space-y-4">
+          <div class="space-y-1.5">
+            <label hlmLabel class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Employee ID</label>
+            <div class="relative">
+              <input
+                hlmInput
+                formControlName="empId"
+                placeholder="e.g. RRA002"
+                class="w-full text-sm pl-9"
+              />
+              <ng-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm" name="lucideBadgeCheck"></ng-icon>
+            </div>
             @if (employeeFormGroup.get('empId')?.touched && employeeFormGroup.get('empId')?.invalid) {
               @if (employeeFormGroup.get('empId')?.errors?.['required']) {
-                <mat-error>Employee ID is required.</mat-error>
+                <span class="text-xs text-destructive">Employee ID is required.</span>
               } @else if (employeeFormGroup.get('empId')?.errors?.['pattern']) {
-                <mat-error>Must match format 'RRA000'.</mat-error>
+                <span class="text-xs text-destructive">Must match format 'RRA000'.</span>
               }
             }
-          </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Date of Birth</mat-label>
-            <input
-              matInput
-              type="date"
-              formControlName="dob"
-            />
-            <ng-icon matPrefix name="lucideCalendar"></ng-icon>
+          <div class="space-y-1.5">
+            <label hlmLabel class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Date of Birth</label>
+            <div class="relative">
+              <input
+                hlmInput
+                type="date"
+                formControlName="dob"
+                class="w-full text-sm pl-9"
+              />
+              <ng-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm" name="lucideCalendar"></ng-icon>
+            </div>
             @if (employeeFormGroup.get('dob')?.touched && employeeFormGroup.get('dob')?.invalid) {
-              <mat-error>Date of Birth is required.</mat-error>
+              <span class="text-xs text-destructive">Date of Birth is required.</span>
             }
-          </mat-form-field>
+          </div>
 
           <button
-            mat-raised-button
-            color="primary"
-            class="submit-btn"
+            hlmBtn
+            class="submit-btn w-full h-11 text-sm font-semibold rounded-xl flex items-center justify-center"
             type="submit"
             [disabled]="loading() || employeeFormGroup.invalid"
           >
-            <div class="spinner-container">
-              @if (loading()) {
-                <mat-progress-spinner
-                  mode="indeterminate"
-                  diameter="24"
-                ></mat-progress-spinner>
-              } @else {
-                <span>Authorize Desk Session</span>
-              }
-            </div>
+            @if (loading()) {
+              <hlm-spinner class="h-5 w-5"></hlm-spinner>
+            } @else {
+              <span>Authorize Desk Session</span>
+            }
           </button>
         </form>
       }
 
       <!-- Admin Login Form -->
       @if (selectedRole() === 'admin') {
-        <form [formGroup]="adminFormGroup" (submit)="onAdminSubmit()" class="auth-form">
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Admin Email / ID</mat-label>
-            <input
-              matInput
-              formControlName="adminUsername"
-              placeholder="e.g. admin@rams-cars.com"
-            />
-            <ng-icon matPrefix name="lucideUser"></ng-icon>
+        <form [formGroup]="adminFormGroup" (submit)="onAdminSubmit()" class="auth-form space-y-4">
+          <div class="space-y-1.5">
+            <label hlmLabel class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Admin Email / ID</label>
+            <div class="relative">
+              <input
+                hlmInput
+                formControlName="adminUsername"
+                placeholder="e.g. admin@rams-cars.com"
+                class="w-full text-sm pl-9"
+              />
+              <ng-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm" name="lucideUser"></ng-icon>
+            </div>
             @if (adminFormGroup.get('adminUsername')?.touched && adminFormGroup.get('adminUsername')?.invalid) {
-              <mat-error>Username/Email is required.</mat-error>
+              <span class="text-xs text-destructive">Username/Email is required.</span>
             }
-          </mat-form-field>
+          </div>
 
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Password</mat-label>
-            <input
-              matInput
-              formControlName="adminPassword"
-              [type]="showPassword() ? 'text' : 'password'"
-              placeholder="Enter password"
-            />
-            <ng-icon matPrefix name="lucideLock"></ng-icon>
-            <button
-              type="button"
-              mat-icon-button
-              matSuffix
-              (click)="showPassword.set(!showPassword())"
-              [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
-            >
-              <ng-icon [name]="showPassword() ? 'lucideEyeOff' : 'lucideEye'"></ng-icon>
-            </button>
+          <div class="space-y-1.5">
+            <label hlmLabel class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Password</label>
+            <div class="relative">
+              <input
+                hlmInput
+                formControlName="adminPassword"
+                [type]="showPassword() ? 'text' : 'password'"
+                placeholder="Enter password"
+                class="w-full text-sm pl-9 pr-10"
+              />
+              <ng-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm" name="lucideLock"></ng-icon>
+              <button
+                type="button"
+                (click)="showPassword.set(!showPassword())"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+              >
+                <ng-icon [name]="showPassword() ? 'lucideEyeOff' : 'lucideEye'"></ng-icon>
+              </button>
+            </div>
             @if (adminFormGroup.get('adminPassword')?.touched && adminFormGroup.get('adminPassword')?.invalid) {
               @if (adminFormGroup.get('adminPassword')?.errors?.['required']) {
-                <mat-error>Password is required.</mat-error>
+                <span class="text-xs text-destructive">Password is required.</span>
               } @else if (adminFormGroup.get('adminPassword')?.errors?.['minlength']) {
-                <mat-error>Password must be at least 4 characters.</mat-error>
+                <span class="text-xs text-destructive">Password must be at least 4 characters.</span>
               }
             }
-          </mat-form-field>
+          </div>
 
           <button
-            mat-raised-button
-            color="primary"
-            class="submit-btn"
+            hlmBtn
+            class="submit-btn w-full h-11 text-sm font-semibold rounded-xl flex items-center justify-center"
             type="submit"
             [disabled]="loading() || adminFormGroup.invalid"
           >
-            <div class="spinner-container">
-              @if (loading()) {
-                <mat-progress-spinner
-                  mode="indeterminate"
-                  diameter="24"
-                ></mat-progress-spinner>
-              } @else {
-                <span>Establish Admin Session</span>
-              }
-            </div>
+            @if (loading()) {
+              <hlm-spinner class="h-5 w-5"></hlm-spinner>
+            } @else {
+              <span>Establish Admin Session</span>
+            }
           </button>
         </form>
       }

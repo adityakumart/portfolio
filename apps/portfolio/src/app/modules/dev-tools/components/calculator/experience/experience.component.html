@@ -1,207 +1,158 @@
-<div class="experience-container">
-  <mat-card class="header-card mb-4">
-    <mat-card-header class="py-3">
-      <mat-card-title>Experience Calculator</mat-card-title>
-      <mat-card-subtitle>Calculate and manage employment intervals and total duration</mat-card-subtitle>
-    </mat-card-header>
-  </mat-card>
+<div class="experience-container max-w-4xl">
+  <!-- Header Card -->
+  <div hlmCard class="header-card mb-4 p-5 rounded-2xl border shadow-sm">
+    <h2 class="text-xl font-bold tracking-tight">Experience Calculator</h2>
+    <p class="text-sm text-muted-foreground mt-1">Calculate and manage employment intervals and total duration</p>
+  </div>
 
-  <mat-card class="content-card">
-    <mat-card-content class="pt-4">
-      <div style="display: flex; justify-content: flex-end; margin-bottom: 16px">
-        <button
-          mat-stroked-button
-          color="primary"
-          type="button"
-          (click)="openListDialog()"
-        >
-          <ng-icon name="lucideList"></ng-icon> View Saved List
-        </button>
+  <div hlmCard class="content-card p-6 rounded-2xl border shadow-sm">
+    <div class="flex justify-end mb-4">
+      <button
+        hlmBtn
+        variant="outline"
+        size="sm"
+        type="button"
+        (click)="openListDialog()"
+        class="flex items-center gap-1.5"
+      >
+        <ng-icon name="lucideList"></ng-icon> View Saved List
+      </button>
+    </div>
+
+    <form [formGroup]="experienceForm" (ngSubmit)="submitRecord()" class="space-y-6">
+      <!-- Personal Details -->
+      <div class="p-5 rounded-xl border bg-muted/10 space-y-4">
+        <h4 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Personal Details</h4>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
+          <div>
+            <label hlmLabel class="block mb-1.5 text-xs text-muted-foreground">Name</label>
+            <input
+              hlmInput
+              type="text"
+              formControlName="name"
+              placeholder="Enter Name"
+              class="w-full text-sm"
+            />
+            <app-error-message
+              [control]="experienceForm.get('name')"
+              fieldName="Name"
+            ></app-error-message>
+          </div>
+
+          <div>
+            <label hlmLabel class="block mb-1.5 text-xs text-muted-foreground">Email</label>
+            <input
+              hlmInput
+              type="email"
+              formControlName="email"
+              placeholder="Enter Email"
+              class="w-full text-sm"
+            />
+            <app-error-message
+              [control]="experienceForm.get('email')"
+              fieldName="Email"
+            ></app-error-message>
+          </div>
+        </div>
+
+        @if (getComputedExperience()) {
+          <div class="p-3 rounded-xl bg-primary/10 border border-primary/20 text-primary">
+            <span class="block text-xs uppercase font-semibold text-muted-foreground mb-0.5">Calculated Experience</span>
+            <span class="text-sm font-bold">{{ getComputedExperience() }}</span>
+          </div>
+        }
       </div>
-      <form [formGroup]="experienceForm" (ngSubmit)="submitRecord()">
-        <div
-          class="section-container"
-          style="
-            border: 1px solid var(--mat-sys-outline-variant, rgba(0, 0, 0, 0.12));
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 24px;
-          "
-        >
-          <h4 style="margin-top: 0; margin-bottom: 16px">Personal Details</h4>
-          <div data-layout="row" data-layout-xs="column">
-            <mat-form-field appearance="outline" class="mr-4">
-              <mat-label>Name</mat-label>
-              <input
-                matInput
-                type="text"
-                formControlName="name"
-                placeholder="Enter Name"
-                name="name"
-              />
-              <mat-error
-                ><app-error-message
-                  [control]="experienceForm.get('name')"
-                  fieldName="Name"
-                ></app-error-message
-              ></mat-error>
-            </mat-form-field>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Email</mat-label>
-              <input
-                matInput
-                type="email"
-                formControlName="email"
-                placeholder="Enter Email"
-                name="email"
-              />
-              <mat-error
-                ><app-error-message
-                  [control]="experienceForm.get('email')"
-                  fieldName="Email"
-                ></app-error-message
-              ></mat-error>
-            </mat-form-field>
-
-            @if (getComputedExperience()) {
-              <div class="ml-4">
-                <h4 style="margin-top: 0; margin-bottom: 8px">
-                  Calculated Experience
-                </h4>
-                <div>{{ getComputedExperience() }}</div>
-              </div>
-            }
-          </div>
-          <mat-divider></mat-divider>
-
-          <div
-            data-layout="row"
-            data-layout-align="space-between center"
-            class="mb-4 mt-2"
+      <!-- Employment Intervals -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h4 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Employment Intervals / Experiences</h4>
+          <button
+            hlmBtn
+            size="icon"
+            variant="ghost"
+            type="button"
+            (click)="addDateRangeRow()"
+            hlmTooltip="Add Experience"
+            class="h-8 w-8 text-primary"
           >
-            <h4 style="margin: 0">Employment Intervals / Experiences</h4>
-            <button
-              mat-icon-button
-              type="button"
-              (click)="addDateRangeRow()"
-              color="primary"
-              matTooltip="Add Experience"
+            <ng-icon name="lucidePlus"></ng-icon>
+          </button>
+        </div>
+
+        <div formArrayName="experience" class="space-y-3">
+          @for (
+            control of experienceFormArray.controls;
+            track control;
+            let i = $index
+          ) {
+            <div
+              [formGroupName]="i"
+              class="p-4 rounded-xl border bg-muted/20 flex flex-wrap items-center justify-between gap-4"
             >
-              <ng-icon name="lucidePlus"></ng-icon>
-            </button>
-          </div>
-
-          <div formArrayName="experience">
-            @for (
-              control of experienceFormArray.controls;
-              track control;
-              let i = $index
-            ) {
-              <div
-                [formGroupName]="i"
-                data-layout="row"
-                class="mb-3 experience-row"
-                style="
-                  border: 1px solid var(--mat-sys-outline-variant, rgba(0, 0, 0, 0.12));
-                  border-radius: 8px;
-                  padding: 16px 16px;
-                  background-color: var(--mat-sys-surface-container-low, rgba(0, 0, 0, 0.02));
-                "
-              >
-                <div
-                  data-layout="row"
-                  data-layout-xs="column"
-                  data-layout-align="start center"
-                  data-layout-align-xs="start start"
-                >
-                  <mat-form-field appearance="outline" class="mr-4">
-                    <mat-label>Select Start Date</mat-label>
-                    <input
-                      matInput
-                      [matDatepicker]="matStartDate"
-                      [max]="maxDate"
-                      placeholder="Start date"
-                      formControlName="start"
-                    />
-                    <mat-datepicker-toggle
-                      matSuffix
-                      [for]="matStartDate"
-                    ></mat-datepicker-toggle>
-                    <mat-datepicker
-                      #matStartDate
-                      startView="multi-year"
-                    ></mat-datepicker>
-                    <mat-error
-                      ><app-error-message
-                        [control]="control.get('start')"
-                        fieldName="Start date"
-                      ></app-error-message
-                    ></mat-error>
-                  </mat-form-field>
-
-                  <mat-form-field appearance="outline">
-                    <mat-label>Select End Date</mat-label>
-                    <input
-                      matInput
-                      [matDatepicker]="matEndDate"
-                      placeholder="End date"
-                      formControlName="end"
-                    />
-                    <mat-datepicker-toggle
-                      matSuffix
-                      [for]="matEndDate"
-                    ></mat-datepicker-toggle>
-                    <mat-datepicker
-                      #matEndDate
-                      startView="multi-year"
-                    ></mat-datepicker>
-                    <mat-error
-                      ><app-error-message
-                        [control]="control.get('end')"
-                        fieldName="End date"
-                      ></app-error-message
-                    ></mat-error>
-                  </mat-form-field>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
+                <div>
+                  <label hlmLabel class="block mb-1 text-xs text-muted-foreground">Start Date</label>
+                  <input
+                    hlmInput
+                    type="date"
+                    [max]="maxDate"
+                    formControlName="start"
+                    class="w-full text-sm"
+                  />
+                  <app-error-message
+                    [control]="control.get('start')"
+                    fieldName="Start date"
+                  ></app-error-message>
                 </div>
 
-                <span style="flex: 1"></span>
-
-                <button
-                  mat-icon-button
-                  type="button"
-                  (click)="removeDateRangeRow(i)"
-                  [disabled]="experienceFormArray.length <= 1"
-                  color="warn"
-                  matTooltip="Remove Experience"
-                >
-                  <ng-icon name="lucideTrash2"></ng-icon>
-                </button>
+                <div>
+                  <label hlmLabel class="block mb-1 text-xs text-muted-foreground">End Date</label>
+                  <input
+                    hlmInput
+                    type="date"
+                    formControlName="end"
+                    class="w-full text-sm"
+                  />
+                  <app-error-message
+                    [control]="control.get('end')"
+                    fieldName="End date"
+                  ></app-error-message>
+                </div>
               </div>
-            }
-          </div>
-        </div>
 
-        <div
-          data-layout="row"
-          data-layout-xs="column"
-          data-layout-align="start center"
-        >
-          <button
-            mat-flat-button
-            color="primary"
-            type="button"
-            (click)="submitRecord()"
-            [disabled]="experienceForm.invalid"
-            class="mr-3"
-          >
-            {{ experienceForm.value.id ? 'Update' : 'Add' }}
-          </button>
-          <button mat-flat-button color="accent" type="button" (click)="reset()">
-            Reset
-          </button>
+              <button
+                hlmBtn
+                size="icon"
+                variant="ghost"
+                type="button"
+                (click)="removeDateRangeRow(i)"
+                [disabled]="experienceFormArray.length <= 1"
+                hlmTooltip="Remove Experience"
+                class="h-8 w-8 text-destructive hover:bg-destructive/10 mt-4 sm:mt-0"
+              >
+                <ng-icon name="lucideTrash2"></ng-icon>
+              </button>
+            </div>
+          }
         </div>
-      </form>
-    </mat-card-content>
-  </mat-card>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-3 pt-2">
+        <button
+          hlmBtn
+          type="button"
+          (click)="submitRecord()"
+          [disabled]="experienceForm.invalid"
+        >
+          {{ experienceForm.value.id ? 'Update' : 'Add' }}
+        </button>
+        <button hlmBtn variant="outline" type="button" (click)="reset()">
+          Reset
+        </button>
+      </div>
+    </form>
+  </div>
 </div>

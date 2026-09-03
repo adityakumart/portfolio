@@ -22,14 +22,12 @@ import { jsPDF } from 'jspdf';
 import QRCode from 'qrcode';
 import { IBooking, IVehicle } from '@portfolio/shared-types';
 
-// Material Imports
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatRadioModule } from '@angular/material/radio';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatButtonModule } from '@angular/material/button';
+import { HlmCardDirective } from '@spartan-ng/hel/card';
+import { HlmInputDirective } from '@spartan-ng/hel/input';
+import { HlmLabelDirective } from '@spartan-ng/hel/label';
+import { HlmButtonDirective } from '@spartan-ng/hel/button';
+import { HlmDialogService } from '@spartan-ng/hel/dialog';
+import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideCalendarDays,
@@ -49,10 +47,6 @@ import {
   lucideCalendarRange,
   lucideSave,
 } from '@ng-icons/lucide';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatTableModule, MatTableDataSource } from '@angular/material/table';
-import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
-import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-rr-booking-list',
@@ -61,18 +55,12 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatRadioModule,
-    MatCheckboxModule,
-    MatButtonModule,
+    HlmCardDirective,
+    HlmInputDirective,
+    HlmLabelDirective,
+    HlmButtonDirective,
+    HlmTooltipImports,
     NgIconComponent,
-    MatDialogModule,
-    MatTableModule,
-    MatPaginatorModule,
-    MatTooltipModule,
   ],
   providers: [
     provideIcons({
@@ -100,34 +88,34 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 export class RRBookingListComponent implements OnInit {
   private rrApi = inject(RRApiService);
   private fb = inject(FormBuilder);
-  private dialog = inject(MatDialog);
+  private dialog = inject(HlmDialogService);
   private route = inject(ActivatedRoute);
 
   @ViewChild('newBookingDialog') newBookingDialog!: TemplateRef<any>;
   @ViewChild('modifyBookingDialog') modifyBookingDialog!: TemplateRef<any>;
   @ViewChild('endBookingDialog') endBookingDialog!: TemplateRef<any>;
 
-  // MatTable Configuration
-  dataSource = new MatTableDataSource<any>([]);
-  displayedColumns: string[] = [
-    'vehicleDetails',
-    'renterName',
-    'pickupDateTime',
-    'returnDateTime',
-    'finalRentalAmount',
-    'amountPaid',
-    'pendingAmount',
-    'actions',
-  ];
+  // Pagination state
+  currentPage = signal(0);
+  pageSize = signal(10);
 
-  @ViewChild(MatPaginator) set paginator(paginator: MatPaginator) {
-    this.dataSource.paginator = paginator;
+  pagedBookings = computed(() => {
+    const start = this.currentPage() * this.pageSize();
+    return this.activeBookings().slice(start, start + this.pageSize());
+  });
+
+  totalPages = computed(() => Math.ceil(this.activeBookings().length / this.pageSize()) || 1);
+
+  nextPage() {
+    if (this.currentPage() < this.totalPages() - 1) {
+      this.currentPage.update((p) => p + 1);
+    }
   }
 
-  constructor() {
-    effect(() => {
-      this.dataSource.data = this.activeBookings();
-    });
+  prevPage() {
+    if (this.currentPage() > 0) {
+      this.currentPage.update((p) => p - 1);
+    }
   }
 
   // Collections data
@@ -367,9 +355,7 @@ export class RRBookingListComponent implements OnInit {
       this.onVehicleSelectChange();
     }
     this.dialog.open(this.newBookingDialog, {
-      width: '900px',
-      maxWidth: '95vw',
-      maxHeight: '90vh',
+      contentClass: 'max-w-4xl w-full p-6 max-h-[90vh] overflow-y-auto',
     });
   }
 
@@ -648,8 +634,7 @@ export class RRBookingListComponent implements OnInit {
       balancePending: Number(booking.pendingAmount),
     };
     this.dialog.open(this.endBookingDialog, {
-      width: '600px',
-      maxWidth: '90vw',
+      contentClass: 'max-w-xl w-full p-6 max-h-[90vh] overflow-y-auto',
     });
   }
 
@@ -767,9 +752,7 @@ export class RRBookingListComponent implements OnInit {
     });
     this.recalculateModifyFinalAmount();
     this.dialog.open(this.modifyBookingDialog, {
-      width: '800px',
-      maxWidth: '95vw',
-      maxHeight: '90vh',
+      contentClass: 'max-w-3xl w-full p-6 max-h-[90vh] overflow-y-auto',
     });
   }
 

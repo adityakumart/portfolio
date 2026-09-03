@@ -8,13 +8,13 @@
         <span class="file-meta">{{ formatSize(data.node.size) }} • {{ formatDate(data.node.lastModified) }}</span>
       </div>
     </div>
-    <button mat-icon-button (click)="dialogRef.close()" class="close-btn" aria-label="Close dialog">
+    <button hlmBtn size="icon" variant="ghost" (click)="dialogRef?.close()" class="close-btn" aria-label="Close dialog">
       <ng-icon name="lucideX"></ng-icon>
     </button>
   </div>
 
   <!-- Content Workspace -->
-  <mat-dialog-content class="preview-content-area">
+  <div class="preview-content-area">
     <!-- Image Preview -->
     @if (previewType === 'image') {
       <div class="preview-wrapper image-wrapper">
@@ -49,7 +49,7 @@
       <div class="preview-wrapper text-wrapper">
         @if (loadingText) {
           <div class="loading-state">
-            <mat-spinner diameter="40"></mat-spinner>
+            <hlm-spinner class="h-10 w-10 text-primary"></hlm-spinner>
             <p>Loading text content...</p>
           </div>
         } @else if (textError) {
@@ -71,15 +71,15 @@
         <p>This file type (.{{ getExtension() }}) cannot be previewed in the browser. Please download the file to open it.</p>
       </div>
     }
-  </mat-dialog-content>
+  </div>
 
   <!-- Footer Actions -->
-  <mat-dialog-actions align="end" class="dialog-actions">
-    <button mat-stroked-button class="action-btn" (click)="download()">
+  <div class="dialog-actions flex justify-end gap-2 p-4">
+    <button hlmBtn variant="outline" class="action-btn flex items-center gap-1.5" (click)="download()">
       <ng-icon name="lucideDownload"></ng-icon> Download
     </button>
-    <button mat-flat-button color="primary" class="action-btn close-action-btn" (click)="dialogRef.close()">
+    <button hlmBtn class="action-btn close-action-btn" (click)="dialogRef?.close()">
       Close
     </button>
-  </mat-dialog-actions>
+  </div>
 </div>

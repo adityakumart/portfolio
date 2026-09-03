@@ -14,8 +14,9 @@ import {
   lucideCalendarDays,
   lucideBadgeCheck,
 } from '@ng-icons/lucide';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatButtonModule } from '@angular/material/button';
+import { HlmDialogService } from '@spartan-ng/hel/dialog';
+import { HlmButtonDirective } from '@spartan-ng/hel/button';
+import { HlmInputDirective } from '@spartan-ng/hel/input';
 
 @Component({
   selector: 'app-rr-dashboard',
@@ -26,8 +27,8 @@ import { MatButtonModule } from '@angular/material/button';
     RouterLink,
     RouterLinkActive,
     NgIconComponent,
-    MatDialogModule,
-    MatButtonModule
+    HlmButtonDirective,
+    HlmInputDirective,
   ],
   providers: [
     provideIcons({
@@ -48,7 +49,8 @@ import { MatButtonModule } from '@angular/material/button';
 export class RRDashboardComponent implements OnInit {
   rrApi = inject(RRApiService);
   private router = inject(Router);
-  private dialog = inject(MatDialog);
+  private dialog = inject(HlmDialogService);
+  private activeDialogRef: any = null;
 
   @ViewChild('profileInfoDialog') profileInfoDialog!: TemplateRef<any>;
 
@@ -79,18 +81,18 @@ export class RRDashboardComponent implements OnInit {
 
   showProfilePopup() {
     this.profileDropdownOpen.set(false);
-    this.dialog.open(this.profileInfoDialog, {
-      width: '500px',
-      maxWidth: '90vw'
+    this.activeDialogRef = this.dialog.open(this.profileInfoDialog, {
+      contentClass: 'max-w-md w-full p-6',
     });
   }
 
   closeProfilePopup() {
+    this.activeDialogRef?.close();
     this.dialog.closeAll();
   }
 
   logout() {
-    this.dialog.closeAll();
+    this.closeProfilePopup();
     this.rrApi.logout();
   }
 }

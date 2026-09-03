@@ -1,12 +1,11 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatRadioModule } from '@angular/material/radio';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { HlmCardDirective } from '@spartan-ng/hel/card';
+import { HlmInputDirective } from '@spartan-ng/hel/input';
+import { HlmButtonDirective } from '@spartan-ng/hel/button';
+import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
+import { HlmSeparatorDirective } from '@spartan-ng/hel/separator';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideLock,
@@ -19,26 +18,22 @@ import {
   lucideCopy,
   lucideUploadCloud,
 } from '@ng-icons/lucide';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatDividerModule } from '@angular/material/divider';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { Base64Service, FileMetadata } from './services/base64.service';
+import { ToastrService } from '../../../../shared/services/toaster.service';
 
 @Component({
   selector: 'app-base64-converter',
   standalone: true,
   imports: [
     ReactiveFormsModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatRadioModule,
-    MatSnackBarModule,
+    HlmCardDirective,
+    HlmInputDirective,
+    HlmButtonDirective,
+    HlmTooltipImports,
+    HlmSeparatorDirective,
     NgIconComponent,
-    MatTooltipModule,
-    MatDividerModule,
   ],
   providers: [
     provideIcons({
@@ -61,7 +56,7 @@ export class Base64ConverterComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private base64Service = inject(Base64Service);
   private sanitizer = inject(DomSanitizer);
-  private snackBar = inject(MatSnackBar);
+  private toastr = inject(ToastrService);
 
   form!: FormGroup;
   selectedFile: FileMetadata | null = null;
@@ -424,18 +419,6 @@ export class Base64ConverterComponent implements OnInit, OnDestroy {
    * Helper to display snackbar alerts.
    */
   private showSnackBar(message: string, type: 'success' | 'error' | 'info'): void {
-    const panelClass =
-      type === 'success'
-        ? 'success-snackbar'
-        : type === 'error'
-        ? 'error-snackbar'
-        : 'info-snackbar';
-
-    this.snackBar.open(message, 'Close', {
-      duration: 3500,
-      horizontalPosition: 'end',
-      verticalPosition: 'bottom',
-      panelClass: [panelClass],
-    });
+    this.toastr.open(message, type);
   }
 }

@@ -1,24 +1,30 @@
 import { Injectable } from '@angular/core';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { SnackbarComponent } from './snackbar/snackbar.component';
+import { toast } from '@spartan-ng/hel/sonner';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ToastrService {
-  constructor(private snackBar: MatSnackBar) {}
-
   open(
     message: string,
     type: 'success' | 'info' | 'warning' | 'error' = 'error',
-    action: string = 'Close',
+    _action: string = 'Close',
   ) {
-    this.snackBar.openFromComponent(SnackbarComponent, {
-      data: { message, action },
-      duration: 3000,
-      horizontalPosition: 'right',
-      verticalPosition: 'top',
-      panelClass: type,
-    });
+    switch (type) {
+      case 'success':
+        toast.success(message);
+        break;
+      case 'info':
+        toast.info(message);
+        break;
+      case 'warning':
+        toast.warning(message);
+        break;
+      case 'error':
+      default:
+        toast.error(message);
+        break;
+    }
   }
 }
+

@@ -1,155 +1,158 @@
 <div class="query-converter-container">
   <!-- Header Card -->
-  <mat-card class="header-card mb-4">
-    <mat-card-header class="py-3">
-      <mat-card-title>Query String Converter</mat-card-title>
-      <mat-card-subtitle>Parse, sort, and convert URL query strings or full URLs into clean JSON objects and interactive key-value lists in real-time.</mat-card-subtitle>
-    </mat-card-header>
-  </mat-card>
+  <div hlmCard class="header-card mb-4 p-5 rounded-2xl border shadow-sm">
+    <h2 class="text-xl font-bold tracking-tight">Query String Converter</h2>
+    <p class="text-sm text-muted-foreground mt-1">Parse, sort, and convert URL query strings or full URLs into clean JSON objects and interactive key-value lists in real-time.</p>
+  </div>
 
   <!-- Error Detail Panel -->
   @if (errorMessage()) {
-    <div class="error-detail-box mb-4 animate-fade-in">
-      <ng-icon class="error-box-icon" name="lucideAlertTriangle"></ng-icon>
+    <div class="error-detail-box mb-4 p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive flex items-start gap-3">
+      <ng-icon class="error-box-icon text-lg shrink-0 mt-0.5" name="lucideAlertTriangle"></ng-icon>
       <div class="error-box-content">
         <strong>Parsing Error:</strong>
-        <p class="error-message-text">{{ errorMessage() }}</p>
+        <p class="error-message-text text-sm mt-0.5">{{ errorMessage() }}</p>
       </div>
     </div>
   }
 
   <!-- Main Workspace Grid -->
-  <div class="workspace-layout">
+  <div class="workspace-layout grid grid-cols-1 lg:grid-cols-2 gap-4">
     <!-- Left Panel: Input & Tools -->
     <div class="panel-column">
-      <mat-card class="editor-card">
-        <mat-card-header class="panel-header">
-          <mat-card-title>Input Source</mat-card-title>
-          <div class="header-actions">
-            <button mat-button color="primary" type="button" (click)="loadSampleUrl()" matTooltip="Load a standard URL with multiple parameters">
-              <ng-icon name="lucideLink"></ng-icon>
+      <div hlmCard class="editor-card p-5 rounded-2xl border shadow-sm flex flex-col h-full">
+        <div class="panel-header flex items-center justify-between mb-4">
+          <h3 class="text-base font-semibold">Input Source</h3>
+          <div class="header-actions flex items-center gap-2">
+            <button hlmBtn variant="ghost" size="sm" type="button" (click)="loadSampleUrl()" hlmTooltip="Load a standard URL with multiple parameters" class="text-xs">
+              <ng-icon name="lucideLink" class="mr-1"></ng-icon>
               Sample URL
             </button>
-            <button mat-button color="primary" type="button" (click)="loadSampleQueryString()" matTooltip="Load a raw query string with duplicate keys">
-              <ng-icon name="lucideCode"></ng-icon>
+            <button hlmBtn variant="ghost" size="sm" type="button" (click)="loadSampleQueryString()" hlmTooltip="Load a raw query string with duplicate keys" class="text-xs">
+              <ng-icon name="lucideCode" class="mr-1"></ng-icon>
               Sample Query
             </button>
           </div>
-        </mat-card-header>
-        <mat-divider></mat-divider>
-        <mat-card-content class="panel-body">
-          <mat-form-field appearance="outline" class="w-100 mt-3">
-            <mat-label>Query String or Full URL</mat-label>
+        </div>
+        <div hlmSeparator class="mb-4"></div>
+
+        <div class="panel-body flex-1 flex flex-col space-y-4">
+          <div>
+            <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Query String or Full URL</label>
             <textarea
-              matInput
+              hlmInput
               rows="8"
               placeholder="Paste URL (e.g. https://example.com?foo=bar) or query string (e.g. foo=bar&baz=qux)..."
               [ngModel]="rawInput()"
               (ngModelChange)="rawInput.set($event)"
+              class="w-full font-mono text-sm resize-y"
             ></textarea>
-          </mat-form-field>
+          </div>
 
-          <div class="options-toolbar mt-2">
-            <mat-checkbox
-              color="primary"
-              [ngModel]="sortKeys()"
-              (ngModelChange)="sortKeys.set($event)"
-              class="sort-checkbox"
-            >
-              Sort keys alphabetically
-            </mat-checkbox>
+          <div class="options-toolbar flex items-center justify-between pt-2">
+            <label class="flex items-center gap-2 cursor-pointer text-sm">
+              <input
+                type="checkbox"
+                [ngModel]="sortKeys()"
+                (ngModelChange)="sortKeys.set($event)"
+                class="rounded accent-primary h-4 w-4"
+              />
+              <span>Sort keys alphabetically</span>
+            </label>
 
             <button
-              mat-stroked-button
-              color="warn"
+              hlmBtn
+              variant="outline"
+              size="sm"
               type="button"
               [disabled]="!rawInput()"
               (click)="clearInput()"
+              class="text-xs text-destructive border-destructive/30 hover:bg-destructive/10"
             >
-              <ng-icon name="lucideEraser"></ng-icon>
+              <ng-icon name="lucideEraser" class="mr-1"></ng-icon>
               Clear
             </button>
           </div>
-        </mat-card-content>
-      </mat-card>
+        </div>
+      </div>
     </div>
 
     <!-- Right Panel: Output JSON & Param Grid -->
-    <div class="panel-column">
+    <div class="panel-column space-y-4">
       <!-- JSON Output Card -->
-      <mat-card class="editor-card mb-4">
-        <mat-card-header class="panel-header">
-          <mat-card-title>JSON Object</mat-card-title>
+      <div hlmCard class="editor-card p-5 rounded-2xl border shadow-sm">
+        <div class="panel-header flex items-center justify-between mb-4">
+          <h3 class="text-base font-semibold">JSON Object</h3>
           <div class="header-actions">
             <button
-              mat-raised-button
-              color="primary"
+              hlmBtn
+              size="sm"
               type="button"
               [disabled]="!jsonOutputString()"
               (click)="copyJson()"
-              class="action-btn"
+              class="action-btn text-xs flex items-center gap-1.5"
             >
               <ng-icon name="lucideCopy"></ng-icon>
               Copy JSON
             </button>
           </div>
-        </mat-card-header>
-        <mat-divider></mat-divider>
-        <mat-card-content class="panel-body">
-          <mat-form-field appearance="outline" class="w-100 mt-3">
-            <mat-label>Formatted Output</mat-label>
-            <textarea
-              matInput
-              rows="8"
-              readonly
-              [value]="jsonOutputString() || '{}'"
-              class="code-textarea"
-              placeholder="{}"
-            ></textarea>
-          </mat-form-field>
-        </mat-card-content>
-      </mat-card>
+        </div>
+        <div hlmSeparator class="mb-4"></div>
+
+        <div class="panel-body">
+          <label hlmLabel class="block mb-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Formatted Output</label>
+          <textarea
+            hlmInput
+            rows="7"
+            readonly
+            [value]="jsonOutputString() || '{}'"
+            class="code-textarea w-full font-mono text-xs bg-muted/20 resize-y"
+            placeholder="{}"
+          ></textarea>
+        </div>
+      </div>
 
       <!-- Key-Value Breakdown Card -->
-      <mat-card class="editor-card">
-        <mat-card-header class="panel-header">
-          <mat-card-title>Parsed Parameters ({{ paramsList().length }})</mat-card-title>
-        </mat-card-header>
-        <mat-divider></mat-divider>
-        <mat-card-content class="panel-body table-body">
+      <div hlmCard class="editor-card p-5 rounded-2xl border shadow-sm">
+        <div class="panel-header mb-4">
+          <h3 class="text-base font-semibold">Parsed Parameters ({{ paramsList().length }})</h3>
+        </div>
+        <div hlmSeparator class="mb-4"></div>
+
+        <div class="panel-body table-body">
           @if (paramsList().length === 0) {
-            <div class="empty-state">
-              <ng-icon class="empty-icon" name="lucideSearch"></ng-icon>
-              <p>No active query parameters detected.</p>
-              <span>Enter a query string or URL in the input section to view parameters.</span>
+            <div class="empty-state p-8 text-center text-muted-foreground flex flex-col items-center justify-center">
+              <ng-icon class="empty-icon text-3xl text-muted-foreground/40 mb-2" name="lucideSearch"></ng-icon>
+              <p class="text-sm font-medium">No active query parameters detected.</p>
+              <span class="text-xs">Enter a query string or URL in the input section to view parameters.</span>
             </div>
           } @else {
-            <div class="params-list-container">
-              <div class="params-header-row">
+            <div class="params-list-container border rounded-xl overflow-hidden">
+              <div class="params-header-row grid grid-cols-2 p-3 bg-muted/40 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 <span class="col-key-header">Parameter Key</span>
                 <span class="col-val-header">Decoded Value</span>
               </div>
-              <mat-divider></mat-divider>
-              <div class="params-list">
+              <div hlmSeparator></div>
+              <div class="params-list divide-y">
                 @for (param of paramsList(); track $index) {
-                  <div class="param-item-row animate-slide-in">
+                  <div class="param-item-row grid grid-cols-2 p-3 items-center hover:bg-muted/10 transition-colors text-xs">
                     <!-- Key column -->
-                    <div class="col-key">
-                      <code class="key-badge" (click)="copyText(param.key, 'Key')" matTooltip="Click to copy Key">
+                    <div class="col-key flex items-center justify-between pr-3">
+                      <code class="key-badge font-mono font-semibold text-primary truncate max-w-[140px] cursor-pointer" (click)="copyText(param.key, 'Key')" hlmTooltip="Click to copy Key">
                         {{ param.key }}
                       </code>
-                      <button mat-icon-button class="mini-copy-btn" (click)="copyText(param.key, 'Key')" matTooltip="Copy Key">
-                        <ng-icon name="lucideCopy"></ng-icon>
+                      <button hlmBtn size="icon" variant="ghost" class="mini-copy-btn h-6 w-6 text-muted-foreground" (click)="copyText(param.key, 'Key')" hlmTooltip="Copy Key">
+                        <ng-icon name="lucideCopy" class="text-xs"></ng-icon>
                       </button>
                     </div>
 
                     <!-- Value column -->
-                    <div class="col-val">
-                      <span class="val-text" [class.val-empty]="!param.value" (click)="copyText(param.value, 'Value')" matTooltip="Click to copy Value">
+                    <div class="col-val flex items-center justify-between pl-3 border-l">
+                      <span class="val-text font-mono truncate max-w-[140px] cursor-pointer" [class.text-muted-foreground]="!param.value" (click)="copyText(param.value, 'Value')" hlmTooltip="Click to copy Value">
                         {{ param.value || '(empty)' }}
                       </span>
-                      <button mat-icon-button class="mini-copy-btn" (click)="copyText(param.value, 'Value')" matTooltip="Copy Value">
-                        <ng-icon name="lucideCopy"></ng-icon>
+                      <button hlmBtn size="icon" variant="ghost" class="mini-copy-btn h-6 w-6 text-muted-foreground" (click)="copyText(param.value, 'Value')" hlmTooltip="Copy Value">
+                        <ng-icon name="lucideCopy" class="text-xs"></ng-icon>
                       </button>
                     </div>
                   </div>
@@ -157,8 +160,8 @@
               </div>
             </div>
           }
-        </mat-card-content>
-      </mat-card>
+        </div>
+      </div>
     </div>
   </div>
 </div>

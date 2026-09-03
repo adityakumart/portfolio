@@ -28,6 +28,42 @@
       ],
       "@spartan-ng/hel/separator": [
         "./libs/styles/separator/src/index.ts"
+      ],
+      "@spartan-ng/hel/dialog": [
+        "./libs/styles/dialog/src/index.ts"
+      ],
+      "@spartan-ng/hel/input": [
+        "./libs/styles/input/src/index.ts"
+      ],
+      "@spartan-ng/hel/label": [
+        "./libs/styles/label/src/index.ts"
+      ],
+      "@spartan-ng/hel/field": [
+        "./libs/styles/field/src/index.ts"
+      ],
+      "@spartan-ng/hel/checkbox": [
+        "./libs/styles/checkbox/src/index.ts"
+      ],
+      "@spartan-ng/hel/select": [
+        "./libs/styles/select/src/index.ts"
+      ],
+      "@spartan-ng/hel/table": [
+        "./libs/styles/table/src/index.ts"
+      ],
+      "@spartan-ng/hel/tabs": [
+        "./libs/styles/tabs/src/index.ts"
+      ],
+      "@spartan-ng/hel/spinner": [
+        "./libs/styles/spinner/src/index.ts"
+      ],
+      "@spartan-ng/hel/progress": [
+        "./libs/styles/progress/src/index.ts"
+      ],
+      "@spartan-ng/hel/radio-group": [
+        "./libs/styles/radio-group/src/index.ts"
+      ],
+      "@spartan-ng/hel/sonner": [
+        "./libs/styles/sonner/src/index.ts"
       ]
     },
     "forceConsistentCasingInFileNames": true,

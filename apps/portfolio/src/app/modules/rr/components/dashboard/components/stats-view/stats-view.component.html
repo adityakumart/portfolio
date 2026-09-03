@@ -13,7 +13,7 @@
 
 <div class="stats-card-grid">
   <!-- Total Fleet Card -->
-  <mat-card class="stat-card card-available clickable-card" (click)="openDetailsModal('fleet')" matTooltip="Click to view all vehicles">
+  <div hlmCard class="stat-card card-available clickable-card" (click)="openDetailsModal('fleet')" hlmTooltip="Click to view all vehicles">
     <div class="stat-glow"></div>
     <div class="stat-card-header">
       <span class="stat-title">Total Fleet</span>
@@ -25,10 +25,10 @@
     <div class="stat-footer">
       <span class="footer-desc">Total registered vehicles</span>
     </div>
-  </mat-card>
+  </div>
 
   <!-- Active Bookings Card -->
-  <mat-card class="stat-card card-rented clickable-card" (click)="openDetailsModal('bookings')" matTooltip="Click to view active bookings">
+  <div hlmCard class="stat-card card-rented clickable-card" (click)="openDetailsModal('bookings')" hlmTooltip="Click to view active bookings">
     <div class="stat-glow"></div>
     <div class="stat-card-header">
       <span class="stat-title">Active Bookings</span>
@@ -40,10 +40,10 @@
     <div class="stat-footer">
       <span class="footer-desc">Active customer journeys</span>
     </div>
-  </mat-card>
+  </div>
 
   <!-- Maintenance Card -->
-  <mat-card class="stat-card card-maintenance clickable-card" (click)="openDetailsModal('maintenance')" matTooltip="Click to view fleet in service">
+  <div hlmCard class="stat-card card-maintenance clickable-card" (click)="openDetailsModal('maintenance')" hlmTooltip="Click to view fleet in service">
     <div class="stat-glow"></div>
     <div class="stat-card-header">
       <span class="stat-title">In Service</span>
@@ -55,10 +55,10 @@
     <div class="stat-footer">
       <span class="footer-desc">Routine servicing & repairs</span>
     </div>
-  </mat-card>
+  </div>
 
   <!-- Pending Payments Card -->
-  <mat-card class="stat-card card-payments clickable-card" (click)="openDetailsModal('payments')" matTooltip="Click to view outstanding dues">
+  <div hlmCard class="stat-card card-payments clickable-card" (click)="openDetailsModal('payments')" hlmTooltip="Click to view outstanding dues">
     <div class="stat-glow"></div>
     <div class="stat-card-header">
       <span class="stat-title">Pending Payments</span>
@@ -70,7 +70,7 @@
     <div class="stat-footer">
       <span class="footer-desc">Outstanding balances</span>
     </div>
-  </mat-card>
+  </div>
 </div>
 
 <div class="showcase-header">
@@ -81,7 +81,7 @@
 <div class="vehicle-grid">
   @for (v of vehicles(); track v.regNo) {
     @if (v.status === 'available') {
-      <mat-card class="vehicle-card">
+      <div hlmCard class="vehicle-card overflow-hidden">
         <div class="card-img-container">
           <img [src]="getVehicleImage(v)" alt="Vehicle Image" />
           <div class="active-status-badge status-badge-{{ v.status }}">
@@ -91,112 +91,113 @@
           
           <!-- Hover "Book Now" action -->
           <div class="hover-overlay">
-            <button mat-flat-button class="book-now-btn" (click)="bookVehicle(v, $event)">
+            <button hlmBtn class="book-now-btn flex items-center gap-1.5" (click)="bookVehicle(v, $event)">
               <ng-icon name="lucideKey"></ng-icon>
               <span>Book Now</span>
             </button>
           </div>
         </div>
         
-        <div class="card-content">
-          <div class="veh-type-tag">{{ v.type | uppercase }}</div>
-          <div class="veh-title">{{ v.manufacturer }} {{ v.name }}</div>
-          <div class="veh-subtitle reg-no">{{ v.regNo }}</div>
-          
-          <div class="veh-specs">
-            <span class="spec-badge" matTooltip="Capacity">
+        <div class="card-body p-4">
+          <div class="vehicle-primary-info">
+            <h4 class="vehicle-name">{{ v.manufacturer }} {{ v.name }}</h4>
+            <span class="vehicle-reg">{{ v.regNo }}</span>
+          </div>
+
+          <div class="vehicle-specs-grid">
+            <div class="spec-item">
               <ng-icon name="lucideUsers"></ng-icon>
               <span>{{ v.seating }} Seats</span>
-            </span>
-            <span class="spec-badge" matTooltip="Fuel Type">
+            </div>
+            <div class="spec-item">
               <ng-icon name="lucideFuel"></ng-icon>
               <span>{{ v.fuelType | uppercase }}</span>
-            </span>
-            <span class="spec-badge" matTooltip="Odometer">
+            </div>
+            <div class="spec-item">
               <ng-icon name="lucideGauge"></ng-icon>
               <span>{{ v.odometer }} KM</span>
-            </span>
+            </div>
+          </div>
+
+          <div class="vehicle-pricing">
+            <span class="rate-amount">₹{{ v.pricing?.h23?.price || '0' }}</span>
+            <span class="rate-period">/ 24 hrs</span>
           </div>
         </div>
-      </mat-card>
+      </div>
     }
   } @empty {
-    <div class="empty-showcase-card">
-      <div class="empty-glow"></div>
-      <ng-icon class="empty-icon" name="lucideSearchX"></ng-icon>
-      <h4>No Available Vehicles</h4>
-      <p>All registered fleet vehicles are currently active, in maintenance, or leased.</p>
+    <div class="empty-state p-8 text-center text-muted-foreground">
+      <ng-icon class="empty-icon text-3xl" name="lucideSearchX"></ng-icon>
+      <h4>No Available Vehicles Found</h4>
+      <p>All fleet vehicles are currently active on rental journeys or in maintenance.</p>
     </div>
   }
 </div>
 
-<!-- DETAILS MODAL DIALOG TEMPLATE -->
+<!-- POPUP MODAL TEMPLATE FOR STAT DETAILS -->
 <ng-template #detailsDialog>
-  <div class="modal-container">
-    <div class="modal-header">
-      <div class="header-title">
-        <ng-icon class="header-icon" [name]="
-          modalType() === 'fleet' ? 'lucideCar' :
-          modalType() === 'bookings' ? 'lucideCalendarCheck' :
-          modalType() === 'maintenance' ? 'lucideWrench' : 'lucideAlertTriangle'
-        "></ng-icon>
-        <h3>{{ modalTitle() }}</h3>
+  <div class="modal-dialog-content space-y-4">
+    <div class="modal-header flex items-center justify-between pb-3 border-b">
+      <div class="flex items-center gap-2">
+        <ng-icon [name]="modalType() === 'fleet' ? 'lucideCar' : modalType() === 'bookings' ? 'lucideCalendarCheck' : modalType() === 'maintenance' ? 'lucideWrench' : 'lucideAlertTriangle'" class="text-xl text-primary"></ng-icon>
+        <h3 class="text-lg font-bold">{{ modalTitle() }}</h3>
       </div>
-      <button mat-icon-button class="close-btn" mat-dialog-close>
+      <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 text-muted-foreground hover:text-foreground" (click)="closeDetailsModal()" aria-label="Close dialog">
         <ng-icon name="lucideX"></ng-icon>
       </button>
     </div>
 
     <div class="modal-body">
-      <div class="table-wrapper">
-        <table class="details-table">
-          <thead>
+      <div class="table-wrapper border rounded-xl overflow-x-auto">
+        <table class="details-table w-full text-xs text-left">
+          <thead class="bg-muted/40 uppercase font-semibold text-muted-foreground">
             @if (modalType() === 'fleet' || modalType() === 'maintenance') {
               <tr>
-                <th>Vehicle</th>
-                <th>Reg No</th>
-                <th>Type</th>
-                <th>Odometer</th>
-                <th>Status</th>
+                <th class="p-3">Vehicle</th>
+                <th class="p-3">Reg No</th>
+                <th class="p-3">Type</th>
+                <th class="p-3">Odometer</th>
+                <th class="p-3">Status</th>
               </tr>
             } @else {
               <tr>
-                <th>Booking ID</th>
-                <th>Renter Name</th>
-                <th>Phone</th>
-                <th>Vehicle</th>
-                <th>Pending Amount</th>
-                <th>Status</th>
+                <th class="p-3">Booking ID</th>
+                <th class="p-3">Renter Name</th>
+                <th class="p-3">Phone</th>
+                <th class="p-3">Vehicle</th>
+                <th class="p-3">Pending Amount</th>
+                <th class="p-3">Status</th>
               </tr>
             }
           </thead>
-          <tbody>
+          <tbody class="divide-y">
             @for (item of modalData(); track item.id || item.regNo) {
               @if (modalType() === 'fleet' || modalType() === 'maintenance') {
-                <tr>
-                  <td class="font-bold">{{ item.manufacturer }} {{ item.name }}</td>
-                  <td class="code-font">{{ item.regNo }}</td>
-                  <td>{{ item.type | uppercase }}</td>
-                  <td>{{ item.odometer }} KM</td>
-                  <td>
+                <tr class="hover:bg-muted/10 transition-colors">
+                  <td class="p-3 font-bold">{{ item.manufacturer }} {{ item.name }}</td>
+                  <td class="p-3 font-mono text-muted-foreground">{{ item.regNo }}</td>
+                  <td class="p-3">{{ item.type | uppercase }}</td>
+                  <td class="p-3">{{ item.odometer }} KM</td>
+                  <td class="p-3">
                     <span class="badge status-badge-{{ item.status }}">{{ item.status | uppercase }}</span>
                   </td>
                 </tr>
               } @else {
-                <tr>
-                  <td class="font-bold code-font">{{ item.id }}</td>
-                  <td>{{ item.renterFirstName }} {{ item.renterSecondName }}</td>
-                  <td>{{ item.renterPhone }}</td>
-                  <td>{{ item.vehicleManufacturer }} {{ item.vehicleName }}</td>
-                  <td class="price-font text-danger">₹{{ item.pendingAmount || '0' }}</td>
-                  <td>
+                <tr class="hover:bg-muted/10 transition-colors">
+                  <td class="p-3 font-bold font-mono">{{ item.id }}</td>
+                  <td class="p-3">{{ item.renterFirstName }} {{ item.renterSecondName }}</td>
+                  <td class="p-3">{{ item.renterPhone }}</td>
+                  <td class="p-3">{{ item.vehicleManufacturer }} {{ item.vehicleName }}</td>
+                  <td class="p-3 font-semibold text-destructive">₹{{ item.pendingAmount || '0' }}</td>
+                  <td class="p-3">
                     <span class="badge status-badge-available">ACTIVE</span>
                   </td>
                 </tr>
               }
             } @empty {
               <tr>
-                <td colspan="6" class="empty-row" style="text-align: center; padding: 24px; color: var(--muted-foreground);">
+                <td colspan="6" class="p-6 text-center text-muted-foreground text-xs">
                   No records found.
                 </td>
               </tr>

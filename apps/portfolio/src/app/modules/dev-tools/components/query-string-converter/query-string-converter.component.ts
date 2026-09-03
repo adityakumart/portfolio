@@ -1,11 +1,13 @@
 import { Component, ChangeDetectionStrategy, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCheckboxModule } from '@angular/material/checkbox';
+import { HlmCardDirective } from '@spartan-ng/hel/card';
+import { HlmInputDirective } from '@spartan-ng/hel/input';
+import { HlmLabelDirective } from '@spartan-ng/hel/label';
+import { HlmButtonDirective } from '@spartan-ng/hel/button';
+import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
+import { HlmSeparatorDirective } from '@spartan-ng/hel/separator';
+import { toast } from '@spartan-ng/hel/sonner';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideAlertTriangle,
@@ -15,9 +17,6 @@ import {
   lucideCopy,
   lucideSearch,
 } from '@ng-icons/lucide';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatDividerModule } from '@angular/material/divider';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Clipboard } from '@angular/cdk/clipboard';
 
 export interface ParamPair {
@@ -37,15 +36,13 @@ export interface ParsedResult {
   imports: [
     CommonModule,
     FormsModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatCheckboxModule,
+    HlmCardDirective,
+    HlmInputDirective,
+    HlmLabelDirective,
+    HlmButtonDirective,
+    HlmTooltipImports,
+    HlmSeparatorDirective,
     NgIconComponent,
-    MatTooltipModule,
-    MatDividerModule,
-    MatSnackBarModule,
   ],
   providers: [
     provideIcons({
@@ -63,7 +60,6 @@ export interface ParsedResult {
 })
 export class QueryStringConverterComponent {
   private clipboard = inject(Clipboard);
-  private snackBar = inject(MatSnackBar);
 
   // Raw query string/URL input signal
   rawInput = signal<string>('');
@@ -221,18 +217,12 @@ export class QueryStringConverterComponent {
    * Helper to display snackbar notifications.
    */
   private showSnackBar(message: string, type: 'success' | 'error' | 'info'): void {
-    const panelClass =
-      type === 'success'
-        ? 'success-snackbar'
-        : type === 'error'
-        ? 'error-snackbar'
-        : 'info-snackbar';
-
-    this.snackBar.open(message, 'Close', {
-      duration: 3000,
-      horizontalPosition: 'end',
-      verticalPosition: 'bottom',
-      panelClass: [panelClass],
-    });
+    if (type === 'success') {
+      toast.success(message);
+    } else if (type === 'error') {
+      toast.error(message);
+    } else {
+      toast.info(message);
+    }
   }
 }
