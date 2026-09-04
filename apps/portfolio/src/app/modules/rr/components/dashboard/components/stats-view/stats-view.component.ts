@@ -138,7 +138,7 @@ export class RRStatsViewComponent implements OnInit {
     }
 
     this.dialog.open(this.detailsDialog, {
-      contentClass: 'max-w-4xl w-full p-6 max-h-[85vh] overflow-y-auto',
+      contentClass: 'max-w-4xl w-full p-6 max-h-[85vh] flex flex-col overflow-hidden',
     });
   }
 

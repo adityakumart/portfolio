@@ -113,7 +113,7 @@ export class RREmployeeListComponent implements OnInit {
       allowLogin: true
     });
     this.dialog.open(this.employeeFormDialog, {
-      contentClass: 'max-w-3xl w-full p-6 max-h-[85vh] overflow-y-auto',
+      contentClass: 'max-w-3xl w-full p-6 max-h-[85vh] flex flex-col overflow-hidden',
     });
   }
 
@@ -134,7 +134,7 @@ export class RREmployeeListComponent implements OnInit {
       address: e.address
     });
     this.dialog.open(this.employeeFormDialog, {
-      contentClass: 'max-w-3xl w-full p-6 max-h-[85vh] overflow-y-auto',
+      contentClass: 'max-w-3xl w-full p-6 max-h-[85vh] flex flex-col overflow-hidden',
     });
   }
 

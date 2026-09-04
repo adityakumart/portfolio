@@ -109,6 +109,47 @@ body {
   }
 }
 
+/* Modal Popup Layout Utilities (Fixed Header/Footer & Scrollable Body) */
+.modal-dialog-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+}
+
+.modal-header-fixed {
+  flex-shrink: 0;
+}
+
+.modal-body-scroll {
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 0.25rem;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--muted-foreground, #71717a);
+    opacity: 0.3;
+    border-radius: 9999px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    opacity: 0.7;
+  }
+}
+
+.modal-footer-fixed {
+  flex-shrink: 0;
+}
+
 :root {
   color-scheme: light;
 

@@ -332,91 +332,96 @@
     >
       <div
         class="modal-card"
-        style="background: var(--card, #18181b); border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; max-width: 540px; width: 100%; padding: 24px; color: var(--foreground, #fff); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);"
+        style="background: var(--card, #18181b); border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; max-width: 540px; width: 100%; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; padding: 24px; color: var(--foreground, #fff); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);"
         (click)="$event.stopPropagation()"
       >
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <!-- Fixed Header -->
+        <div style="flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
           <h3 style="margin: 0; font-size: 1.35rem; font-weight: 700;">
             {{ vehicle.manufacturer }} {{ vehicle.name }} ({{ vehicle.regNo }})
           </h3>
           <button
             (click)="closeVehicleModal()"
             style="background: none; border: none; color: inherit; cursor: pointer; padding: 4px;"
+            aria-label="Close modal"
           >
             <ng-icon name="lucideX"></ng-icon>
           </button>
         </div>
 
-        <div style="margin-bottom: 16px; border-radius: 12px; overflow: hidden; max-height: 200px;">
-          <img [src]="getVehicleImage(vehicle)" alt="Vehicle" style="width: 100%; height: 200px; object-fit: cover;" />
-        </div>
+        <!-- Scrollable Body -->
+        <div class="modal-body-scroll" style="flex: 1; min-height: 0; overflow-y: auto; padding-right: 4px;">
+          <div style="margin-bottom: 16px; border-radius: 12px; overflow: hidden; max-height: 200px;">
+            <img [src]="getVehicleImage(vehicle)" alt="Vehicle" style="width: 100%; height: 200px; object-fit: cover;" />
+          </div>
 
-        <!-- Pricing Slabs Table -->
-        <div style="background: rgba(255,255,255,0.04); border-radius: 10px; padding: 12px; margin-bottom: 16px;">
-          <div style="font-weight: 600; font-size: 0.85rem; color: var(--color-cyan-400, #22d3ee); margin-bottom: 8px;">
-            Pricing Packages:
-          </div>
-          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; font-size: 0.85rem;">
-            <div>23 Hours: ₹{{ vehicle.pricing?.h23?.price || '2000' }} ({{ vehicle.pricing?.h23?.km || '300' }} KM)</div>
-            <div>11 Hours: ₹{{ vehicle.pricing?.h11?.price || '1200' }} ({{ vehicle.pricing?.h11?.km || '150' }} KM)</div>
-            <div>3 Hours: ₹{{ vehicle.pricing?.h3?.price || '500' }} ({{ vehicle.pricing?.h3?.km || '50' }} KM)</div>
-            <div>1 Hour: ₹{{ vehicle.pricing?.h1?.price || '200' }} ({{ vehicle.pricing?.h1?.km || '20' }} KM)</div>
-          </div>
-          <div style="font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-top: 8px;">
-            Extra: ₹{{ vehicle.extraKmPrice || '12' }}/KM & ₹{{ vehicle.extraHourPrice || '150' }}/Hour.
-          </div>
-        </div>
-
-        @if (inquirySubmitted()) {
-          <div style="background: rgba(34, 197, 94, 0.15); border: 1px solid #22c55e; border-radius: 10px; padding: 16px; text-align: center; color: #22c55e;">
-            <ng-icon style="font-size: 32px; width: 32px; height: 32px;" name="lucideCheckCircle"></ng-icon>
-            <p style="margin: 8px 0 0 0; font-weight: 600;">Inquiry Sent! Our desk agent will contact you shortly.</p>
-          </div>
-        } @else {
-          <form (submit)="submitInquiry()" style="display: flex; flex-direction: column; gap: 12px;">
-            <input
-              type="text"
-              placeholder="Your Full Name"
-              [(ngModel)]="inquiryName"
-              name="inquiryName"
-              required
-              style="padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.3); color: #fff;"
-            />
-            <input
-              type="tel"
-              placeholder="Contact Phone Number (10 digits)"
-              [(ngModel)]="inquiryPhone"
-              name="inquiryPhone"
-              required
-              style="padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.3); color: #fff;"
-            />
-            <div style="display: flex; gap: 10px;">
-              <input
-                type="datetime-local"
-                [(ngModel)]="inquiryPickupDate"
-                name="inquiryPickupDate"
-                style="flex: 1; padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.3); color: #fff;"
-              />
-              <select
-                [(ngModel)]="inquiryDuration"
-                name="inquiryDuration"
-                style="padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.3); color: #fff;"
-              >
-                <option value="23">23 Hours (Full Day)</option>
-                <option value="11">11 Hours (Half Day)</option>
-                <option value="3">3 Hours</option>
-                <option value="1">1 Hour</option>
-              </select>
+          <!-- Pricing Slabs Table -->
+          <div style="background: rgba(255,255,255,0.04); border-radius: 10px; padding: 12px; margin-bottom: 16px;">
+            <div style="font-weight: 600; font-size: 0.85rem; color: var(--color-cyan-400, #22d3ee); margin-bottom: 8px;">
+              Pricing Packages:
             </div>
-            <button
-              type="submit"
-              [disabled]="!inquiryName || !inquiryPhone"
-              style="background: var(--color-cyan-500, #06b6d4); color: #000; padding: 12px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 4px;"
-            >
-              Request Booking Reservation
-            </button>
-          </form>
-        }
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; font-size: 0.85rem;">
+              <div>23 Hours: ₹{{ vehicle.pricing?.h23?.price || '2000' }} ({{ vehicle.pricing?.h23?.km || '300' }} KM)</div>
+              <div>11 Hours: ₹{{ vehicle.pricing?.h11?.price || '1200' }} ({{ vehicle.pricing?.h11?.km || '150' }} KM)</div>
+              <div>3 Hours: ₹{{ vehicle.pricing?.h3?.price || '500' }} ({{ vehicle.pricing?.h3?.km || '50' }} KM)</div>
+              <div>1 Hour: ₹{{ vehicle.pricing?.h1?.price || '200' }} ({{ vehicle.pricing?.h1?.km || '20' }} KM)</div>
+            </div>
+            <div style="font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-top: 8px;">
+              Extra: ₹{{ vehicle.extraKmPrice || '12' }}/KM & ₹{{ vehicle.extraHourPrice || '150' }}/Hour.
+            </div>
+          </div>
+
+          @if (inquirySubmitted()) {
+            <div style="background: rgba(34, 197, 94, 0.15); border: 1px solid #22c55e; border-radius: 10px; padding: 16px; text-align: center; color: #22c55e;">
+              <ng-icon style="font-size: 32px; width: 32px; height: 32px;" name="lucideCheckCircle"></ng-icon>
+              <p style="margin: 8px 0 0 0; font-weight: 600;">Inquiry Sent! Our desk agent will contact you shortly.</p>
+            </div>
+          } @else {
+            <form (submit)="submitInquiry()" style="display: flex; flex-direction: column; gap: 12px;">
+              <input
+                type="text"
+                placeholder="Your Full Name"
+                [(ngModel)]="inquiryName"
+                name="inquiryName"
+                required
+                style="padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.3); color: #fff;"
+              />
+              <input
+                type="tel"
+                placeholder="Contact Phone Number (10 digits)"
+                [(ngModel)]="inquiryPhone"
+                name="inquiryPhone"
+                required
+                style="padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.3); color: #fff;"
+              />
+              <div style="display: flex; gap: 10px;">
+                <input
+                  type="datetime-local"
+                  [(ngModel)]="inquiryPickupDate"
+                  name="inquiryPickupDate"
+                  style="flex: 1; padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.3); color: #fff;"
+                />
+                <select
+                  [(ngModel)]="inquiryDuration"
+                  name="inquiryDuration"
+                  style="padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.3); color: #fff;"
+                >
+                  <option value="23">23 Hours (Full Day)</option>
+                  <option value="11">11 Hours (Half Day)</option>
+                  <option value="3">3 Hours</option>
+                  <option value="1">1 Hour</option>
+                </select>
+              </div>
+              <button
+                type="submit"
+                [disabled]="!inquiryName || !inquiryPhone"
+                style="background: var(--color-cyan-500, #06b6d4); color: #000; padding: 12px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 4px;"
+              >
+                Request Booking Reservation
+              </button>
+            </form>
+          }
+        </div>
       </div>
     </div>
   }

@@ -167,7 +167,7 @@ export class RRVehicleListComponent implements OnInit {
   viewVehicleDetails(v: any) {
     this.selectedVehicleDetails.set(v);
     this.dialog.open(this.vehicleDetailsDialog, {
-      contentClass: 'max-w-xl w-full p-6 max-h-[90vh] overflow-y-auto',
+      contentClass: 'max-w-xl w-full p-6 max-h-[90vh] flex flex-col overflow-hidden',
     });
   }
 
@@ -187,7 +187,7 @@ export class RRVehicleListComponent implements OnInit {
       status: 'available'
     });
     this.dialog.open(this.vehicleFormDialog, {
-      contentClass: 'max-w-3xl w-full p-6 max-h-[90vh] overflow-y-auto',
+      contentClass: 'max-w-3xl w-full p-6 max-h-[90vh] flex flex-col overflow-hidden',
     });
   }
 
@@ -232,7 +232,7 @@ export class RRVehicleListComponent implements OnInit {
       this.selectedFileName.set('Current vehicle image');
     }
     this.dialog.open(this.vehicleFormDialog, {
-      contentClass: 'max-w-3xl w-full p-6 max-h-[90vh] overflow-y-auto',
+      contentClass: 'max-w-3xl w-full p-6 max-h-[90vh] flex flex-col overflow-hidden',
     });
   }
 
