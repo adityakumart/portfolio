@@ -9,6 +9,6 @@ import { classes } from '@spartan-ng/hel/utils';
 })
 export class HlmDialogDescription {
 	constructor() {
-		classes(() => 'text-muted-foreground *:[a]:hover:text-foreground text-sm *:[a]:underline *:[a]:underline-offset-3');
+		classes(() => 'text-muted-foreground *:[a]:hover:text-foreground text-xs/relaxed *:[a]:underline *:[a]:underline-offset-3');
 	}
 }
