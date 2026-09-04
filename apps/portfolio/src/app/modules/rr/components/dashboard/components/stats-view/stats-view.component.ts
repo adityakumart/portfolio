@@ -146,8 +146,8 @@ export class RRStatsViewComponent implements OnInit {
     this.dialog.closeAll();
   }
 
-  bookVehicle(vehicle: any, event: Event) {
-    event.stopPropagation();
+  bookVehicle(vehicle: any, event?: Event) {
+    event?.stopPropagation();
     this.router.navigate(['/user/rr/booking/list'], {
       queryParams: { vehicleRegNo: vehicle.regNo }
     });
