@@ -132,9 +132,20 @@
 
   <!-- POPUP: VIEW PROFILE POPUP -->
   <ng-template #profileInfoDialog>
-    <div class="space-y-4">
-      <h3 class="text-lg font-bold">Desk Agent Profile</h3>
-      <div class="space-y-3">
+    <div class="flex flex-col h-full max-h-[calc(85vh-3rem)] overflow-hidden">
+      <!-- Fixed Header -->
+      <div class="shrink-0 flex items-center justify-between pb-3 border-b">
+        <h3 class="text-lg font-bold flex items-center gap-2">
+          <ng-icon name="lucideUser" class="text-primary"></ng-icon>
+          <span>Desk Agent Profile</span>
+        </h3>
+        <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 text-muted-foreground hover:text-foreground" (click)="closeProfilePopup()" aria-label="Close dialog">
+          <ng-icon name="lucideX"></ng-icon>
+        </button>
+      </div>
+
+      <!-- Scrollable Body -->
+      <div class="flex-1 min-h-0 overflow-y-auto py-3 pr-1 space-y-3">
         <div>
           <label class="text-xs text-muted-foreground block mb-1">Agent Identifier</label>
           <input hlmInput type="text" [value]="currentUser()?.id" readonly disabled class="w-full text-sm" />
@@ -166,7 +177,9 @@
           />
         </div>
       </div>
-      <div class="flex justify-end pt-2">
+
+      <!-- Fixed Footer -->
+      <div class="shrink-0 flex justify-end pt-3 border-t">
         <button
           hlmBtn
           variant="outline"

@@ -105,15 +105,21 @@
 
 <!-- POPUP 1: NEW BOOKING DIALOG TEMPLATE -->
 <ng-template #newBookingDialog>
-  <div class="space-y-4">
-    <div class="flex items-center justify-between pb-3 border-b">
+  <div class="flex flex-col h-full max-h-[calc(90vh-3rem)] overflow-hidden">
+    <!-- Fixed Header -->
+    <div class="shrink-0 flex items-center justify-between pb-3 border-b">
       <h3 class="text-lg font-bold flex items-center gap-2">
         <ng-icon name="lucideCalendarDays" class="text-primary"></ng-icon>
         <span>Establish New Rental Agreement</span>
       </h3>
+      <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 text-muted-foreground hover:text-foreground" (click)="closeNewBookingModal()" aria-label="Close dialog">
+        <ng-icon name="lucideX"></ng-icon>
+      </button>
     </div>
 
-    <form [formGroup]="bookingFormGroup" class="space-y-4">
+    <form [formGroup]="bookingFormGroup" class="flex flex-col flex-1 min-h-0">
+      <!-- Scrollable Body -->
+      <div class="flex-1 min-h-0 overflow-y-auto py-3 pr-1 space-y-4">
       <!-- 1. Travel Details -->
       <div class="p-4 rounded-xl border bg-card space-y-4">
         <h4 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
@@ -455,8 +461,10 @@
           </div>
         </div>
       </fieldset>
+      </div>
 
-      <div class="flex items-center justify-end gap-2 pt-3 border-t">
+      <!-- Fixed Footer -->
+      <div class="shrink-0 flex items-center justify-end gap-2 pt-3 border-t">
         <button hlmBtn class="action-btn success flex items-center gap-1.5" [disabled]="bookingFormGroup.invalid" (click)="createBooking($event)">
           <ng-icon name="lucideCheck"></ng-icon>
           <span>Create Booking</span>
@@ -473,15 +481,20 @@
 
 <!-- POPUP 2: END BOOKING DIALOG TEMPLATE -->
 <ng-template #endBookingDialog>
-  <div class="space-y-4">
-    <div class="flex items-center justify-between pb-3 border-b">
+  <div class="flex flex-col h-full max-h-[calc(90vh-3rem)] overflow-hidden">
+    <!-- Fixed Header -->
+    <div class="shrink-0 flex items-center justify-between pb-3 border-b">
       <h3 class="text-lg font-bold flex items-center gap-2">
         <ng-icon name="lucideCalendarX" class="text-primary"></ng-icon>
         <span>Finalize & End Rental Booking - ID: {{ selectedBookingToEnd()?.id }}</span>
       </h3>
+      <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 text-muted-foreground hover:text-foreground" (click)="closeEndBookingPopup()" aria-label="Close dialog">
+        <ng-icon name="lucideX"></ng-icon>
+      </button>
     </div>
 
-    <div class="space-y-4 text-xs">
+    <!-- Scrollable Body -->
+    <div class="flex-1 min-h-0 overflow-y-auto py-3 pr-1 space-y-4 text-xs">
       <div class="p-3 rounded-xl border bg-muted/20 space-y-1">
         <p><strong>Active Vehicle:</strong> {{ selectedBookingToEnd()?.vehicleManufacturer }} {{ selectedBookingToEnd()?.vehicleName }} ({{ selectedBookingToEnd()?.vehicleRegNo }})</p>
         <p><strong>Odometer Pickup Reading:</strong> {{ selectedBookingToEnd()?.vehicleOdometerStart }} KM</p>
@@ -512,7 +525,8 @@
       </div>
     </div>
 
-    <div class="flex items-center justify-end gap-2 pt-3 border-t">
+    <!-- Fixed Footer -->
+    <div class="shrink-0 flex items-center justify-end gap-2 pt-3 border-t">
       <button hlmBtn class="action-btn success flex items-center gap-1.5" [disabled]="!endBookingFields.odometerEnd" (click)="submitEndBooking()">
         <ng-icon name="lucideCheckCircle"></ng-icon>
         <span>Finalize & Close Booking</span>
@@ -524,15 +538,21 @@
 
 <!-- POPUP 3: MODIFY BOOKING DIALOG TEMPLATE -->
 <ng-template #modifyBookingDialog>
-  <div class="space-y-4">
-    <div class="flex items-center justify-between pb-3 border-b">
+  <div class="flex flex-col h-full max-h-[calc(90vh-3rem)] overflow-hidden">
+    <!-- Fixed Header -->
+    <div class="shrink-0 flex items-center justify-between pb-3 border-b">
       <h3 class="text-lg font-bold flex items-center gap-2">
         <ng-icon name="lucideCalendarRange" class="text-primary"></ng-icon>
         <span>Modify Active Booking Agreement - ID: {{ selectedBookingToModify()?.id }}</span>
       </h3>
+      <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 text-muted-foreground hover:text-foreground" (click)="closeModifyBookingPopup()" aria-label="Close dialog">
+        <ng-icon name="lucideX"></ng-icon>
+      </button>
     </div>
 
-    <form [formGroup]="modifyBookingFormGroup" class="space-y-4">
+    <form [formGroup]="modifyBookingFormGroup" class="flex flex-col flex-1 min-h-0">
+      <!-- Scrollable Body -->
+      <div class="flex-1 min-h-0 overflow-y-auto py-3 pr-1 space-y-4">
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         <div>
           <label hlmLabel class="text-xs text-muted-foreground block mb-1">Pickup Date & Time</label>
@@ -611,8 +631,10 @@
           </div>
         }
       </div>
+      </div>
 
-      <div class="flex items-center justify-end gap-2 pt-3 border-t">
+      <!-- Fixed Footer -->
+      <div class="shrink-0 flex items-center justify-end gap-2 pt-3 border-t">
         <button hlmBtn class="action-btn success flex items-center gap-1.5" [disabled]="modifyBookingFormGroup.invalid" (click)="submitModifyBooking()">
           <ng-icon name="lucideSave"></ng-icon>
           <span>Save Changes</span>

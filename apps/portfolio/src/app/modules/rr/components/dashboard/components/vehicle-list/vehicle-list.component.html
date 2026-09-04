@@ -75,15 +75,20 @@
 
 <!-- POPUP 1: VEHICLE DETAILS DIALOG TEMPLATE -->
 <ng-template #vehicleDetailsDialog>
-  <div class="space-y-4">
-    <div class="flex items-center justify-between pb-3 border-b">
+  <div class="flex flex-col h-full max-h-[calc(90vh-3rem)] overflow-hidden">
+    <!-- Fixed Header -->
+    <div class="shrink-0 flex items-center justify-between pb-3 border-b">
       <h3 class="text-lg font-bold flex items-center gap-2">
         <ng-icon name="lucideCar" class="text-primary"></ng-icon>
         <span>Fleet Vehicle Specification Details</span>
       </h3>
+      <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 text-muted-foreground hover:text-foreground" (click)="closeVehicleDetailsPopup()" aria-label="Close dialog">
+        <ng-icon name="lucideX"></ng-icon>
+      </button>
     </div>
     
-    <div class="details-content space-y-4">
+    <!-- Scrollable Body -->
+    <div class="flex-1 min-h-0 overflow-y-auto py-3 pr-1 details-content space-y-4">
       <div class="details-layout-grid grid grid-cols-1 md:grid-cols-2 gap-6">
         
         <!-- Visual Left Panel -->
@@ -125,48 +130,45 @@
               <span class="font-semibold">{{ selectedVehicleDetails()?.seating }} Persons</span>
             </div>
             <div>
-              <span class="text-muted-foreground block">Fuel</span>
-              <span class="font-semibold">{{ selectedVehicleDetails()?.fuelType | uppercase }}</span>
+              <span class="text-muted-foreground block">Color</span>
+              <span class="font-semibold">{{ selectedVehicleDetails()?.color }}</span>
+            </div>
+            <div>
+              <span class="text-muted-foreground block">Fuel Type</span>
+              <span class="font-semibold">{{ selectedVehicleDetails()?.fuelType }}</span>
             </div>
             <div>
               <span class="text-muted-foreground block">Odometer</span>
               <span class="font-semibold">{{ selectedVehicleDetails()?.odometer }} KM</span>
             </div>
             <div>
-              <span class="text-muted-foreground block">Color</span>
-              <span class="font-semibold">{{ selectedVehicleDetails()?.color }}</span>
+              <span class="text-muted-foreground block">Engine No</span>
+              <span class="font-mono text-muted-foreground">{{ selectedVehicleDetails()?.engineNo || 'N/A' }}</span>
             </div>
             <div>
-              <span class="text-muted-foreground block">Engine Serial</span>
-              <span class="font-mono font-semibold">{{ selectedVehicleDetails()?.engineNo }}</span>
+              <span class="text-muted-foreground block">Chassis No</span>
+              <span class="font-mono text-muted-foreground">{{ selectedVehicleDetails()?.chassisNo || 'N/A' }}</span>
             </div>
             <div>
-              <span class="text-muted-foreground block">Chassis Serial</span>
-              <span class="font-mono font-semibold">{{ selectedVehicleDetails()?.chassisNo }}</span>
+              <span class="text-muted-foreground block">Insurance Expiry</span>
+              <span class="font-medium">{{ (selectedVehicleDetails()?.insuranceExpiry | date:'dd-MM-yyyy':'UTC') || 'N/A' }}</span>
             </div>
-          </div>
-
-          <div class="pt-2 border-t">
-            <span class="text-xs font-semibold uppercase text-muted-foreground block mb-2">Compliance Expiries</span>
-            <div class="grid grid-cols-2 gap-2 text-xs">
-              <div class="p-2 rounded-lg bg-muted/20 border">
-                <span class="text-muted-foreground block">Insurance</span>
-                <span class="font-semibold">{{ (selectedVehicleDetails()?.insuranceExpiry | date:'dd-MM-yyyy':'UTC') || 'N/A' }}</span>
-              </div>
-              <div class="p-2 rounded-lg bg-muted/20 border">
-                <span class="text-muted-foreground block">Pollution</span>
-                <span class="font-semibold">{{ (selectedVehicleDetails()?.pollutionExpiry | date:'dd-MM-yyyy':'UTC') || 'N/A' }}</span>
-              </div>
+            <div>
+              <span class="text-muted-foreground block">Pollution Expiry</span>
+              <span class="font-medium">{{ (selectedVehicleDetails()?.pollutionExpiry | date:'dd-MM-yyyy':'UTC') || 'N/A' }}</span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- PRICING SLABS SECTION -->
-      <div class="details-pricing-panel pt-3 border-t">
-        <span class="text-xs font-semibold uppercase text-muted-foreground block mb-3">Pricing Slabs & Rental Overruns</span>
-        
-        <div class="pricing-slabs-grid grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs mb-3">
+      <!-- Pricing Slabs Section -->
+      <div class="pricing-slabs-container pt-3 border-t space-y-3">
+        <h4 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+          <ng-icon name="lucideIndianRupee"></ng-icon>
+          <span>Standard Hourly Tariff Packages</span>
+        </h4>
+
+        <div class="slabs-grid grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
           <div class="slab-card p-3 rounded-xl border bg-muted/10 text-center">
             <div class="font-medium text-muted-foreground">24 Hours</div>
             <div class="text-base font-bold text-primary my-0.5">₹{{ selectedVehicleDetails()?.pricing?.h23?.price || '0' }}</div>
@@ -208,7 +210,8 @@
       </div>
     </div>
     
-    <div class="flex items-center justify-end gap-2 pt-3 border-t">
+    <!-- Fixed Footer -->
+    <div class="shrink-0 flex items-center justify-end gap-2 pt-3 border-t">
       @if (isAdmin()) {
         <button hlmBtn size="sm" class="flex items-center gap-1.5" (click)="openEditVehicleModal()">
           <ng-icon name="lucidePencil"></ng-icon> Modify
@@ -224,15 +227,21 @@
 
 <!-- POPUP 2: ADD/MODIFY VEHICLE FORM DIALOG TEMPLATE -->
 <ng-template #vehicleFormDialog>
-  <div class="space-y-4">
-    <div class="flex items-center justify-between pb-3 border-b">
+  <div class="flex flex-col h-full max-h-[calc(90vh-3rem)] overflow-hidden">
+    <!-- Fixed Header -->
+    <div class="shrink-0 flex items-center justify-between pb-3 border-b">
       <h3 class="text-lg font-bold flex items-center gap-2">
         <ng-icon name="lucideCar" class="text-primary"></ng-icon>
         <span>{{ editingVehicleMode() ? 'Modify Fleet Vehicle Metadata' : 'Register New Fleet Vehicle' }}</span>
       </h3>
+      <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 text-muted-foreground hover:text-foreground" (click)="closeVehicleFormModal()" aria-label="Close dialog">
+        <ng-icon name="lucideX"></ng-icon>
+      </button>
     </div>
     
-    <form [formGroup]="vehicleFormGroup" class="space-y-6">
+    <form [formGroup]="vehicleFormGroup" class="flex flex-col flex-1 min-h-0">
+      <!-- Scrollable Body -->
+      <div class="flex-1 min-h-0 overflow-y-auto py-3 pr-1 space-y-6">
       <!-- Section 1: Metadata -->
       <div class="p-4 rounded-xl border bg-card space-y-4">
         <h4 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
@@ -498,8 +507,10 @@
           </div>
         </div>
       </div>
+      </div>
 
-      <div class="flex items-center justify-end gap-2 pt-3 border-t">
+      <!-- Fixed Footer -->
+      <div class="shrink-0 flex items-center justify-end gap-2 pt-3 border-t">
         <button hlmBtn class="action-btn success flex items-center gap-1.5" [disabled]="vehicleFormGroup.invalid" (click)="saveVehicle($event)">
           <ng-icon name="lucideCheck"></ng-icon>
           <span>{{ editingVehicleMode() ? 'Update Vehicle' : 'Register Vehicle' }}</span>

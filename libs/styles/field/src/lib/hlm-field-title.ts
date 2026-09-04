@@ -7,6 +7,6 @@ import { classes } from '@spartan-ng/hel/utils';
 })
 export class HlmFieldTitle {
 	constructor() {
-		classes(() => 'gap-2 text-sm leading-snug font-medium group-data-[disabled=true]/field:opacity-50 flex w-fit items-center');
+		classes(() => 'gap-2 text-xs/relaxed group-data-[disabled=true]/field:opacity-50 flex w-fit items-center');
 	}
 }

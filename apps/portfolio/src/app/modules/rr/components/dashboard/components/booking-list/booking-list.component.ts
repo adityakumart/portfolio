@@ -355,7 +355,7 @@ export class RRBookingListComponent implements OnInit {
       this.onVehicleSelectChange();
     }
     this.dialog.open(this.newBookingDialog, {
-      contentClass: 'max-w-4xl w-full p-6 max-h-[90vh] overflow-y-auto',
+      contentClass: 'max-w-4xl w-full p-6 max-h-[90vh] flex flex-col overflow-hidden',
     });
   }
 
@@ -634,7 +634,7 @@ export class RRBookingListComponent implements OnInit {
       balancePending: Number(booking.pendingAmount),
     };
     this.dialog.open(this.endBookingDialog, {
-      contentClass: 'max-w-xl w-full p-6 max-h-[90vh] overflow-y-auto',
+      contentClass: 'max-w-xl w-full p-6 max-h-[90vh] flex flex-col overflow-hidden',
     });
   }
 
@@ -752,7 +752,7 @@ export class RRBookingListComponent implements OnInit {
     });
     this.recalculateModifyFinalAmount();
     this.dialog.open(this.modifyBookingDialog, {
-      contentClass: 'max-w-3xl w-full p-6 max-h-[90vh] overflow-y-auto',
+      contentClass: 'max-w-3xl w-full p-6 max-h-[90vh] flex flex-col overflow-hidden',
     });
   }
 

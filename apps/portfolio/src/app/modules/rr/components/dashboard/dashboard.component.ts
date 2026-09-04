@@ -82,7 +82,7 @@ export class RRDashboardComponent implements OnInit {
   showProfilePopup() {
     this.profileDropdownOpen.set(false);
     this.activeDialogRef = this.dialog.open(this.profileInfoDialog, {
-      contentClass: 'max-w-md w-full p-6',
+      contentClass: 'max-w-md w-full p-6 max-h-[85vh] flex flex-col overflow-hidden',
     });
   }
 

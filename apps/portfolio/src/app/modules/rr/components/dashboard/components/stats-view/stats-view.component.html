@@ -78,67 +78,65 @@
   <span class="badge count-badge">{{ getVehicleCount('available') }} Available</span>
 </div>
 
-<div class="vehicle-grid">
-  @for (v of vehicles(); track v.regNo) {
-    @if (v.status === 'available') {
-      <div hlmCard class="vehicle-card overflow-hidden">
-        <div class="card-img-container">
-          <img [src]="getVehicleImage(v)" alt="Vehicle Image" />
-          <div class="active-status-badge status-badge-{{ v.status }}">
-            <span class="status-dot"></span>
-            <span>{{ v.status | uppercase }}</span>
+@if (getVehicleCount('available') > 0) {
+  <div class="vehicle-grid">
+    @for (v of vehicles(); track v.regNo) {
+      @if (v.status === 'available') {
+        <div hlmCard class="vehicle-card cursor-pointer overflow-hidden border shadow-sm" (click)="bookVehicle(v, $event)">
+          <div class="card-img-container">
+            <img [src]="getVehicleImage(v)" alt="Vehicle Image" />
+            <div class="active-status-badge status-badge-{{ v.status }}">
+              <span class="status-dot"></span>
+              <span>{{ v.status | uppercase }}</span>
+            </div>
+            
+            <!-- Hover "Book Now" action -->
+            <div class="hover-overlay">
+              <button hlmBtn class="book-now-btn flex items-center gap-1.5" (click)="bookVehicle(v, $event)">
+                <ng-icon name="lucideKey"></ng-icon>
+                <span>Book Now</span>
+              </button>
+            </div>
           </div>
           
-          <!-- Hover "Book Now" action -->
-          <div class="hover-overlay">
-            <button hlmBtn class="book-now-btn flex items-center gap-1.5" (click)="bookVehicle(v, $event)">
-              <ng-icon name="lucideKey"></ng-icon>
-              <span>Book Now</span>
-            </button>
+          <div class="card-content p-4">
+            <div class="veh-type-tag">{{ v.type | uppercase }}</div>
+            <div class="veh-title">{{ v.manufacturer }} {{ v.name }}</div>
+            <div class="veh-subtitle reg-no">{{ v.regNo }}</div>
+            
+            <div class="veh-specs flex flex-wrap gap-2 mt-3">
+              <span class="spec-badge flex items-center gap-1 text-xs" hlmTooltip="Capacity">
+                <ng-icon name="lucideUsers"></ng-icon>
+                <span>{{ v.seating }} Seats</span>
+              </span>
+              <span class="spec-badge flex items-center gap-1 text-xs" hlmTooltip="Fuel Type">
+                <ng-icon name="lucideFuel"></ng-icon>
+                <span>{{ v.fuelType | uppercase }}</span>
+              </span>
+              <span class="spec-badge flex items-center gap-1 text-xs" hlmTooltip="Odometer">
+                <ng-icon name="lucideGauge"></ng-icon>
+                <span>{{ v.odometer }} KM</span>
+              </span>
+            </div>
           </div>
         </div>
-        
-        <div class="card-body p-4">
-          <div class="vehicle-primary-info">
-            <h4 class="vehicle-name">{{ v.manufacturer }} {{ v.name }}</h4>
-            <span class="vehicle-reg">{{ v.regNo }}</span>
-          </div>
-
-          <div class="vehicle-specs-grid">
-            <div class="spec-item">
-              <ng-icon name="lucideUsers"></ng-icon>
-              <span>{{ v.seating }} Seats</span>
-            </div>
-            <div class="spec-item">
-              <ng-icon name="lucideFuel"></ng-icon>
-              <span>{{ v.fuelType | uppercase }}</span>
-            </div>
-            <div class="spec-item">
-              <ng-icon name="lucideGauge"></ng-icon>
-              <span>{{ v.odometer }} KM</span>
-            </div>
-          </div>
-
-          <div class="vehicle-pricing">
-            <span class="rate-amount">₹{{ v.pricing?.h23?.price || '0' }}</span>
-            <span class="rate-period">/ 24 hrs</span>
-          </div>
-        </div>
-      </div>
+      }
     }
-  } @empty {
-    <div class="empty-state p-8 text-center text-muted-foreground">
-      <ng-icon class="empty-icon text-3xl" name="lucideSearchX"></ng-icon>
-      <h4>No Available Vehicles Found</h4>
-      <p>All fleet vehicles are currently active on rental journeys or in maintenance.</p>
-    </div>
-  }
-</div>
+  </div>
+} @else {
+  <div class="empty-showcase-card">
+    <div class="empty-glow"></div>
+    <ng-icon class="empty-icon text-3xl" name="lucideSearchX"></ng-icon>
+    <h4>No Available Vehicles Found</h4>
+    <p>All fleet vehicles are currently active on rental journeys or in maintenance.</p>
+  </div>
+}
 
 <!-- POPUP MODAL TEMPLATE FOR STAT DETAILS -->
 <ng-template #detailsDialog>
-  <div class="modal-dialog-content space-y-4">
-    <div class="modal-header flex items-center justify-between pb-3 border-b">
+  <div class="flex flex-col h-full max-h-[calc(85vh-3rem)] overflow-hidden">
+    <!-- Fixed Header -->
+    <div class="shrink-0 flex items-center justify-between pb-3 border-b">
       <div class="flex items-center gap-2">
         <ng-icon [name]="modalType() === 'fleet' ? 'lucideCar' : modalType() === 'bookings' ? 'lucideCalendarCheck' : modalType() === 'maintenance' ? 'lucideWrench' : 'lucideAlertTriangle'" class="text-xl text-primary"></ng-icon>
         <h3 class="text-lg font-bold">{{ modalTitle() }}</h3>
@@ -148,7 +146,8 @@
       </button>
     </div>
 
-    <div class="modal-body">
+    <!-- Scrollable Body -->
+    <div class="flex-1 min-h-0 overflow-y-auto py-3 pr-1">
       <div class="table-wrapper border rounded-xl overflow-x-auto">
         <table class="details-table w-full text-xs text-left">
           <thead class="bg-muted/40 uppercase font-semibold text-muted-foreground">
@@ -205,6 +204,11 @@
           </tbody>
         </table>
       </div>
+    </div>
+
+    <!-- Fixed Footer -->
+    <div class="shrink-0 pt-3 border-t flex items-center justify-end gap-2">
+      <button hlmBtn variant="outline" size="sm" (click)="closeDetailsModal()">Close</button>
     </div>
   </div>
 </ng-template>
