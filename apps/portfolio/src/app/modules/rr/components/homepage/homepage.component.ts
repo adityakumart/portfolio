@@ -28,6 +28,7 @@ import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmBadgeImports } from '@spartan-ng/hel/badge';
 import { HlmCardImports } from '@spartan-ng/hel/card';
 import { HlmInputImports } from '@spartan-ng/hel/input';
+import { toast } from '@spartan-ng/hel/sonner';
 import { IVehicle } from '@portfolio/shared-types';
 
 @Component({
@@ -172,6 +173,7 @@ export class RRHomepageComponent implements OnInit {
   submitInquiry() {
     if (!this.inquiryName || !this.inquiryPhone) return;
     this.inquirySubmitted.set(true);
+    toast.success('Rental reservation inquiry received! We will contact you shortly.');
     setTimeout(() => {
       this.closeVehicleModal();
       this.inquiryName = '';

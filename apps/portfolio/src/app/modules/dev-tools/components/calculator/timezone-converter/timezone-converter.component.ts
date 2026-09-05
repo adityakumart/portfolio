@@ -16,7 +16,7 @@ import {
   TimeZoneInterface,
   TimeZonesList,
 } from '../../../../../../shared/data/timeszones';
-import { ToastrService } from '../../../../../shared/services/toaster.service';
+import { toast } from '@spartan-ng/hel/sonner';
 import { HlmCardImports } from '@spartan-ng/hel/card';
 import { HlmInputImports } from '@spartan-ng/hel/input';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
@@ -55,8 +55,6 @@ export class TimezoneConverterComponent implements OnInit {
 
   timeZones = TimeZonesList;
 
-  private toastr = inject(ToastrService);
-
   ngOnInit() {
     for (let i = 0; i < TimeZonesList.length; i++) {
       if (
@@ -84,19 +82,19 @@ export class TimezoneConverterComponent implements OnInit {
     )?.utc[0];
 
     if (!this.timeForm.value.fromDate) {
-      this.toastr.open('Please enter From Date.');
+      toast.error('Please enter From Date.');
       return;
     }
     if (!this.timeForm.value.fromTime) {
-      this.toastr.open('Please enter From Time.');
+      toast.error('Please enter From Time.');
       return;
     }
     if (!fromZone) {
-      this.toastr.open('Please select From Time Zone.');
+      toast.error('Please select From Time Zone.');
       return;
     }
     if (!toZone) {
-      this.toastr.open('Please select To Time Zone.');
+      toast.error('Please select To Time Zone.');
       return;
     }
 
@@ -111,7 +109,7 @@ export class TimezoneConverterComponent implements OnInit {
     });
 
     if (!fromDate.isValid) {
-      this.toastr.open('Please enter valid From Date.');
+      toast.error('Please enter valid From Date.');
       return;
     }
 

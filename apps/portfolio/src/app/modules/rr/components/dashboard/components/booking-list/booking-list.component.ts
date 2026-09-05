@@ -28,6 +28,7 @@ import { HlmDialogService } from '@spartan-ng/hel/dialog';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
 import { HlmTableImports } from '@spartan-ng/hel/table';
 import { HlmBadgeImports } from '@spartan-ng/hel/badge';
+import { toast } from '@spartan-ng/hel/sonner';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideCalendarDays,
@@ -609,13 +610,13 @@ export class RRBookingListComponent implements OnInit {
 
     try {
       await this.rrApi.createBooking(this.bookingFormGroup.value);
-      alert('Booking created successfully.');
+      toast.success('Booking created successfully.');
       this.closeNewBookingModal();
       this.loadBookings();
       this.loadVehicles();
     } catch (e: any) {
       console.error(e);
-      alert(e.error?.message || 'Error creating booking.');
+      toast.error(e.error?.message || 'Error creating booking.');
     }
   }
 
@@ -692,14 +693,14 @@ export class RRBookingListComponent implements OnInit {
     if (!booking) return;
 
     if (!this.endBookingFields.odometerEnd) {
-      alert('Please enter return odometer reading.');
+      toast.error('Please enter return odometer reading.');
       return;
     }
 
     const endOdo = Number(this.endBookingFields.odometerEnd);
     const startOdo = Number(booking.vehicleOdometerStart);
     if (endOdo < startOdo) {
-      alert('Return odometer cannot be less than starting odometer.');
+      toast.error('Return odometer cannot be less than starting odometer.');
       return;
     }
 
@@ -723,13 +724,13 @@ export class RRBookingListComponent implements OnInit {
         });
       }
 
-      alert('Booking finalized and closed.');
+      toast.success('Booking finalized and closed.');
       this.closeEndBookingPopup();
       this.loadBookings();
       this.loadVehicles();
     } catch (e: any) {
       console.error(e);
-      alert(e.error?.message || 'Error closing booking.');
+      toast.error(e.error?.message || 'Error closing booking.');
     }
   }
 
@@ -884,13 +885,13 @@ export class RRBookingListComponent implements OnInit {
       };
 
       await this.rrApi.updateBooking(id, updated);
-      alert('Booking updated successfully.');
+      toast.success('Booking updated successfully.');
       this.closeModifyBookingPopup();
       this.loadBookings();
       this.loadVehicles();
     } catch (e: any) {
       console.error(e);
-      alert(e.error?.message || 'Error updating booking.');
+      toast.error(e.error?.message || 'Error updating booking.');
     }
   }
 

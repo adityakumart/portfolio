@@ -9,6 +9,7 @@ import { HlmDialogService } from '@spartan-ng/hel/dialog';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
 import { HlmTableImports } from '@spartan-ng/hel/table';
 import { HlmBadgeImports } from '@spartan-ng/hel/badge';
+import { toast } from '@spartan-ng/hel/sonner';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideUsers,
@@ -151,15 +152,15 @@ export class RREmployeeListComponent implements OnInit {
     try {
       if (this.editingEmployeeMode()) {
         await this.rrApi.updateEmployee(payload.id, payload);
-        alert('Employee details updated.');
+        toast.success('Employee details updated.');
       } else {
         await this.rrApi.createEmployee(payload);
-        alert('Employee registered successfully.');
+        toast.success('Employee registered successfully.');
       }
       this.closeEmployeeFormModal();
       this.loadEmployees();
     } catch (err: any) {
-      alert(err.message || 'Operation failed.');
+      toast.error(err.message || 'Operation failed.');
     }
   }
 

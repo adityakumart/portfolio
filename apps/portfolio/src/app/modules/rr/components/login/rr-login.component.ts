@@ -2,14 +2,15 @@ import { Component, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { HlmCardImports } from '@spartan-ng/hel-luma/card';
-import { HlmTabsImports } from '@spartan-ng/hel-luma/tabs';
-import { HlmInputImports } from '@spartan-ng/hel-luma/input';
-import { HlmLabelImports } from '@spartan-ng/hel-luma/label';
-import { HlmButtonImports } from '@spartan-ng/hel-luma/button';
-import { HlmSpinnerImports } from '@spartan-ng/hel-luma/spinner';
-import { HlmBadgeImports } from '@spartan-ng/hel-luma/badge';
-import { HlmSeparatorImports } from '@spartan-ng/hel-luma/separator';
+import { HlmCardImports } from '@spartan-ng/hel/card';
+import { HlmTabsImports } from '@spartan-ng/hel/tabs';
+import { HlmInputImports } from '@spartan-ng/hel/input';
+import { HlmLabelImports } from '@spartan-ng/hel/label';
+import { HlmButtonImports } from '@spartan-ng/hel/button';
+import { HlmSpinnerImports } from '@spartan-ng/hel/spinner';
+import { HlmBadgeImports } from '@spartan-ng/hel/badge';
+import { HlmSeparatorImports } from '@spartan-ng/hel/separator';
+import { toast } from '@spartan-ng/hel/sonner';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideShieldCheck,
@@ -123,12 +124,15 @@ export class RRLoginComponent {
     try {
       await this.rrApi.login({ empId: enteredId, dob: enteredDob });
       this.success.set('Login successful! Redirecting...');
+      toast.success('Login successful! Redirecting to fleet console...');
       setTimeout(() => {
         this.router.navigate(['/user/rr/dashboard']);
       }, 1000);
     } catch (err: any) {
       console.error('Employee login error:', err);
-      this.error.set(err.error?.message || 'Login failed. Please check your credentials.');
+      const msg = err.error?.message || 'Login failed. Please check your credentials.';
+      this.error.set(msg);
+      toast.error(msg);
     } finally {
       this.loading.set(false);
     }
@@ -147,12 +151,15 @@ export class RRLoginComponent {
     try {
       await this.rrApi.login({ username, password });
       this.success.set('Admin login successful! Redirecting...');
+      toast.success('Admin login successful! Redirecting to fleet console...');
       setTimeout(() => {
         this.router.navigate(['/user/rr/dashboard']);
       }, 1000);
     } catch (err: any) {
       console.error('Admin login error:', err);
-      this.error.set(err.error?.message || 'Admin login failed. Please check your credentials.');
+      const msg = err.error?.message || 'Admin login failed. Please check your credentials.';
+      this.error.set(msg);
+      toast.error(msg);
     } finally {
       this.loading.set(false);
     }

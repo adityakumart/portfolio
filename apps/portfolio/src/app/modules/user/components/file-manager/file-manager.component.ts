@@ -43,6 +43,7 @@ import { HlmSpinnerImports } from '@spartan-ng/hel/spinner';
 import { HlmCardImports } from '@spartan-ng/hel/card';
 import { HlmBadgeImports } from '@spartan-ng/hel/badge';
 import { HlmInputImports } from '@spartan-ng/hel/input';
+import { toast } from '@spartan-ng/hel/sonner';
 import { FileManagerService } from '../../services/file-manager.service';
 import { AuthService } from '../../services/auth';
 import { FileNode } from '@portfolio/shared-types';
@@ -188,8 +189,10 @@ export class FileManagerComponent implements OnInit {
     try {
       const url = await this.fileService.getDownloadUrl(node.path);
       window.open(url, '_blank');
+      toast.info(`Downloading ${node.name}...`);
     } catch (err: any) {
       console.error('Download url retrieval failed:', err);
+      toast.error('Download url retrieval failed.');
     }
   }
 
@@ -214,14 +217,17 @@ export class FileManagerComponent implements OnInit {
     if (!node) return;
     try {
       await this.fileService.askAiAboutFile(node.path, this.aiPrompt());
+      toast.success('AI analysis completed!');
     } catch (err) {
       console.error('AI Analysis failed:', err);
+      toast.error('AI Analysis failed.');
     }
   }
 
   copyAiResponse(text: string): void {
     navigator.clipboard.writeText(text);
     this.copiedAiReply.set(true);
+    toast.success('AI response copied to clipboard!');
     setTimeout(() => this.copiedAiReply.set(false), 2000);
   }
 
@@ -241,8 +247,9 @@ export class FileManagerComponent implements OnInit {
       const file = input.files[0];
       try {
         await this.fileService.uploadFile(file);
-      } catch {
-        // Handled in service
+        toast.success(`File "${file.name}" uploaded successfully.`);
+      } catch (err: any) {
+        toast.error(err.message || 'File upload failed.');
       } finally {
         input.value = '';
       }
@@ -258,15 +265,17 @@ export class FileManagerComponent implements OnInit {
 
     if (name.includes('/') || name.includes('\\')) {
       this.fileService.error.set('Folder name cannot contain slashes.');
+      toast.error('Folder name cannot contain slashes.');
       return;
     }
 
     try {
       await this.fileService.createFolder(name);
+      toast.success(`Folder "${name}" created successfully.`);
       this.newFolderName.set('');
       this.showFolderInput.set(false);
-    } catch {
-      // Handled in service
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to create folder.');
     }
   }
 
@@ -294,8 +303,9 @@ export class FileManagerComponent implements OnInit {
       const file = event.dataTransfer.files[0];
       try {
         await this.fileService.uploadFile(file);
-      } catch {
-        // Handled in service
+        toast.success(`File "${file.name}" uploaded successfully.`);
+      } catch (err: any) {
+        toast.error(err.message || 'File upload failed.');
       }
     }
   }

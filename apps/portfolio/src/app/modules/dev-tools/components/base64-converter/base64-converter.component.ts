@@ -1,4 +1,10 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, inject } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectionStrategy,
+  inject,
+} from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { HlmCardImports } from '@spartan-ng/hel/card';
@@ -22,7 +28,7 @@ import {
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { Base64Service, FileMetadata } from './services/base64.service';
-import { ToastrService } from '../../../../shared/services/toaster.service';
+import { toast } from '@spartan-ng/hel/sonner';
 
 @Component({
   selector: 'app-base64-converter',
@@ -58,7 +64,6 @@ export class Base64ConverterComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private base64Service = inject(Base64Service);
   private sanitizer = inject(DomSanitizer);
-  private toastr = inject(ToastrService);
 
   form!: FormGroup;
   selectedFile: FileMetadata | null = null;
@@ -71,8 +76,6 @@ export class Base64ConverterComponent implements OnInit, OnDestroy {
 
   private fileSubscription: Subscription | null = null;
   private destroy$ = new Subject<void>();
-
-
 
   ngOnInit(): void {
     this.initializeForm();
@@ -107,8 +110,9 @@ export class Base64ConverterComponent implements OnInit, OnDestroy {
    */
   private setupStateSubscriptions(): void {
     // Watch for mode changes to reset specific states
-    this.form.get('mode')?.valueChanges
-      .pipe(takeUntil(this.destroy$))
+    this.form
+      .get('mode')
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe((mode: 'text' | 'file') => {
         this.clearAllStates();
         if (mode === 'file') {
@@ -118,19 +122,24 @@ export class Base64ConverterComponent implements OnInit, OnDestroy {
       });
 
     // Watch for operation changes to clear inputs and outputs
-    this.form.get('operation')?.valueChanges
-      .pipe(takeUntil(this.destroy$))
+    this.form
+      .get('operation')
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe(() => {
-        this.form.patchValue({ inputText: '', outputText: '' }, { emitEvent: false });
+        this.form.patchValue(
+          { inputText: '', outputText: '' },
+          { emitEvent: false },
+        );
         this.clearPreviewAndErrorStates();
       });
 
     // Set up real-time text conversion with debouncing for performance safety
-    this.form.get('inputText')?.valueChanges
-      .pipe(
+    this.form
+      .get('inputText')
+      ?.valueChanges.pipe(
         debounceTime(150),
         distinctUntilChanged(),
-        takeUntil(this.destroy$)
+        takeUntil(this.destroy$),
       )
       .subscribe((text: string) => {
         this.processTextRealTime(text);
@@ -195,7 +204,8 @@ export class Base64ConverterComponent implements OnInit, OnDestroy {
         this.form.patchValue({ outputText: encoded }, { emitEvent: false });
         this.showSnackBar('Text encoded successfully.', 'success');
       } catch (error) {
-        this.errorMessage = error instanceof Error ? error.message : 'Failed to encode text.';
+        this.errorMessage =
+          error instanceof Error ? error.message : 'Failed to encode text.';
         this.showSnackBar('Encoding failed.', 'error');
       }
     } else {
@@ -205,7 +215,8 @@ export class Base64ConverterComponent implements OnInit, OnDestroy {
         this.detectAndSetupPreview(text);
         this.showSnackBar('Text decoded successfully.', 'success');
       } catch (error) {
-        this.errorMessage = error instanceof Error ? error.message : 'Failed to decode Base64.';
+        this.errorMessage =
+          error instanceof Error ? error.message : 'Failed to decode Base64.';
         this.showSnackBar('Decoding failed. See details below.', 'error');
         this.form.patchValue({ outputText: '' }, { emitEvent: false });
         // Still attempt preview extraction if it was valid binary base64
@@ -224,11 +235,11 @@ export class Base64ConverterComponent implements OnInit, OnDestroy {
       // Build safe Data URI for visualization
       const rawBase64 = this.base64Service.extractBase64FromDataUri(base64);
       const dataUri = `data:${info.mimeType};base64,${rawBase64}`;
-      
+
       // Use DomSanitizer to mark content safe before binding to DOM
       this.previewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(dataUri);
       this.isImagePreview = info.isImage;
-      
+
       this.metadataLabel = `Decoded a ${info.extension?.toUpperCase() || 'unknown'} file (${this.formatBytes(info.sizeBytes)}) - ${
         info.isImage ? 'preview shown below' : 'binary format detected'
       }`;
@@ -259,31 +270,38 @@ export class Base64ConverterComponent implements OnInit, OnDestroy {
     }
 
     // Process file asynchronously using the service observable
-    this.fileSubscription = this.base64Service.readFileAsDataURL(file).subscribe({
-      next: (res) => {
-        this.selectedFile = res.metadata;
-        this.form.patchValue({
-          rawBase64: res.base64,
-          outputDataUri: res.dataUri,
-        }, { emitEvent: false });
+    this.fileSubscription = this.base64Service
+      .readFileAsDataURL(file)
+      .subscribe({
+        next: (res) => {
+          this.selectedFile = res.metadata;
+          this.form.patchValue(
+            {
+              rawBase64: res.base64,
+              outputDataUri: res.dataUri,
+            },
+            { emitEvent: false },
+          );
 
-        // Set up image previews for rendering
-        if (res.metadata.type.startsWith('image/')) {
-          this.previewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(res.dataUri);
-          this.isImagePreview = true;
-        } else {
-          this.previewUrl = null;
-          this.isImagePreview = false;
-        }
+          // Set up image previews for rendering
+          if (res.metadata.type.startsWith('image/')) {
+            this.previewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
+              res.dataUri,
+            );
+            this.isImagePreview = true;
+          } else {
+            this.previewUrl = null;
+            this.isImagePreview = false;
+          }
 
-        this.metadataLabel = `File: ${res.metadata.name} (${this.formatBytes(res.metadata.size)}) - Base64 generated successfully.`;
-        this.showSnackBar('File processed successfully.', 'success');
-      },
-      error: (error: Error) => {
-        this.errorMessage = error.message;
-        this.showSnackBar('Failed to read file.', 'error');
-      },
-    });
+          this.metadataLabel = `File: ${res.metadata.name} (${this.formatBytes(res.metadata.size)}) - Base64 generated successfully.`;
+          this.showSnackBar('File processed successfully.', 'success');
+        },
+        error: (error: Error) => {
+          this.errorMessage = error.message;
+          this.showSnackBar('Failed to read file.', 'error');
+        },
+      });
   }
 
   /**
@@ -326,10 +344,13 @@ export class Base64ConverterComponent implements OnInit, OnDestroy {
    * Cleans up text form inputs, outputs, and states.
    */
   onClearText(): void {
-    this.form.patchValue({
-      inputText: '',
-      outputText: '',
-    }, { emitEvent: false });
+    this.form.patchValue(
+      {
+        inputText: '',
+        outputText: '',
+      },
+      { emitEvent: false },
+    );
     this.clearPreviewAndErrorStates();
     this.showSnackBar('Cleared text fields.', 'info');
   }
@@ -341,10 +362,13 @@ export class Base64ConverterComponent implements OnInit, OnDestroy {
     if (this.fileSubscription) {
       this.fileSubscription.unsubscribe();
     }
-    this.form.patchValue({
-      rawBase64: '',
-      outputDataUri: '',
-    }, { emitEvent: false });
+    this.form.patchValue(
+      {
+        rawBase64: '',
+        outputDataUri: '',
+      },
+      { emitEvent: false },
+    );
     this.clearFileStates();
     this.clearPreviewAndErrorStates();
     this.showSnackBar('Cleared file.', 'info');
@@ -357,14 +381,17 @@ export class Base64ConverterComponent implements OnInit, OnDestroy {
     if (this.fileSubscription) {
       this.fileSubscription.unsubscribe();
     }
-    this.form.reset({
-      mode: this.form.get('mode')?.value,
-      operation: 'encode',
-      inputText: '',
-      outputText: '',
-      rawBase64: '',
-      outputDataUri: '',
-    }, { emitEvent: false });
+    this.form.reset(
+      {
+        mode: this.form.get('mode')?.value,
+        operation: 'encode',
+        inputText: '',
+        outputText: '',
+        rawBase64: '',
+        outputDataUri: '',
+      },
+      { emitEvent: false },
+    );
     this.clearFileStates();
     this.clearPreviewAndErrorStates();
   }
@@ -385,7 +412,7 @@ export class Base64ConverterComponent implements OnInit, OnDestroy {
    * @param text Text value to copy
    * @param field Field name for setting the success visual indicator state
    */
-  onCopy(text: string | undefined, field: string = 'outputText'): void {
+  onCopy(text: string | undefined, field = 'outputText'): void {
     if (!text || text.trim() === '') {
       this.showSnackBar('No content to copy.', 'error');
       return;
@@ -401,7 +428,7 @@ export class Base64ConverterComponent implements OnInit, OnDestroy {
       },
       () => {
         this.showSnackBar('Failed to copy to clipboard.', 'error');
-      }
+      },
     );
   }
 
@@ -420,7 +447,16 @@ export class Base64ConverterComponent implements OnInit, OnDestroy {
   /**
    * Helper to display snackbar alerts.
    */
-  private showSnackBar(message: string, type: 'success' | 'error' | 'info'): void {
-    this.toastr.open(message, type);
+  private showSnackBar(
+    message: string,
+    type: 'success' | 'error' | 'info',
+  ): void {
+    if (type === 'success') {
+      toast.success(message);
+    } else if (type === 'error') {
+      toast.error(message);
+    } else {
+      toast.info(message);
+    }
   }
 }

@@ -8,6 +8,7 @@ import { HlmInputImports } from '@spartan-ng/hel/input';
 import { HlmDialogService } from '@spartan-ng/hel/dialog';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
 import { HlmBadgeImports } from '@spartan-ng/hel/badge';
+import { toast } from '@spartan-ng/hel/sonner';
 import { IVehicle } from '@portfolio/shared-types';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
@@ -255,16 +256,16 @@ export class RRVehicleListComponent implements OnInit {
     try {
       if (this.editingVehicleMode()) {
         await this.rrApi.updateVehicle(payload.regNo, payload);
-        alert('Vehicle updated successfully.');
+        toast.success('Vehicle updated successfully.');
       } else {
         await this.rrApi.createVehicle(payload);
-        alert('Vehicle added successfully.');
+        toast.success('Vehicle added successfully.');
       }
       this.closeVehicleFormModal();
       this.loadVehicles();
     } catch (err: any) {
       console.error(err);
-      alert(err.error?.message || 'Error saving vehicle.');
+      toast.error(err.error?.message || 'Error saving vehicle.');
     }
   }
 
@@ -273,12 +274,12 @@ export class RRVehicleListComponent implements OnInit {
 
     try {
       await this.rrApi.deleteVehicle(regNo);
-      alert('Vehicle deleted successfully.');
+      toast.success('Vehicle deleted successfully.');
       this.closeVehicleFormModal();
       this.loadVehicles();
     } catch (err: any) {
       console.error(err);
-      alert(err.error?.message || 'Error deleting vehicle.');
+      toast.error(err.error?.message || 'Error deleting vehicle.');
     }
   }
 
