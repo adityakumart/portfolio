@@ -241,31 +241,30 @@
         </p>
         <div hlmSeparator class="mb-4"></div>
         
-        <div class="claims-table-wrapper border rounded-xl overflow-hidden">
+        <div class="border border-border/60 rounded-xl overflow-hidden shadow-xs">
           <table class="w-full text-xs text-left" id="jwt-claims-table">
-            <thead class="bg-muted/40 uppercase font-semibold text-muted-foreground">
+            <thead class="bg-muted/50 uppercase font-semibold text-muted-foreground border-b border-border/60">
               <tr>
                 <th class="p-3 w-32">Claim</th>
                 <th class="p-3 w-64">Mapped Property & Value</th>
                 <th class="p-3">Standard Specification Description</th>
               </tr>
             </thead>
-            <tbody class="divide-y">
+            <tbody class="divide-y divide-border/40">
               @for (claim of claimsDataSource; track claim.key) {
-                <tr class="hover:bg-muted/10 transition-colors">
+                <tr class="hover:bg-muted/20 transition-colors">
                   <td class="p-3">
-                    <span class="inline-block px-2 py-0.5 rounded-full font-mono text-xs font-semibold"
-                      [class.bg-primary-10]="claim.isRegistered"
-                      [class.text-primary]="claim.isRegistered"
-                      [class.bg-muted]="!claim.isRegistered"
-                      [class.text-muted-foreground]="!claim.isRegistered"
+                    <span 
+                      hlmBadge 
+                      [variant]="claim.isRegistered ? 'default' : 'secondary'" 
+                      class="font-mono text-xs px-2.5 py-0.5 rounded-lg font-semibold"
                     >
                       {{ claim.key }}
                     </span>
                   </td>
                   <td class="p-3">
-                    <div class="property-name font-semibold">{{ claim.name }}</div>
-                    <div class="property-value font-mono text-muted-foreground break-all">{{ claim.formattedValue }}</div>
+                    <div class="property-name font-semibold text-foreground">{{ claim.name }}</div>
+                    <div class="property-value font-mono text-muted-foreground break-all text-[11px] mt-0.5">{{ claim.formattedValue }}</div>
                   </td>
                   <td class="p-3 text-muted-foreground leading-relaxed">
                     {{ claim.description }}

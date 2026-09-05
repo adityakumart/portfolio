@@ -36,10 +36,13 @@ import {
   lucideRefreshCw,
   lucideCheck,
 } from '@ng-icons/lucide';
-import { HlmButton } from '@spartan-ng/hel/button';
+import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
 import { HlmProgressImports } from '@spartan-ng/hel/progress';
-import { HlmSpinner } from '@spartan-ng/hel/spinner';
+import { HlmSpinnerImports } from '@spartan-ng/hel/spinner';
+import { HlmCardImports } from '@spartan-ng/hel/card';
+import { HlmBadgeImports } from '@spartan-ng/hel/badge';
+import { HlmInputImports } from '@spartan-ng/hel/input';
 import { FileManagerService } from '../../services/file-manager.service';
 import { AuthService } from '../../services/auth';
 import { FileNode } from '@portfolio/shared-types';
@@ -52,10 +55,13 @@ import { FilePreviewDialogComponent } from './file-preview-dialog.component';
     CommonModule,
     FormsModule,
     NgIconComponent,
-    HlmButton,
+    HlmButtonImports,
     HlmTooltipImports,
     HlmProgressImports,
-    HlmSpinner,
+    HlmSpinnerImports,
+    HlmCardImports,
+    HlmBadgeImports,
+    HlmInputImports,
   ],
   providers: [
     provideIcons({
