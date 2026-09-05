@@ -67,7 +67,7 @@ export class RandomGeneratorComponent implements OnInit, OnDestroy {
     if (val.passwordSymbols) pools++;
 
     if (len < 8 || pools < 2) {
-      return { text: 'Weak - Poor security', color: 'var(--mat-sys-error, #ba1a1a)' };
+      return { text: 'Weak - Poor security', color: 'var(--destructive, #ef4444)' };
     }
     if (len < 12 || pools < 3) {
       return { text: 'Medium - Average security', color: '#ffc107' };

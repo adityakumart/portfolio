@@ -90,24 +90,6 @@ body {
   }
 }
 
-/* Material Dialog Glassmorphic Panel Overrides */
-.glass-dialog-panel {
-  .mat-mdc-dialog-container {
-    padding: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    border-radius: 20px !important;
-    overflow: hidden !important;
-
-    .mdc-dialog__surface {
-      background: transparent !important;
-      box-shadow: none !important;
-      border-radius: 20px !important;
-      overflow: hidden !important;
-      padding: 0 !important;
-    }
-  }
-}
 
 /* Modal Popup Layout Utilities (Fixed Header/Footer & Scrollable Body) */
 .modal-dialog-layout {
