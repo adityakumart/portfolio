@@ -2,10 +2,9 @@ import { Component, OnInit, inject, signal, computed, ViewChild, TemplateRef } f
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
 import { RRApiService } from '../../../../services/rr-api.service';
-import { HlmButtonDirective } from '@spartan-ng/hel-luma/button';
-import { HlmCardDirective } from '@spartan-ng/hel-luma/card';
-import { HlmInputDirective } from '@spartan-ng/hel-luma/input';
-import { HlmLabelDirective } from '@spartan-ng/hel-luma/label';
+import { HlmButtonImports } from '@spartan-ng/hel-luma/button';
+import { HlmCardImports } from '@spartan-ng/hel-luma/card';
+import { HlmInputImports } from '@spartan-ng/hel-luma/input';
 import { HlmDialogService } from '@spartan-ng/hel-luma/dialog';
 import { HlmTooltipImports } from '@spartan-ng/hel-luma/tooltip';
 import { IVehicle } from '@portfolio/shared-types';
@@ -40,10 +39,9 @@ import {
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
-    HlmCardDirective,
-    HlmInputDirective,
-    HlmLabelDirective,
-    HlmButtonDirective,
+    HlmCardImports,
+    HlmInputImports,
+    HlmButtonImports,
     HlmTooltipImports,
     NgIconComponent,
   ],

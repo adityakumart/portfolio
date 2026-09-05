@@ -13,13 +13,12 @@ import {
   AbstractControl,
   ValidationErrors,
 } from '@angular/forms';
-import { HlmCardDirective } from '@spartan-ng/hel/card';
-import { HlmInputDirective } from '@spartan-ng/hel/input';
-import { HlmLabelDirective } from '@spartan-ng/hel/label';
-import { HlmButtonDirective } from '@spartan-ng/hel/button';
+import { HlmCardImports } from '@spartan-ng/hel/card';
+import { HlmInputImports } from '@spartan-ng/hel/input';
+import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
-import { HlmSeparatorDirective } from '@spartan-ng/hel/separator';
-import { HlmSpinnerComponent } from '@spartan-ng/hel/spinner';
+import { HlmSeparatorImports } from '@spartan-ng/hel/separator';
+import { HlmSpinnerImports } from '@spartan-ng/hel/spinner';
 import { toast } from '@spartan-ng/hel/sonner';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
@@ -42,13 +41,12 @@ import { JsonTransformerService } from './services/json-transformer.service';
   standalone: true,
   imports: [
     ReactiveFormsModule,
-    HlmCardDirective,
-    HlmInputDirective,
-    HlmLabelDirective,
-    HlmButtonDirective,
+    HlmCardImports,
+    HlmInputImports,
+    HlmButtonImports,
     HlmTooltipImports,
-    HlmSeparatorDirective,
-    HlmSpinnerComponent,
+    HlmSeparatorImports,
+    HlmSpinnerImports,
     NgIconComponent,
   ],
   providers: [

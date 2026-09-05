@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { HlmInputDirective } from '@spartan-ng/hel/input';
-import { HlmLabelDirective } from '@spartan-ng/hel/label';
-import { HlmButtonDirective } from '@spartan-ng/hel/button';
+import { HlmInputImports } from '@spartan-ng/hel/input';
+import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { toast } from '@spartan-ng/hel/sonner';
 import { ConversionMetadata, Delimiter, csvToJson, jsonToCsv } from './json-csv-converter.utils';
 
@@ -11,9 +10,8 @@ import { ConversionMetadata, Delimiter, csvToJson, jsonToCsv } from './json-csv-
   standalone: true,
   imports: [
     FormsModule,
-    HlmInputDirective,
-    HlmLabelDirective,
-    HlmButtonDirective,
+    HlmInputImports,
+    HlmButtonImports,
   ],
   templateUrl: './json-csv-converter.component.html',
   styleUrl: './json-csv-converter.component.scss',

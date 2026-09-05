@@ -1,69 +1,18 @@
-$transition-spring: cubic-bezier(0.25, 1.1, 0.4, 1);
-$transition-duration: 500ms;
+// sidebar.component.scss - Spartan UI Streamlined Flyout Styles
 
-.app-layout {
-  width: 100vw;
+:host {
+  display: block;
   height: 100vh;
-  // background-color: transparent !important;
 }
 
 // ----------------------------------------
-// Fixed Icon-Only Sidebar
+// Multi-Tiered Hover Fly-Out Submenus
 // ----------------------------------------
-.single-sidebar {
-  display: flex;
-  flex-direction: column;
-  width: 72px;
-  min-width: 72px;
-  height: 100%;
-  background-color: var(--card) !important;
-  border-right: 1px solid var(--border) !important;
-  padding: 16px 8px;
-  box-sizing: border-box;
-  z-index: 10;
-  overflow: visible !important; // Allow submenus to render outside the sidebar
-  transition: background-color 0.3s ease, border-color 0.3s ease;
-}
-
-// Header Section
-.sidebar-header {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  height: 40px;
-  width: 100%;
-  margin-bottom: 24px;
-
-  .brand-logo-centered {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--foreground);
-  }
-}
-
-// Menu Scroller
-.menu-scroller {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  align-items: center;
-}
-
-.menu-items-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  width: 100%;
-}
 
 .menu-item-block {
   position: relative;
   width: 100%;
 
-  // Trigger Level 1 submenu panel on hover of primary item block (handled via .hovered class)
   &.hovered > .submenu-panel {
     opacity: 1;
     visibility: visible;
@@ -72,52 +21,23 @@ $transition-duration: 500ms;
   }
 }
 
-// Level 0 Menu Row (Icon Only Tile)
 .menu-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 48px;
-  width: 48px;
-  border-radius: 8px;
-  cursor: pointer;
-  background-color: transparent;
-  transition: background-color 0.2s ease, color 0.2s ease;
-  box-sizing: border-box;
-  margin: 0 auto;
-  user-select: none;
-
-  .row-icon {
-    color: var(--muted-foreground);
-    font-size: 20px;
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: color 0.2s ease;
-  }
-
   &:hover {
-    background-color: var(--secondary);
-    
+    background-color: hsl(var(--secondary));
+
     .row-icon {
-      color: var(--foreground);
+      color: hsl(var(--foreground));
     }
   }
 
   &.active {
-    background-color: var(--border);
-    
+    background-color: hsl(var(--secondary));
+
     .row-icon {
-      color: var(--foreground);
+      color: hsl(var(--primary));
     }
   }
 }
-
-// ----------------------------------------
-// Multi-Tiered Hover Fly-Out Submenus
-// ----------------------------------------
 
 // Level 1 Submenu Panel (Fly-out)
 .submenu-panel {
@@ -125,26 +45,22 @@ $transition-duration: 500ms;
   left: calc(100% + 4px);
   top: 0;
   width: 230px;
-  background-color: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.4), 0 8px 12px -6px rgba(0, 0, 0, 0.4);
-  padding: 8px;
+  background-color: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3);
+  padding: 0.5rem;
   z-index: 100;
   box-sizing: border-box;
-  
-  // Animation & visibility state
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
   transform: translateX(-8px);
   transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
-
   display: flex;
   flex-direction: column;
   gap: 4px;
 
-  // Hover bridge: a transparent overlay region to bridge the gap between primary sidebar and flyout
   &::before {
     content: '';
     position: absolute;
@@ -161,7 +77,6 @@ $transition-duration: 500ms;
   position: relative;
   width: 100%;
 
-  // Trigger Level 2 submenu panel on hover of Level 1 item block (handled via .hovered class)
   &.hovered > .level-2-panel {
     opacity: 1;
     visibility: visible;
@@ -174,28 +89,24 @@ $transition-duration: 500ms;
 .level-2-panel {
   position: absolute;
   left: calc(100% + 4px);
-  top: -8px; // align with top of parent panel padding
+  top: -8px;
   width: 210px;
-  background-color: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.4), 0 8px 12px -6px rgba(0, 0, 0, 0.4);
-  padding: 8px;
+  background-color: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3);
+  padding: 0.5rem;
   z-index: 101;
   box-sizing: border-box;
-  
-  // Animation & visibility state
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
   transform: translateX(-8px);
   transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
-
   display: flex;
   flex-direction: column;
   gap: 4px;
 
-  // Hover bridge: bridges the gap between Level 1 and Level 2
   &::before {
     content: '';
     position: absolute;
@@ -207,210 +118,31 @@ $transition-duration: 500ms;
   }
 }
 
-// Level 1 Submenu Category Row Header (e.g. "Calculator", "Formatters" categories)
-.sub-row-header {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  height: 38px;
-  padding: 0 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  background-color: transparent;
-  transition: background-color 0.2s ease, color 0.2s ease;
-  user-select: none;
-  gap: 10px;
-  box-sizing: border-box;
-
-  .sub-row-icon {
-    color: var(--muted-foreground);
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: color 0.2s ease;
-  }
-
-  .sub-row-label {
-    font-size: 13.5px;
-    color: var(--foreground);
-    flex-grow: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .sub-row-chevron {
-    color: var(--muted-foreground);
-    font-size: 16px;
-    width: 16px;
-    height: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  &:hover {
-    background-color: var(--secondary);
-    .sub-row-label {
-      color: var(--foreground);
-    }
-    .sub-row-icon {
-      color: var(--foreground);
-    }
-  }
-
-  &.active {
-    background-color: var(--border);
-    .sub-row-label {
-      color: var(--foreground);
-      font-weight: 500;
-    }
-    .sub-row-icon {
-      color: var(--foreground);
-    }
-  }
-}
-
-// Leaf Item Row (handles Level 1 direct links and Level 2 action links)
+.sub-row-header,
 .leaf-item-row {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  height: 38px;
-  padding: 0 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  background-color: transparent;
-  transition: background-color 0.2s ease, color 0.2s ease;
-  user-select: none;
-  gap: 10px;
-  box-sizing: border-box;
-
-  .leaf-icon {
-    color: var(--muted-foreground);
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: color 0.2s ease;
-  }
-
-  .leaf-label {
-    font-size: 13.5px;
-    color: var(--muted-foreground);
-    flex-grow: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  &.flat-level-1 {
-    .leaf-label {
-      color: var(--foreground);
-    }
-  }
-
   &:hover {
-    background-color: var(--secondary);
+    background-color: hsl(var(--secondary));
+
+    .sub-row-icon,
+    .sub-row-chevron,
+    .leaf-icon,
     .leaf-label {
-      color: var(--foreground);
-    }
-    .leaf-icon {
-      color: var(--foreground);
+      color: hsl(var(--foreground));
     }
   }
 
   &.active {
-    background-color: var(--border);
-    .leaf-icon {
-      color: var(--foreground);
-    }
+    background-color: hsl(var(--secondary));
+
+    .sub-row-label,
     .leaf-label {
-      color: var(--foreground);
+      color: hsl(var(--primary));
       font-weight: 500;
     }
-  }
-}
 
-// ----------------------------------------
-// Sidebar Footer
-// ----------------------------------------
-.sidebar-footer {
-  width: 100%;
-  margin-top: auto;
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  box-sizing: border-box;
-
-  .footer-actions {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    width: 100%;
-
-    .footer-btn {
-      color: var(--muted-foreground) !important;
-      width: 38px !important;
-      height: 38px !important;
-      min-width: 38px !important;
-      border-radius: 50% !important;
-      display: flex !important;
-      align-items: center;
-      justify-content: center;
-
-      ng-icon {
-        font-size: 20px;
-        width: 20px;
-        height: 20px;
-      }
-      
-      &:hover {
-        background-color: var(--secondary) !important;
-        color: var(--foreground) !important;
-      }
-    }
-
-    // Initials Avatar Bubble
-    .profile-bubble {
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      background-color: var(--border);
-      border: 1px solid var(--border);
-      color: var(--foreground);
-      font-size: 12px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      user-select: none;
-      box-sizing: border-box;
-      transition: border-color 0.2s ease, background-color 0.3s ease;
-
-      &:hover {
-        border-color: var(--muted-foreground);
-      }
+    .sub-row-icon,
+    .leaf-icon {
+      color: hsl(var(--primary));
     }
   }
-}
-
-// ----------------------------------------
-// Main Application Viewport next to sidebar
-// ----------------------------------------
-.app-main-viewport {
-  flex-grow: 1;
-  height: 100%;
-  overflow-y: auto;
-  box-sizing: border-box;
 }

@@ -2,7 +2,7 @@ import { Component, inject, signal, computed, effect, ElementRef, ViewChild, Aft
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { HlmButtonDirective } from '@spartan-ng/hel/button';
+import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
@@ -31,7 +31,7 @@ import { AuthService } from '../../services/auth';
   imports: [
     CommonModule,
     RouterLink,
-    HlmButtonDirective,
+    HlmButtonImports,
     HlmTooltipImports,
     NgIconComponent,
   ],

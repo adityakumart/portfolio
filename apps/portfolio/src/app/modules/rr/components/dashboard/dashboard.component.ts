@@ -16,8 +16,8 @@ import {
   lucideX,
 } from '@ng-icons/lucide';
 import { HlmDialogService } from '@spartan-ng/hel-luma/dialog';
-import { HlmButtonDirective } from '@spartan-ng/hel-luma/button';
-import { HlmInputDirective } from '@spartan-ng/hel-luma/input';
+import { HlmButtonImports } from '@spartan-ng/hel-luma/button';
+import { HlmInputImports } from '@spartan-ng/hel-luma/input';
 
 @Component({
   selector: 'app-rr-dashboard',
@@ -28,8 +28,8 @@ import { HlmInputDirective } from '@spartan-ng/hel-luma/input';
     RouterLink,
     RouterLinkActive,
     NgIconComponent,
-    HlmButtonDirective,
-    HlmInputDirective,
+    HlmButtonImports,
+    HlmInputImports,
   ],
   providers: [
     provideIcons({

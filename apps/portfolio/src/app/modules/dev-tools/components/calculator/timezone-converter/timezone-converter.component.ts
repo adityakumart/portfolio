@@ -17,11 +17,10 @@ import {
   TimeZonesList,
 } from '../../../../../../shared/data/timeszones';
 import { ToastrService } from '../../../../../shared/services/toaster.service';
-import { HlmCardDirective } from '@spartan-ng/hel/card';
-import { HlmInputDirective } from '@spartan-ng/hel/input';
-import { HlmLabelDirective } from '@spartan-ng/hel/label';
-import { HlmButtonDirective } from '@spartan-ng/hel/button';
-import { HlmSeparatorDirective } from '@spartan-ng/hel/separator';
+import { HlmCardImports } from '@spartan-ng/hel/card';
+import { HlmInputImports } from '@spartan-ng/hel/input';
+import { HlmButtonImports } from '@spartan-ng/hel/button';
+import { HlmSeparatorImports } from '@spartan-ng/hel/separator';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { lucideClock } from '@ng-icons/lucide';
 
@@ -31,11 +30,10 @@ import { lucideClock } from '@ng-icons/lucide';
   imports: [
     FormsModule,
     ReactiveFormsModule,
-    HlmCardDirective,
-    HlmInputDirective,
-    HlmLabelDirective,
-    HlmButtonDirective,
-    HlmSeparatorDirective,
+    HlmCardImports,
+    HlmInputImports,
+    HlmButtonImports,
+    HlmSeparatorImports,
     NgIconComponent,
   ],
   providers: [

@@ -33,7 +33,7 @@ import {
   lucideLogOut,
   lucideZap
 } from '@ng-icons/lucide';
-import { HlmButton } from '@spartan-ng/hel/button';
+import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
 import { HlmDropdownMenuImports } from '@spartan-ng/hel/dropdown-menu';
 import { AuthService } from '../../../modules/user/services/auth';
@@ -54,7 +54,7 @@ export interface SidebarItem {
   imports: [
     CommonModule,
     NgIconComponent,
-    HlmButton,
+    HlmButtonImports,
     HlmTooltipImports,
     HlmDropdownMenuImports,
   ],
