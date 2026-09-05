@@ -1,67 +1,55 @@
-<div class="profile-menu-container" (click)="$event.stopPropagation()">
-  @if (currentUser()) {
+@if (currentUser()) {
+  <button
+    [hlmDropdownMenuTrigger]="profileMenu"
+    class="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-xs border border-primary/20 hover:bg-primary/20 transition-all cursor-pointer shadow-xs select-none"
+    aria-label="User Profile Menu"
+  >
+    <span>{{ currentUser() | initials }}</span>
+  </button>
+
+  <hlm-dropdown-menu #profileMenu class="w-64 p-1.5 rounded-2xl shadow-xl border border-border/80 bg-card text-card-foreground">
+    <!-- Header with user info -->
+    <div class="flex items-center gap-3 p-3 bg-muted/40 rounded-xl mb-1 border border-border/40">
+      <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-sm">
+        {{ currentUser() | initials }}
+      </div>
+      <div class="overflow-hidden space-y-0.5">
+        <h4 class="text-sm font-semibold text-foreground truncate">{{ fullName() }}</h4>
+        <p class="text-xs text-muted-foreground truncate">{{ currentUser()?.email }}</p>
+      </div>
+    </div>
+
+    <!-- Last login item -->
+    <div class="flex items-center gap-2.5 px-3 py-2 text-xs text-muted-foreground">
+      <ng-icon name="lucideHistory" class="text-sm shrink-0"></ng-icon>
+      <div class="truncate">
+        <span class="block text-[10px] uppercase font-semibold text-muted-foreground/80">Last Logged In</span>
+        <span class="font-medium text-foreground">
+          {{ currentUser()?.['user_logged_in_at'] ? (currentUser()?.['user_logged_in_at'] | date:'medium') : 'Just now' }}
+        </span>
+      </div>
+    </div>
+
+    <hlm-dropdown-menu-separator />
+
     <button
-      class="profile-trigger"
-      (click)="toggleDropdown()"
-      [attr.aria-expanded]="isOpen()"
-      aria-haspopup="true"
-      aria-label="User Profile Menu"
+      hlmDropdownMenuItem
+      routerLink="/"
+      class="flex items-center gap-2.5 cursor-pointer rounded-lg text-xs"
     >
-      <span class="avatar-initials">{{ currentUser() | initials }}</span>
+      <ng-icon name="lucideHome" class="text-sm"></ng-icon>
+      <span>Go Home</span>
     </button>
 
-    @if (isOpen()) {
-      <div 
-        class="profile-dropdown" 
-        role="menu" 
-        aria-label="User Profile Dropdown"
-      >
-        <div class="dropdown-header">
-          <div class="dropdown-avatar-circle">
-            <span class="dropdown-avatar-initials">{{ currentUser() | initials }}</span>
-          </div>
-          <div class="user-details">
-            <h4 class="full-name">{{ fullName() }}</h4>
-            <span class="email-address">{{ currentUser()?.email }}</span>
-          </div>
-        </div>
+    <hlm-dropdown-menu-separator />
 
-        <div class="dropdown-divider"></div>
-
-        <div class="dropdown-item info-item">
-          <ng-icon name="lucideHistory" class="info-icon"></ng-icon>
-          <div class="info-content">
-            <span class="info-label">Last Logged In</span>
-            <span class="info-value">
-              {{ currentUser()?.['user_logged_in_at'] ? 
-              (currentUser()?.['user_logged_in_at'] | date:'medium') : 'Just now' }}
-            </span>
-          </div>
-        </div>
-
-        <div class="dropdown-divider"></div>
-
-        <div class="dropdown-actions">
-          <a 
-            routerLink="/" 
-            (click)="closeDropdown()" 
-            class="dropdown-action-link"
-            role="menuitem"
-          >
-            <ng-icon name="lucideHome"></ng-icon>
-            <span>Go Home</span>
-          </a>
-          
-          <button 
-            (click)="onLogout()" 
-            class="dropdown-action-btn logout"
-            role="menuitem"
-          >
-            <ng-icon name="lucideLogOut"></ng-icon>
-            <span>Logout</span>
-          </button>
-        </div>
-      </div>
-    }
-  }
-</div>
+    <button
+      hlmDropdownMenuItem
+      (click)="onLogout()"
+      class="flex items-center gap-2.5 cursor-pointer rounded-lg text-xs text-destructive hover:bg-destructive/10 focus:bg-destructive/10"
+    >
+      <ng-icon name="lucideLogOut" class="text-sm"></ng-icon>
+      <span>Logout</span>
+    </button>
+  </hlm-dropdown-menu>
+}
