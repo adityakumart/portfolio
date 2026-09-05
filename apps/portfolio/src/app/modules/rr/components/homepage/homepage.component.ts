@@ -24,12 +24,25 @@ import {
   lucideX,
   lucideCheckCircle,
 } from '@ng-icons/lucide';
+import { HlmButtonImports } from '@spartan-ng/hel/button';
+import { HlmBadgeImports } from '@spartan-ng/hel/badge';
+import { HlmCardImports } from '@spartan-ng/hel/card';
+import { HlmInputImports } from '@spartan-ng/hel/input';
 import { IVehicle } from '@portfolio/shared-types';
 
 @Component({
   selector: 'app-rr-homepage',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, NgIconComponent],
+  imports: [
+    CommonModule,
+    RouterLink,
+    FormsModule,
+    HlmButtonImports,
+    HlmBadgeImports,
+    HlmCardImports,
+    HlmInputImports,
+    NgIconComponent,
+  ],
   providers: [
     provideIcons({
       lucideCar,

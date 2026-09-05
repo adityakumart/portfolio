@@ -6,76 +6,95 @@
       <nav class="menu-items-list flex flex-col gap-3 w-full">
         @for (item of menuItems(); track item.label) {
           <div
-            class="menu-item-block relative w-full"
-            [class.hovered]="activeLevel0Item() === item"
+            class="relative w-full"
             (mouseenter)="activeLevel0Item.set(item)"
             (mouseleave)="activeLevel0Item.set(null)"
           >
             <!-- Level 0: Top Menu Row (Icon Only) -->
             <div
-              class="menu-row flex items-center justify-center h-12 w-12 rounded-lg cursor-pointer transition-colors duration-200"
+              class="group flex items-center justify-center h-12 w-12 rounded-lg cursor-pointer transition-colors duration-200 hover:bg-secondary [&.active]:bg-secondary"
               [class.active]="isItemActive(item)"
               (click)="onItemClick(item)"
               [hlmTooltip]="item.children && item.children.length > 0 ? '' : item.label"
               tooltipPosition="right"
             >
               @if (item.icon) {
-                <ng-icon [name]="item.icon" class="row-icon text-muted-foreground size-5 transition-colors duration-200" />
+                <ng-icon
+                  [name]="item.icon"
+                  class="size-5 transition-colors duration-200 text-muted-foreground group-hover:text-foreground group-[.active]:text-primary"
+                />
               }
             </div>
 
             <!-- Level 1: Submenus Panel (Fly-out) -->
             @if (item.children && item.children.length > 0) {
-              <div class="submenu-panel">
+              <div
+                class="absolute left-[calc(100%+4px)] top-0 w-[230px] bg-card border border-border rounded-lg shadow-2xl p-2 z-[100] flex flex-col gap-1 transition-all duration-200 opacity-0 invisible pointer-events-none -translate-x-2 before:absolute before:top-0 before:-left-5 before:w-5 before:h-full before:bg-transparent"
+                [class.opacity-100]="activeLevel0Item() === item"
+                [class.visible]="activeLevel0Item() === item"
+                [class.pointer-events-auto]="activeLevel0Item() === item"
+                [class.translate-x-0]="activeLevel0Item() === item"
+              >
                 @for (subItem of item.children; track subItem.label) {
                   <div
-                    class="sub-item-block relative w-full"
-                    [class.hovered]="activeLevel1Item() === subItem"
+                    class="relative w-full"
                     (mouseenter)="activeLevel1Item.set(subItem)"
                     (mouseleave)="activeLevel1Item.set(null)"
                   >
                     <!-- If subItem has children (nested level 2 list, e.g. tools under categories) -->
                     @if (subItem.children && subItem.children.length > 0) {
                       <div
-                        class="sub-row-header flex items-center gap-2 h-9 px-3 rounded-md cursor-pointer transition-colors duration-200"
+                        class="group/sub flex items-center gap-2 h-9 px-3 rounded-md cursor-pointer transition-colors duration-200 hover:bg-secondary [&.active]:bg-secondary"
                         [class.active]="isItemActive(subItem)"
                         (click)="onItemClick(subItem)"
                       >
                         @if (subItem.icon) {
-                          <ng-icon [name]="subItem.icon" class="sub-row-icon text-muted-foreground size-[18px] transition-colors duration-200" />
+                          <ng-icon
+                            [name]="subItem.icon"
+                            class="size-[18px] transition-colors duration-200 text-muted-foreground group-hover/sub:text-foreground group-[.active]/sub:text-primary"
+                          />
                         } @else {
-                          <span class="sub-row-icon font-medium text-xs">{{ subItem.label.charAt(0) }}</span>
+                          <span class="font-medium text-xs text-muted-foreground group-hover/sub:text-foreground group-[.active]/sub:text-primary">{{ subItem.label.charAt(0) }}</span>
                         }
-                        <span class="sub-row-label text-sm text-foreground flex-grow truncate">{{ subItem.label }}</span>
-                        <ng-icon name="lucideChevronRight" class="sub-row-chevron text-muted-foreground size-4" />
+                        <span class="text-sm text-foreground group-[.active]/sub:text-primary group-[.active]/sub:font-medium flex-grow truncate">{{ subItem.label }}</span>
+                        <ng-icon name="lucideChevronRight" class="size-4 text-muted-foreground group-hover/sub:text-foreground group-[.active]/sub:text-primary" />
                       </div>
 
                       <!-- Level 2 Sub-submenu Panel (Fly-out further to the right) -->
-                      <div class="level-2-panel">
+                      <div
+                        class="absolute left-[calc(100%+4px)] -top-2 w-[210px] bg-card border border-border rounded-lg shadow-2xl p-2 z-[101] flex flex-col gap-1 transition-all duration-200 opacity-0 invisible pointer-events-none -translate-x-2 before:absolute before:top-0 before:-left-5 before:w-5 before:h-full before:bg-transparent"
+                        [class.opacity-100]="activeLevel1Item() === subItem"
+                        [class.visible]="activeLevel1Item() === subItem"
+                        [class.pointer-events-auto]="activeLevel1Item() === subItem"
+                        [class.translate-x-0]="activeLevel1Item() === subItem"
+                      >
                         @for (
                           leafItem of subItem.children;
                           track leafItem.label
                         ) {
                           <div
-                            class="leaf-item-row flex items-center h-9 px-3 rounded-md cursor-pointer transition-colors duration-200"
+                            class="group/leaf flex items-center h-9 px-3 rounded-md cursor-pointer transition-colors duration-200 hover:bg-secondary [&.active]:bg-secondary"
                             [class.active]="isItemActive(leafItem)"
                             (click)="onItemClick(leafItem)"
                           >
-                            <span class="leaf-label text-sm text-muted-foreground truncate">{{ leafItem.label }}</span>
+                            <span class="text-sm text-muted-foreground group-hover/leaf:text-foreground group-[.active]/leaf:text-primary group-[.active]/leaf:font-medium truncate">{{ leafItem.label }}</span>
                           </div>
                         }
                       </div>
                     } @else {
                       <!-- Flat Level 1 Item with text and icon -->
                       <div
-                        class="leaf-item-row flat-level-1 flex items-center gap-2 h-9 px-3 rounded-md cursor-pointer transition-colors duration-200"
+                        class="group/leaf flex items-center gap-2 h-9 px-3 rounded-md cursor-pointer transition-colors duration-200 hover:bg-secondary [&.active]:bg-secondary"
                         [class.active]="isItemActive(subItem)"
                         (click)="onItemClick(subItem)"
                       >
                         @if (subItem.icon) {
-                          <ng-icon [name]="subItem.icon" class="leaf-icon text-muted-foreground size-[18px] transition-colors duration-200" />
+                          <ng-icon
+                            [name]="subItem.icon"
+                            class="size-[18px] transition-colors duration-200 text-muted-foreground group-hover/leaf:text-foreground group-[.active]/leaf:text-primary"
+                          />
                         }
-                        <span class="leaf-label text-sm text-foreground flex-grow truncate">{{ subItem.label }}</span>
+                        <span class="text-sm text-foreground group-[.active]/leaf:text-primary group-[.active]/leaf:font-medium flex-grow truncate">{{ subItem.label }}</span>
                       </div>
                     }
                   </div>

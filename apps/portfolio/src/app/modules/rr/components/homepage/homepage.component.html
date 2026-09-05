@@ -47,13 +47,15 @@
   <!-- Hero Section -->
   <section class="hero">
     <div class="hero-container">
-      <div class="hero-badge">
-        <span class="badge-dot"></span>
-        <span>Premium Car Rentals & Fleet Command</span>
+      <div class="mb-8">
+        <span hlmBadge variant="outline" class="px-4 py-1 text-xs font-bold tracking-wider rounded-full border-white/20 bg-white/10 text-cyan-300">
+          <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 mr-2 animate-pulse"></span>
+          PREMIUM CAR RENTALS & FLEET COMMAND
+        </span>
       </div>
       <h1>Uncompromising Comfort for Every Journey</h1>
       <p>Experience seamless travels with Kakinada's premier car rental fleet. Tailored corporate solutions, local sightseeing, and self-drive luxury with zero hidden charges.</p>
-      <div class="hero-actions">
+      <div class="hero-actions flex gap-4 justify-center flex-wrap">
         <a href="#browse" class="hero-primary-btn">Explore Fleet</a>
         <a href="#contact" class="hero-secondary-btn">Book Consultation</a>
       </div>
@@ -68,7 +70,7 @@
       <p class="section-desc">Designed to cover all your travel requirements with absolute safety, luxury, and reliability.</p>
     </div>
     <div class="service-grid">
-      <div class="service-btn" data-text="Drive at your own pace with unlimited control.">
+      <div hlmCard class="service-btn" data-text="Drive at your own pace with unlimited control.">
         <div class="service-icon-wrapper">
           <ng-icon name="lucideKey"></ng-icon>
         </div>
@@ -76,7 +78,7 @@
         <p class="service-card-desc">Flexible self-drive solutions with well-maintained hatchbacks, sedans, and SUVs.</p>
       </div>
 
-      <div class="service-btn" data-text="Explore city attractions with professional guides.">
+      <div hlmCard class="service-btn" data-text="Explore city attractions with professional guides.">
         <div class="service-icon-wrapper">
           <ng-icon name="lucideMap"></ng-icon>
         </div>
@@ -84,7 +86,7 @@
         <p class="service-card-desc">Uncover local treasures with customizable day trips and travel assistance.</p>
       </div>
 
-      <div class="service-btn" data-text="Safe and convenient one-way/roundout journeys.">
+      <div hlmCard class="service-btn" data-text="Safe and convenient one-way/roundout journeys.">
         <div class="service-icon-wrapper">
           <ng-icon name="lucidePlane"></ng-icon>
         </div>
@@ -92,7 +94,7 @@
         <p class="service-card-desc">Reliable airport drops, terminal connections, and outstation travels.</p>
       </div>
 
-      <div class="service-btn" data-text="Bespoke travel packages for holidays and events.">
+      <div hlmCard class="service-btn" data-text="Bespoke travel packages for holidays and events.">
         <div class="service-icon-wrapper">
           <ng-icon name="lucideGift"></ng-icon>
         </div>
@@ -100,7 +102,7 @@
         <p class="service-card-desc">Enjoy unified hotel pairings, route guides, and custom family tour packages.</p>
       </div>
 
-      <div class="service-btn" data-text="Long-term corporate contracts and executive transit.">
+      <div hlmCard class="service-btn" data-text="Long-term corporate contracts and executive transit.">
         <div class="service-icon-wrapper">
           <ng-icon name="lucideBuilding"></ng-icon>
         </div>
@@ -119,68 +121,48 @@
     </div>
 
     <!-- Category Filter Controls -->
-    <div class="fleet-controls" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 30px;">
+    <div class="flex flex-wrap justify-center gap-2.5 mb-8">
       <button
-        class="filter-pill"
-        [style.background]="selectedCategory() === 'all' ? 'var(--color-cyan-500, #06b6d4)' : 'rgba(255,255,255,0.06)'"
-        [style.color]="selectedCategory() === 'all' ? '#000' : 'inherit'"
-        [style.border]="'1px solid rgba(255,255,255,0.12)'"
-        [style.padding]="'8px 18px'"
-        [style.border-radius]="'30px'"
-        [style.cursor]="'pointer'"
-        [style.font-weight]="'600'"
+        hlmBtn
+        [variant]="selectedCategory() === 'all' ? 'default' : 'outline'"
+        size="sm"
+        class="rounded-full font-semibold px-4"
         (click)="setCategory('all')"
       >
         All Fleet ({{ vehicles().length }})
       </button>
       <button
-        class="filter-pill"
-        [style.background]="selectedCategory() === '5' ? 'var(--color-cyan-500, #06b6d4)' : 'rgba(255,255,255,0.06)'"
-        [style.color]="selectedCategory() === '5' ? '#000' : 'inherit'"
-        [style.border]="'1px solid rgba(255,255,255,0.12)'"
-        [style.padding]="'8px 18px'"
-        [style.border-radius]="'30px'"
-        [style.cursor]="'pointer'"
-        [style.font-weight]="'600'"
+        hlmBtn
+        [variant]="selectedCategory() === '5' ? 'default' : 'outline'"
+        size="sm"
+        class="rounded-full font-semibold px-4"
         (click)="setCategory('5')"
       >
         5-Seaters
       </button>
       <button
-        class="filter-pill"
-        [style.background]="selectedCategory() === '7' ? 'var(--color-cyan-500, #06b6d4)' : 'rgba(255,255,255,0.06)'"
-        [style.color]="selectedCategory() === '7' ? '#000' : 'inherit'"
-        [style.border]="'1px solid rgba(255,255,255,0.12)'"
-        [style.padding]="'8px 18px'"
-        [style.border-radius]="'30px'"
-        [style.cursor]="'pointer'"
-        [style.font-weight]="'600'"
+        hlmBtn
+        [variant]="selectedCategory() === '7' ? 'default' : 'outline'"
+        size="sm"
+        class="rounded-full font-semibold px-4"
         (click)="setCategory('7')"
       >
         7-Seaters
       </button>
       <button
-        class="filter-pill"
-        [style.background]="selectedCategory() === 'suv' ? 'var(--color-cyan-500, #06b6d4)' : 'rgba(255,255,255,0.06)'"
-        [style.color]="selectedCategory() === 'suv' ? '#000' : 'inherit'"
-        [style.border]="'1px solid rgba(255,255,255,0.12)'"
-        [style.padding]="'8px 18px'"
-        [style.border-radius]="'30px'"
-        [style.cursor]="'pointer'"
-        [style.font-weight]="'600'"
+        hlmBtn
+        [variant]="selectedCategory() === 'suv' ? 'default' : 'outline'"
+        size="sm"
+        class="rounded-full font-semibold px-4"
         (click)="setCategory('suv')"
       >
         SUVs
       </button>
       <button
-        class="filter-pill"
-        [style.background]="selectedCategory() === 'sedan' ? 'var(--color-cyan-500, #06b6d4)' : 'rgba(255,255,255,0.06)'"
-        [style.color]="selectedCategory() === 'sedan' ? '#000' : 'inherit'"
-        [style.border]="'1px solid rgba(255,255,255,0.12)'"
-        [style.padding]="'8px 18px'"
-        [style.border-radius]="'30px'"
-        [style.cursor]="'pointer'"
-        [style.font-weight]="'600'"
+        hlmBtn
+        [variant]="selectedCategory() === 'sedan' ? 'default' : 'outline'"
+        size="sm"
+        class="rounded-full font-semibold px-4"
         (click)="setCategory('sedan')"
       >
         Sedans
@@ -188,56 +170,56 @@
     </div>
 
     <!-- Car Grid -->
-    <div class="car-grid">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl mx-auto px-4 mb-14">
       @for (v of filteredVehicles(); track v.regNo) {
-        <div class="car-card" (click)="openVehicleModal(v)" style="cursor: pointer;">
-          <div class="card-image-holder">
-            <img [src]="getVehicleImage(v)" alt="Vehicle Image" />
-            <span
-              class="card-status-pill"
-              [style.background]="v.status === 'available' ? 'rgba(34, 197, 94, 0.2)' : 'rgba(239, 68, 68, 0.2)'"
-              [style.color]="v.status === 'available' ? '#22c55e' : '#ef4444'"
-            >
-              {{ v.status === 'available' ? 'Available' : (v.status | uppercase) }}
-            </span>
+        <div hlmCard class="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 cursor-pointer flex flex-col" (click)="openVehicleModal(v)">
+          <div class="relative w-full h-40 bg-muted/20 flex items-center justify-center p-3 border-b border-border overflow-hidden">
+            <img [src]="getVehicleImage(v)" alt="Vehicle Image" class="max-w-[90%] max-h-[90%] object-contain group-hover:scale-105 transition-transform duration-300" />
+            <div class="absolute top-3 left-3">
+              <span hlmBadge [variant]="v.status === 'available' ? 'secondary' : 'destructive'" [class.text-emerald-600]="v.status === 'available'" [class.dark:text-emerald-400]="v.status === 'available'">
+                {{ v.status === 'available' ? 'Available' : (v.status | uppercase) }}
+              </span>
+            </div>
           </div>
-          <div class="car-details">
-            <div class="car-title">
+          <div class="p-4 flex flex-col flex-1">
+            <div class="font-extrabold text-base text-foreground leading-tight mb-1">
               {{ v.manufacturer }} {{ v.name }}
             </div>
-            <div class="car-specs">
-              <span class="spec-tag"><ng-icon name="lucidePalette"></ng-icon> {{ v.color || 'Premium' }}</span>
-              <span class="spec-tag"><ng-icon name="lucideFuel"></ng-icon> {{ v.fuelType || 'Petrol' }}</span>
-              <span class="spec-tag"><ng-icon name="lucideUsers"></ng-icon> {{ v.seating }} Seats</span>
+            <div class="flex flex-wrap gap-1.5 my-2">
+              <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-md"><ng-icon name="lucidePalette"></ng-icon> {{ v.color || 'Premium' }}</span>
+              <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-md"><ng-icon name="lucideFuel"></ng-icon> {{ v.fuelType || 'Petrol' }}</span>
+              <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-md"><ng-icon name="lucideUsers"></ng-icon> {{ v.seating }} Seats</span>
             </div>
 
             <!-- Pricing Badges -->
-            <div style="display: flex; gap: 6px; margin: 10px 0; font-size: 0.8rem;">
-              <span style="background: rgba(6, 182, 212, 0.12); color: var(--color-cyan-400, #22d3ee); padding: 4px 8px; border-radius: 6px; font-weight: 600;">
+            <div class="flex gap-2 my-2 text-xs">
+              <span class="bg-cyan-500/10 text-cyan-500 dark:text-cyan-400 px-2 py-1 rounded-md font-semibold border border-cyan-500/20">
                 23h: ₹{{ v.pricing?.h23?.price || '2000' }}
               </span>
-              <span style="background: rgba(255, 255, 255, 0.06); padding: 4px 8px; border-radius: 6px;">
+              <span class="bg-muted/40 text-muted-foreground px-2 py-1 rounded-md border border-border">
                 11h: ₹{{ v.pricing?.h11?.price || '1200' }}
               </span>
             </div>
 
-            <div class="car-action-row">
-              <span class="type-tag">{{ v.type || 'Sedan' }}</span>
+            <div class="flex justify-between items-center mt-auto pt-2 border-t border-border/50">
+              <span class="text-xs font-bold uppercase text-cyan-500 tracking-wider">{{ v.type || 'Sedan' }}</span>
               <button
+                hlmBtn
+                size="sm"
+                class="bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold rounded-lg shadow-sm flex items-center gap-1.5 hover:from-cyan-400 hover:to-blue-500"
                 type="button"
                 (click)="$event.stopPropagation(); onBookNow(v)"
-                style="background: var(--color-cyan-500, #06b6d4); color: #000; border: none; padding: 6px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px;"
               >
                 <span>Reserve</span>
-                <ng-icon style="font-size: 16px; width: 16px; height: 16px;" name="lucideArrowRight"></ng-icon>
+                <ng-icon name="lucideArrowRight"></ng-icon>
               </button>
             </div>
           </div>
         </div>
       } @empty {
-        <div class="empty-fleet-card" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
-          <ng-icon style="font-size: 48px; width: 48px; height: 48px; opacity: 0.5;" name="lucideSearchX"></ng-icon>
-          <p>No vehicles match the selected filter.</p>
+        <div class="col-span-full flex flex-col items-center justify-center p-12 border border-border rounded-2xl bg-card text-center my-8 shadow-sm">
+          <ng-icon name="lucideSearchX" class="text-4xl mx-auto mb-3 text-muted-foreground"></ng-icon>
+          <p class="text-sm font-semibold text-muted-foreground">No vehicles match the selected filter.</p>
         </div>
       }
     </div>
@@ -253,19 +235,19 @@
         <p>Our commitment remains absolute: well-maintained models, verified professional drivers, punctual pickups, and complete billing transparency. From quick commutes to outstation holidays, we make every trip an experience in comfort.</p>
       </div>
       <div class="about-stats-card">
-        <div class="stat-box">
+        <div hlmCard class="stat-box">
           <div class="stat-num">10+</div>
           <div class="stat-lbl">Years Experience</div>
         </div>
-        <div class="stat-box">
+        <div hlmCard class="stat-box">
           <div class="stat-num">50+</div>
           <div class="stat-lbl">Fleet Vehicles</div>
         </div>
-        <div class="stat-box">
+        <div hlmCard class="stat-box">
           <div class="stat-num">15k+</div>
           <div class="stat-lbl">Happy Bookings</div>
         </div>
-        <div class="stat-box">
+        <div hlmCard class="stat-box">
           <div class="stat-num">100%</div>
           <div class="stat-lbl">Safe Rides</div>
         </div>
@@ -282,7 +264,7 @@
     </div>
 
     <div class="contact-grid">
-      <div class="contact-item">
+      <div hlmCard class="contact-item">
         <div class="contact-icon-box">
           <ng-icon name="lucideMapPin"></ng-icon>
         </div>
@@ -290,7 +272,7 @@
         <p>Sri Ram & Ram's Automotives<br>Cinema road, Suryanarayana puram, Kakinada, AP 533001</p>
       </div>
 
-      <div class="contact-item">
+      <div hlmCard class="contact-item">
         <div class="contact-icon-box">
           <ng-icon name="lucidePhone"></ng-icon>
         </div>
@@ -298,7 +280,7 @@
         <p>+91 9494873336<br>+91 9494893336</p>
       </div>
 
-      <div class="contact-item">
+      <div hlmCard class="contact-item">
         <div class="contact-icon-box">
           <ng-icon name="lucideMail"></ng-icon>
         </div>
@@ -306,7 +288,7 @@
         <p>support&#64;roadready.com<br>info&#64;rams-cars.com</p>
       </div>
 
-      <div class="contact-item">
+      <div hlmCard class="contact-item">
         <div class="contact-icon-box">
           <ng-icon name="lucideGlobe"></ng-icon>
         </div>
@@ -326,23 +308,24 @@
   <!-- Quick Booking Inquiry / Vehicle Details Modal -->
   @if (selectedVehicleForModal(); as vehicle) {
     <div
-      class="modal-backdrop"
-      style="position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px;"
+      class="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-50 p-4"
       (click)="closeVehicleModal()"
     >
       <div
-        class="modal-card"
-        style="background: var(--card, #18181b); border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; max-width: 540px; width: 100%; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; padding: 24px; color: var(--foreground, #fff); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);"
+        hlmCard
+        class="max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden p-6 shadow-2xl border border-border"
         (click)="$event.stopPropagation()"
       >
         <!-- Fixed Header -->
-        <div style="flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-          <h3 style="margin: 0; font-size: 1.35rem; font-weight: 700;">
+        <div class="shrink-0 flex justify-between items-center mb-4">
+          <h3 class="m-0 text-xl font-bold">
             {{ vehicle.manufacturer }} {{ vehicle.name }} ({{ vehicle.regNo }})
           </h3>
           <button
+            hlmBtn
+            size="icon"
+            variant="ghost"
             (click)="closeVehicleModal()"
-            style="background: none; border: none; color: inherit; cursor: pointer; padding: 4px;"
             aria-label="Close modal"
           >
             <ng-icon name="lucideX"></ng-icon>
@@ -350,61 +333,65 @@
         </div>
 
         <!-- Scrollable Body -->
-        <div class="modal-body-scroll" style="flex: 1; min-height: 0; overflow-y: auto; padding-right: 4px;">
-          <div style="margin-bottom: 16px; border-radius: 12px; overflow: hidden; max-height: 200px;">
-            <img [src]="getVehicleImage(vehicle)" alt="Vehicle" style="width: 100%; height: 200px; object-fit: cover;" />
+        <div class="flex-1 min-h-0 overflow-y-auto pr-1 space-y-4">
+          <div class="rounded-xl overflow-hidden max-h-48 border border-border">
+            <img [src]="getVehicleImage(vehicle)" alt="Vehicle" class="w-full h-48 object-cover" />
           </div>
 
           <!-- Pricing Slabs Table -->
-          <div style="background: rgba(255,255,255,0.04); border-radius: 10px; padding: 12px; margin-bottom: 16px;">
-            <div style="font-weight: 600; font-size: 0.85rem; color: var(--color-cyan-400, #22d3ee); margin-bottom: 8px;">
+          <div class="bg-muted/30 border border-border rounded-xl p-3">
+            <div class="font-bold text-xs text-cyan-500 dark:text-cyan-400 mb-2 uppercase tracking-wider">
               Pricing Packages:
             </div>
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; font-size: 0.85rem;">
+            <div class="grid grid-cols-2 gap-2 text-xs">
               <div>23 Hours: ₹{{ vehicle.pricing?.h23?.price || '2000' }} ({{ vehicle.pricing?.h23?.km || '300' }} KM)</div>
               <div>11 Hours: ₹{{ vehicle.pricing?.h11?.price || '1200' }} ({{ vehicle.pricing?.h11?.km || '150' }} KM)</div>
               <div>3 Hours: ₹{{ vehicle.pricing?.h3?.price || '500' }} ({{ vehicle.pricing?.h3?.km || '50' }} KM)</div>
               <div>1 Hour: ₹{{ vehicle.pricing?.h1?.price || '200' }} ({{ vehicle.pricing?.h1?.km || '20' }} KM)</div>
             </div>
-            <div style="font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-top: 8px;">
+            <div class="text-[11px] text-muted-foreground mt-2">
               Extra: ₹{{ vehicle.extraKmPrice || '12' }}/KM & ₹{{ vehicle.extraHourPrice || '150' }}/Hour.
             </div>
           </div>
 
           @if (inquirySubmitted()) {
-            <div style="background: rgba(34, 197, 94, 0.15); border: 1px solid #22c55e; border-radius: 10px; padding: 16px; text-align: center; color: #22c55e;">
-              <ng-icon style="font-size: 32px; width: 32px; height: 32px;" name="lucideCheckCircle"></ng-icon>
-              <p style="margin: 8px 0 0 0; font-weight: 600;">Inquiry Sent! Our desk agent will contact you shortly.</p>
+            <div class="bg-emerald-500/15 border border-emerald-500/30 rounded-xl p-4 text-center text-emerald-600 dark:text-emerald-400">
+              <ng-icon class="text-3xl mx-auto block mb-1" name="lucideCheckCircle"></ng-icon>
+              <p class="m-0 font-semibold text-sm">Inquiry Sent! Our desk agent will contact you shortly.</p>
             </div>
           } @else {
-            <form (submit)="submitInquiry()" style="display: flex; flex-direction: column; gap: 12px;">
+            <form (submit)="submitInquiry()" class="flex flex-col gap-3">
               <input
+                hlmInput
                 type="text"
                 placeholder="Your Full Name"
                 [(ngModel)]="inquiryName"
                 name="inquiryName"
                 required
-                style="padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.3); color: #fff;"
+                class="w-full text-sm"
               />
               <input
+                hlmInput
                 type="tel"
                 placeholder="Contact Phone Number (10 digits)"
                 [(ngModel)]="inquiryPhone"
                 name="inquiryPhone"
                 required
-                style="padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.3); color: #fff;"
+                class="w-full text-sm"
               />
-              <div style="display: flex; gap: 10px;">
+              <div class="flex gap-2">
                 <input
+                  hlmInput
                   type="datetime-local"
                   [(ngModel)]="inquiryPickupDate"
                   name="inquiryPickupDate"
-                  style="flex: 1; padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.3); color: #fff;"
+                  class="flex-1 text-sm"
                 />
                 <select
+                  hlmInput
                   [(ngModel)]="inquiryDuration"
                   name="inquiryDuration"
-                  style="padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.3); color: #fff;"
+                  class="text-sm"
                 >
                   <option value="23">23 Hours (Full Day)</option>
                   <option value="11">11 Hours (Half Day)</option>
@@ -413,9 +400,10 @@
                 </select>
               </div>
               <button
+                hlmBtn
                 type="submit"
                 [disabled]="!inquiryName || !inquiryPhone"
-                style="background: var(--color-cyan-500, #06b6d4); color: #000; padding: 12px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 4px;"
+                class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold rounded-lg shadow-sm hover:from-cyan-400 hover:to-blue-500 mt-1"
               >
                 Request Booking Reservation
               </button>
