@@ -1,75 +1,83 @@
-<div class="overview-header">
-  <div class="header-text">
-    <h2>Overview Dashboard</h2>
-    <p class="subtitle">Real-time fleet telemetry and operations console</p>
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+  <div>
+    <h2 class="text-3xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600">Overview Dashboard</h2>
+    <p class="text-sm font-medium text-muted-foreground mt-1">Real-time fleet telemetry and operations console</p>
   </div>
-  <div class="header-actions">
-    <div class="live-status">
-      <span class="pulse-dot"></span>
-      <span class="live-label">LIVE FEED</span>
+  <div>
+    <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
+      <span class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981] animate-pulse"></span>
+      <span class="text-[10px] font-black text-emerald-500 tracking-wider">LIVE FEED</span>
     </div>
   </div>
 </div>
 
-<div class="stats-card-grid">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
   <!-- Total Fleet Card -->
-  <div hlmCard class="stat-card card-available clickable-card" (click)="openDetailsModal('fleet')" hlmTooltip="Click to view all vehicles">
-    <div class="stat-glow"></div>
-    <div class="stat-card-header">
-      <span class="stat-title">Total Fleet</span>
-      <div class="stat-icon-wrapper">
-        <ng-icon name="lucideCheckCircle"></ng-icon>
+  <div
+    hlmCard
+    class="p-6 rounded-2xl border border-border bg-card shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border-l-4 border-l-emerald-500 relative overflow-hidden"
+    (click)="openDetailsModal('fleet')"
+    hlmTooltip="Click to view all vehicles"
+  >
+    <div class="flex items-center justify-between w-full mb-3">
+      <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Total Fleet</span>
+      <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-emerald-500/10 text-emerald-500">
+        <ng-icon name="lucideCheckCircle" class="text-lg"></ng-icon>
       </div>
     </div>
-    <div class="stat-number">{{ stats().totalFleet }}</div>
-    <div class="stat-footer">
-      <span class="footer-desc">Total registered vehicles</span>
-    </div>
+    <div class="text-4xl font-black tracking-tight text-foreground leading-none mb-2">{{ stats().totalFleet }}</div>
+    <div class="text-xs font-medium text-muted-foreground">Total registered vehicles</div>
   </div>
 
   <!-- Active Bookings Card -->
-  <div hlmCard class="stat-card card-rented clickable-card" (click)="openDetailsModal('bookings')" hlmTooltip="Click to view active bookings">
-    <div class="stat-glow"></div>
-    <div class="stat-card-header">
-      <span class="stat-title">Active Bookings</span>
-      <div class="stat-icon-wrapper">
-        <ng-icon name="lucideKey"></ng-icon>
+  <div
+    hlmCard
+    class="p-6 rounded-2xl border border-border bg-card shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border-l-4 border-l-amber-500 relative overflow-hidden"
+    (click)="openDetailsModal('bookings')"
+    hlmTooltip="Click to view active bookings"
+  >
+    <div class="flex items-center justify-between w-full mb-3">
+      <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Active Bookings</span>
+      <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-amber-500/10 text-amber-500">
+        <ng-icon name="lucideKey" class="text-lg"></ng-icon>
       </div>
     </div>
-    <div class="stat-number">{{ stats().activeBookings }}</div>
-    <div class="stat-footer">
-      <span class="footer-desc">Active customer journeys</span>
-    </div>
+    <div class="text-4xl font-black tracking-tight text-foreground leading-none mb-2">{{ stats().activeBookings }}</div>
+    <div class="text-xs font-medium text-muted-foreground">Active customer journeys</div>
   </div>
 
   <!-- Maintenance Card -->
-  <div hlmCard class="stat-card card-maintenance clickable-card" (click)="openDetailsModal('maintenance')" hlmTooltip="Click to view fleet in service">
-    <div class="stat-glow"></div>
-    <div class="stat-card-header">
-      <span class="stat-title">In Service</span>
-      <div class="stat-icon-wrapper">
-        <ng-icon name="lucideWrench"></ng-icon>
+  <div
+    hlmCard
+    class="p-6 rounded-2xl border border-border bg-card shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border-l-4 border-l-rose-500 relative overflow-hidden"
+    (click)="openDetailsModal('maintenance')"
+    hlmTooltip="Click to view fleet in service"
+  >
+    <div class="flex items-center justify-between w-full mb-3">
+      <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground">In Service</span>
+      <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-rose-500/10 text-rose-500">
+        <ng-icon name="lucideWrench" class="text-lg"></ng-icon>
       </div>
     </div>
-    <div class="stat-number">{{ stats().maintenance }}</div>
-    <div class="stat-footer">
-      <span class="footer-desc">Routine servicing & repairs</span>
-    </div>
+    <div class="text-4xl font-black tracking-tight text-foreground leading-none mb-2">{{ stats().maintenance }}</div>
+    <div class="text-xs font-medium text-muted-foreground">Routine servicing & repairs</div>
   </div>
 
   <!-- Pending Payments Card -->
-  <div hlmCard class="stat-card card-payments clickable-card" (click)="openDetailsModal('payments')" hlmTooltip="Click to view outstanding dues">
-    <div class="stat-glow"></div>
-    <div class="stat-card-header">
-      <span class="stat-title">Pending Payments</span>
-      <div class="stat-icon-wrapper">
-        <ng-icon name="lucideAlertTriangle"></ng-icon>
+  <div
+    hlmCard
+    class="p-6 rounded-2xl border border-border bg-card shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border-l-4 border-l-purple-500 relative overflow-hidden"
+    (click)="openDetailsModal('payments')"
+    hlmTooltip="Click to view outstanding dues"
+  >
+    <div class="flex items-center justify-between w-full mb-3">
+      <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Pending Payments</span>
+      <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-purple-500/10 text-purple-500">
+        <ng-icon name="lucideAlertTriangle" class="text-lg"></ng-icon>
       </div>
     </div>
-    <div class="stat-number">{{ stats().pendingPayments }}</div>
-    <div class="stat-footer">
-      <span class="footer-desc">Outstanding balances</span>
-    </div>
+    <div class="text-4xl font-black tracking-tight text-foreground leading-none mb-2">{{ stats().pendingPayments }}</div>
+    <div class="text-xs font-medium text-muted-foreground">Outstanding balances</div>
   </div>
 </div>
 

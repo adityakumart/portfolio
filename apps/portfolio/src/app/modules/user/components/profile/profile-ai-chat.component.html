@@ -1,9 +1,9 @@
-<div [class.chat-route-container]="!isEmbedded" [class.embedded]="isEmbedded" class="reveal-on-scroll visible">
-  <div class="glass-card chat-card-container">
+<div [class.min-h-[calc(100vh-160px)]]="!isEmbedded" [class.p-4]="!isEmbedded" [class.sm:p-6]="!isEmbedded" class="flex items-center justify-center w-full h-full">
+  <div hlmCard class="w-full max-w-[900px] h-[720px] max-h-[calc(100vh-180px)] border border-border bg-card shadow-2xl rounded-3xl flex flex-col overflow-hidden">
     
     <!-- Chat Header Panel -->
-    <div class="chat-header">
-      <div class="header-left">
+    <div hlmCardHeader class="flex flex-row justify-between items-center px-6 py-4 border-b border-border bg-card/60 backdrop-blur-md shrink-0 space-y-0">
+      <div class="flex items-center gap-3">
         @if (!isEmbedded) {
           <button
             hlmBtn
@@ -11,135 +11,139 @@
             variant="ghost"
             routerLink="/user"
             hlmTooltip="Back to Profile"
-            class="back-btn"
+            class="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground"
           >
-            <ng-icon name="lucideArrowLeft"></ng-icon>
+            <ng-icon name="lucideArrowLeft" class="text-base"></ng-icon>
           </button>
         }
-        <div class="header-titles">
-          <h3>AI Developer Assistant</h3>
-          <span class="subtitle-badge">
-            <span class="status-indicator-dot pulsing"></span>
-            Online • Gemini Sandbox
-          </span>
+        <div>
+          <h3 hlmCardTitle class="text-base font-bold text-foreground">AI Developer Assistant</h3>
+          <div class="flex items-center gap-2 mt-0.5">
+            <span hlmBadge variant="secondary" class="gap-1.5 text-[11px] font-semibold py-0.5 px-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              Online • Gemini Sandbox
+            </span>
+          </div>
         </div>
       </div>
       
-      <div class="header-right">
+      <div>
         <button
           hlmBtn
           variant="outline"
+          size="sm"
           (click)="onClearChat()"
           [disabled]="chatService.messages().length <= 1 && !chatService.isLoading()"
           hlmTooltip="Clear Conversation History"
-          class="clear-btn text-destructive border-destructive/30 hover:bg-destructive/10"
+          class="text-xs font-semibold text-destructive border-destructive/30 hover:bg-destructive/10 gap-1.5"
         >
-          <ng-icon name="lucideTrash2"></ng-icon> Clear Chat
+          <ng-icon name="lucideTrash2" class="text-sm"></ng-icon> Clear Chat
         </button>
       </div>
     </div>
 
     <!-- Chat Message History Feed -->
-    <div class="chat-history-container" #scrollContainer>
-      <div class="messages-list">
-        @for (msg of chatService.messages(); track msg.id) {
-          <div
-            class="message-row"
-            [class.user-message]="msg.role === 'user'"
-            [class.assistant-message]="msg.role === 'assistant'"
-          >
-            <!-- Avatar circle -->
-            <div class="message-avatar">
-              @if (msg.role === 'user') {
-                <div class="avatar-circle user-avatar">
-                  <span>{{ userInitials() }}</span>
-                </div>
-              } @else {
-                <div class="avatar-circle ai-avatar">
-                  <ng-icon name="lucideBot"></ng-icon>
-                </div>
-              }
-            </div>
-
-            <!-- Bubble Content -->
-            <div class="message-body">
-              <div class="message-bubble" [class.is-typing]="msg.status === 'sending'">
-                <div [innerHTML]="sanitizeHtml(msg.content)" class="bubble-markdown-inline"></div>
-                @if (msg.status === 'sending') {
-                  <span class="streaming-caret"></span>
-                }
+    <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5" #scrollContainer>
+      @for (msg of chatService.messages(); track msg.id) {
+        <div
+          class="flex items-start gap-3 w-full"
+          [class.flex-row-reverse]="msg.role === 'user'"
+        >
+          <!-- Avatar circle -->
+          <div class="shrink-0">
+            @if (msg.role === 'user') {
+              <div class="w-9 h-9 rounded-full bg-primary/15 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs">
+                <span>{{ userInitials() }}</span>
               </div>
-              
-              <!-- Footer status / date info -->
-              <div class="message-meta">
-                <span class="time-stamp">{{ msg.timestamp | date:'shortTime' }}</span>
-                @if (msg.status === 'sending') {
-                  <span class="status-sending-text">• Typing...</span>
-                } @else if (msg.status === 'error') {
-                  <button class="retry-inline-btn" (click)="onRetry(msg.id)">
-                    <ng-icon name="lucideRefreshCw" class="size-14"></ng-icon> Retry
-                  </button>
-                }
-              </div>
-            </div>
-          </div>
-        }
-
-        <!-- AI Typing / Generation State Loader -->
-        @if (chatService.isLoading()) {
-          <div class="message-row assistant-message loading-state">
-            <div class="message-avatar">
-              <div class="avatar-circle ai-avatar">
+            } @else {
+              <div class="w-9 h-9 rounded-full bg-emerald-500/15 text-emerald-500 border border-emerald-500/20 flex items-center justify-center text-base">
                 <ng-icon name="lucideBot"></ng-icon>
               </div>
+            }
+          </div>
+
+          <!-- Bubble Content -->
+          <div class="flex flex-col max-w-[85%] sm:max-w-[75%]" [class.items-end]="msg.role === 'user'">
+            <div
+              class="p-4 rounded-2xl text-sm leading-relaxed shadow-xs"
+              [class.bg-primary]="msg.role === 'user'"
+              [class.text-primary-foreground]="msg.role === 'user'"
+              [class.rounded-tr-xs]="msg.role === 'user'"
+              [class.bg-muted/70]="msg.role === 'assistant'"
+              [class.text-foreground]="msg.role === 'assistant'"
+              [class.border]="msg.role === 'assistant'"
+              [class.border-border/60]="msg.role === 'assistant'"
+              [class.rounded-tl-xs]="msg.role === 'assistant'"
+            >
+              <div [innerHTML]="sanitizeHtml(msg.content)" class="prose dark:prose-invert max-w-none text-sm break-words"></div>
+              @if (msg.status === 'sending') {
+                <span class="inline-block w-2 h-4 ml-1 bg-current animate-pulse"></span>
+              }
             </div>
-            <div class="message-body">
-              <div class="message-bubble loading-bubble">
-                <div class="typing-indicator">
-                  <span class="dot"></span>
-                  <span class="dot"></span>
-                  <span class="dot"></span>
-                </div>
-              </div>
+            
+            <!-- Footer status / date info -->
+            <div class="flex items-center gap-2 mt-1 px-1 text-[11px] text-muted-foreground">
+              <span>{{ msg.timestamp | date:'shortTime' }}</span>
+              @if (msg.status === 'sending') {
+                <span class="text-primary font-medium">• Typing...</span>
+              } @else if (msg.status === 'error') {
+                <button class="text-destructive font-semibold inline-flex items-center gap-1 hover:underline cursor-pointer" (click)="onRetry(msg.id)">
+                  <ng-icon name="lucideRefreshCw" class="text-xs"></ng-icon> Retry
+                </button>
+              }
             </div>
           </div>
-        }
-      </div>
+        </div>
+      }
+
+      <!-- AI Typing / Generation State Loader -->
+      @if (chatService.isLoading()) {
+        <div class="flex items-start gap-3 w-full">
+          <div class="w-9 h-9 rounded-full bg-emerald-500/15 text-emerald-500 border border-emerald-500/20 flex items-center justify-center text-base shrink-0">
+            <ng-icon name="lucideBot"></ng-icon>
+          </div>
+          <div class="p-4 rounded-2xl rounded-tl-xs bg-muted/70 border border-border/60 flex items-center gap-1.5 shadow-xs">
+            <span class="w-2 h-2 rounded-full bg-muted-foreground/60 animate-bounce"></span>
+            <span class="w-2 h-2 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:0.2s]"></span>
+            <span class="w-2 h-2 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:0.4s]"></span>
+          </div>
+        </div>
+      }
     </div>
 
     <!-- Chat Prompt Input Panel -->
-    <div class="chat-input-panel">
-      <div class="input-wrapper">
+    <div hlmCardFooter class="p-4 border-t border-border bg-card/60 backdrop-blur-md shrink-0 flex flex-col gap-2">
+      <div class="w-full flex items-center gap-3 p-1.5 rounded-2xl bg-muted/40 border border-border focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
         <textarea
           #promptTextarea
           [value]="currentPrompt()"
           (input)="onPromptInput($event)"
           (keydown)="onKeyDown($event)"
-          class="chat-textarea"
-          placeholder="Ask a technical question (e.g. 'Show me a Signal code example')"
+          class="flex-1 bg-transparent border-0 outline-none text-sm text-foreground placeholder:text-muted-foreground p-2 resize-none max-h-32 min-h-[40px]"
+          placeholder="Ask a technical question (e.g. 'Show me an Angular Signal example')..."
           rows="1"
           maxlength="2000"
           [disabled]="chatService.isLoading()"
         ></textarea>
         
-        <div class="input-actions-bar">
-          <span class="char-counter" [class.maxed-out]="currentPrompt().length >= 1900">
-            {{ currentPrompt().length }} / 2000
+        <div class="flex items-center gap-2 pr-1.5 shrink-0">
+          <span class="text-[11px] font-mono text-muted-foreground" [class.text-destructive]="currentPrompt().length >= 1900">
+            {{ currentPrompt().length }}/2000
           </span>
           
           <button
             hlmBtn
             size="icon"
-            class="send-fab-btn rounded-full"
+            class="h-9 w-9 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
             (click)="onSend()"
             [disabled]="!currentPrompt().trim() || chatService.isLoading()"
             hlmTooltip="Send Prompt (Enter)"
           >
-            <ng-icon name="lucideSend"></ng-icon>
+            <ng-icon name="lucideSend" class="text-base"></ng-icon>
           </button>
         </div>
       </div>
-      <div class="input-tip-footer">
+      <div class="text-center text-[11px] text-muted-foreground">
         <span><strong>Enter</strong> to Send • <strong>Shift + Enter</strong> for a new line</span>
       </div>
     </div>

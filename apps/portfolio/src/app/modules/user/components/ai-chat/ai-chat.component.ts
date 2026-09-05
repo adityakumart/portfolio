@@ -6,6 +6,7 @@ import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
 import { HlmCardImports } from '@spartan-ng/hel/card';
 import { HlmBadgeImports } from '@spartan-ng/hel/badge';
+import { HlmInputImports } from '@spartan-ng/hel/input';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideZap,
@@ -37,6 +38,7 @@ import { AuthService } from '../../services/auth';
     HlmTooltipImports,
     HlmCardImports,
     HlmBadgeImports,
+    HlmInputImports,
     NgIconComponent,
   ],
   providers: [
