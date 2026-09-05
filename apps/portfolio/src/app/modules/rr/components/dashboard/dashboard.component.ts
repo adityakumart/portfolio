@@ -13,10 +13,11 @@ import {
   lucideLayoutDashboard,
   lucideCalendarDays,
   lucideBadgeCheck,
+  lucideX,
 } from '@ng-icons/lucide';
-import { HlmDialogService } from '@spartan-ng/hel/dialog';
-import { HlmButtonDirective } from '@spartan-ng/hel/button';
-import { HlmInputDirective } from '@spartan-ng/hel/input';
+import { HlmDialogService } from '@spartan-ng/hel-luma/dialog';
+import { HlmButtonDirective } from '@spartan-ng/hel-luma/button';
+import { HlmInputDirective } from '@spartan-ng/hel-luma/input';
 
 @Component({
   selector: 'app-rr-dashboard',
@@ -41,6 +42,7 @@ import { HlmInputDirective } from '@spartan-ng/hel/input';
       lucideLayoutDashboard,
       lucideCalendarDays,
       lucideBadgeCheck,
+      lucideX,
     }),
   ],
   templateUrl: './dashboard.component.html',

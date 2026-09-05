@@ -12,6 +12,6 @@ export class HlmFieldLegend {
 	public readonly variant = input<'label' | 'legend'>('legend');
 
 	constructor() {
-		classes(() => 'mb-2.5 font-medium data-[variant=label]:text-xs data-[variant=legend]:text-sm');
+		classes(() => 'mb-2 font-medium data-[variant=label]:text-xs/relaxed data-[variant=legend]:text-sm');
 	}
 }
