@@ -9,53 +9,62 @@
 </div>
 
 @if (historyBookings().length > 0) {
-  <div class="table-card-wrapper border rounded-2xl overflow-hidden shadow-sm bg-card">
-    <div class="table-container overflow-x-auto">
-      <table class="modern-history-table w-full text-xs text-left">
-        <thead class="bg-muted/40 uppercase font-semibold text-muted-foreground">
-          <tr>
-            <th class="p-3">Booking ID</th>
-            <th class="p-3">Customer Details</th>
-            <th class="p-3">Vehicle Details</th>
-            <th class="p-3">Creation Date</th>
-            <th class="p-3">Rental Billings</th>
-            <th class="p-3">Final Odometer</th>
-            <th class="p-3">Status</th>
+  <div class="border border-border rounded-2xl overflow-hidden shadow-sm bg-card mb-10">
+    <div hlmTableContainer class="max-h-[calc(100vh-280px)] overflow-auto">
+      <table hlmTable class="w-full text-xs">
+        <thead hlmTHead class="sticky top-0 z-10 bg-card backdrop-blur-md">
+          <tr hlmTr>
+            <th hlmTh>Booking ID</th>
+            <th hlmTh>Customer Details</th>
+            <th hlmTh>Vehicle Details</th>
+            <th hlmTh>Creation Date</th>
+            <th hlmTh>Rental Billings</th>
+            <th hlmTh>Final Odometer</th>
+            <th hlmTh class="text-center">Status</th>
           </tr>
         </thead>
-        <tbody class="divide-y">
+        <tbody hlmTBody>
           @for (b of historyBookings(); track b.id) {
-            <tr class="hover:bg-muted/10 transition-colors">
-              <td class="p-3">
-                <span class="booking-id-tag font-mono font-bold">{{ b.id }}</span>
+            <tr hlmTr>
+              <td hlmTd>
+                <span class="font-mono font-bold text-xs bg-muted/50 px-2 py-0.5 rounded border border-border">{{ b.id }}</span>
               </td>
-              <td class="p-3">
-                <div class="customer-name font-semibold">{{ b.renterFirstName }} {{ b.renterSecondName }}</div>
-                <div class="customer-phone text-muted-foreground text-xs">{{ b.renterPhone }}</div>
+              <td hlmTd>
+                <div class="font-semibold">{{ b.renterFirstName }} {{ b.renterSecondName }}</div>
+                <div class="text-muted-foreground text-xs">{{ b.renterPhone }}</div>
               </td>
-              <td class="p-3">
-                <div class="vehicle-title font-semibold">{{ b.vehicleManufacturer }} {{ b.vehicleName }}</div>
-                <div class="vehicle-reg font-mono text-muted-foreground text-xs">{{ b.vehicleRegNo }}</div>
+              <td hlmTd>
+                <div class="font-semibold">{{ b.vehicleManufacturer }} {{ b.vehicleName }}</div>
+                <div class="font-mono text-muted-foreground text-xs">{{ b.vehicleRegNo }}</div>
               </td>
-              <td class="p-3">
-                <div class="creation-date font-medium">{{ b.createdAt | date:'dd-MM-yyyy' }}</div>
-                <div class="creation-time text-muted-foreground text-xs">{{ b.createdAt | date:'shortTime' }}</div>
+              <td hlmTd>
+                <div class="font-medium">{{ b.createdAt | date:'dd-MM-yyyy' }}</div>
+                <div class="text-muted-foreground text-xs">{{ b.createdAt | date:'shortTime' }}</div>
               </td>
-              <td class="p-3">
-                <span class="billing-amount font-semibold">₹{{ b.finalRentalAmount }}</span>
+              <td hlmTd>
+                <span class="font-semibold font-mono">₹{{ b.finalRentalAmount }}</span>
               </td>
-              <td class="p-3">
+              <td hlmTd>
                 @if (b.vehicleOdometerEnd) {
-                  <span class="odometer-end">{{ b.vehicleOdometerEnd }} KM</span>
+                  <span class="font-mono font-medium">{{ b.vehicleOdometerEnd }} KM</span>
                 } @else {
-                  <span class="no-odometer text-muted-foreground">&mdash;</span>
+                  <span class="text-muted-foreground">&mdash;</span>
                 }
               </td>
-              <td class="p-3">
-                <div class="status-badge status-badge-{{ b.status }}">
-                  <span class="status-dot"></span>
-                  <span>{{ b.status | uppercase }}</span>
-                </div>
+              <td hlmTd class="text-center">
+                @if (b.status === 'completed') {
+                  <span hlmBadge variant="secondary" class="font-semibold text-emerald-600 dark:text-emerald-400">
+                    COMPLETED
+                  </span>
+                } @else if (b.status === 'cancelled') {
+                  <span hlmBadge variant="destructive" class="font-semibold">
+                    CANCELLED
+                  </span>
+                } @else {
+                  <span hlmBadge variant="outline" class="font-semibold uppercase">
+                    {{ b.status }}
+                  </span>
+                }
               </td>
             </tr>
           }
@@ -64,11 +73,11 @@
     </div>
   </div>
 } @else {
-  <div class="empty-state-card">
-    <div class="empty-icon-wrapper">
-      <ng-icon name="lucideHistory"></ng-icon>
+  <div class="flex flex-col items-center justify-center p-12 border border-border rounded-2xl bg-card text-center my-8 shadow-sm">
+    <div class="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-4">
+      <ng-icon name="lucideHistory" class="text-2xl"></ng-icon>
     </div>
-    <h3>No History Found</h3>
-    <p>There are no completed or cancelled booking records in the fleet archive database.</p>
+    <h3 class="text-lg font-bold text-foreground mb-1">No History Found</h3>
+    <p class="text-sm text-muted-foreground max-w-md">There are no completed or cancelled booking records in the fleet archive database.</p>
   </div>
 }

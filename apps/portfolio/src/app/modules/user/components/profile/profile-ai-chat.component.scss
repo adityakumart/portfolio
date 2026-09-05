@@ -44,7 +44,6 @@
   box-sizing: border-box;
 }
 
-// Header
 .chat-header {
   display: flex;
   justify-content: space-between;
@@ -64,17 +63,14 @@
         margin: 0;
         font-size: 1.1rem;
         font-weight: 700;
-        letter-spacing: -0.01em;
         color: hsl(var(--foreground));
       }
-
       .subtitle-badge {
         display: inline-flex;
         align-items: center;
         gap: 6px;
         font-size: 0.75rem;
         color: hsl(var(--muted-foreground));
-
         .status-indicator-dot {
           width: 6px;
           height: 6px;
@@ -86,7 +82,6 @@
   }
 }
 
-// Chat Messages Feed
 .chat-history-container {
   flex: 1;
   overflow-y: auto;
@@ -104,10 +99,8 @@
 
       &.user-message {
         flex-direction: row-reverse;
-
         .message-body {
           align-items: flex-end;
-
           .message-bubble {
             background: hsl(var(--primary));
             color: hsl(var(--primary-foreground));
@@ -116,26 +109,22 @@
         }
       }
 
-      .message-avatar {
-        .avatar-circle {
-          width: 32px;
-          height: 32px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: 600;
-          font-size: 0.75rem;
-
-          &.user-avatar {
-            background: hsl(var(--secondary));
-            color: hsl(var(--secondary-foreground));
-          }
-
-          &.ai-avatar {
-            background: hsl(var(--primary) / 0.1);
-            color: hsl(var(--primary));
-          }
+      .message-avatar .avatar-circle {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.75rem;
+        &.user-avatar {
+          background: hsl(var(--secondary));
+          color: hsl(var(--secondary-foreground));
+        }
+        &.ai-avatar {
+          background: hsl(var(--primary) / 0.1);
+          color: hsl(var(--primary));
         }
       }
 
@@ -152,7 +141,6 @@
           font-size: 0.875rem;
           line-height: 1.6;
           border: 1px solid hsl(var(--border));
-
           .bubble-markdown-inline {
             word-break: break-word;
           }
@@ -168,12 +156,10 @@
   }
 }
 
-// Input Footer
 .chat-input-panel {
   padding: 1rem 1.5rem;
   border-top: 1px solid hsl(var(--border));
   background: hsl(var(--card) / 0.5);
-  backdrop-filter: blur(8px);
 
   .input-wrapper {
     display: flex;
@@ -186,7 +172,6 @@
 
     &:focus-within {
       border-color: hsl(var(--primary));
-      box-shadow: 0 0 0 1px hsl(var(--primary));
     }
 
     input {
@@ -196,10 +181,6 @@
       outline: none;
       font-size: 0.875rem;
       color: hsl(var(--foreground));
-
-      &::placeholder {
-        color: hsl(var(--muted-foreground));
-      }
     }
   }
 }

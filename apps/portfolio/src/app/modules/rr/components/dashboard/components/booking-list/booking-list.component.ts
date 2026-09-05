@@ -22,10 +22,12 @@ import { jsPDF } from 'jspdf';
 import QRCode from 'qrcode';
 import { IBooking, IVehicle } from '@portfolio/shared-types';
 
-import { HlmInputImports } from '@spartan-ng/hel-luma/input';
-import { HlmButtonImports } from '@spartan-ng/hel-luma/button';
-import { HlmDialogService } from '@spartan-ng/hel-luma/dialog';
-import { HlmTooltipImports } from '@spartan-ng/hel-luma/tooltip';
+import { HlmInputImports } from '@spartan-ng/hel/input';
+import { HlmButtonImports } from '@spartan-ng/hel/button';
+import { HlmDialogService } from '@spartan-ng/hel/dialog';
+import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
+import { HlmTableImports } from '@spartan-ng/hel/table';
+import { HlmBadgeImports } from '@spartan-ng/hel/badge';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideCalendarDays,
@@ -56,6 +58,8 @@ import {
     HlmInputImports,
     HlmButtonImports,
     HlmTooltipImports,
+    HlmTableImports,
+    HlmBadgeImports,
     NgIconComponent,
   ],
   providers: [

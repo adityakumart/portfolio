@@ -4,6 +4,8 @@ import { RouterLink } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
+import { HlmCardImports } from '@spartan-ng/hel/card';
+import { HlmBadgeImports } from '@spartan-ng/hel/badge';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideZap,
@@ -33,6 +35,8 @@ import { AuthService } from '../../services/auth';
     RouterLink,
     HlmButtonImports,
     HlmTooltipImports,
+    HlmCardImports,
+    HlmBadgeImports,
     NgIconComponent,
   ],
   providers: [

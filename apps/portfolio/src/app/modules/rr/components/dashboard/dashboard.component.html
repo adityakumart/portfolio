@@ -6,42 +6,48 @@
       <h2 class="app-title">RoadReady Command</h2>
     </div>
 
-    <div class="profile-container">
-      <div (click)="toggleProfileDropdown()" class="profile-button">
-        <div class="user-avatar-bubble">
+    <div class="relative">
+      <button
+        hlmBtn
+        variant="ghost"
+        [hlmDropdownMenuTrigger]="profileMenu"
+        class="flex items-center gap-3 px-3 py-1.5 h-auto rounded-xl border border-border bg-card/60 hover:bg-muted/50 transition-all"
+      >
+        <div class="h-8 w-8 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-600 text-white font-bold text-xs flex items-center justify-center shadow-sm">
           {{ getInitials() }}
         </div>
-        <div class="user-profile-meta">
-          <span class="user-name"
+        <div class="flex flex-col text-left">
+          <span class="font-bold text-xs leading-tight text-foreground"
             >{{ currentUser()?.firstName }} {{ currentUser()?.lastName }}</span
           >
-          <span class="user-role">{{ currentUser()?.role | uppercase }}</span>
+          <span class="text-[10px] font-extrabold text-cyan-500 tracking-wider uppercase">{{ currentUser()?.role }}</span>
         </div>
-        <ng-icon class="arrow-icon" name="lucideChevronDown"></ng-icon>
-      </div>
+        <ng-icon class="text-muted-foreground text-sm" name="lucideChevronDown"></ng-icon>
+      </button>
 
-      @if (profileDropdownOpen()) {
-        <div class="profile-dropdown">
-          <div class="dropdown-item" (click)="showProfilePopup()">
-            <ng-icon name="lucideUser"></ng-icon>
+      <ng-template #profileMenu>
+        <div hlmDropdownMenu class="w-56 p-1 rounded-xl shadow-xl border border-border bg-card/95 backdrop-blur-md">
+          <button hlmDropdownMenuItem class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left" (click)="showProfilePopup()">
+            <ng-icon name="lucideUser" class="text-muted-foreground"></ng-icon>
             <span>View Profile</span>
-          </div>
+          </button>
           @if (isAdmin()) {
-            <div
-              class="dropdown-item"
+            <button
+              hlmDropdownMenuItem
+              class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
               [routerLink]="['/user/rr/activity-logs']"
-              (click)="profileDropdownOpen.set(false)"
             >
-              <ng-icon name="lucideHistory"></ng-icon>
+              <ng-icon name="lucideHistory" class="text-muted-foreground"></ng-icon>
               <span>Activity Logs</span>
-            </div>
+            </button>
           }
-          <div class="dropdown-item logout" (click)="logout()">
-            <ng-icon name="lucideLogOut"></ng-icon>
+          <div hlmDropdownMenuSeparator class="my-1 border-t border-border"></div>
+          <button hlmDropdownMenuItem class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg text-destructive hover:bg-destructive/10 w-full text-left" (click)="logout()">
+            <ng-icon name="lucideLogOut" class="text-destructive"></ng-icon>
             <span>Logout</span>
-          </div>
+          </button>
         </div>
-      }
+      </ng-template>
     </div>
   </header>
 

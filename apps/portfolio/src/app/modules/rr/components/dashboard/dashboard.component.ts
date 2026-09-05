@@ -15,9 +15,10 @@ import {
   lucideBadgeCheck,
   lucideX,
 } from '@ng-icons/lucide';
-import { HlmDialogService } from '@spartan-ng/hel-luma/dialog';
-import { HlmButtonImports } from '@spartan-ng/hel-luma/button';
-import { HlmInputImports } from '@spartan-ng/hel-luma/input';
+import { HlmDialogService } from '@spartan-ng/hel/dialog';
+import { HlmButtonImports } from '@spartan-ng/hel/button';
+import { HlmInputImports } from '@spartan-ng/hel/input';
+import { HlmDropdownMenuImports } from '@spartan-ng/hel/dropdown-menu';
 
 @Component({
   selector: 'app-rr-dashboard',
@@ -30,6 +31,7 @@ import { HlmInputImports } from '@spartan-ng/hel-luma/input';
     NgIconComponent,
     HlmButtonImports,
     HlmInputImports,
+    HlmDropdownMenuImports,
   ],
   providers: [
     provideIcons({
