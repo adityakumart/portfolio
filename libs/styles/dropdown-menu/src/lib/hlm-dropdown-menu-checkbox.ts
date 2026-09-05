@@ -48,7 +48,7 @@ export class HlmDropdownMenuCheckbox {
 	constructor() {
 		classes(
 			() =>
-				"hover:bg-accent focus:bg-accent hover:text-accent-foreground focus:text-accent-foreground hover:**:text-accent-foreground focus:**:text-accent-foreground gap-2 rounded-none py-2 ps-2 pe-8 text-xs data-inset:ps-7 [&_ng-icon:not([class*='text-'])]:text-[length:--spacing(4)] group/dropdown-menu-checkbox relative flex w-full cursor-default items-center outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_ng-icon]:pointer-events-none [&_ng-icon]:shrink-0",
+				"hover:bg-accent focus:bg-accent hover:text-accent-foreground focus:text-accent-foreground hover:**:text-accent-foreground focus:**:text-accent-foreground min-h-7 gap-2 rounded-md py-1.5 ps-2 pe-8 text-xs data-inset:ps-7.5 [&_ng-icon:not([class*='text-'])]:text-[length:--spacing(3.5)] group/dropdown-menu-checkbox relative flex w-full cursor-default items-center outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 [&_ng-icon]:pointer-events-none [&_ng-icon]:shrink-0",
 		);
 	}
 }

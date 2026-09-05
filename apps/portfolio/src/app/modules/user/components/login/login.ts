@@ -2,10 +2,14 @@ import { Component, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { HlmInput } from '@spartan-ng/hel/input';
-import { HlmLabel } from '@spartan-ng/hel/label';
-import { HlmButton } from '@spartan-ng/hel/button';
-import { HlmSpinner } from '@spartan-ng/hel/spinner';
+import { HlmCardImports } from '@spartan-ng/hel/card';
+import { HlmTabsImports } from '@spartan-ng/hel/tabs';
+import { HlmInputImports } from '@spartan-ng/hel/input';
+import { HlmLabelImports } from '@spartan-ng/hel/label';
+import { HlmButtonImports } from '@spartan-ng/hel/button';
+import { HlmSpinnerImports } from '@spartan-ng/hel/spinner';
+import { HlmBadgeImports } from '@spartan-ng/hel/badge';
+import { HlmSeparatorImports } from '@spartan-ng/hel/separator';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideLock,
@@ -20,6 +24,9 @@ import {
   lucideCircleUser,
   lucideHome,
   lucideLogOut,
+  lucideShieldCheck,
+  lucideSparkles,
+  lucideArrowRight,
 } from '@ng-icons/lucide';
 import { AuthService } from '../../services/auth';
 
@@ -30,10 +37,14 @@ import { AuthService } from '../../services/auth';
     CommonModule,
     FormsModule,
     RouterLink,
-    HlmInput,
-    HlmLabel,
-    HlmButton,
-    HlmSpinner,
+    HlmCardImports,
+    HlmTabsImports,
+    HlmInputImports,
+    HlmLabelImports,
+    HlmButtonImports,
+    HlmSpinnerImports,
+    HlmBadgeImports,
+    HlmSeparatorImports,
     NgIconComponent,
   ],
   providers: [
@@ -50,6 +61,9 @@ import { AuthService } from '../../services/auth';
       lucideCircleUser,
       lucideHome,
       lucideLogOut,
+      lucideShieldCheck,
+      lucideSparkles,
+      lucideArrowRight,
     }),
   ],
   templateUrl: './login.html',

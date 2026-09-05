@@ -3,5 +3,5 @@
   "buildable": true,
   "generateAs": "library",
   "importAlias": "@spartan-ng/hel",
-  "style": "lyra"
-}
+  "style": "mira"
+}

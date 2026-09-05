@@ -2,14 +2,14 @@ import { Component, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { HlmCardImports } from '@spartan-ng/hel/card';
-import { HlmTabsImports } from '@spartan-ng/hel/tabs';
-import { HlmInputImports } from '@spartan-ng/hel/input';
-import { HlmLabelImports } from '@spartan-ng/hel/label';
-import { HlmButtonImports } from '@spartan-ng/hel/button';
-import { HlmSpinnerImports } from '@spartan-ng/hel/spinner';
-import { HlmBadgeImports } from '@spartan-ng/hel/badge';
-import { HlmSeparatorImports } from '@spartan-ng/hel/separator';
+import { HlmCardImports } from '@spartan-ng/hel-luma/card';
+import { HlmTabsImports } from '@spartan-ng/hel-luma/tabs';
+import { HlmInputImports } from '@spartan-ng/hel-luma/input';
+import { HlmLabelImports } from '@spartan-ng/hel-luma/label';
+import { HlmButtonImports } from '@spartan-ng/hel-luma/button';
+import { HlmSpinnerImports } from '@spartan-ng/hel-luma/spinner';
+import { HlmBadgeImports } from '@spartan-ng/hel-luma/badge';
+import { HlmSeparatorImports } from '@spartan-ng/hel-luma/separator';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideShieldCheck,

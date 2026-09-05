@@ -3,12 +3,12 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
 import { RRApiService } from '../../../../services/rr-api.service';
 import { IEmployee } from '@portfolio/shared-types';
-import { HlmCardDirective } from '@spartan-ng/hel/card';
-import { HlmInputDirective } from '@spartan-ng/hel/input';
-import { HlmLabelDirective } from '@spartan-ng/hel/label';
-import { HlmButtonDirective } from '@spartan-ng/hel/button';
-import { HlmDialogService } from '@spartan-ng/hel/dialog';
-import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
+import { HlmCardDirective } from '@spartan-ng/hel-luma/card';
+import { HlmInputDirective } from '@spartan-ng/hel-luma/input';
+import { HlmLabelDirective } from '@spartan-ng/hel-luma/label';
+import { HlmButtonDirective } from '@spartan-ng/hel-luma/button';
+import { HlmDialogService } from '@spartan-ng/hel-luma/dialog';
+import { HlmTooltipImports } from '@spartan-ng/hel-luma/tooltip';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideUsers,

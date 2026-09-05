@@ -64,6 +64,39 @@
       ],
       "@spartan-ng/hel/sonner": [
         "./libs/styles/sonner/src/index.ts"
+      ],
+      "@spartan-ng/hel-luma/utils": [
+        "./libs/styles-luma/utils/src/index.ts"
+      ],
+      "@spartan-ng/hel-luma/badge": [
+        "./libs/styles-luma/badge/src/index.ts"
+      ],
+      "@spartan-ng/hel-luma/button": [
+        "./libs/styles-luma/button/src/index.ts"
+      ],
+      "@spartan-ng/hel-luma/card": [
+        "./libs/styles-luma/card/src/index.ts"
+      ],
+      "@spartan-ng/hel-luma/dialog": [
+        "./libs/styles-luma/dialog/src/index.ts"
+      ],
+      "@spartan-ng/hel-luma/input": [
+        "./libs/styles-luma/input/src/index.ts"
+      ],
+      "@spartan-ng/hel-luma/label": [
+        "./libs/styles-luma/label/src/index.ts"
+      ],
+      "@spartan-ng/hel-luma/separator": [
+        "./libs/styles-luma/separator/src/index.ts"
+      ],
+      "@spartan-ng/hel-luma/spinner": [
+        "./libs/styles-luma/spinner/src/index.ts"
+      ],
+      "@spartan-ng/hel-luma/tabs": [
+        "./libs/styles-luma/tabs/src/index.ts"
+      ],
+      "@spartan-ng/hel-luma/tooltip": [
+        "./libs/styles-luma/tooltip/src/index.ts"
       ]
     },
     "forceConsistentCasingInFileNames": true,
