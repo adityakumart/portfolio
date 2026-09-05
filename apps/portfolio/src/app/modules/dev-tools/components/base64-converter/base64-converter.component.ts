@@ -1,11 +1,12 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { HlmCardDirective } from '@spartan-ng/hel/card';
-import { HlmInputDirective } from '@spartan-ng/hel/input';
-import { HlmButtonDirective } from '@spartan-ng/hel/button';
+import { HlmCardImports } from '@spartan-ng/hel/card';
+import { HlmInputImports } from '@spartan-ng/hel/input';
+import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
-import { HlmSeparatorDirective } from '@spartan-ng/hel/separator';
+import { HlmSeparatorImports } from '@spartan-ng/hel/separator';
+import { HlmBadgeImports } from '@spartan-ng/hel/badge';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideLock,
@@ -28,11 +29,12 @@ import { ToastrService } from '../../../../shared/services/toaster.service';
   standalone: true,
   imports: [
     ReactiveFormsModule,
-    HlmCardDirective,
-    HlmInputDirective,
-    HlmButtonDirective,
+    HlmCardImports,
+    HlmInputImports,
+    HlmButtonImports,
     HlmTooltipImports,
-    HlmSeparatorDirective,
+    HlmSeparatorImports,
+    HlmBadgeImports,
     NgIconComponent,
   ],
   providers: [

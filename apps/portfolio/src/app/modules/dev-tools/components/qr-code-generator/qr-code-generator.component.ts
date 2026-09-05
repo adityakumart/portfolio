@@ -1,11 +1,10 @@
 import { Component, OnInit, OnDestroy, AfterViewInit, ChangeDetectionStrategy, ViewChild, ElementRef, signal, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { HlmCardDirective } from '@spartan-ng/hel/card';
-import { HlmInputDirective } from '@spartan-ng/hel/input';
-import { HlmLabelDirective } from '@spartan-ng/hel/label';
-import { HlmButtonDirective } from '@spartan-ng/hel/button';
+import { HlmCardImports } from '@spartan-ng/hel/card';
+import { HlmInputImports } from '@spartan-ng/hel/input';
+import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
-import { HlmSeparatorDirective } from '@spartan-ng/hel/separator';
+import { HlmSeparatorImports } from '@spartan-ng/hel/separator';
 import { toast } from '@spartan-ng/hel/sonner';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { lucideAlertTriangle, lucideHelpCircle, lucideDownload } from '@ng-icons/lucide';
@@ -21,12 +20,11 @@ export type ErrorCorrectionLevel = 'L' | 'M' | 'Q' | 'H';
   standalone: true,
   imports: [
     ReactiveFormsModule,
-    HlmCardDirective,
-    HlmInputDirective,
-    HlmLabelDirective,
-    HlmButtonDirective,
+    HlmCardImports,
+    HlmInputImports,
+    HlmButtonImports,
     HlmTooltipImports,
-    HlmSeparatorDirective,
+    HlmSeparatorImports,
     NgIconComponent,
   ],
   providers: [

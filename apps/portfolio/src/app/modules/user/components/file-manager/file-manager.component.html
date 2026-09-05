@@ -1,93 +1,108 @@
-<div class="file-manager-container">
+<div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6 animate-in fade-in duration-300">
   <!-- Header & Navigation Control Panel -->
-  <div class="file-manager-header glass-card">
-    <div class="header-left">
-      <div class="title-row">
-        <h1 class="title">
-          <ng-icon name="lucideFolder" class="title-icon"></ng-icon> File Vault
-        </h1>
-
-        <!-- RBAC Scope & Role Badge -->
-        @if (isAdmin()) {
-          <div class="role-badge admin-badge" hlmTooltip="Full administrative access to root and all user directories">
-            <ng-icon name="lucideShieldCheck"></ng-icon>
-            <span>ADMIN ROOT</span>
+  <section hlmCard class="border border-border/80 bg-card/95 backdrop-blur-xl shadow-lg rounded-2xl p-5 sm:p-6">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div class="space-y-2">
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20">
+            <ng-icon name="lucideFolder" class="text-xl"></ng-icon>
           </div>
-        } @else {
-          <div class="role-badge user-badge" hlmTooltip="Isolated workspace scoped to your dedicated directory">
-            <ng-icon name="lucideLock"></ng-icon>
-            <span>USER VAULT</span>
-          </div>
-        }
-      </div>
+          <h1 class="text-2xl font-bold tracking-tight text-foreground">File Vault</h1>
 
-      <!-- Scope Directory Info -->
-      <div class="scope-info-line">
-        <span class="scope-label">Isolated Scope:</span>
-        <code class="scope-path">{{ uploadDir() }}</code>
-      </div>
-      
-      <!-- Breadcrumbs Path -->
-      <div class="breadcrumbs-bar">
-        <span class="crumb-item" (click)="navigateTo('')" hlmTooltip="Go to root scope">
-          <ng-icon name="lucideHome" class="crumb-icon"></ng-icon>
-          <span>{{ isAdmin() ? 'root' : userFullName() }}</span>
-        </span>
+          <!-- RBAC Scope & Role Badge -->
+          @if (isAdmin()) {
+            <span hlmBadge variant="destructive" class="gap-1.5 px-2.5 py-1 text-xs font-semibold uppercase tracking-wider" hlmTooltip="Full administrative access to root and all user directories">
+              <ng-icon name="lucideShieldCheck" class="text-sm"></ng-icon>
+              <span>ADMIN ROOT</span>
+            </span>
+          } @else {
+            <span hlmBadge variant="secondary" class="gap-1.5 px-2.5 py-1 text-xs font-semibold uppercase tracking-wider" hlmTooltip="Isolated workspace scoped to your dedicated directory">
+              <ng-icon name="lucideLock" class="text-sm"></ng-icon>
+              <span>USER VAULT</span>
+            </span>
+          }
+        </div>
+
+        <!-- Scope Directory Info -->
+        <div class="flex items-center gap-2 text-xs text-muted-foreground">
+          <span class="font-medium">Isolated Scope:</span>
+          <code class="px-2 py-0.5 rounded-md bg-muted font-mono text-[11px] text-foreground border border-border/40">{{ uploadDir() }}</code>
+        </div>
         
-        @for (crumb of breadcrumbs(); track crumb.path) {
-          <span class="crumb-divider">/</span>
-          <span class="crumb-item" (click)="navigateTo(crumb.path)">
-            {{ crumb.name }}
-          </span>
-        }
+        <!-- Breadcrumbs Path -->
+        <div class="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground pt-1">
+          <button 
+            type="button" 
+            (click)="navigateTo('')" 
+            class="flex items-center gap-1 hover:text-foreground font-medium transition-colors cursor-pointer"
+            hlmTooltip="Go to root scope"
+          >
+            <ng-icon name="lucideHome" class="text-sm"></ng-icon>
+            <span>{{ isAdmin() ? 'root' : userFullName() }}</span>
+          </button>
+          
+          @for (crumb of breadcrumbs(); track crumb.path) {
+            <span class="text-muted-foreground/50">/</span>
+            <button 
+              type="button"
+              (click)="navigateTo(crumb.path)"
+              class="hover:text-foreground transition-colors cursor-pointer"
+            >
+              {{ crumb.name }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Actions Control Panel with Spartan UI Buttons -->
+      <div class="flex flex-wrap items-center gap-2.5">
+        <button 
+          hlmBtn 
+          variant="outline" 
+          size="sm" 
+          class="h-9 px-3 rounded-xl gap-2"
+          (click)="refreshCurrentDirectory()" 
+          hlmTooltip="Refresh directory"
+        >
+          <ng-icon name="lucideRefreshCw" class="text-sm"></ng-icon>
+          <span class="hidden sm:inline">Refresh</span>
+        </button>
+
+        <button 
+          hlmBtn 
+          variant="outline" 
+          size="sm" 
+          class="h-9 px-3 rounded-xl gap-2"
+          (click)="showFolderInput.set(!showFolderInput())"
+        >
+          <ng-icon name="lucideFolderPlus" class="text-sm"></ng-icon>
+          <span>New Folder</span>
+        </button>
+
+        <button 
+          hlmBtn 
+          variant="default" 
+          size="sm" 
+          class="h-9 px-4 rounded-xl gap-2 font-semibold shadow-sm"
+          (click)="triggerUpload()"
+        >
+          <ng-icon name="lucideUpload" class="text-sm"></ng-icon>
+          <span>Upload File</span>
+        </button>
+
+        <input type="file" #fileInput (change)="onFileSelected($event)" style="display: none;" />
       </div>
     </div>
+  </section>
 
-    <!-- Actions Control Panel with Spartan UI Buttons -->
-    <div class="header-right">
-      <button 
-        hlmBtn 
-        variant="outline" 
-        size="sm" 
-        class="action-btn"
-        (click)="refreshCurrentDirectory()" 
-        hlmTooltip="Refresh directory"
-      >
-        <ng-icon name="lucideRefreshCw" class="btn-icon"></ng-icon>
-      </button>
-
-      <button 
-        hlmBtn 
-        variant="outline" 
-        class="action-btn"
-        (click)="showFolderInput.set(!showFolderInput())"
-      >
-        <ng-icon name="lucideFolderPlus" class="btn-icon"></ng-icon>
-        <span>New Folder</span>
-      </button>
-
-      <button 
-        hlmBtn 
-        variant="default" 
-        class="action-btn upload-btn"
-        (click)="triggerUpload()"
-      >
-        <ng-icon name="lucideUpload" class="btn-icon"></ng-icon>
-        <span>Upload File</span>
-      </button>
-
-      <input type="file" #fileInput (change)="onFileSelected($event)" style="display: none;" />
-    </div>
-  </div>
-
-  <!-- Inline New Folder Dialog/Form -->
+  <!-- Inline New Folder Form -->
   @if (showFolderInput()) {
-    <div class="new-folder-card glass-card">
-      <div class="input-wrap">
-        <ng-icon name="lucideFolderPlus" class="folder-input-icon"></ng-icon>
+    <section hlmCard class="border border-border/80 bg-card p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
+      <div class="relative flex-1 flex items-center">
+        <ng-icon name="lucideFolderPlus" class="absolute left-3 text-muted-foreground pointer-events-none text-base"></ng-icon>
         <input 
-          type="text" 
-          class="custom-folder-input" 
+          hlmInput 
+          class="pl-10 w-full"
           placeholder="Folder name (e.g. documents, invoices)..." 
           [ngModel]="newFolderName()" 
           (ngModelChange)="newFolderName.set($event)" 
@@ -95,11 +110,12 @@
           autofocus
         />
       </div>
-      <div class="form-actions">
+      <div class="flex items-center gap-2">
         <button 
           hlmBtn 
           variant="default" 
           size="sm" 
+          class="rounded-xl px-4"
           [disabled]="!newFolderName().trim()" 
           (click)="onCreateFolderSubmit()"
         >
@@ -109,22 +125,23 @@
           hlmBtn 
           variant="ghost" 
           size="sm" 
+          class="rounded-xl px-3"
           (click)="showFolderInput.set(false); newFolderName.set('')"
         >
           Cancel
         </button>
       </div>
-    </div>
+    </section>
   }
 
   <!-- Error Banner -->
   @if (fileService.error()) {
-    <div class="error-banner glass-card">
-      <div class="error-content">
-        <ng-icon name="lucideX" class="error-icon"></ng-icon>
-        <span class="error-text">{{ fileService.error() }}</span>
+    <div class="rounded-2xl border border-destructive/30 bg-destructive/10 p-4 text-xs text-destructive flex items-center justify-between gap-3 shadow-xs">
+      <div class="flex items-center gap-2.5">
+        <ng-icon name="lucideX" class="text-base flex-shrink-0"></ng-icon>
+        <span class="font-medium">{{ fileService.error() }}</span>
       </div>
-      <button hlmBtn variant="ghost" size="icon" (click)="fileService.error.set(null)" aria-label="Dismiss error">
+      <button hlmBtn variant="ghost" size="icon" class="h-7 w-7 text-destructive hover:bg-destructive/20" (click)="fileService.error.set(null)" aria-label="Dismiss error">
         <ng-icon name="lucideX"></ng-icon>
       </button>
     </div>
@@ -132,113 +149,125 @@
 
   <!-- Active Uploading Progress Tracker -->
   @if (fileService.uploadingFileName()) {
-    <div class="upload-progress-card glass-card">
-      <div class="upload-info">
-        <div class="upload-text">
-          <ng-icon name="lucideUpload" class="uploading-spinner"></ng-icon>
-          Uploading <strong>{{ fileService.uploadingFileName() }}</strong>...
+    <section hlmCard class="border border-border/80 bg-card/95 p-4 rounded-2xl shadow-md space-y-2">
+      <div class="flex items-center justify-between text-xs">
+        <div class="flex items-center gap-2 font-medium text-foreground">
+          <ng-icon name="lucideUpload" class="text-primary animate-bounce"></ng-icon>
+          <span>Uploading <strong>{{ fileService.uploadingFileName() }}</strong>...</span>
         </div>
-        <div class="upload-percentage">{{ fileService.uploadProgress() }}%</div>
+        <span class="font-semibold text-primary">{{ fileService.uploadProgress() }}%</span>
       </div>
-      <hlm-progress [value]="fileService.uploadProgress() || 0">
+      <hlm-progress [value]="fileService.uploadProgress() || 0" class="h-2">
         <hlm-progress-indicator />
       </hlm-progress>
-    </div>
+    </section>
   }
 
   <!-- File Explorer Workspace (Drag & Drop Zone) -->
-  <div 
-    class="explorer-workspace glass-card"
-    [class.drag-active]="isDragging()"
+  <section 
+    hlmCard 
+    class="relative overflow-hidden border border-border/80 bg-card/95 backdrop-blur-xl shadow-lg rounded-2xl min-h-[400px] transition-all"
+    [class.ring-2]="isDragging()"
+    [class.ring-primary]="isDragging()"
     (dragover)="onDragOver($event)"
     (dragleave)="onDragLeave($event)"
     (drop)="onDrop($event)"
   >
     <!-- Drag & Drop Overlay -->
     @if (isDragging()) {
-      <div class="drag-overlay">
-        <ng-icon name="lucideCloud" class="drag-icon"></ng-icon>
-        <p class="drag-text">Drop file here to upload to this folder</p>
+      <div class="absolute inset-0 z-30 bg-background/90 backdrop-blur-xs flex flex-col items-center justify-center p-6 space-y-3 pointer-events-none">
+        <div class="flex h-16 w-16 items-center justify-center rounded-3xl bg-primary/10 text-primary border border-primary/30 animate-pulse">
+          <ng-icon name="lucideCloud" class="text-3xl"></ng-icon>
+        </div>
+        <p class="text-base font-semibold text-foreground">Drop file here to upload to this folder</p>
+        <p class="text-xs text-muted-foreground">Files will be securely uploaded to your encrypted scope</p>
       </div>
     }
 
     <!-- Loading State -->
     @if (fileService.loading()) {
-      <div class="loading-state">
-        <hlm-spinner class="text-4xl text-primary"></hlm-spinner>
-        <p>Loading directory contents...</p>
+      <div class="flex flex-col items-center justify-center py-24 space-y-3">
+        <hlm-spinner class="h-10 w-10 text-primary"></hlm-spinner>
+        <p class="text-xs text-muted-foreground">Loading directory contents...</p>
       </div>
     } @else {
-      <!-- File Explorer Grid Table -->
-      <div class="explorer-table-wrapper">
-        <table class="explorer-table">
+      <!-- File Explorer Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs border-collapse">
           <thead>
-            <tr>
-              <th class="col-name">Name</th>
-              <th class="col-owner">Uploaded By</th>
-              <th class="col-size">Size</th>
-              <th class="col-date">Last Modified</th>
-              <th class="col-actions">Actions</th>
+            <tr class="border-b border-border/60 bg-muted/40 text-muted-foreground font-semibold uppercase tracking-wider">
+              <th class="py-3 px-4">Name</th>
+              <th class="py-3 px-4 hidden sm:table-cell">Uploaded By</th>
+              <th class="py-3 px-4 hidden md:table-cell">Size</th>
+              <th class="py-3 px-4 hidden lg:table-cell">Last Modified</th>
+              <th class="py-3 px-4 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody class="divide-y divide-border/40">
             <!-- Parent Directory Navigation Option (..) -->
             @if (fileService.currentPath()) {
-              <tr class="explorer-row parent-row" (click)="navigateUp()">
-                <td class="col-name">
-                  <div class="file-name-cell">
-                    <ng-icon name="lucideCornerLeftUp" class="folder-icon"></ng-icon>
+              <tr 
+                class="hover:bg-muted/30 transition-colors cursor-pointer"
+                (click)="navigateUp()"
+              >
+                <td class="py-3 px-4 font-semibold text-primary">
+                  <div class="flex items-center gap-2.5">
+                    <ng-icon name="lucideCornerLeftUp" class="text-base"></ng-icon>
                     <span>..</span>
                   </div>
                 </td>
-                <td class="col-owner">—</td>
-                <td class="col-size">—</td>
-                <td class="col-date">—</td>
-                <td class="col-actions">—</td>
+                <td class="py-3 px-4 text-muted-foreground hidden sm:table-cell">—</td>
+                <td class="py-3 px-4 text-muted-foreground hidden md:table-cell">—</td>
+                <td class="py-3 px-4 text-muted-foreground hidden lg:table-cell">—</td>
+                <td class="py-3 px-4 text-right text-muted-foreground">—</td>
               </tr>
             }
 
             <!-- Loop Files & Subfolders -->
             @for (node of fileService.files(); track node.path) {
               <tr 
-                class="explorer-row" 
+                class="hover:bg-muted/40 transition-colors cursor-pointer group" 
                 (click)="node.type === 'folder' ? navigateTo(node.path) : previewFile(node)"
               >
-                <td class="col-name">
-                  <div class="file-name-cell">
+                <td class="py-3 px-4">
+                  <div class="flex items-center gap-3 font-medium text-foreground">
                     @if (node.type === 'folder') {
-                      <ng-icon name="lucideFolder" class="folder-icon"></ng-icon>
+                      <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500">
+                        <ng-icon name="lucideFolder" class="text-base"></ng-icon>
+                      </div>
                     } @else {
-                      <ng-icon name="lucideFileText" class="file-icon"></ng-icon>
+                      <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-500">
+                        <ng-icon name="lucideFileText" class="text-base"></ng-icon>
+                      </div>
                     }
-                    <span class="node-name-text">{{ node.name }}</span>
+                    <span class="truncate max-w-[200px] sm:max-w-[320px]">{{ node.name }}</span>
                   </div>
                 </td>
-                <td class="col-owner">
-                  <div class="owner-chip">
-                    <ng-icon name="lucideUser" class="owner-icon"></ng-icon>
+                <td class="py-3 px-4 hidden sm:table-cell text-muted-foreground">
+                  <div class="flex items-center gap-1.5">
+                    <ng-icon name="lucideUser" class="text-xs"></ng-icon>
                     <span>{{ node.uploadedBy || 'User' }}</span>
                   </div>
                 </td>
-                <td class="col-size">
+                <td class="py-3 px-4 text-muted-foreground hidden md:table-cell">
                   {{ node.type === 'folder' ? '—' : formatSize(node.size) }}
                 </td>
-                <td class="col-date">
+                <td class="py-3 px-4 text-muted-foreground hidden lg:table-cell">
                   {{ node.type === 'folder' ? '—' : formatDate(node.lastModified) }}
                 </td>
-                <td class="col-actions" (click)="$event.stopPropagation()">
-                  <div class="actions-group">
+                <td class="py-3 px-4 text-right" (click)="$event.stopPropagation()">
+                  <div class="flex items-center justify-end gap-1">
                     @if (node.type === 'file') {
                       <!-- Antigravity AI File Assistant Action -->
                       <button 
                         hlmBtn 
                         variant="ghost" 
                         size="icon" 
-                        class="ai-action-btn"
+                        class="h-8 w-8 text-amber-500 hover:text-amber-600 hover:bg-amber-500/10"
                         (click)="openAiAssistant(node)" 
-                        hlmTooltip="Ask Antigravity AI about this file"
+                        hlmTooltip="Ask AI about this file"
                       >
-                        <ng-icon name="lucideSparkles" class="ai-sparkle-icon"></ng-icon>
+                        <ng-icon name="lucideSparkles" class="text-sm"></ng-icon>
                       </button>
 
                       <!-- Preview Action -->
@@ -246,10 +275,11 @@
                         hlmBtn 
                         variant="ghost" 
                         size="icon" 
+                        class="h-8 w-8 text-muted-foreground hover:text-foreground"
                         (click)="previewFile(node)" 
                         hlmTooltip="Preview file"
                       >
-                        <ng-icon name="lucideEye"></ng-icon>
+                        <ng-icon name="lucideEye" class="text-sm"></ng-icon>
                       </button>
 
                       <!-- Download Action -->
@@ -257,10 +287,11 @@
                         hlmBtn 
                         variant="ghost" 
                         size="icon" 
+                        class="h-8 w-8 text-muted-foreground hover:text-foreground"
                         (click)="downloadFile(node)" 
                         hlmTooltip="Download file"
                       >
-                        <ng-icon name="lucideDownload"></ng-icon>
+                        <ng-icon name="lucideDownload" class="text-sm"></ng-icon>
                       </button>
                     } @else {
                       <!-- Open Folder Action -->
@@ -268,10 +299,11 @@
                         hlmBtn 
                         variant="ghost" 
                         size="icon" 
+                        class="h-8 w-8 text-muted-foreground hover:text-foreground"
                         (click)="navigateTo(node.path)" 
                         hlmTooltip="Open folder"
                       >
-                        <ng-icon name="lucideChevronRight"></ng-icon>
+                        <ng-icon name="lucideChevronRight" class="text-sm"></ng-icon>
                       </button>
                     }
                   </div>
@@ -284,55 +316,64 @@
 
       <!-- Empty Folder State -->
       @if (fileService.files().length === 0) {
-        <div class="empty-state">
-          <ng-icon name="lucideCloud" class="empty-icon"></ng-icon>
-          <h3>This folder is empty</h3>
-          <p>Drag & drop files here, or click "Upload File" to add files to your vault.</p>
+        <div class="flex flex-col items-center justify-center py-20 px-4 text-center space-y-3">
+          <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted/60 text-muted-foreground border border-border/40">
+            <ng-icon name="lucideCloud" class="text-2xl"></ng-icon>
+          </div>
+          <h3 class="text-base font-semibold text-foreground">This folder is empty</h3>
+          <p class="text-xs text-muted-foreground max-w-sm">Drag & drop files here, or click "Upload File" to add files to your vault.</p>
         </div>
       }
     }
-  </div>
+  </section>
 
-  <!-- Antigravity AI File Assistant Drawer / Modal -->
+  <!-- Antigravity AI File Assistant Modal -->
   @if (selectedAiFile()) {
-    <div class="ai-modal-overlay" (click)="closeAiAssistant()">
-      <div class="ai-modal-card glass-card" (click)="$event.stopPropagation()">
-        <div class="ai-modal-header">
-          <div class="ai-header-left">
-            <div class="ai-badge">
-              <ng-icon name="lucideBot"></ng-icon>
-              <span>Antigravity AI Assistant</span>
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200" (click)="closeAiAssistant()">
+      <div 
+        hlmCard 
+        class="w-full max-w-2xl border border-border/80 bg-card p-6 rounded-2xl shadow-2xl space-y-4 max-h-[90vh] flex flex-col" 
+        (click)="$event.stopPropagation()"
+      >
+        <div class="flex items-center justify-between pb-3 border-b border-border/60">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span hlmBadge variant="outline" class="gap-1 text-[11px] font-semibold text-amber-500 border-amber-500/30 bg-amber-500/10">
+                <ng-icon name="lucideBot"></ng-icon>
+                <span>Antigravity AI Assistant</span>
+              </span>
             </div>
-            <h2 class="ai-filename">{{ selectedAiFile()?.name }}</h2>
+            <h2 class="text-lg font-bold text-foreground truncate max-w-md">{{ selectedAiFile()?.name }}</h2>
           </div>
-          <button hlmBtn variant="ghost" size="icon" (click)="closeAiAssistant()">
+          <button hlmBtn variant="ghost" size="icon" class="h-8 w-8 text-muted-foreground" (click)="closeAiAssistant()">
             <ng-icon name="lucideX"></ng-icon>
           </button>
         </div>
 
-        <div class="ai-modal-body">
-          <div class="ai-prompt-box">
-            <label class="prompt-label">Ask Antigravity about this file:</label>
+        <div class="space-y-4 flex-1 overflow-y-auto pr-1">
+          <div class="space-y-2">
+            <label class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Ask AI about this file:</label>
             <textarea 
-              class="custom-textarea" 
-              rows="3" 
+              hlmInput 
+              class="w-full p-3 h-24 text-xs rounded-xl" 
               [ngModel]="aiPrompt()" 
               (ngModelChange)="aiPrompt.set($event)"
-              placeholder="e.g. Summarize this document, identify key metrics, check for errors..."
+              placeholder="e.g. Summarize this document, extract key metrics, check for errors..."
             ></textarea>
-            <div class="prompt-actions">
+            <div class="flex justify-end pt-1">
               <button 
                 hlmBtn 
                 variant="default" 
-                class="ask-ai-btn"
+                size="sm"
+                class="rounded-xl px-4 font-semibold gap-2"
                 [disabled]="fileService.aiAnalyzing() || !aiPrompt().trim()" 
                 (click)="runAiAnalysis()"
               >
                 @if (fileService.aiAnalyzing()) {
-                  <hlm-spinner class="size-4 mr-1.5 btn-spinner"></hlm-spinner>
+                  <hlm-spinner class="h-3.5 w-3.5 mr-1 text-primary-foreground"></hlm-spinner>
                   <span>Analyzing with Gemini...</span>
                 } @else {
-                  <ng-icon name="lucideSparkles" class="btn-icon"></ng-icon>
+                  <ng-icon name="lucideSparkles"></ng-icon>
                   <span>Run Analysis</span>
                 }
               </button>
@@ -341,28 +382,28 @@
 
           <!-- AI Response Output -->
           @if (fileService.aiResponse()) {
-            <div class="ai-response-box">
-              <div class="ai-response-header">
-                <span class="response-title">
-                  <ng-icon name="lucideBot" class="bot-icon"></ng-icon> AI Analysis Result
+            <div class="rounded-xl border border-border/60 bg-muted/30 p-4 space-y-2">
+              <div class="flex items-center justify-between pb-2 border-b border-border/40">
+                <span class="text-xs font-semibold flex items-center gap-1.5 text-foreground">
+                  <ng-icon name="lucideBot" class="text-primary"></ng-icon> AI Analysis Result
                 </span>
                 <button 
                   hlmBtn 
                   variant="outline" 
                   size="sm" 
-                  class="copy-btn"
+                  class="h-7 text-[11px] px-2.5 rounded-lg gap-1.5"
                   (click)="copyAiResponse(fileService.aiResponse()!.reply)"
                 >
                   @if (copiedAiReply()) {
-                    <ng-icon name="lucideCheck" class="copy-icon text-green-500"></ng-icon>
+                    <ng-icon name="lucideCheck" class="text-emerald-500"></ng-icon>
                     <span>Copied!</span>
                   } @else {
-                    <ng-icon name="lucideCopy" class="copy-icon"></ng-icon>
+                    <ng-icon name="lucideCopy"></ng-icon>
                     <span>Copy</span>
                   }
                 </button>
               </div>
-              <div class="ai-response-text">
+              <div class="text-xs leading-relaxed text-foreground whitespace-pre-wrap">
                 {{ fileService.aiResponse()?.reply }}
               </div>
             </div>

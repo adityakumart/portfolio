@@ -1,16 +1,15 @@
 import {
   Component,
-  ElementRef,
-  HostListener,
   inject,
-  signal,
   computed,
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
+import { HlmDropdownMenuImports } from '@spartan-ng/hel/dropdown-menu';
+import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { lucideHistory, lucideHome, lucideLogOut } from '@ng-icons/lucide';
+import { lucideHistory, lucideHome, lucideLogOut, lucideUser } from '@ng-icons/lucide';
 import { AuthService } from '../../../modules/user/services/auth';
 import { InitialsPipe } from '../../pipes/initials.pipe';
 
@@ -20,11 +19,13 @@ import { InitialsPipe } from '../../pipes/initials.pipe';
   imports: [
     CommonModule,
     RouterLink,
+    HlmDropdownMenuImports,
+    HlmButtonImports,
     NgIconComponent,
     InitialsPipe,
   ],
   providers: [
-    provideIcons({ lucideHistory, lucideHome, lucideLogOut }),
+    provideIcons({ lucideHistory, lucideHome, lucideLogOut, lucideUser }),
   ],
   templateUrl: './profile-menu.component.html',
   styleUrl: './profile-menu.component.scss',
@@ -33,10 +34,8 @@ import { InitialsPipe } from '../../pipes/initials.pipe';
 export class ProfileMenuComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
-  private elementRef = inject(ElementRef);
 
   currentUser = computed(() => this.authService.currentUser());
-  isOpen = signal(false);
 
   fullName = computed(() => {
     const user = this.currentUser();
@@ -44,28 +43,7 @@ export class ProfileMenuComponent {
     return `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'User';
   });
 
-  toggleDropdown() {
-    this.isOpen.update((v) => !v);
-  }
-
-  closeDropdown() {
-    this.isOpen.set(false);
-  }
-
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent) {
-    if (!this.elementRef.nativeElement.contains(event.target)) {
-      this.closeDropdown();
-    }
-  }
-
-  @HostListener('document:keydown.escape')
-  onEscapeKeydown() {
-    this.closeDropdown();
-  }
-
   async onLogout() {
-    this.closeDropdown();
     try {
       await this.authService.logout();
       this.router.navigate(['/user/login']);
