@@ -2,12 +2,12 @@ import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, inject } from '@
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { HlmCardDirective } from '@spartan-ng/hel/card';
-import { HlmInputDirective } from '@spartan-ng/hel/input';
-import { HlmLabelDirective } from '@spartan-ng/hel/label';
-import { HlmButtonDirective } from '@spartan-ng/hel/button';
+import { HlmCardImports } from '@spartan-ng/hel/card';
+import { HlmInputImports } from '@spartan-ng/hel/input';
+import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
-import { HlmSeparatorDirective } from '@spartan-ng/hel/separator';
+import { HlmSeparatorImports } from '@spartan-ng/hel/separator';
+import { HlmBadgeImports } from '@spartan-ng/hel/badge';
 import { toast } from '@spartan-ng/hel/sonner';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
@@ -32,12 +32,12 @@ import { EncoderHashService } from './services/encoder-hash.service';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    HlmCardDirective,
-    HlmInputDirective,
-    HlmLabelDirective,
-    HlmButtonDirective,
+    HlmCardImports,
+    HlmInputImports,
+    HlmButtonImports,
     HlmTooltipImports,
-    HlmSeparatorDirective,
+    HlmSeparatorImports,
+    HlmBadgeImports,
     NgIconComponent,
   ],
   providers: [
