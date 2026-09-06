@@ -51,15 +51,17 @@
         >
           <!-- Avatar circle -->
           <div class="shrink-0">
-            @if (msg.role === 'user') {
-              <div class="w-9 h-9 rounded-full bg-primary/15 text-primary border border-primary/20 flex items-center justify-center font-bold text-xs">
-                <span>{{ userInitials() }}</span>
-              </div>
-            } @else {
-              <div class="w-9 h-9 rounded-full bg-emerald-500/15 text-emerald-500 border border-emerald-500/20 flex items-center justify-center text-base">
-                <ng-icon name="lucideBot"></ng-icon>
-              </div>
-            }
+            <hlm-avatar class="h-9 w-9">
+              @if (msg.role === 'user') {
+                <span hlmAvatarFallback class="bg-primary/15 text-primary border border-primary/20 font-bold text-xs">
+                  {{ userInitials() }}
+                </span>
+              } @else {
+                <span hlmAvatarFallback class="bg-emerald-500/15 text-emerald-500 border border-emerald-500/20 text-base">
+                  <ng-icon name="lucideBot"></ng-icon>
+                </span>
+              }
+            </hlm-avatar>
           </div>
 
           <!-- Bubble Content -->
@@ -99,8 +101,12 @@
       <!-- AI Typing / Generation State Loader -->
       @if (chatService.isLoading()) {
         <div class="flex items-start gap-3 w-full">
-          <div class="w-9 h-9 rounded-full bg-emerald-500/15 text-emerald-500 border border-emerald-500/20 flex items-center justify-center text-base shrink-0">
-            <ng-icon name="lucideBot"></ng-icon>
+          <div class="shrink-0">
+            <hlm-avatar class="h-9 w-9">
+              <span hlmAvatarFallback class="bg-emerald-500/15 text-emerald-500 border border-emerald-500/20 text-base">
+                <ng-icon name="lucideBot"></ng-icon>
+              </span>
+            </hlm-avatar>
           </div>
           <div class="p-4 rounded-2xl rounded-tl-xs bg-muted/70 border border-border/60 flex items-center gap-1.5 shadow-xs">
             <span class="w-2 h-2 rounded-full bg-muted-foreground/60 animate-bounce"></span>

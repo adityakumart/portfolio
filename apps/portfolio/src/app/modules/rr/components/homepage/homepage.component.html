@@ -121,52 +121,24 @@
     </div>
 
     <!-- Category Filter Controls -->
-    <div class="flex flex-wrap justify-center gap-2.5 mb-8">
-      <button
-        hlmBtn
-        [variant]="selectedCategory() === 'all' ? 'default' : 'outline'"
-        size="sm"
-        class="rounded-full font-semibold px-4"
-        (click)="setCategory('all')"
-      >
-        All Fleet ({{ vehicles().length }})
-      </button>
-      <button
-        hlmBtn
-        [variant]="selectedCategory() === '5' ? 'default' : 'outline'"
-        size="sm"
-        class="rounded-full font-semibold px-4"
-        (click)="setCategory('5')"
-      >
-        5-Seaters
-      </button>
-      <button
-        hlmBtn
-        [variant]="selectedCategory() === '7' ? 'default' : 'outline'"
-        size="sm"
-        class="rounded-full font-semibold px-4"
-        (click)="setCategory('7')"
-      >
-        7-Seaters
-      </button>
-      <button
-        hlmBtn
-        [variant]="selectedCategory() === 'suv' ? 'default' : 'outline'"
-        size="sm"
-        class="rounded-full font-semibold px-4"
-        (click)="setCategory('suv')"
-      >
-        SUVs
-      </button>
-      <button
-        hlmBtn
-        [variant]="selectedCategory() === 'sedan' ? 'default' : 'outline'"
-        size="sm"
-        class="rounded-full font-semibold px-4"
-        (click)="setCategory('sedan')"
-      >
-        Sedans
-      </button>
+    <div class="flex justify-center mb-8">
+      <hlm-toggle-group type="single" [value]="selectedCategory()" (valueChange)="$event && setCategory($event)">
+        <button hlmToggleGroupItem value="all" aria-label="All Fleet">
+          All Fleet ({{ vehicles().length }})
+        </button>
+        <button hlmToggleGroupItem value="5" aria-label="5 Seaters">
+          5-Seaters
+        </button>
+        <button hlmToggleGroupItem value="7" aria-label="7 Seaters">
+          7-Seaters
+        </button>
+        <button hlmToggleGroupItem value="suv" aria-label="SUVs">
+          SUVs
+        </button>
+        <button hlmToggleGroupItem value="sedan" aria-label="Sedans">
+          Sedans
+        </button>
+      </hlm-toggle-group>
     </div>
 
     <!-- Car Grid -->
@@ -217,9 +189,14 @@
           </div>
         </div>
       } @empty {
-        <div class="col-span-full flex flex-col items-center justify-center p-12 border border-border rounded-2xl bg-card text-center my-8 shadow-sm">
-          <ng-icon name="lucideSearchX" class="text-4xl mx-auto mb-3 text-muted-foreground"></ng-icon>
-          <p class="text-sm font-semibold text-muted-foreground">No vehicles match the selected filter.</p>
+        <div hlmEmpty class="col-span-full py-12">
+          <div hlmEmptyMedia class="text-4xl text-muted-foreground">
+            <ng-icon name="lucideSearchX"></ng-icon>
+          </div>
+          <div hlmEmptyHeader>
+            <h3 hlmEmptyTitle class="text-sm font-semibold">No vehicles found</h3>
+            <p hlmEmptyDescription class="text-xs">No vehicles match the selected filter criteria.</p>
+          </div>
         </div>
       }
     </div>

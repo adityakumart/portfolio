@@ -28,6 +28,8 @@ import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmBadgeImports } from '@spartan-ng/hel/badge';
 import { HlmCardImports } from '@spartan-ng/hel/card';
 import { HlmInputImports } from '@spartan-ng/hel/input';
+import { HlmToggleGroupImports } from '@spartan-ng/hel/toggle-group';
+import { HlmEmptyImports } from '@spartan-ng/hel/empty';
 import { toast } from '@spartan-ng/hel/sonner';
 import { IVehicle } from '@portfolio/shared-types';
 
@@ -42,6 +44,8 @@ import { IVehicle } from '@portfolio/shared-types';
     HlmBadgeImports,
     HlmCardImports,
     HlmInputImports,
+    HlmToggleGroupImports,
+    HlmEmptyImports,
     NgIconComponent,
   ],
   providers: [
@@ -136,8 +140,12 @@ export class RRHomepageComponent implements OnInit {
     }
   }
 
-  setCategory(cat: string) {
-    this.selectedCategory.set(cat);
+  setCategory(cat: string | string[] | null | undefined) {
+    if (typeof cat === 'string') {
+      this.selectedCategory.set(cat);
+    } else if (Array.isArray(cat) && cat.length > 0) {
+      this.selectedCategory.set(cat[0]);
+    }
   }
 
   toggleMobileMenu() {

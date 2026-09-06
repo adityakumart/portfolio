@@ -6,6 +6,7 @@ import { HlmInputImports } from '@spartan-ng/hel/input';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
 import { HlmSeparatorImports } from '@spartan-ng/hel/separator';
+import { HlmEmptyImports } from '@spartan-ng/hel/empty';
 import { toast } from '@spartan-ng/hel/sonner';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { lucideEraser, lucideCopy, lucideCalculator } from '@ng-icons/lucide';
@@ -24,6 +25,7 @@ import { takeUntil } from 'rxjs/operators';
     HlmButtonImports,
     HlmTooltipImports,
     HlmSeparatorImports,
+    HlmEmptyImports,
     NgIconComponent,
   ],
   providers: [

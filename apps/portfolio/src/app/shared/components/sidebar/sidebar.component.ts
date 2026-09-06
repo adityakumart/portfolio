@@ -36,6 +36,7 @@ import {
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
 import { HlmDropdownMenuImports } from '@spartan-ng/hel/dropdown-menu';
+import { HlmAvatarImports } from '@spartan-ng/hel/avatar';
 import { AuthService } from '../../../modules/user/services/auth';
 import { ThemeService } from '../../../theme.service';
 import { devToolsRoutingList } from '../../data/routes';
@@ -57,6 +58,7 @@ export interface SidebarItem {
     HlmButtonImports,
     HlmTooltipImports,
     HlmDropdownMenuImports,
+    HlmAvatarImports,
   ],
   providers: [
     provideIcons({

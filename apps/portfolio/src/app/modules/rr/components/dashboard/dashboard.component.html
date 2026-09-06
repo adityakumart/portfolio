@@ -13,9 +13,11 @@
         [hlmDropdownMenuTrigger]="profileMenu"
         class="flex items-center gap-3 px-3 py-1.5 h-auto rounded-xl border border-border bg-card/60 hover:bg-muted/50 transition-all"
       >
-        <div class="h-8 w-8 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-600 text-white font-bold text-xs flex items-center justify-center shadow-sm">
-          {{ getInitials() }}
-        </div>
+        <hlm-avatar class="h-8 w-8">
+          <span hlmAvatarFallback class="bg-gradient-to-tr from-cyan-500 to-blue-600 text-white font-bold text-xs shadow-sm">
+            {{ getInitials() }}
+          </span>
+        </hlm-avatar>
         <div class="flex flex-col text-left">
           <span class="font-bold text-xs leading-tight text-foreground"
             >{{ currentUser()?.firstName }} {{ currentUser()?.lastName }}</span

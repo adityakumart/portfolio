@@ -7,6 +7,7 @@ import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
 import { HlmCardImports } from '@spartan-ng/hel/card';
 import { HlmBadgeImports } from '@spartan-ng/hel/badge';
 import { HlmInputImports } from '@spartan-ng/hel/input';
+import { HlmAvatarImports } from '@spartan-ng/hel/avatar';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideArrowLeft,
@@ -31,6 +32,7 @@ import { AuthService } from '../../services/auth';
     HlmCardImports,
     HlmBadgeImports,
     HlmInputImports,
+    HlmAvatarImports,
     NgIconComponent,
   ],
   providers: [

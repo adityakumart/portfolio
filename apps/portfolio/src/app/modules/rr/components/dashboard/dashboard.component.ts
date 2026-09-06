@@ -19,6 +19,7 @@ import { HlmDialogService } from '@spartan-ng/hel/dialog';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmInputImports } from '@spartan-ng/hel/input';
 import { HlmDropdownMenuImports } from '@spartan-ng/hel/dropdown-menu';
+import { HlmAvatarImports } from '@spartan-ng/hel/avatar';
 
 @Component({
   selector: 'app-rr-dashboard',
@@ -32,6 +33,7 @@ import { HlmDropdownMenuImports } from '@spartan-ng/hel/dropdown-menu';
     HlmButtonImports,
     HlmInputImports,
     HlmDropdownMenuImports,
+    HlmAvatarImports,
   ],
   providers: [
     provideIcons({

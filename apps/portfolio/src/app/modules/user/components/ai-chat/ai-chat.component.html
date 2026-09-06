@@ -142,21 +142,17 @@
               class="flex items-start gap-3 w-full"
               [class.flex-row-reverse]="msg.role === 'user'"
             >
-              <div
-                class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0"
-                [class.bg-primary]="msg.role === 'user'"
-                [class.text-primary-foreground]="msg.role === 'user'"
-                [class.bg-emerald-500/15]="msg.role !== 'user'"
-                [class.text-emerald-500]="msg.role !== 'user'"
-                [class.border]="msg.role !== 'user'"
-                [class.border-emerald-500/20]="msg.role !== 'user'"
-              >
+              <hlm-avatar class="h-8 w-8 shrink-0">
                 @if (msg.role === 'user') {
-                  {{ userInitials() }}
+                  <span hlmAvatarFallback class="bg-primary text-primary-foreground font-bold text-xs">
+                    {{ userInitials() }}
+                  </span>
                 } @else {
-                  <ng-icon name="lucideBot" class="text-sm"></ng-icon>
+                  <span hlmAvatarFallback class="bg-emerald-500/15 text-emerald-500 border border-emerald-500/20 font-bold text-xs">
+                    <ng-icon name="lucideBot" class="text-sm"></ng-icon>
+                  </span>
                 }
-              </div>
+              </hlm-avatar>
 
               <div class="flex flex-col max-w-[85%] sm:max-w-[75%]" [class.items-end]="msg.role === 'user'">
                 <div class="text-[11px] font-semibold text-muted-foreground mb-1 px-1">

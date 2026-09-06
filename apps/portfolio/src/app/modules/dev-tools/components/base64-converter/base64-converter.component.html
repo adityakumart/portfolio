@@ -12,34 +12,22 @@
         <!-- Configuration Controls -->
         <div class="controls-group flex flex-wrap items-center gap-6">
           <div class="control-item flex items-center gap-3">
-            <span class="control-label text-sm font-semibold text-muted-foreground uppercase tracking-wider">Mode</span>
-            <div class="flex items-center gap-4 text-sm">
-              <label class="flex items-center gap-1.5 cursor-pointer">
-                <input type="radio" formControlName="mode" value="text" class="accent-primary" />
-                <span>Text Mode</span>
-              </label>
-              <label class="flex items-center gap-1.5 cursor-pointer">
-                <input type="radio" formControlName="mode" value="file" class="accent-primary" />
-                <span>File Mode</span>
-              </label>
-            </div>
+            <span class="control-label text-xs font-semibold text-muted-foreground uppercase tracking-wider">Mode</span>
+            <hlm-toggle-group [value]="form.get('mode')?.value" (valueChange)="form.get('mode')?.setValue($any($event))" size="sm">
+              <button hlmToggleGroupItem value="text">Text Mode</button>
+              <button hlmToggleGroupItem value="file">File Mode</button>
+            </hlm-toggle-group>
           </div>
 
           <!-- Operation selection - only shown for text mode -->
           @if (form.get('mode')?.value === 'text') {
             <div hlmSeparator class="h-6 w-px" orientation="vertical"></div>
             <div class="control-item flex items-center gap-3">
-              <span class="control-label text-sm font-semibold text-muted-foreground uppercase tracking-wider">Operation</span>
-              <div class="flex items-center gap-4 text-sm">
-                <label class="flex items-center gap-1.5 cursor-pointer">
-                  <input type="radio" formControlName="operation" value="encode" class="accent-primary" />
-                  <span>Encode</span>
-                </label>
-                <label class="flex items-center gap-1.5 cursor-pointer">
-                  <input type="radio" formControlName="operation" value="decode" class="accent-primary" />
-                  <span>Decode</span>
-                </label>
-              </div>
+              <span class="control-label text-xs font-semibold text-muted-foreground uppercase tracking-wider">Operation</span>
+              <hlm-toggle-group [value]="form.get('operation')?.value" (valueChange)="form.get('operation')?.setValue($any($event))" size="sm">
+                <button hlmToggleGroupItem value="encode">Encode</button>
+                <button hlmToggleGroupItem value="decode">Decode</button>
+              </hlm-toggle-group>
             </div>
           }
         </div>
@@ -87,12 +75,10 @@
 
     <!-- Error Detail Panel -->
     @if (errorMessage) {
-      <div class="error-detail-box mb-4 p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive flex items-start gap-3">
-        <ng-icon class="error-box-icon text-lg shrink-0 mt-0.5" name="lucideAlertTriangle"></ng-icon>
-        <div class="error-box-content">
-          <strong>Process Error:</strong>
-          <p class="error-message-text text-sm mt-0.5">{{ errorMessage }}</p>
-        </div>
+      <div hlmAlert variant="destructive" class="mb-4">
+        <ng-icon class="text-base shrink-0" name="lucideAlertTriangle"></ng-icon>
+        <h4 hlmAlertTitle>Process Error</h4>
+        <p hlmAlertDescription>{{ errorMessage }}</p>
       </div>
     }
 
@@ -139,7 +125,7 @@
 
           <div class="card-content-fill flex-1">
             <textarea
-              hlmInput
+              hlmTextarea
               formControlName="inputText"
               [placeholder]="form.get('operation')?.value === 'encode' ? 'Type or paste plain text here to encode...' : 'Paste Base64 or Data URI here to decode...'"
               rows="16"
@@ -172,7 +158,7 @@
 
           <div class="card-content-fill flex-1">
             <textarea
-              hlmInput
+              hlmTextarea
               formControlName="outputText"
               [placeholder]="form.get('operation')?.value === 'encode' ? 'Base64 encoded string will appear here...' : 'Decoded plain text will appear here...'"
               rows="16"
@@ -248,7 +234,7 @@
                 </button>
               </div>
               <textarea
-                hlmInput
+                hlmTextarea
                 formControlName="rawBase64"
                 placeholder="Raw base64 data will show up here after selecting a file..."
                 rows="6"
@@ -275,7 +261,7 @@
                 </button>
               </div>
               <textarea
-                hlmInput
+                hlmTextarea
                 formControlName="outputDataUri"
                 placeholder="Data URI schema (data:image/png;base64,...) will show up here..."
                 rows="6"

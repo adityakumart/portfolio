@@ -190,9 +190,10 @@
 
         <!-- Syntax error alerts -->
         @if (regexError) {
-          <div class="regex-error-msg p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center gap-2">
-            <ng-icon name="lucideAlertCircle" class="text-base shrink-0"></ng-icon>
-            <span>Invalid Regular Expression: {{ regexError }}</span>
+          <div hlmAlert variant="destructive">
+            <ng-icon class="text-base shrink-0" name="lucideAlertCircle"></ng-icon>
+            <h4 hlmAlertTitle>Invalid Regular Expression</h4>
+            <p hlmAlertDescription>{{ regexError }}</p>
           </div>
         }
       </div>

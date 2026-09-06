@@ -16,6 +16,9 @@ import { HlmInputImports } from '@spartan-ng/hel/input';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
 import { HlmSeparatorImports } from '@spartan-ng/hel/separator';
+import { HlmAlertImports } from '@spartan-ng/hel/alert';
+import { HlmTextareaImports } from '@spartan-ng/hel/textarea';
+import { HlmCheckboxImports } from '@spartan-ng/hel/checkbox';
 import { toast } from '@spartan-ng/hel/sonner';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
@@ -45,6 +48,9 @@ import {
     HlmButtonImports,
     HlmTooltipImports,
     HlmSeparatorImports,
+    HlmAlertImports,
+    HlmTextareaImports,
+    HlmCheckboxImports,
     NgIconComponent,
     UpperCasePipe,
   ],

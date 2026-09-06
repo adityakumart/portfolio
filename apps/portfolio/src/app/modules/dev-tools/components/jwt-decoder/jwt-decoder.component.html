@@ -43,12 +43,10 @@
 
     <!-- Error Detail Panel -->
     @if (errorMessage) {
-      <div class="error-detail-box p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive flex items-start gap-3" id="jwt-error-box">
-        <ng-icon class="error-box-icon text-lg shrink-0 mt-0.5" name="lucideAlertCircle"></ng-icon>
-        <div class="error-box-content">
-          <strong>Malformed Token Exception</strong>
-          <p class="error-message-text text-sm mt-0.5">{{ errorMessage }}</p>
-        </div>
+      <div hlmAlert variant="destructive" id="jwt-error-box">
+        <ng-icon class="text-base shrink-0" name="lucideAlertCircle"></ng-icon>
+        <h4 hlmAlertTitle>Malformed Token Exception</h4>
+        <p hlmAlertDescription>{{ errorMessage }}</p>
       </div>
     }
 
@@ -62,11 +60,11 @@
           
           <div class="card-content-fill flex-1 flex flex-col space-y-4">
             <textarea
-              hlmInput
+              hlmTextarea
               formControlName="tokenInput"
               placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
               rows="10"
-              class="jwt-textarea font-mono text-xs w-full resize-y"
+              class="jwt-textarea font-mono text-xs w-full resize-y min-h-[180px]"
               id="jwt-input-textarea"
             ></textarea>
 
@@ -204,13 +202,15 @@
           </div>
         } @else {
           <!-- Empty State / Instructions Panel -->
-          <div hlmCard class="placeholder-card p-8 rounded-2xl border shadow-sm text-center flex flex-col items-center justify-center h-full">
-            <div class="placeholder-icon-container p-4 bg-primary/10 rounded-full mb-3">
-              <ng-icon class="large-icon text-3xl text-primary" name="lucideKey"></ng-icon>
+          <div hlmCard class="placeholder-card p-8 rounded-2xl border shadow-sm flex flex-col items-center justify-center h-full">
+            <div hlmEmpty class="p-0 flex flex-col items-center justify-center text-center">
+              <div hlmEmptyMedia class="p-4 bg-primary/10 rounded-full mb-3">
+                <ng-icon class="large-icon text-3xl text-primary" name="lucideKey"></ng-icon>
+              </div>
+              <h3 hlmEmptyTitle class="text-base font-semibold mb-1">Awaiting Token Input</h3>
+              <p hlmEmptyDescription class="text-xs text-muted-foreground max-w-sm mb-6 text-center">Paste a JWT token in the input area or load the demo token to inspect its visual decoding and mapped claims.</p>
             </div>
-            <h3 class="text-base font-semibold mb-1">Awaiting Token Input</h3>
-            <p class="text-xs text-muted-foreground max-w-sm mb-6">Paste a JWT token in the input area or load the demo token to inspect its visual decoding and mapped claims.</p>
-            <div class="placeholder-benefits space-y-2 text-xs text-muted-foreground text-left">
+            <div class="placeholder-benefits space-y-2 text-xs text-muted-foreground text-left w-full max-w-sm">
               <div class="benefit-item flex items-center gap-2">
                 <ng-icon name="lucideShield" class="text-primary"></ng-icon>
                 <span>100% Client-Side decoding protects secret payloads</span>
@@ -242,18 +242,18 @@
         <div hlmSeparator class="mb-4"></div>
         
         <div class="border border-border/60 rounded-xl overflow-hidden shadow-xs">
-          <table class="w-full text-xs text-left" id="jwt-claims-table">
-            <thead class="bg-muted/50 uppercase font-semibold text-muted-foreground border-b border-border/60">
-              <tr>
-                <th class="p-3 w-32">Claim</th>
-                <th class="p-3 w-64">Mapped Property & Value</th>
-                <th class="p-3">Standard Specification Description</th>
+          <table hlmTable class="w-full text-xs text-left" id="jwt-claims-table">
+            <thead hlmTableHeader class="bg-muted/50 uppercase font-semibold text-muted-foreground border-b border-border/60">
+              <tr hlmTableRow>
+                <th hlmTableHead class="p-3 w-32">Claim</th>
+                <th hlmTableHead class="p-3 w-64">Mapped Property & Value</th>
+                <th hlmTableHead class="p-3">Standard Specification Description</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-border/40">
+            <tbody hlmTableBody class="divide-y divide-border/40">
               @for (claim of claimsDataSource; track claim.key) {
-                <tr class="hover:bg-muted/20 transition-colors">
-                  <td class="p-3">
+                <tr hlmTableRow class="hover:bg-muted/20 transition-colors">
+                  <td hlmTableCell class="p-3">
                     <span 
                       hlmBadge 
                       [variant]="claim.isRegistered ? 'default' : 'secondary'" 
@@ -262,11 +262,11 @@
                       {{ claim.key }}
                     </span>
                   </td>
-                  <td class="p-3">
+                  <td hlmTableCell class="p-3">
                     <div class="property-name font-semibold text-foreground">{{ claim.name }}</div>
                     <div class="property-value font-mono text-muted-foreground break-all text-[11px] mt-0.5">{{ claim.formattedValue }}</div>
                   </td>
-                  <td class="p-3 text-muted-foreground leading-relaxed">
+                  <td hlmTableCell class="p-3 text-muted-foreground leading-relaxed">
                     {{ claim.description }}
                   </td>
                 </tr>

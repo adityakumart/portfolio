@@ -168,9 +168,12 @@
           @if (explanation()) {
             <div class="explanation-content font-mono text-xs leading-relaxed space-y-3" [innerHTML]="explanation()"></div>
           } @else {
-            <div class="empty-state p-8 text-center text-muted-foreground flex flex-col items-center justify-center">
-              <ng-icon name="lucideCalculator" class="text-3xl text-muted-foreground/40 mb-2"></ng-icon>
-              <p class="text-sm">Enter a number in any system on the left to see the complete mathematical conversion steps rendered here.</p>
+            <div hlmEmpty class="p-8 text-center flex flex-col items-center justify-center">
+              <div hlmEmptyMedia class="p-4 bg-primary/10 rounded-full mb-3">
+                <ng-icon name="lucideCalculator" class="text-3xl text-primary"></ng-icon>
+              </div>
+              <h3 hlmEmptyTitle class="text-base font-semibold mb-1">Awaiting Number Input</h3>
+              <p hlmEmptyDescription class="text-xs text-muted-foreground max-w-sm">Enter a number in any system on the left to see the complete mathematical conversion steps rendered here.</p>
             </div>
           }
         </div>

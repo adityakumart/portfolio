@@ -122,15 +122,15 @@
           <ng-icon [name]="isDarkMode() ? 'lucideSun' : 'lucideMoon'" class="size-5" />
         </button>
 
-        <!-- User account initials bubble -->
-        <div
-          class="profile-bubble cursor-pointer flex items-center justify-center rounded-full size-9 bg-muted hover:bg-muted/80 border border-border text-foreground font-semibold text-xs transition-colors"
+        <!-- User account avatar -->
+        <hlm-avatar
+          class="cursor-pointer size-9 border border-border transition-colors hover:opacity-90"
           [hlmDropdownMenuTrigger]="accountMenu"
           [hlmTooltip]="userName()"
           tooltipPosition="right"
         >
-          {{ userInitials() }}
-        </div>
+          <span hlmAvatarFallback class="bg-muted text-foreground font-semibold text-xs">{{ userInitials() }}</span>
+        </hlm-avatar>
       </div>
 
       <!-- Unified drop-down account action panel -->

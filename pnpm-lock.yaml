@@ -80,9 +80,6 @@ importers:
       crypto-ts:
         specifier: ^1.0.2
         version: 1.0.2(@angular/common@22.0.0(@angular/core@22.0.0(@angular/compiler@22.0.0)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.0.0(@angular/compiler@22.0.0)(rxjs@7.8.2))
-      css-fx-layout:
-        specifier: ^3.0.4
-        version: 3.0.5
       express:
         specifier: ^5.1.0
         version: 5.2.1(supports-color@8.1.1)
@@ -5011,10 +5008,6 @@ packages:
     engines: {node: ^14 || ^16 || >=18}
     peerDependencies:
       postcss: ^8.0.9
-
-  css-fx-layout@3.0.5:
-    resolution: {integrity: sha512-HgYrAbAmGGcoc6VFh4/U99He4/U2DMFD7jDwtPrjryGurGuUcfH+PUZGkC7CS83g5Iee/PMc3Mt5ZwuisRYbIw==}
-    hasBin: true
 
   css-line-break@2.1.0:
     resolution: {integrity: sha512-FHcKFCZcAha3LwfVBhCQbW2nCNbkZXn7KVUJcsT5/P8YmfsVja0FMPJr0B903j/E69HUphKiV9iQArX8SDYA4w==}
@@ -14600,8 +14593,6 @@ snapshots:
   css-declaration-sorter@7.4.0(postcss@8.5.15):
     dependencies:
       postcss: 8.5.15
-
-  css-fx-layout@3.0.5: {}
 
   css-line-break@2.1.0:
     dependencies:

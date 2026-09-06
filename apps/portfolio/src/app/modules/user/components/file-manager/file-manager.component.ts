@@ -43,6 +43,11 @@ import { HlmSpinnerImports } from '@spartan-ng/hel/spinner';
 import { HlmCardImports } from '@spartan-ng/hel/card';
 import { HlmBadgeImports } from '@spartan-ng/hel/badge';
 import { HlmInputImports } from '@spartan-ng/hel/input';
+import { HlmAlertImports } from '@spartan-ng/hel/alert';
+import { HlmEmptyImports } from '@spartan-ng/hel/empty';
+import { HlmBreadcrumbImports } from '@spartan-ng/hel/breadcrumb';
+import { HlmTableImports } from '@spartan-ng/hel/table';
+import { HlmTextareaImports } from '@spartan-ng/hel/textarea';
 import { toast } from '@spartan-ng/hel/sonner';
 import { FileManagerService } from '../../services/file-manager.service';
 import { AuthService } from '../../services/auth';
@@ -63,6 +68,11 @@ import { FilePreviewDialogComponent } from './file-preview-dialog.component';
     HlmCardImports,
     HlmBadgeImports,
     HlmInputImports,
+    HlmAlertImports,
+    HlmEmptyImports,
+    HlmBreadcrumbImports,
+    HlmTableImports,
+    HlmTextareaImports,
   ],
   providers: [
     provideIcons({

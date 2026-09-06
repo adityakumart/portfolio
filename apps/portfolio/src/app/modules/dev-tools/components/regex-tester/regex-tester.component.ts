@@ -5,6 +5,7 @@ import { HlmInputImports } from '@spartan-ng/hel/input';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmBadgeImports } from '@spartan-ng/hel/badge';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
+import { HlmAlertImports } from '@spartan-ng/hel/alert';
 import { toast } from '@spartan-ng/hel/sonner';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
@@ -38,6 +39,7 @@ export interface RegexOption {
     HlmButtonImports,
     HlmBadgeImports,
     HlmTooltipImports,
+    HlmAlertImports,
     NgIconComponent,
     RegexHighlightPipe,
   ],

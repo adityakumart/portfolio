@@ -13,6 +13,9 @@ import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
 import { HlmSeparatorImports } from '@spartan-ng/hel/separator';
 import { HlmBadgeImports } from '@spartan-ng/hel/badge';
+import { HlmAlertImports } from '@spartan-ng/hel/alert';
+import { HlmTextareaImports } from '@spartan-ng/hel/textarea';
+import { HlmToggleGroupImports } from '@spartan-ng/hel/toggle-group';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideLock,
@@ -41,6 +44,9 @@ import { toast } from '@spartan-ng/hel/sonner';
     HlmTooltipImports,
     HlmSeparatorImports,
     HlmBadgeImports,
+    HlmAlertImports,
+    HlmTextareaImports,
+    HlmToggleGroupImports,
     NgIconComponent,
   ],
   providers: [
