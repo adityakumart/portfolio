@@ -1,10 +1,12 @@
 import { Component, OnInit, inject, signal, ViewChild, TemplateRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RRApiService } from '../../../../services/rr-api.service';
-import { HlmCardDirective } from '@spartan-ng/hel-luma/card';
-import { HlmTooltipImports } from '@spartan-ng/hel-luma/tooltip';
-import { HlmDialogService } from '@spartan-ng/hel-luma/dialog';
-import { HlmButtonDirective } from '@spartan-ng/hel-luma/button';
+import { HlmCardImports } from '@spartan-ng/hel/card';
+import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
+import { HlmDialogService } from '@spartan-ng/hel/dialog';
+import { HlmButtonImports } from '@spartan-ng/hel/button';
+import { HlmBadgeImports } from '@spartan-ng/hel/badge';
+import { HlmTableImports } from '@spartan-ng/hel/table';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideCheckCircle,
@@ -27,9 +29,11 @@ import { IVehicle, IBooking, IRRDashboardStats } from '@portfolio/shared-types';
   standalone: true,
   imports: [
     CommonModule,
-    HlmCardDirective,
+    HlmCardImports,
     HlmTooltipImports,
-    HlmButtonDirective,
+    HlmButtonImports,
+    HlmBadgeImports,
+    HlmTableImports,
     NgIconComponent,
   ],
   providers: [

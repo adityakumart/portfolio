@@ -97,6 +97,27 @@
       ],
       "@spartan-ng/hel-luma/tooltip": [
         "./libs/styles-luma/tooltip/src/index.ts"
+      ],
+      "@spartan-ng/hel/alert": [
+        "./libs/styles/alert/src/index.ts"
+      ],
+      "@spartan-ng/hel/empty": [
+        "./libs/styles/empty/src/index.ts"
+      ],
+      "@spartan-ng/hel/avatar": [
+        "./libs/styles/avatar/src/index.ts"
+      ],
+      "@spartan-ng/hel/textarea": [
+        "./libs/styles/textarea/src/index.ts"
+      ],
+      "@spartan-ng/hel/toggle-group": [
+        "./libs/styles/toggle-group/src/index.ts"
+      ],
+      "@spartan-ng/hel/toggle": [
+        "./libs/styles/toggle/src/index.ts"
+      ],
+      "@spartan-ng/hel/breadcrumb": [
+        "./libs/styles/breadcrumb/src/index.ts"
       ]
     },
     "forceConsistentCasingInFileNames": true,

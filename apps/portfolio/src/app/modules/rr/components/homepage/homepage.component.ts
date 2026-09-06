@@ -24,12 +24,30 @@ import {
   lucideX,
   lucideCheckCircle,
 } from '@ng-icons/lucide';
+import { HlmButtonImports } from '@spartan-ng/hel/button';
+import { HlmBadgeImports } from '@spartan-ng/hel/badge';
+import { HlmCardImports } from '@spartan-ng/hel/card';
+import { HlmInputImports } from '@spartan-ng/hel/input';
+import { HlmToggleGroupImports } from '@spartan-ng/hel/toggle-group';
+import { HlmEmptyImports } from '@spartan-ng/hel/empty';
+import { toast } from '@spartan-ng/hel/sonner';
 import { IVehicle } from '@portfolio/shared-types';
 
 @Component({
   selector: 'app-rr-homepage',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, NgIconComponent],
+  imports: [
+    CommonModule,
+    RouterLink,
+    FormsModule,
+    HlmButtonImports,
+    HlmBadgeImports,
+    HlmCardImports,
+    HlmInputImports,
+    HlmToggleGroupImports,
+    HlmEmptyImports,
+    NgIconComponent,
+  ],
   providers: [
     provideIcons({
       lucideCar,
@@ -122,8 +140,12 @@ export class RRHomepageComponent implements OnInit {
     }
   }
 
-  setCategory(cat: string) {
-    this.selectedCategory.set(cat);
+  setCategory(cat: string | string[] | null | undefined) {
+    if (typeof cat === 'string') {
+      this.selectedCategory.set(cat);
+    } else if (Array.isArray(cat) && cat.length > 0) {
+      this.selectedCategory.set(cat[0]);
+    }
   }
 
   toggleMobileMenu() {
@@ -159,6 +181,7 @@ export class RRHomepageComponent implements OnInit {
   submitInquiry() {
     if (!this.inquiryName || !this.inquiryPhone) return;
     this.inquirySubmitted.set(true);
+    toast.success('Rental reservation inquiry received! We will contact you shortly.');
     setTimeout(() => {
       this.closeVehicleModal();
       this.inquiryName = '';

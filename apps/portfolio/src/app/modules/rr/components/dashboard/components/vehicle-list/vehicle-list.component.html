@@ -13,33 +13,34 @@
   }
 </div>
 
-<div class="vehicle-grid">
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-10">
   @for (v of vehicles(); track v.regNo) {
-    <div hlmCard class="vehicle-card cursor-pointer overflow-hidden border shadow-sm" (click)="viewVehicleDetails(v)">
-      <div class="card-img-container">
-        <img [src]="getVehicleImage(v)" alt="Vehicle Image" />
-        <div class="active-status-badge status-badge-{{ v.status }}">
-          <span class="status-dot"></span>
-          <span>{{ v.status | uppercase }}</span>
+    <div hlmCard class="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 cursor-pointer flex flex-col" (click)="viewVehicleDetails(v)">
+      <div class="relative w-full h-40 bg-muted/20 flex items-center justify-center p-3 border-b border-border overflow-hidden">
+        <img [src]="getVehicleImage(v)" alt="Vehicle Image" class="max-w-[90%] max-h-[90%] object-contain group-hover:scale-105 transition-transform duration-300" />
+        <div class="absolute top-3 left-3">
+          <span hlmBadge [variant]="v.status === 'available' ? 'secondary' : 'destructive'" [class.text-emerald-600]="v.status === 'available'" [class.dark:text-emerald-400]="v.status === 'available'">
+            {{ v.status | uppercase }}
+          </span>
         </div>
       </div>
       
-      <div class="card-content p-4">
-        <div class="veh-type-tag">{{ v.type | uppercase }}</div>
-        <div class="veh-title">{{ v.manufacturer }} {{ v.name }}</div>
-        <div class="veh-subtitle reg-no">{{ v.regNo }}</div>
+      <div class="p-4 flex flex-col flex-1">
+        <div class="text-[10px] font-extrabold text-cyan-500 tracking-wider uppercase mb-1">{{ v.type }}</div>
+        <div class="font-extrabold text-base text-foreground leading-tight mb-1">{{ v.manufacturer }} {{ v.name }}</div>
+        <div class="font-mono text-xs text-muted-foreground bg-muted/40 px-2 py-0.5 rounded w-fit mb-3">{{ v.regNo }}</div>
         
-        <div class="veh-specs flex flex-wrap gap-2 mt-3">
-          <span class="spec-badge flex items-center gap-1 text-xs" hlmTooltip="Capacity">
-            <ng-icon name="lucideUsers"></ng-icon>
+        <div class="flex flex-wrap gap-1.5 mt-auto pt-2 border-t border-border/50">
+          <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-md" hlmTooltip="Capacity">
+            <ng-icon name="lucideUsers" class="text-xs"></ng-icon>
             <span>{{ v.seating }} Seats</span>
           </span>
-          <span class="spec-badge flex items-center gap-1 text-xs" hlmTooltip="Fuel Type">
-            <ng-icon name="lucideFuel"></ng-icon>
+          <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-md" hlmTooltip="Fuel Type">
+            <ng-icon name="lucideFuel" class="text-xs"></ng-icon>
             <span>{{ v.fuelType | uppercase }}</span>
           </span>
-          <span class="spec-badge flex items-center gap-1 text-xs" hlmTooltip="Odometer">
-            <ng-icon name="lucideGauge"></ng-icon>
+          <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-md" hlmTooltip="Odometer">
+            <ng-icon name="lucideGauge" class="text-xs"></ng-icon>
             <span>{{ v.odometer }} KM</span>
           </span>
         </div>
@@ -47,22 +48,22 @@
 
       <!-- Quick Action Overlay for Admin -->
       @if (isAdmin()) {
-        <div class="card-actions-overlay">
-          <button hlmBtn size="icon" variant="default" class="mini-action-btn h-8 w-8 rounded-full" (click)="$event.stopPropagation(); selectedVehicleDetails.set(v); openEditVehicleModal()" hlmTooltip="Edit Vehicle">
+        <div class="absolute bottom-3 right-3 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+          <button hlmBtn size="icon" variant="secondary" class="h-8 w-8 rounded-full shadow-md" (click)="$event.stopPropagation(); selectedVehicleDetails.set(v); openEditVehicleModal()" hlmTooltip="Edit Vehicle">
             <ng-icon name="lucidePencil"></ng-icon>
           </button>
-          <button hlmBtn size="icon" variant="destructive" class="mini-action-btn danger h-8 w-8 rounded-full" (click)="$event.stopPropagation(); deleteVehicle(v.regNo)" hlmTooltip="Delete Vehicle">
+          <button hlmBtn size="icon" variant="destructive" class="h-8 w-8 rounded-full shadow-md" (click)="$event.stopPropagation(); deleteVehicle(v.regNo)" hlmTooltip="Delete Vehicle">
             <ng-icon name="lucideTrash2"></ng-icon>
           </button>
         </div>
       }
     </div>
   } @empty {
-    <div class="empty-fleet-card p-12 text-center border rounded-2xl">
-      <div class="empty-icon-wrapper mb-3">
-        <ng-icon name="lucideCar" class="text-3xl text-muted-foreground"></ng-icon>
+    <div class="col-span-full flex flex-col items-center justify-center p-12 border border-border rounded-2xl bg-card text-center my-8 shadow-sm">
+      <div class="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-4">
+        <ng-icon name="lucideCar" class="text-3xl text-primary"></ng-icon>
       </div>
-      <h3 class="text-lg font-bold">No Vehicles Registered</h3>
+      <h3 class="text-lg font-bold text-foreground mb-1">No Vehicles Registered</h3>
       <p class="text-sm text-muted-foreground mb-4">There are currently no vehicles in your fleet registry database.</p>
       @if (isAdmin()) {
         <button hlmBtn (click)="openAddVehicleModal()" class="flex items-center gap-1.5 mx-auto">

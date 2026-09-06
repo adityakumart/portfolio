@@ -8,6 +8,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { HlmDropdownMenuImports } from '@spartan-ng/hel/dropdown-menu';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
+import { HlmAvatarImports } from '@spartan-ng/hel/avatar';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { lucideHistory, lucideHome, lucideLogOut, lucideUser } from '@ng-icons/lucide';
 import { AuthService } from '../../../modules/user/services/auth';
@@ -21,6 +22,7 @@ import { InitialsPipe } from '../../pipes/initials.pipe';
     RouterLink,
     HlmDropdownMenuImports,
     HlmButtonImports,
+    HlmAvatarImports,
     NgIconComponent,
     InitialsPipe,
   ],

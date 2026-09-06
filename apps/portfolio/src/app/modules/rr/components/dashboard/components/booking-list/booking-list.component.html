@@ -11,58 +11,58 @@
   </button>
 </div>
 
-<div class="table-card-wrapper border rounded-2xl overflow-hidden shadow-sm bg-card">
-  <div class="table-container overflow-x-auto">
-    <table class="w-full text-xs text-left">
-      <thead class="bg-muted/40 uppercase font-semibold text-muted-foreground">
-        <tr>
-          <th class="p-3">Vehicle Details</th>
-          <th class="p-3">Customer Name</th>
-          <th class="p-3">Pickup Schedule</th>
-          <th class="p-3">Expected Return</th>
-          <th class="p-3">Rent Amount</th>
-          <th class="p-3">Paid</th>
-          <th class="p-3">Balance Due</th>
-          <th class="p-3 text-center">Actions</th>
+<div class="border border-border rounded-2xl overflow-hidden shadow-sm bg-card mb-10">
+  <div hlmTableContainer class="max-h-[calc(100vh-280px)] overflow-auto">
+    <table hlmTable class="w-full text-xs">
+      <thead hlmTHead class="sticky top-0 z-10 bg-card backdrop-blur-md">
+        <tr hlmTr>
+          <th hlmTh>Vehicle Details</th>
+          <th hlmTh>Customer Name</th>
+          <th hlmTh>Pickup Schedule</th>
+          <th hlmTh>Expected Return</th>
+          <th hlmTh>Rent Amount</th>
+          <th hlmTh>Paid</th>
+          <th hlmTh>Balance Due</th>
+          <th hlmTh class="text-center">Actions</th>
         </tr>
       </thead>
-      <tbody class="divide-y">
+      <tbody hlmTBody>
         @for (b of pagedBookings(); track b.id) {
-          <tr class="hover:bg-muted/10 transition-colors">
-            <td class="p-3">
+          <tr hlmTr>
+            <td hlmTd>
               <div class="font-bold">{{ b.vehicleManufacturer }} {{ b.vehicleName }}</div>
               <div class="font-mono text-muted-foreground text-[11px]">{{ b.vehicleRegNo }}</div>
             </td>
-            <td class="p-3">
+            <td hlmTd>
               <div class="font-bold">{{ b.renterFirstName }} {{ b.renterSecondName }}</div>
               <div class="text-muted-foreground text-[11px]">{{ b.renterPhone }}</div>
             </td>
-            <td class="p-3">
+            <td hlmTd>
               <div class="font-semibold">{{ b.pickupDateTime | date:'dd-MM-yyyy' }}</div>
               <div class="text-muted-foreground text-[11px]">{{ b.pickupDateTime | date:'shortTime' }}</div>
             </td>
-            <td class="p-3">
+            <td hlmTd>
               <div class="font-semibold">{{ b.returnDateTime | date:'dd-MM-yyyy' }}</div>
               <div class="text-muted-foreground text-[11px]">{{ b.returnDateTime | date:'shortTime' }}</div>
             </td>
-            <td class="p-3 font-mono font-bold">
+            <td hlmTd class="font-mono font-bold">
               ₹{{ b.finalRentalAmount }}
             </td>
-            <td class="p-3 font-mono font-bold text-muted-foreground">
+            <td hlmTd class="font-mono font-bold text-muted-foreground">
               ₹{{ b.amountPaid }}
             </td>
-            <td class="p-3">
+            <td hlmTd>
               @if (b.pendingAmount > 0) {
-                <span class="badge status-maintenance font-mono font-bold px-2 py-0.5 rounded-lg text-xs">
+                <span hlmBadge variant="destructive" class="font-mono font-bold">
                   ₹{{ b.pendingAmount }}
                 </span>
               } @else {
-                <span class="badge status-available font-bold px-2 py-0.5 rounded-lg text-xs">
+                <span hlmBadge variant="secondary" class="font-bold text-emerald-600 dark:text-emerald-400">
                   Paid
                 </span>
               }
             </td>
-            <td class="p-3 text-center whitespace-nowrap space-x-1">
+            <td hlmTd class="text-center whitespace-nowrap space-x-1">
               <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 rounded-full text-emerald-500" hlmTooltip="End Rental" (click)="openEndBookingPopup(b)">
                 <ng-icon name="lucideCalendarX"></ng-icon>
               </button>
@@ -75,8 +75,8 @@
             </td>
           </tr>
         } @empty {
-          <tr>
-            <td colspan="8" class="text-center text-muted-foreground py-12">
+          <tr hlmTr>
+            <td hlmTd colspan="8" class="text-center text-muted-foreground py-12">
               <ng-icon name="lucideInfo" class="text-4xl mx-auto block mb-2 text-muted-foreground"></ng-icon>
               <span class="font-semibold text-sm">No active bookings found in the database.</span>
             </td>

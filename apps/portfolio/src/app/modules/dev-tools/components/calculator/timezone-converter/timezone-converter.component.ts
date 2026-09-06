@@ -16,12 +16,11 @@ import {
   TimeZoneInterface,
   TimeZonesList,
 } from '../../../../../../shared/data/timeszones';
-import { ToastrService } from '../../../../../shared/services/toaster.service';
-import { HlmCardDirective } from '@spartan-ng/hel/card';
-import { HlmInputDirective } from '@spartan-ng/hel/input';
-import { HlmLabelDirective } from '@spartan-ng/hel/label';
-import { HlmButtonDirective } from '@spartan-ng/hel/button';
-import { HlmSeparatorDirective } from '@spartan-ng/hel/separator';
+import { toast } from '@spartan-ng/hel/sonner';
+import { HlmCardImports } from '@spartan-ng/hel/card';
+import { HlmInputImports } from '@spartan-ng/hel/input';
+import { HlmButtonImports } from '@spartan-ng/hel/button';
+import { HlmSeparatorImports } from '@spartan-ng/hel/separator';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { lucideClock } from '@ng-icons/lucide';
 
@@ -31,11 +30,10 @@ import { lucideClock } from '@ng-icons/lucide';
   imports: [
     FormsModule,
     ReactiveFormsModule,
-    HlmCardDirective,
-    HlmInputDirective,
-    HlmLabelDirective,
-    HlmButtonDirective,
-    HlmSeparatorDirective,
+    HlmCardImports,
+    HlmInputImports,
+    HlmButtonImports,
+    HlmSeparatorImports,
     NgIconComponent,
   ],
   providers: [
@@ -56,8 +54,6 @@ export class TimezoneConverterComponent implements OnInit {
   });
 
   timeZones = TimeZonesList;
-
-  private toastr = inject(ToastrService);
 
   ngOnInit() {
     for (let i = 0; i < TimeZonesList.length; i++) {
@@ -86,19 +82,19 @@ export class TimezoneConverterComponent implements OnInit {
     )?.utc[0];
 
     if (!this.timeForm.value.fromDate) {
-      this.toastr.open('Please enter From Date.');
+      toast.error('Please enter From Date.');
       return;
     }
     if (!this.timeForm.value.fromTime) {
-      this.toastr.open('Please enter From Time.');
+      toast.error('Please enter From Time.');
       return;
     }
     if (!fromZone) {
-      this.toastr.open('Please select From Time Zone.');
+      toast.error('Please select From Time Zone.');
       return;
     }
     if (!toZone) {
-      this.toastr.open('Please select To Time Zone.');
+      toast.error('Please select To Time Zone.');
       return;
     }
 
@@ -113,7 +109,7 @@ export class TimezoneConverterComponent implements OnInit {
     });
 
     if (!fromDate.isValid) {
-      this.toastr.open('Please enter valid From Date.');
+      toast.error('Please enter valid From Date.');
       return;
     }
 

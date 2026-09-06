@@ -11,58 +11,58 @@
   </button>
 </div>
 
-<div class="table-card-wrapper border rounded-2xl overflow-hidden shadow-sm bg-card">
-  <div class="table-container overflow-x-auto">
-    <table class="w-full text-xs text-left">
-      <thead class="bg-muted/40 uppercase font-semibold text-muted-foreground">
-        <tr>
-          <th class="p-3">Employee ID</th>
-          <th class="p-3">Staff Full Name</th>
-          <th class="p-3">Assigned Role</th>
-          <th class="p-3">Date of Birth</th>
-          <th class="p-3">Contact Phone</th>
-          <th class="p-3">Email Address</th>
-          <th class="p-3">Portal Access</th>
-          <th class="p-3 text-center">Actions</th>
+<div class="border border-border rounded-2xl overflow-hidden shadow-sm bg-card mb-10">
+  <div hlmTableContainer class="max-h-[calc(100vh-280px)] overflow-auto">
+    <table hlmTable class="w-full text-xs">
+      <thead hlmTHead class="sticky top-0 z-10 bg-card backdrop-blur-md">
+        <tr hlmTr>
+          <th hlmTh>Employee ID</th>
+          <th hlmTh>Staff Full Name</th>
+          <th hlmTh>Assigned Role</th>
+          <th hlmTh>Date of Birth</th>
+          <th hlmTh>Contact Phone</th>
+          <th hlmTh>Email Address</th>
+          <th hlmTh>Portal Access</th>
+          <th hlmTh class="text-center">Actions</th>
         </tr>
       </thead>
-      <tbody class="divide-y">
+      <tbody hlmTBody>
         @for (e of pagedEmployees(); track e.id) {
-          <tr class="hover:bg-muted/10 transition-colors">
-            <td class="p-3">
-              <span class="mono-val font-bold font-mono text-primary">{{ e.id }}</span>
+          <tr hlmTr>
+            <td hlmTd>
+              <span class="font-bold font-mono text-primary text-xs bg-muted/50 px-2 py-0.5 rounded border border-border">{{ e.id }}</span>
             </td>
-            <td class="p-3">
+            <td hlmTd>
               <div class="font-bold">{{ e.firstName }} {{ e.lastName }}</div>
             </td>
-            <td class="p-3">
-              <span class="badge font-bold" [ngClass]="e.role === 'admin' ? 'status-maintenance' : 'status-rented'">
-                {{ e.role | uppercase }}
+            <td hlmTd>
+              <span hlmBadge [variant]="e.role === 'admin' ? 'destructive' : 'secondary'" class="font-bold uppercase">
+                {{ e.role }}
               </span>
             </td>
-            <td class="p-3">
+            <td hlmTd>
               <span>{{ (e.dob | date:'dd-MM-yyyy') || 'N/A' }}</span>
             </td>
-            <td class="p-3">
+            <td hlmTd>
               <span>{{ e.phone }}</span>
             </td>
-            <td class="p-3 text-muted-foreground">
+            <td hlmTd class="text-muted-foreground">
               <span>{{ e.email }}</span>
             </td>
-            <td class="p-3">
-              <span class="badge" [ngClass]="e.allowLogin ? 'status-available' : 'status-maintenance'">
+            <td hlmTd>
+              <span hlmBadge [variant]="e.allowLogin ? 'secondary' : 'destructive'" [class.text-emerald-600]="e.allowLogin" [class.dark:text-emerald-400]="e.allowLogin">
                 {{ e.allowLogin ? 'Active Permitted' : 'Access Revoked' }}
               </span>
             </td>
-            <td class="p-3 text-center">
+            <td hlmTd class="text-center">
               <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 rounded-full" hlmTooltip="Modify Staff Information" (click)="openEditEmployeeModal(e)">
                 <ng-icon name="lucidePencil"></ng-icon>
               </button>
             </td>
           </tr>
         } @empty {
-          <tr>
-            <td colspan="8" class="text-center text-muted-foreground py-12">
+          <tr hlmTr>
+            <td hlmTd colspan="8" class="text-center text-muted-foreground py-12">
               <ng-icon name="lucideUsers" class="text-4xl mx-auto block mb-2 text-muted-foreground"></ng-icon>
               <span class="font-semibold text-sm">No staff registered in the employee database.</span>
             </td>

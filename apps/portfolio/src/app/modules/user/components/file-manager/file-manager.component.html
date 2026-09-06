@@ -30,28 +30,35 @@
         </div>
         
         <!-- Breadcrumbs Path -->
-        <div class="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground pt-1">
-          <button 
-            type="button" 
-            (click)="navigateTo('')" 
-            class="flex items-center gap-1 hover:text-foreground font-medium transition-colors cursor-pointer"
-            hlmTooltip="Go to root scope"
-          >
-            <ng-icon name="lucideHome" class="text-sm"></ng-icon>
-            <span>{{ isAdmin() ? 'root' : userFullName() }}</span>
-          </button>
-          
-          @for (crumb of breadcrumbs(); track crumb.path) {
-            <span class="text-muted-foreground/50">/</span>
-            <button 
-              type="button"
-              (click)="navigateTo(crumb.path)"
-              class="hover:text-foreground transition-colors cursor-pointer"
-            >
-              {{ crumb.name }}
-            </button>
-          }
-        </div>
+        <nav hlmBreadcrumb class="text-xs pt-1">
+          <ol hlmBreadcrumbList class="flex flex-wrap items-center gap-1.5 text-muted-foreground">
+            <li hlmBreadcrumbItem>
+              <button 
+                type="button" 
+                hlmBreadcrumbLink
+                (click)="navigateTo('')" 
+                class="flex items-center gap-1 hover:text-foreground font-medium transition-colors cursor-pointer"
+                hlmTooltip="Go to root scope"
+              >
+                <ng-icon name="lucideHome" class="text-sm"></ng-icon>
+                <span>{{ isAdmin() ? 'root' : userFullName() }}</span>
+              </button>
+            </li>
+            @for (crumb of breadcrumbs(); track crumb.path) {
+              <li hlmBreadcrumbSeparator></li>
+              <li hlmBreadcrumbItem>
+                <button 
+                  type="button"
+                  hlmBreadcrumbLink
+                  (click)="navigateTo(crumb.path)"
+                  class="hover:text-foreground transition-colors cursor-pointer"
+                >
+                  {{ crumb.name }}
+                </button>
+              </li>
+            }
+          </ol>
+        </nav>
       </div>
 
       <!-- Actions Control Panel with Spartan UI Buttons -->
@@ -136,10 +143,10 @@
 
   <!-- Error Banner -->
   @if (fileService.error()) {
-    <div class="rounded-2xl border border-destructive/30 bg-destructive/10 p-4 text-xs text-destructive flex items-center justify-between gap-3 shadow-xs">
+    <div hlmAlert variant="destructive" class="flex items-center justify-between gap-3 shadow-xs">
       <div class="flex items-center gap-2.5">
-        <ng-icon name="lucideX" class="text-base flex-shrink-0"></ng-icon>
-        <span class="font-medium">{{ fileService.error() }}</span>
+        <ng-icon name="lucideX" class="text-base flex-shrink-0" hlmAlertIcon></ng-icon>
+        <p hlmAlertDescription class="font-medium text-xs">{{ fileService.error() }}</p>
       </div>
       <button hlmBtn variant="ghost" size="icon" class="h-7 w-7 text-destructive hover:bg-destructive/20" (click)="fileService.error.set(null)" aria-label="Dismiss error">
         <ng-icon name="lucideX"></ng-icon>
@@ -193,43 +200,45 @@
     } @else {
       <!-- File Explorer Table -->
       <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs border-collapse">
-          <thead>
-            <tr class="border-b border-border/60 bg-muted/40 text-muted-foreground font-semibold uppercase tracking-wider">
-              <th class="py-3 px-4">Name</th>
-              <th class="py-3 px-4 hidden sm:table-cell">Uploaded By</th>
-              <th class="py-3 px-4 hidden md:table-cell">Size</th>
-              <th class="py-3 px-4 hidden lg:table-cell">Last Modified</th>
-              <th class="py-3 px-4 text-right">Actions</th>
+        <table hlmTable class="w-full text-xs">
+          <thead hlmTableHeader>
+            <tr hlmTableRow class="border-b border-border/60 bg-muted/40 uppercase tracking-wider">
+              <th hlmTableHead class="py-3 px-4">Name</th>
+              <th hlmTableHead class="py-3 px-4 hidden sm:table-cell">Uploaded By</th>
+              <th hlmTableHead class="py-3 px-4 hidden md:table-cell">Size</th>
+              <th hlmTableHead class="py-3 px-4 hidden lg:table-cell">Last Modified</th>
+              <th hlmTableHead class="py-3 px-4 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-border/40">
+          <tbody hlmTableBody class="divide-y divide-border/40">
             <!-- Parent Directory Navigation Option (..) -->
             @if (fileService.currentPath()) {
               <tr 
+                hlmTableRow
                 class="hover:bg-muted/30 transition-colors cursor-pointer"
                 (click)="navigateUp()"
               >
-                <td class="py-3 px-4 font-semibold text-primary">
+                <td hlmTableCell class="py-3 px-4 font-semibold text-primary">
                   <div class="flex items-center gap-2.5">
                     <ng-icon name="lucideCornerLeftUp" class="text-base"></ng-icon>
                     <span>..</span>
                   </div>
                 </td>
-                <td class="py-3 px-4 text-muted-foreground hidden sm:table-cell">—</td>
-                <td class="py-3 px-4 text-muted-foreground hidden md:table-cell">—</td>
-                <td class="py-3 px-4 text-muted-foreground hidden lg:table-cell">—</td>
-                <td class="py-3 px-4 text-right text-muted-foreground">—</td>
+                <td hlmTableCell class="py-3 px-4 text-muted-foreground hidden sm:table-cell">—</td>
+                <td hlmTableCell class="py-3 px-4 text-muted-foreground hidden md:table-cell">—</td>
+                <td hlmTableCell class="py-3 px-4 text-muted-foreground hidden lg:table-cell">—</td>
+                <td hlmTableCell class="py-3 px-4 text-right text-muted-foreground">—</td>
               </tr>
             }
 
             <!-- Loop Files & Subfolders -->
             @for (node of fileService.files(); track node.path) {
               <tr 
+                hlmTableRow
                 class="hover:bg-muted/40 transition-colors cursor-pointer group" 
                 (click)="node.type === 'folder' ? navigateTo(node.path) : previewFile(node)"
               >
-                <td class="py-3 px-4">
+                <td hlmTableCell class="py-3 px-4">
                   <div class="flex items-center gap-3 font-medium text-foreground">
                     @if (node.type === 'folder') {
                       <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500">
@@ -243,19 +252,19 @@
                     <span class="truncate max-w-[200px] sm:max-w-[320px]">{{ node.name }}</span>
                   </div>
                 </td>
-                <td class="py-3 px-4 hidden sm:table-cell text-muted-foreground">
+                <td hlmTableCell class="py-3 px-4 hidden sm:table-cell text-muted-foreground">
                   <div class="flex items-center gap-1.5">
                     <ng-icon name="lucideUser" class="text-xs"></ng-icon>
                     <span>{{ node.uploadedBy || 'User' }}</span>
                   </div>
                 </td>
-                <td class="py-3 px-4 text-muted-foreground hidden md:table-cell">
+                <td hlmTableCell class="py-3 px-4 text-muted-foreground hidden md:table-cell">
                   {{ node.type === 'folder' ? '—' : formatSize(node.size) }}
                 </td>
-                <td class="py-3 px-4 text-muted-foreground hidden lg:table-cell">
+                <td hlmTableCell class="py-3 px-4 text-muted-foreground hidden lg:table-cell">
                   {{ node.type === 'folder' ? '—' : formatDate(node.lastModified) }}
                 </td>
-                <td class="py-3 px-4 text-right" (click)="$event.stopPropagation()">
+                <td hlmTableCell class="py-3 px-4 text-right" (click)="$event.stopPropagation()">
                   <div class="flex items-center justify-end gap-1">
                     @if (node.type === 'file') {
                       <!-- Antigravity AI File Assistant Action -->
@@ -316,12 +325,14 @@
 
       <!-- Empty Folder State -->
       @if (fileService.files().length === 0) {
-        <div class="flex flex-col items-center justify-center py-20 px-4 text-center space-y-3">
-          <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted/60 text-muted-foreground border border-border/40">
+        <div hlmEmpty class="py-20 px-4">
+          <div hlmEmptyMedia class="rounded-2xl bg-muted/60 text-muted-foreground border border-border/40 p-3">
             <ng-icon name="lucideCloud" class="text-2xl"></ng-icon>
           </div>
-          <h3 class="text-base font-semibold text-foreground">This folder is empty</h3>
-          <p class="text-xs text-muted-foreground max-w-sm">Drag & drop files here, or click "Upload File" to add files to your vault.</p>
+          <div hlmEmptyHeader>
+            <h3 hlmEmptyTitle class="text-base font-semibold">This folder is empty</h3>
+            <p hlmEmptyDescription class="text-xs">Drag & drop files here, or click "Upload File" to add files to your vault.</p>
+          </div>
         </div>
       }
     }
@@ -354,7 +365,7 @@
           <div class="space-y-2">
             <label class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Ask AI about this file:</label>
             <textarea 
-              hlmInput 
+              hlmTextarea 
               class="w-full p-3 h-24 text-xs rounded-xl" 
               [ngModel]="aiPrompt()" 
               (ngModelChange)="aiPrompt.set($event)"
