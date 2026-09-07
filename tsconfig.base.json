@@ -118,6 +118,9 @@
       ],
       "@spartan-ng/hel/breadcrumb": [
         "./libs/styles/breadcrumb/src/index.ts"
+      ],
+      "@spartan-ng/hel/carousel": [
+        "./libs/styles/carousel/src/index.ts"
       ]
     },
     "forceConsistentCasingInFileNames": true,

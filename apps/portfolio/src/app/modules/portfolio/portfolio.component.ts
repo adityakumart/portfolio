@@ -11,6 +11,9 @@ import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { lucideSun, lucideMoon, lucideZap } from '@ng-icons/lucide';
 import { HlmButton } from '@spartan-ng/hel/button';
 import { HlmTooltip } from '@spartan-ng/hel/tooltip';
+import { HlmCarouselImports } from '@spartan-ng/hel/carousel';
+import { HlmCardImports } from '@spartan-ng/hel/card';
+import { HlmBadgeImports } from '@spartan-ng/hel/badge';
 import { RouterLink } from '@angular/router';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Subject } from 'rxjs';
@@ -35,6 +38,9 @@ import { AwardsComponent } from './sub-components/awards/awards.component';
   imports: [
     HlmButton,
     HlmTooltip,
+    HlmCarouselImports,
+    HlmCardImports,
+    HlmBadgeImports,
     NgIconComponent,
     RouterLink,
     HeroComponent,
@@ -46,10 +52,7 @@ import { AwardsComponent } from './sub-components/awards/awards.component';
     AwardsComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [
-    GlobalData,
-    provideIcons({ lucideSun, lucideMoon, lucideZap }),
-  ],
+  providers: [GlobalData, provideIcons({ lucideSun, lucideMoon, lucideZap })],
 })
 export class PortfolioComponent implements OnInit, OnDestroy {
   private destroyed = new Subject<void>();
@@ -96,11 +99,57 @@ export class PortfolioComponent implements OnInit, OnDestroy {
     this.themeService.toggleTheme();
   }
 
+  items = signal([
+    {
+      id: 1,
+      title: 'Work Experience',
+      description: 'Details about my work experience.',
+      category: 'Experience',
+    },
+    {
+      id: 2,
+      title: 'Education',
+      description: 'Details about my education.',
+      category: 'Education',
+    },
+    {
+      id: 3,
+      title: 'Skills',
+      description: 'Details about my skills.',
+      category: 'Skills',
+    },
+    {
+      id: 4,
+      title: 'Certificates',
+      description: 'Details about my certificates.',
+      category: 'Certificates',
+    },
+    {
+      id: 5,
+      title: 'Awards',
+      description: 'Details about my awards.',
+      category: 'Awards',
+    },
+  ]);
+  getArcTransform(itemIndex: number, currentIndex: number): string {
+    // Signed distance from active slide (taking wrapping into account if looping)
+    const offset = itemIndex - currentIndex;
+
+    const angle = offset * 9; // 9 deg tilt per card step
+    const translateY = Math.abs(offset) * 28 + offset * offset * 4; // curved drop
+    const scale = Math.max(0.82, 1 - Math.abs(offset) * 0.08);
+
+    return `translateY(${translateY}px) rotate(${angle}deg) scale(${scale})`;
+  }
+
+  getArcOpacity(itemIndex: number, currentIndex: number): number {
+    const distance = Math.abs(itemIndex - currentIndex);
+    return distance > 2 ? 0.3 : 1 - distance * 0.2;
+  }
+
   ngOnDestroy(): void {
     this.seoService.removeJsonLd();
     this.destroyed.next();
     this.destroyed.complete();
   }
 }
-
-

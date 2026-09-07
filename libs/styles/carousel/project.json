@@ -1,7 +1,7 @@
 {
-  "name": "toggle",
+  "name": "carousel",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/styles/toggle/src",
+  "sourceRoot": "libs/styles/carousel/src",
   "prefix": "hlm",
   "projectType": "library",
   "tags": ["scope:shared", "type:ui"],
@@ -12,12 +12,12 @@
         "{workspaceRoot}/dist/{projectRoot}"
       ],
       "options": {
-        "project": "libs/styles/toggle/ng-package.json",
-        "tsConfig": "libs/styles/toggle/tsconfig.lib.json"
+        "project": "libs/styles/carousel/ng-package.json",
+        "tsConfig": "libs/styles/carousel/tsconfig.lib.json"
       },
       "configurations": {
         "production": {
-          "tsConfig": "libs/styles/toggle/tsconfig.lib.prod.json"
+          "tsConfig": "libs/styles/carousel/tsconfig.lib.prod.json"
         },
         "development": {}
       },

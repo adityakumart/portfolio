@@ -1,14 +1,75 @@
-<main class="portfolio-page-wrapper min-h-screen overflow-x-hidden pb-20 text-foreground" role="main" aria-label="Aditya Kumar T Portfolio">
+<section class="relative w-full overflow-hidden py-16">
+  <!-- Background Arc SVG / Glow Track -->
+  <svg
+    class="pointer-events-none absolute bottom-0 left-1/2 -translate-x-1/2 w-[1400px] text-border/40"
+    viewBox="0 0 1400 300"
+    fill="none"
+  >
+    <path
+      d="M 0 300 Q 700 80 1400 300"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-dasharray="6 6"
+    />
+  </svg>
+
+  <!-- Spartan Carousel Container -->
+  <hlm-carousel
+    #carousel="hlmCarousel"
+    [options]="{ align: 'center', loop: true }"
+    class="w-full max-w-6xl mx-auto"
+  >
+    <div hlmCarouselContent class="-ml-4 [perspective:1200px] py-12">
+      @for (item of items(); track item.id; let idx = $index) {
+        <div
+          hlmCarouselItem
+          class="pl-4 basis-1/2 md:basis-1/3 lg:basis-1/4 transition-all duration-500 ease-out"
+          [style.transform]="getArcTransform(idx, carousel.currentSlide())"
+          [style.opacity]="getArcOpacity(idx, carousel.currentSlide())"
+        >
+          <!-- Spartan Card Component -->
+          <div
+            hlmCard
+            class="relative backdrop-blur-md bg-card/85 border border-border shadow-xl rounded-2xl p-6"
+          >
+            <span hlmBadge variant="secondary" class="mb-3">{{
+              item.category
+            }}</span>
+            <h3 class="text-xl font-bold text-foreground">{{ item.title }}</h3>
+            <p class="text-sm text-muted-foreground mt-2">
+              {{ item.description }}
+            </p>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Spartan Navigation Controls -->
+    <button hlmCarouselPrevious class="-left-4 md:-left-8"></button>
+    <button hlmCarouselNext class="-right-4 md:-right-8"></button>
+  </hlm-carousel>
+</section>
+
+<main
+  class="portfolio-page-wrapper min-h-screen overflow-x-hidden pb-20 text-foreground"
+  role="main"
+  aria-label="Aditya Kumar T Portfolio"
+>
   <button
     hlmBtn
     variant="ghost"
     size="icon"
     class="group fixed top-6 right-[76px] z-50 size-10 rounded-full border border-white/25 bg-white/15 text-primary shadow-lg backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:border-transparent hover:bg-gradient-to-br hover:from-primary hover:to-sky-500 hover:text-white hover:shadow-[0_0_20px_rgba(147,51,234,0.4)] active:translate-y-0"
     (click)="toggleTheme()"
-    [hlmTooltip]="isDarkMode() ? 'Switch to Light Theme' : 'Switch to Dark Theme'"
+    [hlmTooltip]="
+      isDarkMode() ? 'Switch to Light Theme' : 'Switch to Dark Theme'
+    "
     position="left"
   >
-    <ng-icon class="size-5 transition-transform duration-500 group-hover:rotate-[360deg] group-hover:scale-110" [name]="isDarkMode() ? 'lucideSun' : 'lucideMoon'"></ng-icon>
+    <ng-icon
+      class="size-5 transition-transform duration-500 group-hover:rotate-[360deg] group-hover:scale-110"
+      [name]="isDarkMode() ? 'lucideSun' : 'lucideMoon'"
+    ></ng-icon>
   </button>
 
   <button
@@ -20,9 +81,12 @@
     hlmTooltip="Enter Dashboard"
     position="left"
   >
-    <ng-icon class="size-5 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110" name="lucideZap"></ng-icon>
+    <ng-icon
+      class="size-5 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110"
+      name="lucideZap"
+    ></ng-icon>
   </button>
-  
+
   <div class="mx-auto max-w-[1120px] px-4 py-[22px] sm:px-6 sm:py-8">
     <!-- Immediate / Above-the-fold Critical Path -->
     <app-hero [resume]="resume()" />
@@ -32,31 +96,46 @@
     @defer (on viewport) {
       <app-experience [worksData]="resume().work" />
     } @placeholder {
-      <div class="mb-6 w-full rounded-xl bg-foreground/[0.03]" style="min-height: 200px;"></div>
+      <div
+        class="mb-6 w-full rounded-xl bg-foreground/[0.03]"
+        style="min-height: 200px"
+      ></div>
     }
 
     @defer (on viewport) {
       <app-education [education]="resume().education" />
     } @placeholder {
-      <div class="mb-6 w-full rounded-xl bg-foreground/[0.03]" style="min-height: 180px;"></div>
+      <div
+        class="mb-6 w-full rounded-xl bg-foreground/[0.03]"
+        style="min-height: 180px"
+      ></div>
     }
 
     @defer (on viewport) {
       <app-skills [resume]="resume()" [gridColumns]="gridColumns()" />
     } @placeholder {
-      <div class="mb-6 w-full rounded-xl bg-foreground/[0.03]" style="min-height: 180px;"></div>
+      <div
+        class="mb-6 w-full rounded-xl bg-foreground/[0.03]"
+        style="min-height: 180px"
+      ></div>
     }
 
     @defer (on viewport) {
       <app-certificates [certificates]="resume().certificates" />
     } @placeholder {
-      <div class="mb-6 w-full rounded-xl bg-foreground/[0.03]" style="min-height: 160px;"></div>
+      <div
+        class="mb-6 w-full rounded-xl bg-foreground/[0.03]"
+        style="min-height: 160px"
+      ></div>
     }
 
     @defer (on viewport) {
       <app-awards [awards]="resume().awards" />
     } @placeholder {
-      <div class="mb-6 w-full rounded-xl bg-foreground/[0.03]" style="min-height: 140px;"></div>
+      <div
+        class="mb-6 w-full rounded-xl bg-foreground/[0.03]"
+        style="min-height: 140px"
+      ></div>
     }
   </div>
 </main>
