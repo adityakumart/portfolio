@@ -46,17 +46,17 @@
             </button>
           </hlm-tabs-list>
 
-          <!-- Feedback Banners -->
+          <!-- Feedback Banners with Spartan Alert -->
           @if (error()) {
-            <div class="mt-4 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive flex items-center gap-2.5 animate-in fade-in duration-200">
-              <ng-icon name="lucideAlertCircle" class="text-base flex-shrink-0"></ng-icon>
-              <span>{{ error() }}</span>
+            <div hlmAlert variant="destructive" class="mt-4 flex items-center gap-3 p-3 rounded-xl animate-in fade-in duration-200">
+              <ng-icon name="lucideAlertCircle" class="text-base flex-shrink-0" hlmAlertIcon></ng-icon>
+              <p hlmAlertDescription class="text-xs font-medium">{{ error() }}</p>
             </div>
           }
           @if (success()) {
-            <div class="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-2.5 animate-in fade-in duration-200">
-              <ng-icon name="lucideCheckCircle" class="text-base flex-shrink-0"></ng-icon>
-              <span>{{ success() }}</span>
+            <div hlmAlert class="mt-4 flex items-center gap-3 p-3 rounded-xl border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 animate-in fade-in duration-200">
+              <ng-icon name="lucideCheckCircle" class="text-base flex-shrink-0" hlmAlertIcon></ng-icon>
+              <p hlmAlertDescription class="text-xs font-medium">{{ success() }}</p>
             </div>
           }
 

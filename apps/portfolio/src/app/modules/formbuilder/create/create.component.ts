@@ -17,6 +17,10 @@ import { HlmInputDirective } from '@spartan-ng/hel/input';
 import { HlmLabelDirective } from '@spartan-ng/hel/label';
 import { HlmButtonDirective } from '@spartan-ng/hel/button';
 import { HlmDropdownMenuImports } from '@spartan-ng/hel/dropdown-menu';
+import { HlmSelectImports } from '@spartan-ng/hel/select';
+import { HlmCheckboxImports } from '@spartan-ng/hel/checkbox';
+import { HlmRadioGroupImports } from '@spartan-ng/hel/radio-group';
+import { HlmTextareaImports } from '@spartan-ng/hel/textarea';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideType,
@@ -42,6 +46,10 @@ import {
     HlmLabelDirective,
     HlmButtonDirective,
     HlmDropdownMenuImports,
+    HlmSelectImports,
+    HlmCheckboxImports,
+    HlmRadioGroupImports,
+    HlmTextareaImports,
     NgIconComponent,
   ],
   providers: [

@@ -39,29 +39,38 @@
               }
               @if (inputData.inputType === 'textarea') {
                 <div>
-                  <textarea hlmInput placeholder="Long text answer..." rows="3" class="w-full text-sm"></textarea>
+                  <textarea hlmTextarea placeholder="Long text answer..." rows="3" class="w-full text-sm"></textarea>
                 </div>
               }
               @if (inputData.inputType === 'select') {
                 <div>
-                  <select hlmInput class="w-full text-sm">
-                    <option value="Option 1">Option 1</option>
-                    <option value="Option 2">Option 2</option>
-                    <option value="Option 3">Option 3</option>
-                  </select>
+                  <hlm-select class="w-full">
+                    <hlm-select-trigger class="w-full text-sm">
+                      <hlm-select-value placeholder="Select an option" />
+                    </hlm-select-trigger>
+                    <hlm-select-content>
+                      <hlm-select-item value="Option 1">Option 1</hlm-select-item>
+                      <hlm-select-item value="Option 2">Option 2</hlm-select-item>
+                      <hlm-select-item value="Option 3">Option 3</hlm-select-item>
+                    </hlm-select-content>
+                  </hlm-select>
                 </div>
               }
               @if (inputData.inputType === 'radio') {
-                <div class="space-y-2 text-sm">
-                  <label class="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" name="preview_radio_{{inputData.id}}" value="1" class="accent-primary" />
+                <hlm-radio-group class="space-y-2 text-sm" value="1">
+                  <label class="flex items-center gap-2 cursor-pointer text-sm">
+                    <hlm-radio value="1">
+                      <hlm-radio-indicator indicator />
+                    </hlm-radio>
                     <span>Option 1</span>
                   </label>
-                  <label class="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" name="preview_radio_{{inputData.id}}" value="2" class="accent-primary" />
+                  <label class="flex items-center gap-2 cursor-pointer text-sm">
+                    <hlm-radio value="2">
+                      <hlm-radio-indicator indicator />
+                    </hlm-radio>
                     <span>Option 2</span>
                   </label>
-                </div>
+                </hlm-radio-group>
               }
               @if (inputData.inputType === 'date') {
                 <div>
@@ -75,11 +84,9 @@
                 </div>
               }
               @if (inputData.inputType === 'checkBox') {
-                <div class="text-sm">
-                  <label class="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" class="rounded accent-primary h-4 w-4" />
-                    <span>Option checkbox choice</span>
-                  </label>
+                <div class="text-sm flex items-center gap-2.5">
+                  <hlm-checkbox [checked]="false" id="preview_cb_{{inputData.id}}" />
+                  <label hlmLabel for="preview_cb_{{inputData.id}}" class="cursor-pointer text-sm font-normal">Option checkbox choice</label>
                 </div>
               }
               @if (inputData.inputType === 'phone') {
@@ -97,18 +104,26 @@
                 <input hlmInput placeholder="Short answer" class="w-full text-sm h-8" disabled />
               }
               @if (inputData.inputType === 'textarea') {
-                <textarea hlmInput placeholder="Long answer" rows="2" class="w-full text-sm" disabled></textarea>
+                <textarea hlmTextarea placeholder="Long answer" rows="2" class="w-full text-sm" disabled></textarea>
               }
               @if (inputData.inputType === 'select') {
-                <select hlmInput class="w-full text-sm h-8" disabled>
-                  <option>Dropdown select</option>
-                </select>
+                <hlm-select class="w-full">
+                  <hlm-select-trigger class="w-full text-sm h-8" disabled>
+                    <hlm-select-value placeholder="Dropdown select" />
+                  </hlm-select-trigger>
+                </hlm-select>
               }
               @if (inputData.inputType === 'radio') {
-                <div class="space-y-1 text-xs text-muted-foreground">
-                  <div>○ Option 1</div>
-                  <div>○ Option 2</div>
-                </div>
+                <hlm-radio-group class="space-y-1 text-xs text-muted-foreground" disabled>
+                  <div class="flex items-center gap-2">
+                    <hlm-radio value="1" disabled><hlm-radio-indicator indicator /></hlm-radio>
+                    <span>Option 1</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <hlm-radio value="2" disabled><hlm-radio-indicator indicator /></hlm-radio>
+                    <span>Option 2</span>
+                  </div>
+                </hlm-radio-group>
               }
               @if (inputData.inputType === 'date') {
                 <input hlmInput type="date" class="w-full text-sm h-8" disabled />
@@ -120,7 +135,10 @@
                 </div>
               }
               @if (inputData.inputType === 'checkBox') {
-                <div class="text-xs text-muted-foreground">☐ Multiple choice option</div>
+                <div class="flex items-center gap-2">
+                  <hlm-checkbox [checked]="false" disabled />
+                  <span class="text-xs text-muted-foreground">Multiple choice option</span>
+                </div>
               }
               @if (inputData.inputType === 'phone') {
                 <input hlmInput type="tel" placeholder="Phone" class="w-full text-sm h-8" disabled />
