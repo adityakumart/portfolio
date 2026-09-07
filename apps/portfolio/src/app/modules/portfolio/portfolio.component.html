@@ -1,55 +1,3 @@
-<section class="relative w-full overflow-hidden py-16">
-  <!-- Background Arc SVG / Glow Track -->
-  <svg
-    class="pointer-events-none absolute bottom-0 left-1/2 -translate-x-1/2 w-[1400px] text-border/40"
-    viewBox="0 0 1400 300"
-    fill="none"
-  >
-    <path
-      d="M 0 300 Q 700 80 1400 300"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-dasharray="6 6"
-    />
-  </svg>
-
-  <!-- Spartan Carousel Container -->
-  <hlm-carousel
-    #carousel="hlmCarousel"
-    [options]="{ align: 'center', loop: true }"
-    class="w-full max-w-6xl mx-auto"
-  >
-    <div hlmCarouselContent class="-ml-4 [perspective:1200px] py-12">
-      @for (item of items(); track item.id; let idx = $index) {
-        <div
-          hlmCarouselItem
-          class="pl-4 basis-1/2 md:basis-1/3 lg:basis-1/4 transition-all duration-500 ease-out"
-          [style.transform]="getArcTransform(idx, carousel.currentSlide())"
-          [style.opacity]="getArcOpacity(idx, carousel.currentSlide())"
-        >
-          <!-- Spartan Card Component -->
-          <div
-            hlmCard
-            class="relative backdrop-blur-md bg-card/85 border border-border shadow-xl rounded-2xl p-6"
-          >
-            <span hlmBadge variant="secondary" class="mb-3">{{
-              item.category
-            }}</span>
-            <h3 class="text-xl font-bold text-foreground">{{ item.title }}</h3>
-            <p class="text-sm text-muted-foreground mt-2">
-              {{ item.description }}
-            </p>
-          </div>
-        </div>
-      }
-    </div>
-
-    <!-- Spartan Navigation Controls -->
-    <button hlmCarouselPrevious class="-left-4 md:-left-8"></button>
-    <button hlmCarouselNext class="-right-4 md:-right-8"></button>
-  </hlm-carousel>
-</section>
-
 <main
   class="portfolio-page-wrapper min-h-screen overflow-x-hidden pb-20 text-foreground"
   role="main"
@@ -92,50 +40,316 @@
     <app-hero [resume]="resume()" />
     <app-summary [resume]="resume()" />
 
-    <!-- Below-the-fold Viewport Deferred Sections -->
-    @defer (on viewport) {
-      <app-experience [worksData]="resume().work" />
-    } @placeholder {
+    <section
+      class="curved-arc-carousel-section relative w-full overflow-hidden pt-8 pb-16 select-none"
+      aria-label="Portfolio Showcase Carousel"
+    >
+      <!-- Background Arc Ambient Center Glow -->
       <div
-        class="mb-6 w-full rounded-xl bg-foreground/[0.03]"
-        style="min-height: 200px"
-      ></div>
-    }
+        class="pointer-events-none absolute inset-0 flex justify-center items-center overflow-hidden"
+      >
+        <div
+          class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[300px] bg-gradient-to-r from-primary/15 via-sky-500/15 to-purple-500/15 blur-[100px] rounded-full opacity-60"
+        ></div>
+      </div>
 
-    @defer (on viewport) {
-      <app-education [education]="resume().education" />
-    } @placeholder {
-      <div
-        class="mb-6 w-full rounded-xl bg-foreground/[0.03]"
-        style="min-height: 180px"
-      ></div>
-    }
+      <!-- Background Arc Mathematical SVG Guide Rail -->
+      <svg
+        class="pointer-events-none absolute top-[52%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1400px] h-[320px] max-w-none text-border/50"
+        viewBox="0 0 1400 320"
+        fill="none"
+        aria-hidden="true"
+      >
+        <defs>
+          <linearGradient
+            id="arcGlowGradient"
+            x1="0%"
+            y1="100%"
+            x2="100%"
+            y2="100%"
+          >
+            <stop offset="0%" stop-color="var(--primary)" stop-opacity="0.0" />
+            <stop
+              offset="25%"
+              stop-color="var(--primary)"
+              stop-opacity="0.35"
+            />
+            <stop
+              offset="50%"
+              stop-color="var(--color-sky-500, #0ea5e9)"
+              stop-opacity="0.9"
+            />
+            <stop
+              offset="75%"
+              stop-color="var(--primary)"
+              stop-opacity="0.35"
+            />
+            <stop
+              offset="100%"
+              stop-color="var(--primary)"
+              stop-opacity="0.0"
+            />
+          </linearGradient>
+          <filter id="arcPathBlur" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="3.5" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
+        </defs>
 
-    @defer (on viewport) {
-      <app-skills [resume]="resume()" [gridColumns]="gridColumns()" />
-    } @placeholder {
-      <div
-        class="mb-6 w-full rounded-xl bg-foreground/[0.03]"
-        style="min-height: 180px"
-      ></div>
-    }
+        <!-- Glowing Base Arc -->
+        <path
+          d="M 20 290 Q 700 45 1380 290"
+          stroke="url(#arcGlowGradient)"
+          stroke-width="3.5"
+          filter="url(#arcPathBlur)"
+          stroke-linecap="round"
+        />
 
-    @defer (on viewport) {
-      <app-certificates [certificates]="resume().certificates" />
-    } @placeholder {
-      <div
-        class="mb-6 w-full rounded-xl bg-foreground/[0.03]"
-        style="min-height: 160px"
-      ></div>
-    }
+        <!-- Dashed Trajectory Orbit Rail -->
+        <path
+          class="arc-track-dashed"
+          d="M 20 290 Q 700 45 1380 290"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-dasharray="6 8"
+          opacity="0.5"
+        />
 
-    @defer (on viewport) {
-      <app-awards [awards]="resume().awards" />
-    } @placeholder {
-      <div
-        class="mb-6 w-full rounded-xl bg-foreground/[0.03]"
-        style="min-height: 140px"
-      ></div>
-    }
+        <!-- Arc Apex Center Marker -->
+        <circle
+          cx="700"
+          cy="45"
+          r="5"
+          fill="var(--primary)"
+          class="animate-pulse"
+        />
+        <circle
+          cx="700"
+          cy="45"
+          r="12"
+          stroke="var(--primary)"
+          stroke-width="1"
+          stroke-dasharray="2 3"
+          opacity="0.6"
+        />
+      </svg>
+
+      <div class="relative w-full max-w-6xl mx-auto px-4 sm:px-6">
+        <!-- Header Badge -->
+        <div class="text-center mb-2">
+          <span
+            hlmBadge
+            variant="outline"
+            class="rounded-full px-4 py-1 text-xs tracking-widest uppercase font-semibold border-primary/30 bg-primary/5 text-primary backdrop-blur-md shadow-sm"
+          >
+            Interactive Section Orbit
+          </span>
+          <h2
+            class="text-2xl sm:text-3xl font-extrabold tracking-tight mt-2 text-foreground"
+          >
+            Curved Showcase Trajectory
+          </h2>
+          <p
+            class="text-xs sm:text-sm text-muted-foreground mt-1 max-w-md mx-auto"
+          >
+            Scroll, drag, or click any card along the curved arc to explore
+            portfolio milestones.
+          </p>
+        </div>
+
+        <!-- Spartan Carousel Container -->
+        <div
+          class="arc-carousel-wrapper relative w-full"
+          (wheel)="onCarouselWheel($event)"
+        >
+          <hlm-carousel
+            #carousel="hlmCarousel"
+            [options]="{ align: 'center', loop: true }"
+            class="w-full"
+          >
+            <div hlmCarouselContent class="-ml-4 py-12 arc-carousel-stage">
+              @for (item of items(); track item.id; let idx = $index) {
+                <div
+                  hlmCarouselItem
+                  class="pl-4 basis-[80%] sm:basis-1/2 md:basis-1/3 lg:basis-1/4 arc-slide"
+                  [style.z-index]="getArcZIndex(idx, carousel.currentSlide())"
+                >
+                  <!-- Card container transformed along curved arc trajectory -->
+                  <div
+                    class="arc-card-container transition-all duration-500 ease-out"
+                    [style.transform]="
+                      getArcTransform(idx, carousel.currentSlide())
+                    "
+                    [style.opacity]="
+                      getArcOpacity(idx, carousel.currentSlide())
+                    "
+                    [class.is-active-arc]="idx === carousel.currentSlide()"
+                    (click)="
+                      onCardClick(idx, carousel.currentSlide(), item.sectionId)
+                    "
+                  >
+                    <!-- Spartan Card Component -->
+                    <div
+                      hlmCard
+                      class="arc-card group relative cursor-pointer overflow-hidden rounded-2xl border border-border/70 backdrop-blur-xl bg-card/85 p-5 sm:p-6 shadow-xl"
+                      [style.--card-glow]="item.glowColor"
+                    >
+                      <!-- Card Top Ambient Gradient Accent -->
+                      <div
+                        class="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r {{
+                          item.gradientClass
+                        }} opacity-80"
+                      ></div>
+
+                      <!-- Top Meta Row -->
+                      <div class="flex items-center justify-between gap-2 mb-4">
+                        <div
+                          class="flex items-center justify-center size-9 rounded-xl bg-primary/10 text-primary border border-primary/20 shadow-sm transition-transform duration-300 group-hover:scale-110"
+                        >
+                          <ng-icon [name]="item.icon" class="size-5"></ng-icon>
+                        </div>
+                        <span
+                          hlmBadge
+                          variant="secondary"
+                          class="text-[11px] font-medium px-2.5 py-0.5 rounded-full border border-border/60"
+                        >
+                          {{ item.badge }}
+                        </span>
+                      </div>
+
+                      <!-- Category Pill -->
+                      <p
+                        class="text-xs font-semibold uppercase tracking-wider text-primary/80 mb-1"
+                      >
+                        {{ item.category }}
+                      </p>
+
+                      <!-- Title -->
+                      <h3
+                        class="text-lg sm:text-xl font-bold text-foreground line-clamp-1 group-hover:text-primary transition-colors"
+                      >
+                        {{ item.title }}
+                      </h3>
+
+                      <!-- Description -->
+                      <p
+                        class="text-xs sm:text-sm text-muted-foreground mt-2 line-clamp-3 leading-relaxed"
+                      >
+                        {{ item.description }}
+                      </p>
+
+                      <!-- Footer CTA -->
+                      <div
+                        class="mt-5 pt-3 border-t border-border/40 flex items-center justify-between text-xs font-medium text-primary"
+                      >
+                        <span
+                          class="group-hover:translate-x-0.5 transition-transform flex items-center gap-1.5"
+                        >
+                          Explore Section
+                          <ng-icon
+                            name="lucideArrowRight"
+                            class="size-3.5 transition-transform group-hover:translate-x-1"
+                          ></ng-icon>
+                        </span>
+                        <span
+                          class="size-2 rounded-full bg-primary/30 transition-all duration-300"
+                          [class.!bg-primary]="idx === carousel.currentSlide()"
+                          [class.animate-ping]="idx === carousel.currentSlide()"
+                        ></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- Spartan Navigation Controls -->
+            <button
+              hlmCarouselPrevious
+              class="-left-3 sm:-left-5 lg:-left-7 size-10 rounded-full border border-border/80 bg-background/80 shadow-lg backdrop-blur-md transition-transform hover:scale-110"
+            ></button>
+            <button
+              hlmCarouselNext
+              class="-right-3 sm:-right-5 lg:-right-7 size-10 rounded-full border border-border/80 bg-background/80 shadow-lg backdrop-blur-md transition-transform hover:scale-110"
+            ></button>
+          </hlm-carousel>
+        </div>
+
+        <!-- Bottom Arc Orbit Pagination Dots -->
+        <div
+          class="flex items-center justify-center gap-2 mt-4"
+          role="tablist"
+          aria-label="Carousel pagination"
+        >
+          @for (item of items(); track item.id; let dotIdx = $index) {
+            <button
+              type="button"
+              role="tab"
+              class="arc-pagination-dot transition-all duration-300 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              [class.active-dot]="dotIdx === carousel.currentSlide()"
+              [attr.aria-selected]="dotIdx === carousel.currentSlide()"
+              [attr.aria-label]="'Go to ' + item.title"
+              (click)="scrollToSlide(dotIdx)"
+            ></button>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- Below-the-fold Viewport Deferred Sections with Section IDs -->
+    <div id="experience-section">
+      @defer (on viewport) {
+        <app-experience [worksData]="resume().work" />
+      } @placeholder {
+        <div
+          class="mb-6 w-full rounded-xl bg-foreground/[0.03]"
+          style="min-height: 200px"
+        ></div>
+      }
+    </div>
+
+    <div id="education-section">
+      @defer (on viewport) {
+        <app-education [education]="resume().education" />
+      } @placeholder {
+        <div
+          class="mb-6 w-full rounded-xl bg-foreground/[0.03]"
+          style="min-height: 180px"
+        ></div>
+      }
+    </div>
+
+    <div id="skills-section">
+      @defer (on viewport) {
+        <app-skills [resume]="resume()" [gridColumns]="gridColumns()" />
+      } @placeholder {
+        <div
+          class="mb-6 w-full rounded-xl bg-foreground/[0.03]"
+          style="min-height: 180px"
+        ></div>
+      }
+    </div>
+
+    <div id="certificates-section">
+      @defer (on viewport) {
+        <app-certificates [certificates]="resume().certificates" />
+      } @placeholder {
+        <div
+          class="mb-6 w-full rounded-xl bg-foreground/[0.03]"
+          style="min-height: 160px"
+        ></div>
+      }
+    </div>
+
+    <div id="awards-section">
+      @defer (on viewport) {
+        <app-awards [awards]="resume().awards" />
+      } @placeholder {
+        <div
+          class="mb-6 w-full rounded-xl bg-foreground/[0.03]"
+          style="min-height: 140px"
+        ></div>
+      }
+    </div>
   </div>
 </main>

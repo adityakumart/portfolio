@@ -1,3 +1,152 @@
+// =============================================================================
+// CURVED ARC CAROUSEL DESIGN TOKENS & TRIGONOMETRIC GEOMETRY
+// =============================================================================
+
+// Responsive Arc Radius Variables (R in circular sagitta drop: ΔY = R * (1 - cos θ))
+$arc-radius-desktop: 1200px;
+$arc-radius-tablet: 820px;
+$arc-radius-mobile: 540px;
+
+// Card Geometry Variables
+$arc-card-width-desktop: 320px;
+$arc-card-width-tablet: 280px;
+$arc-card-width-mobile: 240px;
+$arc-card-min-height: 250px;
+
+// 3D Perspective & Trajectory Variables
+$arc-perspective: 1400px;
+$arc-max-tilt-deg: 14deg;
+$arc-depth-offset: 60px;
+
+:host {
+  display: block;
+
+  // Responsive CSS tokens derived from SCSS dimensions
+  --arc-radius: #{$arc-radius-desktop};
+  --arc-card-width: #{$arc-card-width-desktop};
+  --arc-perspective: #{$arc-perspective};
+  --arc-tilt-limit: #{$arc-max-tilt-deg};
+
+  @media (max-width: 1024px) {
+    --arc-radius: #{$arc-radius-tablet};
+    --arc-card-width: #{$arc-card-width-tablet};
+  }
+
+  @media (max-width: 640px) {
+    --arc-radius: #{$arc-radius-mobile};
+    --arc-card-width: #{$arc-card-width-mobile};
+  }
+}
+
+// =============================================================================
+// 3D PERSPECTIVE STAGE & CURVED ARC ORBIT
+// =============================================================================
+
+.curved-arc-carousel-section {
+  perspective: var(--arc-perspective);
+  transform-style: preserve-3d;
+  background:
+    radial-gradient(
+      ellipse 80% 50% at 50% 120%,
+      color-mix(in srgb, var(--primary) 12%, transparent),
+      transparent 80%
+    );
+
+  // Dashed Arc Path Smooth Traveling Dash Animation
+  .arc-track-dashed {
+    stroke-dasharray: 6 8;
+    animation: arcOrbitTravel 35s linear infinite;
+  }
+
+  @keyframes arcOrbitTravel {
+    from {
+      stroke-dashoffset: 0;
+    }
+    to {
+      stroke-dashoffset: 350;
+    }
+  }
+}
+
+.arc-carousel-wrapper {
+  position: relative;
+}
+
+.arc-carousel-stage {
+  perspective: var(--arc-perspective);
+  transform-style: preserve-3d;
+  overflow: visible !important;
+  padding-top: 2.5rem;
+  padding-bottom: 3.5rem;
+}
+
+// Embla slide container - Embla controls its horizontal movement
+.arc-slide {
+  transform-style: preserve-3d;
+}
+
+// Card container transformed along curved arc trajectory
+.arc-card-container {
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform, opacity;
+  transition:
+    transform 480ms cubic-bezier(0.2, 0.8, 0.25, 1),
+    opacity 400ms ease;
+
+  .arc-card {
+    min-height: $arc-card-min-height;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    transform-style: preserve-3d;
+    transition:
+      box-shadow 300ms cubic-bezier(0.16, 1, 0.3, 1),
+      border-color 300ms cubic-bezier(0.16, 1, 0.3, 1),
+      background-color 250ms ease;
+
+    &:hover {
+      box-shadow:
+        0 0 24px var(--card-glow, rgba(147, 51, 234, 0.25)),
+        0 14px 28px -8px rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  // Active Center Card Glow & Halo
+  &.is-active-arc {
+    .arc-card {
+      box-shadow:
+        0 0 38px var(--card-glow, rgba(147, 51, 234, 0.45)),
+        0 24px 48px -10px rgba(0, 0, 0, 0.45);
+      border-color: color-mix(in srgb, var(--primary) 75%, transparent);
+    }
+  }
+}
+
+// =============================================================================
+// PAGINATION INDICATOR DOTS
+// =============================================================================
+
+.arc-pagination-dot {
+  width: 8px;
+  height: 8px;
+  background: color-mix(in srgb, var(--foreground) 25%, transparent);
+  cursor: pointer;
+
+  &.active-dot {
+    width: 28px;
+    background: var(--primary);
+    box-shadow: 0 0 14px color-mix(in srgb, var(--primary) 80%, transparent);
+  }
+
+  &:hover:not(.active-dot) {
+    background: color-mix(in srgb, var(--foreground) 50%, transparent);
+  }
+}
+
+// =============================================================================
+// PORTFOLIO MAIN PAGE WRAPPER
+// =============================================================================
+
 .portfolio-page-wrapper {
   background:
     radial-gradient(
@@ -17,3 +166,6 @@
       var(--background) 100%
     );
 }
+
+
+
