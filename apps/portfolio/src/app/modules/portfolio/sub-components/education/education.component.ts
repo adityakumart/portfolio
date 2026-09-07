@@ -6,12 +6,13 @@ import {
   HlmCardContent,
 } from '@spartan-ng/hel/card';
 import { HlmBadge } from '@spartan-ng/hel/badge';
+import { HlmSeparator } from '@spartan-ng/hel/separator';
 import { Education } from '@portfolio/shared-types';
 
 @Component({
   selector: 'app-education',
   standalone: true,
-  imports: [HlmCard, HlmCardHeader, HlmCardTitle, HlmCardContent, HlmBadge],
+  imports: [HlmCard, HlmCardHeader, HlmCardTitle, HlmCardContent, HlmBadge, HlmSeparator],
   templateUrl: './education.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './education.component.scss',

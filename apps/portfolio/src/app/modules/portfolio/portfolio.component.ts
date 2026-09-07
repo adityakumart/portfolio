@@ -11,6 +11,7 @@ import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { lucideSun, lucideMoon, lucideZap } from '@ng-icons/lucide';
 import { HlmButton } from '@spartan-ng/hel/button';
 import { HlmTooltip } from '@spartan-ng/hel/tooltip';
+import { HlmSkeleton } from '@spartan-ng/hel/skeleton';
 import { RouterLink } from '@angular/router';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Subject } from 'rxjs';
@@ -35,6 +36,7 @@ import { AwardsComponent } from './sub-components/awards/awards.component';
   imports: [
     HlmButton,
     HlmTooltip,
+    HlmSkeleton,
     NgIconComponent,
     RouterLink,
     HeroComponent,

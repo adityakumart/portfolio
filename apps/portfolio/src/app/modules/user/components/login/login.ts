@@ -10,6 +10,7 @@ import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmSpinnerImports } from '@spartan-ng/hel/spinner';
 import { HlmBadgeImports } from '@spartan-ng/hel/badge';
 import { HlmSeparatorImports } from '@spartan-ng/hel/separator';
+import { HlmAlertImports } from '@spartan-ng/hel/alert';
 import { toast } from '@spartan-ng/hel/sonner';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
@@ -46,6 +47,7 @@ import { AuthService } from '../../services/auth';
     HlmSpinnerImports,
     HlmBadgeImports,
     HlmSeparatorImports,
+    HlmAlertImports,
     NgIconComponent,
   ],
   providers: [
