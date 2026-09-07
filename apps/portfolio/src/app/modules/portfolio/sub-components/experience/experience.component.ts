@@ -6,6 +6,7 @@ import {
   HlmCardContent,
 } from '@spartan-ng/hel/card';
 import { HlmBadge } from '@spartan-ng/hel/badge';
+import { HlmSeparator } from '@spartan-ng/hel/separator';
 import { ResumeObject } from '@portfolio/shared-types';
 import { ProjectsComponent } from '../projects/projects.component';
 
@@ -18,6 +19,7 @@ import { ProjectsComponent } from '../projects/projects.component';
     HlmCardTitle,
     HlmCardContent,
     HlmBadge,
+    HlmSeparator,
     ProjectsComponent,
   ],
   templateUrl: './experience.component.html',

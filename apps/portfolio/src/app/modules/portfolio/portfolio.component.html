@@ -28,35 +28,119 @@
     <app-hero [resume]="resume()" />
     <app-summary [resume]="resume()" />
 
-    <!-- Below-the-fold Viewport Deferred Sections -->
+    <!-- Below-the-fold Viewport Deferred Sections with Spartan UI Skeletons -->
     @defer (on viewport) {
       <app-experience [worksData]="resume().work" />
     } @placeholder {
-      <div class="mb-6 w-full rounded-xl bg-foreground/[0.03]" style="min-height: 200px;"></div>
+      <div class="mb-6 overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-xl space-y-6" aria-label="Loading Experience">
+        <hlm-skeleton class="h-6 w-44 rounded-lg" />
+        <div class="space-y-4 pl-5 border-l-2 border-primary/20">
+          <div class="flex flex-wrap items-center justify-between gap-2.5">
+            <hlm-skeleton class="h-5 w-48 rounded-md" />
+            <hlm-skeleton class="h-6 w-28 rounded-full" />
+          </div>
+          <hlm-skeleton class="h-4 w-36 rounded-md" />
+          <hlm-skeleton class="h-20 w-full rounded-xl" />
+        </div>
+      </div>
     }
 
     @defer (on viewport) {
       <app-education [education]="resume().education" />
     } @placeholder {
-      <div class="mb-6 w-full rounded-xl bg-foreground/[0.03]" style="min-height: 180px;"></div>
+      <div class="mb-6 overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-xl space-y-6" aria-label="Loading Education">
+        <hlm-skeleton class="h-6 w-32 rounded-lg" />
+        <div class="space-y-3 pl-5 border-l-2 border-primary/20">
+          <div class="flex flex-wrap items-center justify-between gap-2.5">
+            <hlm-skeleton class="h-5 w-56 rounded-md" />
+            <hlm-skeleton class="h-6 w-28 rounded-full" />
+          </div>
+          <hlm-skeleton class="h-4 w-72 max-w-full rounded-md" />
+        </div>
+      </div>
     }
 
     @defer (on viewport) {
       <app-skills [resume]="resume()" [gridColumns]="gridColumns()" />
     } @placeholder {
-      <div class="mb-6 w-full rounded-xl bg-foreground/[0.03]" style="min-height: 180px;"></div>
+      <div class="py-4 space-y-4" aria-label="Loading Skills">
+        <hlm-skeleton class="h-7 w-48 rounded-lg" />
+        <hlm-skeleton class="h-4 w-96 max-w-full rounded-md" />
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4.5">
+          <div class="min-h-[190px] rounded-2xl border border-border bg-card p-6 space-y-4 shadow-xl">
+            <hlm-skeleton class="h-5 w-32 rounded-md" />
+            <div class="flex flex-wrap gap-2.5">
+              <hlm-skeleton class="h-8 w-24 rounded-full" />
+              <hlm-skeleton class="h-8 w-20 rounded-full" />
+              <hlm-skeleton class="h-8 w-28 rounded-full" />
+              <hlm-skeleton class="h-8 w-16 rounded-full" />
+              <hlm-skeleton class="h-8 w-24 rounded-full" />
+            </div>
+          </div>
+          <div class="min-h-[190px] rounded-2xl border border-border bg-card p-6 space-y-4 shadow-xl">
+            <hlm-skeleton class="h-5 w-36 rounded-md" />
+            <div class="flex flex-wrap gap-2.5">
+              <hlm-skeleton class="h-8 w-20 rounded-full" />
+              <hlm-skeleton class="h-8 w-28 rounded-full" />
+              <hlm-skeleton class="h-8 w-24 rounded-full" />
+              <hlm-skeleton class="h-8 w-16 rounded-full" />
+              <hlm-skeleton class="h-8 w-20 rounded-full" />
+            </div>
+          </div>
+        </div>
+      </div>
     }
 
     @defer (on viewport) {
       <app-certificates [certificates]="resume().certificates" />
     } @placeholder {
-      <div class="mb-6 w-full rounded-xl bg-foreground/[0.03]" style="min-height: 160px;"></div>
+      <div class="py-4 space-y-4" aria-label="Loading Certificates">
+        <hlm-skeleton class="h-7 w-40 rounded-lg" />
+        <hlm-skeleton class="h-4 w-64 max-w-full rounded-md" />
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4.5">
+          <div class="min-h-[100px] rounded-2xl border border-border bg-card p-4 pl-6 space-y-3 shadow-xl">
+            <hlm-skeleton class="h-5 w-48 rounded-md" />
+            <div class="flex justify-between">
+              <hlm-skeleton class="h-4 w-24 rounded-md" />
+              <hlm-skeleton class="h-4 w-16 rounded-md" />
+            </div>
+          </div>
+          <div class="min-h-[100px] rounded-2xl border border-border bg-card p-4 pl-6 space-y-3 shadow-xl">
+            <hlm-skeleton class="h-5 w-52 rounded-md" />
+            <div class="flex justify-between">
+              <hlm-skeleton class="h-4 w-28 rounded-md" />
+              <hlm-skeleton class="h-4 w-16 rounded-md" />
+            </div>
+          </div>
+        </div>
+      </div>
     }
 
     @defer (on viewport) {
       <app-awards [awards]="resume().awards" />
     } @placeholder {
-      <div class="mb-6 w-full rounded-xl bg-foreground/[0.03]" style="min-height: 140px;"></div>
+      <div class="py-4 space-y-4" aria-label="Loading Awards">
+        <hlm-skeleton class="h-7 w-52 rounded-lg" />
+        <hlm-skeleton class="h-4 w-60 max-w-full rounded-md" />
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4.5">
+          <div class="min-h-[110px] rounded-2xl border border-border bg-card p-4 pl-6 space-y-3 shadow-xl">
+            <hlm-skeleton class="h-5 w-40 rounded-md" />
+            <div class="flex justify-between">
+              <hlm-skeleton class="h-4 w-28 rounded-md" />
+              <hlm-skeleton class="h-4 w-16 rounded-md" />
+            </div>
+            <hlm-skeleton class="h-4 w-full rounded-md" />
+          </div>
+          <div class="min-h-[110px] rounded-2xl border border-border bg-card p-4 pl-6 space-y-3 shadow-xl">
+            <hlm-skeleton class="h-5 w-44 rounded-md" />
+            <div class="flex justify-between">
+              <hlm-skeleton class="h-4 w-32 rounded-md" />
+              <hlm-skeleton class="h-4 w-16 rounded-md" />
+            </div>
+            <hlm-skeleton class="h-4 w-full rounded-md" />
+          </div>
+        </div>
+      </div>
     }
   </div>
 </main>

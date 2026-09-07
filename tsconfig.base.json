@@ -118,6 +118,9 @@
       ],
       "@spartan-ng/hel/breadcrumb": [
         "./libs/styles/breadcrumb/src/index.ts"
+      ],
+      "@spartan-ng/hel/skeleton": [
+        "./libs/styles/skeleton/src/index.ts"
       ]
     },
     "forceConsistentCasingInFileNames": true,
