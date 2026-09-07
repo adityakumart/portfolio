@@ -121,6 +121,9 @@
       ],
       "@spartan-ng/hel/skeleton": [
         "./libs/styles/skeleton/src/index.ts"
+      ],
+      "@spartan-ng/hel/accordion": [
+        "./libs/styles/accordion/src/index.ts"
       ]
     },
     "forceConsistentCasingInFileNames": true,
