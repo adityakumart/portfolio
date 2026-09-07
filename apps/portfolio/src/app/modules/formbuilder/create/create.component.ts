@@ -193,10 +193,10 @@ export class CreateComponent implements OnInit {
   }
 
   scrollToBottom(): void {
-    try {
+    if (this.myScrollContainer?.nativeElement) {
       this.myScrollContainer.nativeElement.scrollTop =
         this.myScrollContainer.nativeElement.scrollHeight;
-    } catch {}
+    }
   }
 
   fieldSelected(id: number) {
