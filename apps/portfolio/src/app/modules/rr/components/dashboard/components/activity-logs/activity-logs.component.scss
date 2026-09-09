@@ -1,1 +1,8 @@
 /* Styles for RRActivityLogsComponent */
+:host {
+  display: block;
+}
+
+.table-responsive {
+  scrollbar-width: thin;
+}

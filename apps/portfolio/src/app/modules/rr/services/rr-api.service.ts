@@ -9,6 +9,7 @@ import {
   IBooking,
   IEmployee,
   ILog,
+  ILogsResponse,
   IRRDashboardStats,
   IRRVehicleAvailability,
   IRRLoginRequest,
@@ -21,6 +22,7 @@ export {
   IBooking,
   IEmployee,
   ILog,
+  ILogsResponse,
   IRRDashboardStats,
   IRRVehicleAvailability,
 };
@@ -175,15 +177,24 @@ export class RRApiService {
   }
 
   // Logs
-  async getLogs(from?: string, to?: string): Promise<ILog[]> {
-    let params = new HttpParams();
-    if (from) params = params.set('from', from);
-    if (to) params = params.set('to', to);
+  async getLogs(params?: {
+    from?: string;
+    to?: string;
+    page?: number;
+    limit?: number;
+    search?: string;
+  }): Promise<ILogsResponse> {
+    let httpParams = new HttpParams();
+    if (params?.from) httpParams = httpParams.set('from', params.from);
+    if (params?.to) httpParams = httpParams.set('to', params.to);
+    if (params?.page) httpParams = httpParams.set('page', params.page.toString());
+    if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
+    if (params?.search) httpParams = httpParams.set('search', params.search);
 
     return firstValueFrom(
-      this.http.get<ILog[]>(`${this.baseUrl}/logs`, {
+      this.http.get<ILogsResponse>(`${this.baseUrl}/logs`, {
         headers: this.getHeaders(),
-        params: params,
+        params: httpParams,
       })
     );
   }

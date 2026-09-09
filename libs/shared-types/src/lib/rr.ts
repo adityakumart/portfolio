@@ -158,6 +158,14 @@ export interface ILog {
   details?: string;
 }
 
+export interface ILogsResponse {
+  logs: ILog[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export interface IRRDashboardStats {
   totalFleet: number;
   maintenance: number;

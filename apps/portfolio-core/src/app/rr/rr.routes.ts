@@ -477,7 +477,7 @@ rrRouter.put('/employees/:id', authenticateRRToken, requireAdmin, async (req: an
 rrRouter.get('/logs', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
   try {
     const col = await RRService.getLogsCol();
-    const { from, to } = req.query;
+    const { from, to, page, limit, search, all } = req.query;
 
     const query: any = {};
     if (from || to) {
@@ -486,13 +486,42 @@ rrRouter.get('/logs', authenticateRRToken, requireAdmin, async (req: any, res: R
         query.timestamp.$gte = new Date(from as string + 'T00:00:00');
       }
       if (to) {
-        query.timestamp.$lte = new Date(to as string + 'T23:59:59');
+        query.timestamp.$lte = new Date(to as string + 'T23:59:59.999');
       }
     }
 
+    if (search && typeof search === 'string' && search.trim()) {
+      const searchRegex = new RegExp(search.trim(), 'i');
+      query.$or = [
+        { action: { $regex: searchRegex } },
+        { performedBy: { $regex: searchRegex } },
+        { role: { $regex: searchRegex } },
+        { details: { $regex: searchRegex } }
+      ];
+    }
 
-    const list = await col.find(query).sort({ timestamp: -1 }).toArray();
-    res.json(list);
+    if (all === 'true') {
+      const list = await col.find(query).sort({ timestamp: -1, _id: -1 }).toArray();
+      res.json(list);
+      return;
+    }
+
+    const pageNum = Math.max(1, parseInt(page as string, 10) || 1);
+    const limitNum = Math.max(1, Math.min(100, parseInt(limit as string, 10) || 15));
+    const skip = (pageNum - 1) * limitNum;
+
+    const [logs, total] = await Promise.all([
+      col.find(query).sort({ timestamp: -1, _id: -1 }).skip(skip).limit(limitNum).toArray(),
+      col.countDocuments(query)
+    ]);
+
+    res.json({
+      logs,
+      total,
+      page: pageNum,
+      limit: limitNum,
+      totalPages: Math.ceil(total / limitNum) || 1
+    });
   } catch (err: any) {
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }
