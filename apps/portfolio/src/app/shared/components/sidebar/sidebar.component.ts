@@ -4,6 +4,9 @@ import {
   inject,
   signal,
   ChangeDetectionStrategy,
+  OnDestroy,
+  ElementRef,
+  HostListener,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NavigationEnd, Router } from '@angular/router';
@@ -89,15 +92,79 @@ export interface SidebarItem {
   styleUrl: './sidebar.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnDestroy {
   private router = inject(Router);
   private authService = inject(AuthService);
   private themeService = inject(ThemeService);
   private rrApiService = inject(RRApiService);
+  private elementRef = inject(ElementRef);
 
   // Active hover tracking signals for fly-out panel visibility control
   activeLevel0Item = signal<SidebarItem | null>(null);
   activeLevel1Item = signal<SidebarItem | null>(null);
+
+  // Timers to provide a smooth grace period when moving cursor between icon and fly-out panels
+  private closeLevel0Timer: ReturnType<typeof setTimeout> | null = null;
+  private closeLevel1Timer: ReturnType<typeof setTimeout> | null = null;
+
+  private clearTimers(): void {
+    if (this.closeLevel0Timer) {
+      clearTimeout(this.closeLevel0Timer);
+      this.closeLevel0Timer = null;
+    }
+    if (this.closeLevel1Timer) {
+      clearTimeout(this.closeLevel1Timer);
+      this.closeLevel1Timer = null;
+    }
+  }
+
+  onLevel0Enter(item: SidebarItem): void {
+    this.clearTimers();
+    if (this.activeLevel0Item() !== item) {
+      this.activeLevel0Item.set(item);
+      this.activeLevel1Item.set(null);
+    }
+  }
+
+  onLevel0Leave(): void {
+    if (this.closeLevel0Timer) {
+      clearTimeout(this.closeLevel0Timer);
+    }
+    this.closeLevel0Timer = setTimeout(() => {
+      this.activeLevel0Item.set(null);
+      this.activeLevel1Item.set(null);
+      this.closeLevel0Timer = null;
+    }, 300);
+  }
+
+  onLevel1Enter(subItem: SidebarItem): void {
+    this.clearTimers();
+    this.activeLevel1Item.set(subItem);
+  }
+
+  onLevel1Leave(): void {
+    if (this.closeLevel1Timer) {
+      clearTimeout(this.closeLevel1Timer);
+    }
+    this.closeLevel1Timer = setTimeout(() => {
+      this.activeLevel1Item.set(null);
+      this.closeLevel1Timer = null;
+    }, 300);
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (!this.elementRef.nativeElement.contains(target)) {
+      this.clearTimers();
+      this.activeLevel0Item.set(null);
+      this.activeLevel1Item.set(null);
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.clearTimers();
+  }
 
   // User and Theme state
   currentUser = computed(() => this.authService.currentUser());
@@ -238,6 +305,14 @@ export class SidebarComponent {
     if (item.link) {
       this.router.navigateByUrl(item.link);
       // Close all submenus immediately on click
+      if (this.closeLevel0Timer) {
+        clearTimeout(this.closeLevel0Timer);
+        this.closeLevel0Timer = null;
+      }
+      if (this.closeLevel1Timer) {
+        clearTimeout(this.closeLevel1Timer);
+        this.closeLevel1Timer = null;
+      }
       this.activeLevel0Item.set(null);
       this.activeLevel1Item.set(null);
     }

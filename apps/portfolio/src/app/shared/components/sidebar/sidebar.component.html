@@ -1,21 +1,20 @@
 <div class="app-layout flex h-screen w-screen overflow-hidden bg-background text-foreground">
   <!-- Single Collapsible Sidebar (Fixed Width 72px) -->
-  <aside class="single-sidebar flex h-full w-[72px] flex-col border-r border-border bg-card p-4 select-none">
+  <aside class="single-sidebar flex h-full w-[72px] flex-col border-r border-border bg-card px-3 py-4 select-none">
     <!-- Menu Scroller -->
     <div class="menu-scroller flex-grow w-full flex flex-col items-center">
       <nav class="menu-items-list flex flex-col gap-3 w-full">
         @for (item of menuItems(); track item.label) {
-          <div
-            class="relative w-full"
-            (mouseenter)="activeLevel0Item.set(item)"
-            (mouseleave)="activeLevel0Item.set(null)"
-          >
+          <div class="relative w-full flex justify-center">
             <!-- Level 0: Top Menu Row (Icon Only) -->
             <div
               class="group flex items-center justify-center h-12 w-12 rounded-lg cursor-pointer transition-colors duration-200 hover:bg-secondary [&.active]:bg-secondary"
               [class.active]="isItemActive(item)"
               (click)="onItemClick(item)"
+              (mouseenter)="onLevel0Enter(item)"
+              (mouseleave)="onLevel0Leave()"
               [hlmTooltip]="item.children && item.children.length > 0 ? '' : item.label"
+              [tooltipDisabled]="!!(item.children && item.children.length > 0)"
               tooltipPosition="right"
             >
               @if (item.icon) {
@@ -27,26 +26,22 @@
             </div>
 
             <!-- Level 1: Submenus Panel (Fly-out) -->
-            @if (item.children && item.children.length > 0) {
+            @if (item.children && item.children.length > 0 && activeLevel0Item() === item) {
               <div
-                class="absolute left-[calc(100%+4px)] top-0 w-[230px] bg-card border border-border rounded-lg shadow-2xl p-2 z-[100] flex flex-col gap-1 transition-all duration-200 opacity-0 invisible pointer-events-none -translate-x-2 before:absolute before:top-0 before:-left-5 before:w-5 before:h-full before:bg-transparent"
-                [class.opacity-100]="activeLevel0Item() === item"
-                [class.visible]="activeLevel0Item() === item"
-                [class.pointer-events-auto]="activeLevel0Item() === item"
-                [class.translate-x-0]="activeLevel0Item() === item"
+                class="absolute left-[calc(100%+14px)] top-0 w-[230px] bg-card border border-border rounded-lg shadow-2xl p-2 z-[100] flex flex-col gap-1 animate-in fade-in-0 zoom-in-95 duration-150 before:absolute before:-top-3 before:h-[calc(100%+24px)] before:-left-6 before:w-6 before:bg-transparent before:pointer-events-auto"
+                (mouseenter)="onLevel0Enter(item)"
+                (mouseleave)="onLevel0Leave()"
               >
                 @for (subItem of item.children; track subItem.label) {
-                  <div
-                    class="relative w-full"
-                    (mouseenter)="activeLevel1Item.set(subItem)"
-                    (mouseleave)="activeLevel1Item.set(null)"
-                  >
+                  <div class="relative w-full">
                     <!-- If subItem has children (nested level 2 list, e.g. tools under categories) -->
                     @if (subItem.children && subItem.children.length > 0) {
                       <div
                         class="group/sub flex items-center gap-2 h-9 px-3 rounded-md cursor-pointer transition-colors duration-200 hover:bg-secondary [&.active]:bg-secondary"
                         [class.active]="isItemActive(subItem)"
                         (click)="onItemClick(subItem)"
+                        (mouseenter)="onLevel1Enter(subItem)"
+                        (mouseleave)="onLevel1Leave()"
                       >
                         @if (subItem.icon) {
                           <ng-icon
@@ -61,32 +56,34 @@
                       </div>
 
                       <!-- Level 2 Sub-submenu Panel (Fly-out further to the right) -->
-                      <div
-                        class="absolute left-[calc(100%+4px)] -top-2 w-[210px] bg-card border border-border rounded-lg shadow-2xl p-2 z-[101] flex flex-col gap-1 transition-all duration-200 opacity-0 invisible pointer-events-none -translate-x-2 before:absolute before:top-0 before:-left-5 before:w-5 before:h-full before:bg-transparent"
-                        [class.opacity-100]="activeLevel1Item() === subItem"
-                        [class.visible]="activeLevel1Item() === subItem"
-                        [class.pointer-events-auto]="activeLevel1Item() === subItem"
-                        [class.translate-x-0]="activeLevel1Item() === subItem"
-                      >
-                        @for (
-                          leafItem of subItem.children;
-                          track leafItem.label
-                        ) {
-                          <div
-                            class="group/leaf flex items-center h-9 px-3 rounded-md cursor-pointer transition-colors duration-200 hover:bg-secondary [&.active]:bg-secondary"
-                            [class.active]="isItemActive(leafItem)"
-                            (click)="onItemClick(leafItem)"
-                          >
-                            <span class="text-sm text-muted-foreground group-hover/leaf:text-foreground group-[.active]/leaf:text-primary group-[.active]/leaf:font-medium truncate">{{ leafItem.label }}</span>
-                          </div>
-                        }
-                      </div>
+                      @if (activeLevel1Item() === subItem) {
+                        <div
+                          class="absolute left-[calc(100%+6px)] -top-2 w-[210px] bg-card border border-border rounded-lg shadow-2xl p-2 z-[101] flex flex-col gap-1 animate-in fade-in-0 zoom-in-95 duration-150 before:absolute before:-top-3 before:h-[calc(100%+24px)] before:-left-4 before:w-4 before:bg-transparent before:pointer-events-auto"
+                          (mouseenter)="onLevel1Enter(subItem)"
+                          (mouseleave)="onLevel1Leave()"
+                        >
+                          @for (
+                            leafItem of subItem.children;
+                            track leafItem.label
+                          ) {
+                            <div
+                              class="group/leaf flex items-center h-9 px-3 rounded-md cursor-pointer transition-colors duration-200 hover:bg-secondary [&.active]:bg-secondary"
+                              [class.active]="isItemActive(leafItem)"
+                              (click)="onItemClick(leafItem)"
+                            >
+                              <span class="text-sm text-muted-foreground group-hover/leaf:text-foreground group-[.active]/leaf:text-primary group-[.active]/leaf:font-medium truncate">{{ leafItem.label }}</span>
+                            </div>
+                          }
+                        </div>
+                      }
                     } @else {
                       <!-- Flat Level 1 Item with text and icon -->
                       <div
                         class="group/leaf flex items-center gap-2 h-9 px-3 rounded-md cursor-pointer transition-colors duration-200 hover:bg-secondary [&.active]:bg-secondary"
                         [class.active]="isItemActive(subItem)"
                         (click)="onItemClick(subItem)"
+                        (mouseenter)="onLevel1Enter(subItem)"
+                        (mouseleave)="onLevel1Leave()"
                       >
                         @if (subItem.icon) {
                           <ng-icon
