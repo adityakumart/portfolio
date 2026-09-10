@@ -61,18 +61,22 @@
         ></ng-icon>
         <span>Range</span>
       </label>
-      <select
-        hlmInput
-        [(ngModel)]="selectedRange"
-        (change)="onRangeChange()"
-        class="text-xs font-semibold h-9 px-3 min-w-[150px] cursor-pointer"
+      <hlm-select
+        [(value)]="selectedRange"
+        [itemToString]="rangeItemToString"
+        (valueChange)="onRangeChange($event)"
       >
-        <option value="last_week">Last Week</option>
-        <option value="last_month">Last Month</option>
-        <option value="last_quarter">Last Quarter</option>
-        <option value="last_year">Last Year</option>
-        <option value="custom">Custom</option>
-      </select>
+        <hlm-select-trigger class="w-40 text-xs h-9 font-semibold">
+          <hlm-select-value />
+        </hlm-select-trigger>
+        <hlm-select-content *hlmSelectPortal>
+          <hlm-select-item value="last_week">Last Week</hlm-select-item>
+          <hlm-select-item value="last_month">Last Month</hlm-select-item>
+          <hlm-select-item value="last_quarter">Last Quarter</hlm-select-item>
+          <hlm-select-item value="last_year">Last Year</hlm-select-item>
+          <hlm-select-item value="custom">Custom</hlm-select-item>
+        </hlm-select-content>
+      </hlm-select>
     </div>
 
     <!-- Custom Date Range Pickers (shown when custom is selected) -->
