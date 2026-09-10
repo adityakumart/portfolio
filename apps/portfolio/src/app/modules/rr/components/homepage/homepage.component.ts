@@ -32,6 +32,7 @@ import { HlmToggleGroupImports } from '@spartan-ng/hel/toggle-group';
 import { HlmEmptyImports } from '@spartan-ng/hel/empty';
 import { toast } from '@spartan-ng/hel/sonner';
 import { IVehicle } from '@portfolio/shared-types';
+import { RRVehicleCardComponent } from '../../shared';
 
 @Component({
   selector: 'app-rr-homepage',
@@ -47,6 +48,7 @@ import { IVehicle } from '@portfolio/shared-types';
     HlmToggleGroupImports,
     HlmEmptyImports,
     NgIconComponent,
+    RRVehicleCardComponent,
   ],
   providers: [
     provideIcons({

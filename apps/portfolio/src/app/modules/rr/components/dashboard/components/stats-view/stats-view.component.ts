@@ -29,6 +29,7 @@ import {
 } from '@ng-icons/lucide';
 import { Router } from '@angular/router';
 import { IVehicle, IBooking, IRRDashboardStats } from '@portfolio/shared-types';
+import { RRVehicleCardComponent } from '../../../../shared';
 
 export type StatCategory = 'fleet' | 'bookings' | 'maintenance' | 'payments';
 
@@ -42,6 +43,7 @@ export type StatCategory = 'fleet' | 'bookings' | 'maintenance' | 'payments';
     HlmButtonImports,
     HlmBadgeImports,
     NgIconComponent,
+    RRVehicleCardComponent,
   ],
   providers: [
     provideIcons({

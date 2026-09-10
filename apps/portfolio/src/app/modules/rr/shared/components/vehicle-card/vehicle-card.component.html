@@ -1,0 +1,121 @@
+<div
+  hlmCard
+  class="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 cursor-pointer flex flex-col h-full"
+  (click)="onCardClick($event)"
+>
+  <!-- Vehicle Image Container -->
+  <div class="relative w-full h-40 bg-muted/20 flex items-center justify-center p-3 border-b border-border overflow-hidden">
+    <img
+      [src]="vehicleImage"
+      [alt]="vehicle.manufacturer + ' ' + vehicle.name"
+      (error)="onImageError($event)"
+      class="max-w-[90%] max-h-[90%] object-contain group-hover:scale-105 transition-transform duration-300"
+    />
+
+    <!-- Status Badge -->
+    <div class="absolute top-3 left-3">
+      <span
+        hlmBadge
+        [variant]="statusBadgeVariant"
+        class="font-bold text-[11px]"
+        [class.text-emerald-600]="vehicle.status === 'available'"
+        [class.dark:text-emerald-400]="vehicle.status === 'available'"
+        [class.text-amber-500]="vehicle.status === 'in_booking' || vehicle.status === 'rented'"
+      >
+        {{ statusBadgeLabel }}
+      </span>
+    </div>
+
+    <!-- Hover "Book Now" Overlay (Stats Variant for available vehicles) -->
+    @if (showBookNowOverlay) {
+      <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <button
+          hlmBtn
+          size="sm"
+          class="bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold rounded-full shadow-lg flex items-center gap-1.5 hover:from-cyan-400 hover:to-blue-500"
+          (click)="onBookNowClick($event)"
+        >
+          <ng-icon name="lucideKey"></ng-icon>
+          <span>Book Now</span>
+        </button>
+      </div>
+    }
+  </div>
+
+  <!-- Card Body -->
+  <div class="p-4 flex flex-col flex-1">
+    <!-- Homepage Variant -->
+    @if (variant === 'homepage') {
+      <div class="font-extrabold text-base text-foreground leading-tight mb-1">
+        {{ vehicle.manufacturer }} {{ vehicle.name }}
+      </div>
+      <div class="flex flex-wrap gap-1.5 my-2">
+        <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-md">
+          <ng-icon name="lucidePalette"></ng-icon> {{ vehicle.color || 'Premium' }}
+        </span>
+        <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-md">
+          <ng-icon name="lucideFuel"></ng-icon> {{ vehicle.fuelType || 'Petrol' }}
+        </span>
+        <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-md">
+          <ng-icon name="lucideUsers"></ng-icon> {{ vehicle.seating }} Seats
+        </span>
+      </div>
+
+      <!-- Pricing Badges -->
+      <div class="flex gap-2 my-2 text-xs">
+        <span class="bg-cyan-500/10 text-cyan-500 dark:text-cyan-400 px-2 py-1 rounded-md font-semibold border border-cyan-500/20">
+          23h: ₹{{ vehicle.pricing?.h23?.price || '2000' }}
+        </span>
+        <span class="bg-muted/40 text-muted-foreground px-2 py-1 rounded-md border border-border">
+          11h: ₹{{ vehicle.pricing?.h11?.price || '1200' }}
+        </span>
+      </div>
+
+      <div class="flex justify-between items-center mt-auto pt-2 border-t border-border/50">
+        <span class="text-xs font-bold uppercase text-cyan-500 tracking-wider">{{ vehicle.type || 'Sedan' }}</span>
+        <button
+          hlmBtn
+          size="sm"
+          class="bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold rounded-lg shadow-sm flex items-center gap-1.5 hover:from-cyan-400 hover:to-blue-500"
+          type="button"
+          (click)="onReserveClick($event)"
+        >
+          <span>Reserve</span>
+          <ng-icon name="lucideArrowRight"></ng-icon>
+        </button>
+      </div>
+    } @else {
+      <!-- Fleet & Stats Variants -->
+      <div class="text-[10px] font-extrabold text-cyan-500 tracking-wider uppercase mb-1">{{ vehicle.type }}</div>
+      <div class="font-extrabold text-base text-foreground leading-tight mb-1 truncate">{{ vehicle.manufacturer }} {{ vehicle.name }}</div>
+      <div class="font-mono text-xs text-muted-foreground bg-muted/40 px-2 py-0.5 rounded w-fit mb-3">{{ vehicle.regNo }}</div>
+
+      <div class="flex flex-wrap gap-1.5 mt-auto pt-2 border-t border-border/50">
+        <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-md" hlmTooltip="Capacity">
+          <ng-icon name="lucideUsers" class="text-xs"></ng-icon>
+          <span>{{ vehicle.seating }} Seats</span>
+        </span>
+        <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-md" hlmTooltip="Fuel Type">
+          <ng-icon name="lucideFuel" class="text-xs"></ng-icon>
+          <span>{{ vehicle.fuelType | uppercase }}</span>
+        </span>
+        <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-md" hlmTooltip="Odometer">
+          <ng-icon name="lucideGauge" class="text-xs"></ng-icon>
+          <span>{{ vehicle.odometer }} KM</span>
+        </span>
+      </div>
+    }
+  </div>
+
+  <!-- Admin Quick Actions (Fleet Variant) -->
+  @if (isAdmin && variant === 'fleet') {
+    <div class="absolute bottom-3 right-3 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+      <button hlmBtn size="icon" variant="secondary" class="h-8 w-8 rounded-full shadow-md" (click)="onEditClick($event)" hlmTooltip="Edit Vehicle">
+        <ng-icon name="lucidePencil"></ng-icon>
+      </button>
+      <button hlmBtn size="icon" variant="destructive" class="h-8 w-8 rounded-full shadow-md" (click)="onDeleteClick($event)" hlmTooltip="Delete Vehicle">
+        <ng-icon name="lucideTrash2"></ng-icon>
+      </button>
+    </div>
+  }
+</div>

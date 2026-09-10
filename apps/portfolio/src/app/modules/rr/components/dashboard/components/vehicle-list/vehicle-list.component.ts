@@ -10,6 +10,7 @@ import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
 import { HlmBadgeImports } from '@spartan-ng/hel/badge';
 import { toast } from '@spartan-ng/hel/sonner';
 import { IVehicle } from '@portfolio/shared-types';
+import { RRVehicleCardComponent } from '../../../../shared';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideCar,
@@ -47,6 +48,7 @@ import {
     HlmTooltipImports,
     HlmBadgeImports,
     NgIconComponent,
+    RRVehicleCardComponent,
   ],
   providers: [
     provideIcons({
@@ -190,6 +192,11 @@ export class RRVehicleListComponent implements OnInit {
     this.dialog.open(this.vehicleFormDialog, {
       contentClass: 'max-w-3xl w-full p-6 max-h-[90vh] flex flex-col overflow-hidden',
     });
+  }
+
+  onEditVehicle(v: IVehicle) {
+    this.selectedVehicleDetails.set(v);
+    this.openEditVehicleModal();
   }
 
   openEditVehicleModal() {
