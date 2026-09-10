@@ -7,6 +7,7 @@ import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmBadgeImports } from '@spartan-ng/hel/badge';
 import { HlmTableImports } from '@spartan-ng/hel/table';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
+import { HlmSelectImports } from '@spartan-ng/hel/select';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideSearch,
@@ -24,6 +25,8 @@ import {
   lucideFilter,
   lucideCalendarDays,
   lucideActivity,
+  lucideChevronDown,
+  lucideCheck,
 } from '@ng-icons/lucide';
 import { ILog } from '@portfolio/shared-types';
 
@@ -40,6 +43,7 @@ export type LogRangePreset = 'last_week' | 'last_month' | 'last_quarter' | 'last
     HlmBadgeImports,
     HlmTableImports,
     HlmTooltipImports,
+    HlmSelectImports,
     NgIconComponent,
   ],
   providers: [
@@ -59,6 +63,8 @@ export type LogRangePreset = 'last_week' | 'last_month' | 'last_quarter' | 'last
       lucideFilter,
       lucideCalendarDays,
       lucideActivity,
+      lucideChevronDown,
+      lucideCheck,
     }),
   ],
   templateUrl: './activity-logs.component.html',
@@ -75,6 +81,15 @@ export class RRActivityLogsComponent implements OnInit {
   isLoading = signal<boolean>(false);
 
   selectedRange = signal<LogRangePreset>('last_week');
+  readonly rangeLabelMap: Record<LogRangePreset, string> = {
+    last_week: 'Last Week',
+    last_month: 'Last Month',
+    last_quarter: 'Last Quarter',
+    last_year: 'Last Year',
+    custom: 'Custom',
+  };
+  readonly rangeItemToString = (value: LogRangePreset) =>
+    (value && this.rangeLabelMap[value]) ? this.rangeLabelMap[value] : (value ?? '');
   logFilterFrom = '';
   logFilterTo = '';
   searchQuery = '';
@@ -119,10 +134,13 @@ export class RRActivityLogsComponent implements OnInit {
     }
   }
 
-  onRangeChange() {
-    const preset = this.selectedRange();
-    if (preset !== 'custom') {
-      this.applyPresetDates(preset);
+  onRangeChange(preset?: LogRangePreset | null) {
+    if (preset) {
+      this.selectedRange.set(preset);
+    }
+    const current = this.selectedRange();
+    if (current !== 'custom') {
+      this.applyPresetDates(current);
       this.currentPage.set(1);
       this.loadActivityLogs();
     }
