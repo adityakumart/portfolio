@@ -21,6 +21,7 @@
         [class.text-emerald-600]="vehicle.status === 'available'"
         [class.dark:text-emerald-400]="vehicle.status === 'available'"
         [class.text-amber-500]="vehicle.status === 'in_booking' || vehicle.status === 'rented'"
+        [class.text-cyan-500]="vehicle.status === 'contract' || vehicle.status === 'in_contract'"
       >
         {{ statusBadgeLabel }}
       </span>

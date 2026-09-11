@@ -11,35 +11,89 @@
   </div>
 </div>
 
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
   <!-- Total Fleet Card -->
   <div
     hlmCard
-    class="p-6 rounded-2xl border border-border bg-card shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border-l-4 border-l-emerald-500 relative overflow-hidden"
+    class="p-5 rounded-2xl border border-border bg-card shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border-l-4 border-l-blue-500 relative overflow-hidden flex flex-col justify-between"
     [class.ring-2]="activeCategory() === 'fleet'"
-    [class.ring-emerald-500]="activeCategory() === 'fleet'"
-    [class.bg-emerald-500/5]="activeCategory() === 'fleet'"
+    [class.ring-blue-500]="activeCategory() === 'fleet'"
+    [class.bg-blue-500/5]="activeCategory() === 'fleet'"
     [class.shadow-lg]="activeCategory() === 'fleet'"
     (click)="toggleCategory('fleet')"
     [hlmTooltip]="activeCategory() === 'fleet' ? 'Click to collapse' : 'Click to view all fleet vehicles'"
   >
-    <div class="flex items-center justify-between w-full mb-3">
-      <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Total Fleet</span>
-      <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-emerald-500/10 text-emerald-500">
-        <ng-icon name="lucideCheckCircle" class="text-lg"></ng-icon>
+    <div>
+      <div class="flex items-center justify-between w-full mb-2.5">
+        <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Total Fleet</span>
+        <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-blue-500/10 text-blue-500">
+          <ng-icon name="lucideCar" class="text-base"></ng-icon>
+        </div>
       </div>
+      <div class="text-3xl font-black tracking-tight text-foreground leading-none mb-2">{{ stats().totalFleet || vehicles().length }}</div>
     </div>
-    <div class="text-4xl font-black tracking-tight text-foreground leading-none mb-2">{{ stats().totalFleet }}</div>
-    <div class="flex items-center justify-between text-xs font-medium text-muted-foreground">
-      <span>Total registered vehicles</span>
-      <ng-icon [name]="activeCategory() === 'fleet' ? 'lucideChevronUp' : 'lucideChevronDown'" class="text-sm transition-transform duration-200" [class.text-emerald-500]="activeCategory() === 'fleet'"></ng-icon>
+    <div class="flex items-center justify-between text-[11px] font-medium text-muted-foreground pt-1 border-t border-border/40">
+      <span>All vehicles</span>
+      <ng-icon [name]="activeCategory() === 'fleet' ? 'lucideChevronUp' : 'lucideChevronDown'" class="text-xs transition-transform duration-200" [class.text-blue-500]="activeCategory() === 'fleet'"></ng-icon>
+    </div>
+  </div>
+
+  <!-- Available Fleet Card -->
+  <div
+    hlmCard
+    class="p-5 rounded-2xl border border-border bg-card shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border-l-4 border-l-emerald-500 relative overflow-hidden flex flex-col justify-between"
+    [class.ring-2]="activeCategory() === 'available'"
+    [class.ring-emerald-500]="activeCategory() === 'available'"
+    [class.bg-emerald-500/5]="activeCategory() === 'available'"
+    [class.shadow-lg]="activeCategory() === 'available'"
+    (click)="toggleCategory('available')"
+    [hlmTooltip]="activeCategory() === 'available' ? 'Click to collapse' : 'Click to view available vehicles'"
+  >
+    <div>
+      <div class="flex items-center justify-between w-full mb-2.5">
+        <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Available</span>
+        <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-emerald-500/10 text-emerald-500">
+          <ng-icon name="lucideCheckCircle" class="text-base"></ng-icon>
+        </div>
+      </div>
+      <div class="text-3xl font-black tracking-tight text-foreground leading-none mb-2">{{ getVehicleCount('available') }}</div>
+    </div>
+    <div class="flex items-center justify-between text-[11px] font-medium text-muted-foreground pt-1 border-t border-border/40">
+      <span>Ready to rent</span>
+      <ng-icon [name]="activeCategory() === 'available' ? 'lucideChevronUp' : 'lucideChevronDown'" class="text-xs transition-transform duration-200" [class.text-emerald-500]="activeCategory() === 'available'"></ng-icon>
+    </div>
+  </div>
+
+  <!-- In-Contract Card -->
+  <div
+    hlmCard
+    class="p-5 rounded-2xl border border-border bg-card shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border-l-4 border-l-cyan-500 relative overflow-hidden flex flex-col justify-between"
+    [class.ring-2]="activeCategory() === 'contract'"
+    [class.ring-cyan-500]="activeCategory() === 'contract'"
+    [class.bg-cyan-500/5]="activeCategory() === 'contract'"
+    [class.shadow-lg]="activeCategory() === 'contract'"
+    (click)="toggleCategory('contract')"
+    [hlmTooltip]="activeCategory() === 'contract' ? 'Click to collapse' : 'Click to view corporate contract vehicles'"
+  >
+    <div>
+      <div class="flex items-center justify-between w-full mb-2.5">
+        <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground">In-Contract</span>
+        <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-cyan-500/10 text-cyan-500">
+          <ng-icon name="lucideFileText" class="text-base"></ng-icon>
+        </div>
+      </div>
+      <div class="text-3xl font-black tracking-tight text-foreground leading-none mb-2">{{ getVehicleCount('contract') }}</div>
+    </div>
+    <div class="flex items-center justify-between text-[11px] font-medium text-muted-foreground pt-1 border-t border-border/40">
+      <span>Corporate lease</span>
+      <ng-icon [name]="activeCategory() === 'contract' ? 'lucideChevronUp' : 'lucideChevronDown'" class="text-xs transition-transform duration-200" [class.text-cyan-500]="activeCategory() === 'contract'"></ng-icon>
     </div>
   </div>
 
   <!-- Active Bookings Card -->
   <div
     hlmCard
-    class="p-6 rounded-2xl border border-border bg-card shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border-l-4 border-l-amber-500 relative overflow-hidden"
+    class="p-5 rounded-2xl border border-border bg-card shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border-l-4 border-l-amber-500 relative overflow-hidden flex flex-col justify-between"
     [class.ring-2]="activeCategory() === 'bookings'"
     [class.ring-amber-500]="activeCategory() === 'bookings'"
     [class.bg-amber-500/5]="activeCategory() === 'bookings'"
@@ -47,23 +101,25 @@
     (click)="toggleCategory('bookings')"
     [hlmTooltip]="activeCategory() === 'bookings' ? 'Click to collapse' : 'Click to view active bookings'"
   >
-    <div class="flex items-center justify-between w-full mb-3">
-      <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Active Bookings</span>
-      <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-amber-500/10 text-amber-500">
-        <ng-icon name="lucideKey" class="text-lg"></ng-icon>
+    <div>
+      <div class="flex items-center justify-between w-full mb-2.5">
+        <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Active Bookings</span>
+        <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-amber-500/10 text-amber-500">
+          <ng-icon name="lucideKey" class="text-base"></ng-icon>
+        </div>
       </div>
+      <div class="text-3xl font-black tracking-tight text-foreground leading-none mb-2">{{ stats().activeBookings }}</div>
     </div>
-    <div class="text-4xl font-black tracking-tight text-foreground leading-none mb-2">{{ stats().activeBookings }}</div>
-    <div class="flex items-center justify-between text-xs font-medium text-muted-foreground">
-      <span>Active customer journeys</span>
-      <ng-icon [name]="activeCategory() === 'bookings' ? 'lucideChevronUp' : 'lucideChevronDown'" class="text-sm transition-transform duration-200" [class.text-amber-500]="activeCategory() === 'bookings'"></ng-icon>
+    <div class="flex items-center justify-between text-[11px] font-medium text-muted-foreground pt-1 border-t border-border/40">
+      <span>On the road</span>
+      <ng-icon [name]="activeCategory() === 'bookings' ? 'lucideChevronUp' : 'lucideChevronDown'" class="text-xs transition-transform duration-200" [class.text-amber-500]="activeCategory() === 'bookings'"></ng-icon>
     </div>
   </div>
 
   <!-- Maintenance Card -->
   <div
     hlmCard
-    class="p-6 rounded-2xl border border-border bg-card shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border-l-4 border-l-rose-500 relative overflow-hidden"
+    class="p-5 rounded-2xl border border-border bg-card shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border-l-4 border-l-rose-500 relative overflow-hidden flex flex-col justify-between"
     [class.ring-2]="activeCategory() === 'maintenance'"
     [class.ring-rose-500]="activeCategory() === 'maintenance'"
     [class.bg-rose-500/5]="activeCategory() === 'maintenance'"
@@ -71,23 +127,25 @@
     (click)="toggleCategory('maintenance')"
     [hlmTooltip]="activeCategory() === 'maintenance' ? 'Click to collapse' : 'Click to view fleet in service'"
   >
-    <div class="flex items-center justify-between w-full mb-3">
-      <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground">In Service</span>
-      <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-rose-500/10 text-rose-500">
-        <ng-icon name="lucideWrench" class="text-lg"></ng-icon>
+    <div>
+      <div class="flex items-center justify-between w-full mb-2.5">
+        <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground">In Service</span>
+        <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-rose-500/10 text-rose-500">
+          <ng-icon name="lucideWrench" class="text-base"></ng-icon>
+        </div>
       </div>
+      <div class="text-3xl font-black tracking-tight text-foreground leading-none mb-2">{{ getVehicleCount('maintenance') }}</div>
     </div>
-    <div class="text-4xl font-black tracking-tight text-foreground leading-none mb-2">{{ stats().maintenance }}</div>
-    <div class="flex items-center justify-between text-xs font-medium text-muted-foreground">
-      <span>Routine servicing & repairs</span>
-      <ng-icon [name]="activeCategory() === 'maintenance' ? 'lucideChevronUp' : 'lucideChevronDown'" class="text-sm transition-transform duration-200" [class.text-rose-500]="activeCategory() === 'maintenance'"></ng-icon>
+    <div class="flex items-center justify-between text-[11px] font-medium text-muted-foreground pt-1 border-t border-border/40">
+      <span>Repairs & servicing</span>
+      <ng-icon [name]="activeCategory() === 'maintenance' ? 'lucideChevronUp' : 'lucideChevronDown'" class="text-xs transition-transform duration-200" [class.text-rose-500]="activeCategory() === 'maintenance'"></ng-icon>
     </div>
   </div>
 
   <!-- Pending Payments Card -->
   <div
     hlmCard
-    class="p-6 rounded-2xl border border-border bg-card shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border-l-4 border-l-purple-500 relative overflow-hidden"
+    class="p-5 rounded-2xl border border-border bg-card shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border-l-4 border-l-purple-500 relative overflow-hidden flex flex-col justify-between"
     [class.ring-2]="activeCategory() === 'payments'"
     [class.ring-purple-500]="activeCategory() === 'payments'"
     [class.bg-purple-500/5]="activeCategory() === 'payments'"
@@ -95,16 +153,18 @@
     (click)="toggleCategory('payments')"
     [hlmTooltip]="activeCategory() === 'payments' ? 'Click to collapse' : 'Click to view outstanding dues'"
   >
-    <div class="flex items-center justify-between w-full mb-3">
-      <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Pending Payments</span>
-      <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-purple-500/10 text-purple-500">
-        <ng-icon name="lucideAlertTriangle" class="text-lg"></ng-icon>
+    <div>
+      <div class="flex items-center justify-between w-full mb-2.5">
+        <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Pending Payments</span>
+        <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-purple-500/10 text-purple-500">
+          <ng-icon name="lucideAlertTriangle" class="text-base"></ng-icon>
+        </div>
       </div>
+      <div class="text-3xl font-black tracking-tight text-foreground leading-none mb-2">{{ stats().pendingPayments }}</div>
     </div>
-    <div class="text-4xl font-black tracking-tight text-foreground leading-none mb-2">{{ stats().pendingPayments }}</div>
-    <div class="flex items-center justify-between text-xs font-medium text-muted-foreground">
-      <span>Outstanding balances</span>
-      <ng-icon [name]="activeCategory() === 'payments' ? 'lucideChevronUp' : 'lucideChevronDown'" class="text-sm transition-transform duration-200" [class.text-purple-500]="activeCategory() === 'payments'"></ng-icon>
+    <div class="flex items-center justify-between text-[11px] font-medium text-muted-foreground pt-1 border-t border-border/40">
+      <span>Outstanding dues</span>
+      <ng-icon [name]="activeCategory() === 'payments' ? 'lucideChevronUp' : 'lucideChevronDown'" class="text-xs transition-transform duration-200" [class.text-purple-500]="activeCategory() === 'payments'"></ng-icon>
     </div>
   </div>
 </div>
@@ -113,12 +173,14 @@
 @if (activeCategory()) {
   <div class="mb-10 p-6 rounded-2xl border border-border bg-card/80 backdrop-blur-md shadow-md animate-in fade-in slide-in-from-top-4 duration-300">
     <!-- Accordion Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 mb-6 border-b border-border/80">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 mb-6 border-b border-border/80">
       <div class="flex items-center gap-3.5">
         <div
           class="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-xs"
           [ngClass]="{
-            'bg-emerald-500/15 text-emerald-500 border border-emerald-500/30': activeCategory() === 'fleet',
+            'bg-blue-500/15 text-blue-500 border border-blue-500/30': activeCategory() === 'fleet',
+            'bg-emerald-500/15 text-emerald-500 border border-emerald-500/30': activeCategory() === 'available',
+            'bg-cyan-500/15 text-cyan-500 border border-cyan-500/30': activeCategory() === 'contract',
             'bg-amber-500/15 text-amber-500 border border-amber-500/30': activeCategory() === 'bookings',
             'bg-rose-500/15 text-rose-500 border border-rose-500/30': activeCategory() === 'maintenance',
             'bg-purple-500/15 text-purple-500 border border-purple-500/30': activeCategory() === 'payments'
@@ -128,6 +190,10 @@
             [name]="
               activeCategory() === 'fleet'
                 ? 'lucideCar'
+                : activeCategory() === 'available'
+                ? 'lucideCheckCircle'
+                : activeCategory() === 'contract'
+                ? 'lucideFileText'
                 : activeCategory() === 'bookings'
                 ? 'lucideCalendarCheck'
                 : activeCategory() === 'maintenance'
@@ -145,20 +211,62 @@
               variant="secondary"
               class="font-bold text-xs"
               [ngClass]="{
-                'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10': activeCategory() === 'fleet',
+                'text-blue-600 dark:text-blue-400 bg-blue-500/10': activeCategory() === 'fleet',
+                'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10': activeCategory() === 'available',
+                'text-cyan-600 dark:text-cyan-400 bg-cyan-500/10': activeCategory() === 'contract',
                 'text-amber-600 dark:text-amber-400 bg-amber-500/10': activeCategory() === 'bookings',
                 'text-rose-600 dark:text-rose-400 bg-rose-500/10': activeCategory() === 'maintenance',
                 'text-purple-600 dark:text-purple-400 bg-purple-500/10': activeCategory() === 'payments'
               }"
             >
-              {{ activeCategoryCount }} {{ activeCategory() === 'fleet' || activeCategory() === 'maintenance' ? 'Vehicles' : 'Bookings' }}
+              {{ activeCategoryCount }} {{ isVehicleCategory ? 'Vehicles' : 'Bookings' }}
             </span>
           </div>
           <p class="text-xs font-medium text-muted-foreground mt-0.5">{{ activeCategoryDescription }}</p>
         </div>
       </div>
 
-      <div class="flex items-center gap-2 self-end sm:self-center">
+      <!-- Controls: Seating Filter Tabs & Collapse Button -->
+      <div class="flex items-center gap-3 self-end lg:self-center flex-wrap">
+        <!-- 5 & 7 Seater Category Filter Pills -->
+        <div class="inline-flex items-center p-1 bg-muted/60 border border-border rounded-xl text-xs font-semibold">
+          <button
+            type="button"
+            class="px-3 py-1 rounded-lg transition-colors duration-150 cursor-pointer"
+            [class.bg-background]="selectedSeating() === 'all'"
+            [class.text-foreground]="selectedSeating() === 'all'"
+            [class.shadow-xs]="selectedSeating() === 'all'"
+            [class.text-muted-foreground]="selectedSeating() !== 'all'"
+            (click)="setSeatingFilter('all')"
+          >
+            All ({{ currentCategoryTotalCount }})
+          </button>
+          <button
+            type="button"
+            class="px-3 py-1 rounded-lg transition-colors duration-150 flex items-center gap-1 cursor-pointer"
+            [class.bg-background]="selectedSeating() === '5'"
+            [class.text-foreground]="selectedSeating() === '5'"
+            [class.shadow-xs]="selectedSeating() === '5'"
+            [class.text-muted-foreground]="selectedSeating() !== '5'"
+            (click)="setSeatingFilter('5')"
+          >
+            <span>5 Seater</span>
+            <span class="text-[10px] opacity-75 font-mono">({{ currentCategory5SeaterCount }})</span>
+          </button>
+          <button
+            type="button"
+            class="px-3 py-1 rounded-lg transition-colors duration-150 flex items-center gap-1 cursor-pointer"
+            [class.bg-background]="selectedSeating() === '7'"
+            [class.text-foreground]="selectedSeating() === '7'"
+            [class.shadow-xs]="selectedSeating() === '7'"
+            [class.text-muted-foreground]="selectedSeating() !== '7'"
+            (click)="setSeatingFilter('7')"
+          >
+            <span>7 Seater</span>
+            <span class="text-[10px] opacity-75 font-mono">({{ currentCategory7SeaterCount }})</span>
+          </button>
+        </div>
+
         <button hlmBtn variant="outline" size="sm" class="flex items-center gap-1.5 font-semibold text-xs rounded-xl" (click)="closeAccordion()">
           <ng-icon name="lucideChevronUp" class="text-sm"></ng-icon>
           <span>Collapse View</span>
@@ -166,19 +274,117 @@
       </div>
     </div>
 
-    <!-- Vehicles Display (Fleet or Maintenance) -->
-    @if (activeCategory() === 'fleet' || activeCategory() === 'maintenance') {
+    <!-- Vehicles Display (Fleet, Available, Contract, Maintenance) -->
+    @if (isVehicleCategory) {
       @if (activeVehicles.length > 0) {
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          @for (v of activeVehicles; track v.regNo) {
-            <app-rr-vehicle-card
-              [vehicle]="v"
-              variant="stats"
-              (bookNow)="bookVehicle($event)"
-              (cardClick)="v.status === 'available' ? bookVehicle($event) : null"
-            />
+        <!-- 'ALL' SEATING FILTER: SHOW BOTH 5 & 7 CATEGORIES CLEARLY SPLIT -->
+        @if (selectedSeating() === 'all') {
+          <!-- 5-Seater Category Section -->
+          @if (activeVehicles5Seater.length > 0) {
+            <div class="mb-8">
+              <div class="flex items-center justify-between pb-3 mb-4 border-b border-border/60">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-500 font-black text-xs flex items-center justify-center border border-blue-500/20">
+                    5
+                  </div>
+                  <div>
+                    <h4 class="text-base font-bold text-foreground tracking-tight">5-Seater Category</h4>
+                    <p class="text-[11px] text-muted-foreground">Standard & compact 5-passenger fleet</p>
+                  </div>
+                </div>
+                <span hlmBadge variant="secondary" class="font-bold text-xs bg-muted/60">
+                  {{ activeVehicles5Seater.length }} Vehicles
+                </span>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                @for (v of activeVehicles5Seater; track v.regNo) {
+                  <app-rr-vehicle-card
+                    [vehicle]="v"
+                    variant="stats"
+                    (bookNow)="bookVehicle($event)"
+                    (cardClick)="v.status === 'available' ? bookVehicle($event) : null"
+                  />
+                }
+              </div>
+            </div>
           }
-        </div>
+
+          <!-- 7-Seater Category Section -->
+          @if (activeVehicles7Seater.length > 0) {
+            <div [class.mt-8]="activeVehicles5Seater.length > 0">
+              <div class="flex items-center justify-between pb-3 mb-4 border-b border-border/60">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-7 h-7 rounded-lg bg-indigo-500/10 text-indigo-500 font-black text-xs flex items-center justify-center border border-indigo-500/20">
+                    7
+                  </div>
+                  <div>
+                    <h4 class="text-base font-bold text-foreground tracking-tight">7-Seater Category</h4>
+                    <p class="text-[11px] text-muted-foreground">Spacious SUV & multi-utility 7-passenger fleet</p>
+                  </div>
+                </div>
+                <span hlmBadge variant="secondary" class="font-bold text-xs bg-muted/60">
+                  {{ activeVehicles7Seater.length }} Vehicles
+                </span>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                @for (v of activeVehicles7Seater; track v.regNo) {
+                  <app-rr-vehicle-card
+                    [vehicle]="v"
+                    variant="stats"
+                    (bookNow)="bookVehicle($event)"
+                    (cardClick)="v.status === 'available' ? bookVehicle($event) : null"
+                  />
+                }
+              </div>
+            </div>
+          }
+        }
+
+        <!-- '5' SEATING FILTER -->
+        @if (selectedSeating() === '5') {
+          @if (activeVehicles5Seater.length > 0) {
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              @for (v of activeVehicles5Seater; track v.regNo) {
+                <app-rr-vehicle-card
+                  [vehicle]="v"
+                  variant="stats"
+                  (bookNow)="bookVehicle($event)"
+                  (cardClick)="v.status === 'available' ? bookVehicle($event) : null"
+                />
+              }
+            </div>
+          } @else {
+            <div class="flex flex-col items-center justify-center p-12 border border-border rounded-2xl bg-card text-center my-4 shadow-xs">
+              <ng-icon class="text-4xl mx-auto mb-3 text-muted-foreground" name="lucideSearchX"></ng-icon>
+              <h4 class="text-base font-bold text-foreground mb-1">No 5-Seater Vehicles</h4>
+              <p class="text-sm text-muted-foreground max-w-md">There are no 5-seater vehicles matching this category status.</p>
+            </div>
+          }
+        }
+
+        <!-- '7' SEATING FILTER -->
+        @if (selectedSeating() === '7') {
+          @if (activeVehicles7Seater.length > 0) {
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              @for (v of activeVehicles7Seater; track v.regNo) {
+                <app-rr-vehicle-card
+                  [vehicle]="v"
+                  variant="stats"
+                  (bookNow)="bookVehicle($event)"
+                  (cardClick)="v.status === 'available' ? bookVehicle($event) : null"
+                />
+              }
+            </div>
+          } @else {
+            <div class="flex flex-col items-center justify-center p-12 border border-border rounded-2xl bg-card text-center my-4 shadow-xs">
+              <ng-icon class="text-4xl mx-auto mb-3 text-muted-foreground" name="lucideSearchX"></ng-icon>
+              <h4 class="text-base font-bold text-foreground mb-1">No 7-Seater Vehicles</h4>
+              <p class="text-sm text-muted-foreground max-w-md">There are no 7-seater vehicles matching this category status.</p>
+            </div>
+          }
+        }
       } @else {
         <div class="flex flex-col items-center justify-center p-12 border border-border rounded-2xl bg-card text-center my-4 shadow-xs">
           <ng-icon class="text-4xl mx-auto mb-3 text-muted-foreground" name="lucideSearchX"></ng-icon>
@@ -189,80 +395,96 @@
     }
 
     <!-- Bookings Display (Active Bookings or Pending Payments) -->
-    @if (activeCategory() === 'bookings' || activeCategory() === 'payments') {
+    @if (isBookingCategory) {
       @if (activeBookingsList.length > 0) {
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          @for (b of activeBookingsList; track b.id) {
-            <div
-              hlmCard
-              class="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 cursor-pointer flex flex-col"
-              (click)="viewBooking(b, $event)"
-            >
-              <div class="relative w-full h-40 bg-muted/20 flex items-center justify-center p-3 border-b border-border overflow-hidden">
-                <img [src]="getBookingVehicleImage(b)" [alt]="b.vehicleName" class="max-w-[90%] max-h-[90%] object-contain group-hover:scale-105 transition-transform duration-300" />
-                
-                <div class="absolute top-3 left-3">
-                  @if (activeCategory() === 'payments' || +b.pendingAmount > 0) {
-                    <span hlmBadge variant="destructive" class="font-bold text-[10px] font-mono shadow-xs">
-                      DUE: ₹{{ b.pendingAmount }}
-                    </span>
-                  } @else {
-                    <span hlmBadge variant="secondary" class="font-bold text-[10px] text-emerald-600 dark:text-emerald-400">
-                      ACTIVE BOOKING
-                    </span>
-                  }
+        <!-- 'ALL' SEATING FILTER FOR BOOKINGS -->
+        @if (selectedSeating() === 'all') {
+          <!-- 5-Seater Bookings -->
+          @if (activeBookings5Seater.length > 0) {
+            <div class="mb-8">
+              <div class="flex items-center justify-between pb-3 mb-4 border-b border-border/60">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-500 font-black text-xs flex items-center justify-center border border-blue-500/20">
+                    5
+                  </div>
+                  <div>
+                    <h4 class="text-base font-bold text-foreground tracking-tight">5-Seater Category Bookings</h4>
+                    <p class="text-[11px] text-muted-foreground">Bookings on 5-seater fleet</p>
+                  </div>
                 </div>
-
-                <div class="absolute top-3 right-3">
-                  <span class="font-mono text-[10px] font-bold bg-background/85 backdrop-blur-xs px-2 py-0.5 rounded-md border border-border/70 text-foreground">
-                    #{{ b.id }}
-                  </span>
-                </div>
-
-                <!-- Hover "View Details" action overlay -->
-                <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <button hlmBtn size="sm" class="bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold rounded-full shadow-lg flex items-center gap-1.5 hover:from-cyan-400 hover:to-blue-500" (click)="viewBooking(b, $event)">
-                    <ng-icon name="lucideEye"></ng-icon>
-                    <span>View Booking</span>
-                  </button>
-                </div>
+                <span hlmBadge variant="secondary" class="font-bold text-xs bg-muted/60">
+                  {{ activeBookings5Seater.length }} Bookings
+                </span>
               </div>
 
-              <div class="p-4 flex flex-col flex-1">
-                <div class="flex items-center gap-1 text-[11px] font-extrabold text-cyan-500 tracking-wider uppercase mb-1 truncate">
-                  <ng-icon name="lucideUser" class="text-xs"></ng-icon>
-                  <span class="truncate">{{ b.renterFirstName }} {{ b.renterSecondName }}</span>
-                </div>
-                <div class="font-extrabold text-base text-foreground leading-tight mb-1 truncate">{{ b.vehicleManufacturer }} {{ b.vehicleName }}</div>
-                <div class="flex items-center justify-between gap-2 mb-3">
-                  <span class="font-mono text-xs text-muted-foreground bg-muted/40 px-2 py-0.5 rounded">{{ b.vehicleRegNo }}</span>
-                  <span class="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground" hlmTooltip="Renter Contact">
-                    <ng-icon name="lucidePhone" class="text-xs text-cyan-500"></ng-icon>
-                    <span>{{ b.renterPhone }}</span>
-                  </span>
-                </div>
-
-                <div class="flex flex-wrap gap-1.5 mt-auto pt-2 border-t border-border/50">
-                  <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-md" hlmTooltip="Total Rental Amount">
-                    <ng-icon name="lucideReceipt" class="text-xs"></ng-icon>
-                    <span>Rent: ₹{{ b.finalRentalAmount || b.totalRentalAmount }}</span>
-                  </span>
-                  @if (+b.pendingAmount > 0) {
-                    <span class="inline-flex items-center gap-1 text-[11px] font-bold text-rose-600 dark:text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-md" hlmTooltip="Pending Due Amount">
-                      <ng-icon name="lucideAlertCircle" class="text-xs"></ng-icon>
-                      <span>Due: ₹{{ b.pendingAmount }}</span>
-                    </span>
-                  } @else {
-                    <span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md" hlmTooltip="All Dues Cleared">
-                      <ng-icon name="lucideCheck" class="text-xs"></ng-icon>
-                      <span>Paid</span>
-                    </span>
-                  }
-                </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                @for (b of activeBookings5Seater; track b.id) {
+                  <ng-container *ngTemplateOutlet="bookingCardTpl; context: { $implicit: b }"></ng-container>
+                }
               </div>
             </div>
           }
-        </div>
+
+          <!-- 7-Seater Bookings -->
+          @if (activeBookings7Seater.length > 0) {
+            <div [class.mt-8]="activeBookings5Seater.length > 0">
+              <div class="flex items-center justify-between pb-3 mb-4 border-b border-border/60">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-7 h-7 rounded-lg bg-indigo-500/10 text-indigo-500 font-black text-xs flex items-center justify-center border border-indigo-500/20">
+                    7
+                  </div>
+                  <div>
+                    <h4 class="text-base font-bold text-foreground tracking-tight">7-Seater Category Bookings</h4>
+                    <p class="text-[11px] text-muted-foreground">Bookings on 7-seater fleet</p>
+                  </div>
+                </div>
+                <span hlmBadge variant="secondary" class="font-bold text-xs bg-muted/60">
+                  {{ activeBookings7Seater.length }} Bookings
+                </span>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                @for (b of activeBookings7Seater; track b.id) {
+                  <ng-container *ngTemplateOutlet="bookingCardTpl; context: { $implicit: b }"></ng-container>
+                }
+              </div>
+            </div>
+          }
+        }
+
+        <!-- '5' SEATING FILTER FOR BOOKINGS -->
+        @if (selectedSeating() === '5') {
+          @if (activeBookings5Seater.length > 0) {
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              @for (b of activeBookings5Seater; track b.id) {
+                <ng-container *ngTemplateOutlet="bookingCardTpl; context: { $implicit: b }"></ng-container>
+              }
+            </div>
+          } @else {
+            <div class="flex flex-col items-center justify-center p-12 border border-border rounded-2xl bg-card text-center my-4 shadow-xs">
+              <ng-icon class="text-4xl mx-auto mb-3 text-muted-foreground" name="lucideSearchX"></ng-icon>
+              <h4 class="text-base font-bold text-foreground mb-1">No 5-Seater Bookings</h4>
+              <p class="text-sm text-muted-foreground max-w-md">There are no active bookings on 5-seater vehicles.</p>
+            </div>
+          }
+        }
+
+        <!-- '7' SEATING FILTER FOR BOOKINGS -->
+        @if (selectedSeating() === '7') {
+          @if (activeBookings7Seater.length > 0) {
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              @for (b of activeBookings7Seater; track b.id) {
+                <ng-container *ngTemplateOutlet="bookingCardTpl; context: { $implicit: b }"></ng-container>
+              }
+            </div>
+          } @else {
+            <div class="flex flex-col items-center justify-center p-12 border border-border rounded-2xl bg-card text-center my-4 shadow-xs">
+              <ng-icon class="text-4xl mx-auto mb-3 text-muted-foreground" name="lucideSearchX"></ng-icon>
+              <h4 class="text-base font-bold text-foreground mb-1">No 7-Seater Bookings</h4>
+              <p class="text-sm text-muted-foreground max-w-md">There are no active bookings on 7-seater vehicles.</p>
+            </div>
+          }
+        }
       } @else {
         <div class="flex flex-col items-center justify-center p-12 border border-border rounded-2xl bg-card text-center my-4 shadow-xs">
           <ng-icon class="text-4xl mx-auto mb-3 text-muted-foreground" name="lucideSearchX"></ng-icon>
@@ -274,65 +496,75 @@
   </div>
 }
 
-<!-- AVAILABLE FLEET INVENTORY SECTION (shown when not viewing Total Fleet to prevent duplication) -->
-@if (activeCategory() !== 'fleet') {
-  <div class="showcase-header flex items-center justify-between mb-5">
-    <h3 class="text-xl font-bold">Available Fleet Inventory</h3>
-    <span hlmBadge variant="outline" class="font-bold text-xs">{{ getVehicleCount('available') }} Available</span>
-  </div>
-
-  @if (getVehicleCount('available') > 0) {
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-10">
-      @for (v of vehicles(); track v.regNo) {
-        @if (v.status === 'available') {
-          <div hlmCard class="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 cursor-pointer flex flex-col" (click)="bookVehicle(v, $event)">
-            <div class="relative w-full h-40 bg-muted/20 flex items-center justify-center p-3 border-b border-border overflow-hidden">
-              <img [src]="getVehicleImage(v)" alt="Vehicle Image" class="max-w-[90%] max-h-[90%] object-contain group-hover:scale-105 transition-transform duration-300" />
-              <div class="absolute top-3 left-3">
-                <span hlmBadge variant="secondary" class="font-bold text-emerald-600 dark:text-emerald-400">
-                  AVAILABLE
-                </span>
-              </div>
-              
-              <!-- Hover "Book Now" action overlay -->
-              <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <button hlmBtn size="sm" class="bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold rounded-full shadow-lg flex items-center gap-1.5 hover:from-cyan-400 hover:to-blue-500" (click)="bookVehicle(v, $event)">
-                  <ng-icon name="lucideKey"></ng-icon>
-                  <span>Book Now</span>
-                </button>
-              </div>
-            </div>
-            
-            <div class="p-4 flex flex-col flex-1">
-              <div class="text-[10px] font-extrabold text-cyan-500 tracking-wider uppercase mb-1">{{ v.type }}</div>
-              <div class="font-extrabold text-base text-foreground leading-tight mb-1 truncate">{{ v.manufacturer }} {{ v.name }}</div>
-              <div class="font-mono text-xs text-muted-foreground bg-muted/40 px-2 py-0.5 rounded w-fit mb-3">{{ v.regNo }}</div>
-              
-              <div class="flex flex-wrap gap-1.5 mt-auto pt-2 border-t border-border/50">
-                <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-md" hlmTooltip="Capacity">
-                  <ng-icon name="lucideUsers" class="text-xs"></ng-icon>
-                  <span>{{ v.seating }} Seats</span>
-                </span>
-                <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-md" hlmTooltip="Fuel Type">
-                  <ng-icon name="lucideFuel" class="text-xs"></ng-icon>
-                  <span>{{ v.fuelType | uppercase }}</span>
-                </span>
-                <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-md" hlmTooltip="Odometer">
-                  <ng-icon name="lucideGauge" class="text-xs"></ng-icon>
-                  <span>{{ v.odometer }} KM</span>
-                </span>
-              </div>
-            </div>
-          </div>
+<!-- REUSABLE BOOKING CARD TEMPLATE -->
+<ng-template #bookingCardTpl let-b>
+  <div
+    hlmCard
+    class="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 cursor-pointer flex flex-col"
+    (click)="viewBooking(b, $event)"
+  >
+    <div class="relative w-full h-40 bg-muted/20 flex items-center justify-center p-3 border-b border-border overflow-hidden">
+      <img [src]="getBookingVehicleImage(b)" [alt]="b.vehicleName" class="max-w-[90%] max-h-[90%] object-contain group-hover:scale-105 transition-transform duration-300" />
+      
+      <div class="absolute top-3 left-3">
+        @if (activeCategory() === 'payments' || +b.pendingAmount > 0) {
+          <span hlmBadge variant="destructive" class="font-bold text-[10px] font-mono shadow-xs">
+            DUE: ₹{{ b.pendingAmount }}
+          </span>
+        } @else {
+          <span hlmBadge variant="secondary" class="font-bold text-[10px] text-emerald-600 dark:text-emerald-400">
+            ACTIVE BOOKING
+          </span>
         }
-      }
+      </div>
+
+      <div class="absolute top-3 right-3">
+        <span class="font-mono text-[10px] font-bold bg-background/85 backdrop-blur-xs px-2 py-0.5 rounded-md border border-border/70 text-foreground">
+          #{{ b.id }}
+        </span>
+      </div>
+
+      <!-- Hover "View Details" action overlay -->
+      <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <button hlmBtn size="sm" class="bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold rounded-full shadow-lg flex items-center gap-1.5 hover:from-cyan-400 hover:to-blue-500" (click)="viewBooking(b, $event)">
+          <ng-icon name="lucideEye"></ng-icon>
+          <span>View Booking</span>
+        </button>
+      </div>
     </div>
-  } @else {
-    <div class="flex flex-col items-center justify-center p-12 border border-border rounded-2xl bg-card text-center my-8 shadow-sm">
-      <ng-icon class="text-4xl mx-auto mb-3 text-muted-foreground" name="lucideSearchX"></ng-icon>
-      <h4 class="text-base font-bold text-foreground mb-1">No Available Vehicles Found</h4>
-      <p class="text-sm text-muted-foreground max-w-md">All fleet vehicles are currently active on rental journeys or in maintenance.</p>
+
+    <div class="p-4 flex flex-col flex-1">
+      <div class="flex items-center gap-1 text-[11px] font-extrabold text-cyan-500 tracking-wider uppercase mb-1 truncate">
+        <ng-icon name="lucideUser" class="text-xs"></ng-icon>
+        <span class="truncate">{{ b.renterFirstName }} {{ b.renterSecondName }}</span>
+      </div>
+      <div class="font-extrabold text-base text-foreground leading-tight mb-1 truncate">{{ b.vehicleManufacturer }} {{ b.vehicleName }}</div>
+      <div class="flex items-center justify-between gap-2 mb-3">
+        <span class="font-mono text-xs text-muted-foreground bg-muted/40 px-2 py-0.5 rounded">{{ b.vehicleRegNo }}</span>
+        <span class="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground" hlmTooltip="Renter Contact">
+          <ng-icon name="lucidePhone" class="text-xs text-cyan-500"></ng-icon>
+          <span>{{ b.renterPhone }}</span>
+        </span>
+      </div>
+
+      <div class="flex flex-wrap gap-1.5 mt-auto pt-2 border-t border-border/50">
+        <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-md" hlmTooltip="Total Rental Amount">
+          <ng-icon name="lucideReceipt" class="text-xs"></ng-icon>
+          <span>Rent: ₹{{ b.finalRentalAmount || b.totalRentalAmount }}</span>
+        </span>
+        @if (+b.pendingAmount > 0) {
+          <span class="inline-flex items-center gap-1 text-[11px] font-bold text-rose-600 dark:text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-md" hlmTooltip="Pending Due Amount">
+            <ng-icon name="lucideAlertCircle" class="text-xs"></ng-icon>
+            <span>Due: ₹{{ b.pendingAmount }}</span>
+          </span>
+        } @else {
+          <span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md" hlmTooltip="All Dues Cleared">
+            <ng-icon name="lucideCheck" class="text-xs"></ng-icon>
+            <span>Paid</span>
+          </span>
+        }
+      </div>
     </div>
-  }
-}
+  </div>
+</ng-template>
 
