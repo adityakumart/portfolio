@@ -21,6 +21,7 @@
             <th hlmTh>Rental Billings</th>
             <th hlmTh>Final Odometer</th>
             <th hlmTh class="text-center">Status</th>
+            <th hlmTh class="text-center">Actions</th>
           </tr>
         </thead>
         <tbody hlmTBody>
@@ -65,6 +66,11 @@
                     {{ b.status }}
                   </span>
                 }
+              </td>
+              <td hlmTd class="text-center whitespace-nowrap">
+                <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 rounded-full text-primary" hlmTooltip="Print Agreement PDF" (click)="exportBookingPdf(b)">
+                  <ng-icon name="lucideFileText"></ng-icon>
+                </button>
               </td>
             </tr>
           }

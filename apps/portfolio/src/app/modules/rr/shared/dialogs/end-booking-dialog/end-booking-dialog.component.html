@@ -1,0 +1,53 @@
+<div class="flex flex-col h-full max-h-[calc(90vh-3rem)] overflow-hidden bg-card text-foreground">
+  <!-- Fixed Header -->
+  <div class="shrink-0 flex items-center justify-between pb-3 border-b border-border">
+    <h3 class="text-lg font-bold flex items-center gap-2 text-foreground">
+      <ng-icon name="lucideCalendarX" class="text-primary text-xl"></ng-icon>
+      <span>Finalize & End Rental Booking - ID: {{ booking()?.id }}</span>
+    </h3>
+    <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 text-muted-foreground hover:text-foreground" (click)="closeDialog()" aria-label="Close dialog">
+      <ng-icon name="lucideX"></ng-icon>
+    </button>
+  </div>
+
+  <!-- Scrollable Body -->
+  <div class="flex-1 min-h-0 overflow-y-auto py-3 pr-1 space-y-4 text-xs">
+    <div class="p-3 rounded-xl border border-border bg-muted/20 space-y-1">
+      <p><strong>Active Vehicle:</strong> {{ booking()?.vehicleManufacturer }} {{ booking()?.vehicleName }} ({{ booking()?.vehicleRegNo }})</p>
+      <p><strong>Odometer Pickup Reading:</strong> {{ booking()?.vehicleOdometerStart }} KM</p>
+    </div>
+
+    <div>
+      <label hlmLabel class="text-xs text-muted-foreground block mb-1">Odometer Return Reading (KM) *</label>
+      <input hlmInput type="number" [(ngModel)]="endBookingFields.odometerEnd" (input)="calculateEndBookingFees()" class="w-full text-sm" placeholder="Enter final odometer" required />
+    </div>
+
+    <div>
+      <label class="flex items-center gap-2 cursor-pointer text-xs">
+        <input type="checkbox" [(ngModel)]="endBookingFields.cleanlinessFine" (change)="calculateEndBookingFees()" class="rounded accent-primary h-4 w-4" />
+        <span>Apply Cleanliness Maintenance Fine (Rs. 500)</span>
+      </label>
+    </div>
+
+    <div class="p-4 rounded-xl border border-border bg-muted/10 space-y-1.5">
+      <p><strong>Extra Mileage Travelled:</strong> {{ endBookingFields.extraKms }} KM (Rate charge: Rs. {{ endBookingFields.extraKmFee }})</p>
+      <p><strong>Extra Return Delay:</strong> {{ endBookingFields.extraHours }} Hours (Rate charge: Rs. {{ endBookingFields.extraHourFee }})</p>
+      <p><strong>Original Agreement Rent:</strong> Rs. {{ booking()?.finalRentalAmount }}</p>
+      <p><strong>Total Overrun/Additional Fees:</strong> Rs. {{ endBookingFields.totalAdditionalFees }}</p>
+      <p><strong>Total Final Payable amount:</strong> Rs. {{ endBookingFields.finalTotalPayable }}</p>
+      <p class="text-emerald-600 font-bold"><strong>Advance Amount Paid:</strong> Rs. {{ booking()?.amountPaid }}</p>
+      <p class="text-sm pt-2 border-t border-border font-bold">
+        Net Balance Due: <span [class.text-destructive]="endBookingFields.balancePending > 0" [class.text-emerald-600]="endBookingFields.balancePending <= 0">Rs. {{ endBookingFields.balancePending }}</span>
+      </p>
+    </div>
+  </div>
+
+  <!-- Fixed Footer -->
+  <div class="shrink-0 flex items-center justify-end gap-2 pt-3 border-t border-border">
+    <button hlmBtn class="action-btn success flex items-center gap-1.5" [disabled]="!endBookingFields.odometerEnd || isSubmitting()" (click)="submitEndBooking()">
+      <ng-icon name="lucideCheckCircle"></ng-icon>
+      <span>{{ isSubmitting() ? 'Finalizing...' : 'Finalize & Close Booking' }}</span>
+    </button>
+    <button hlmBtn variant="outline" (click)="closeDialog()">Cancel</button>
+  </div>
+</div>
