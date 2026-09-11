@@ -171,6 +171,8 @@ export interface IRRDashboardStats {
   maintenance: number;
   activeBookings: number;
   pendingPayments: number;
+  available?: number;
+  contract?: number;
 }
 
 export interface IRRVehicleAvailability {

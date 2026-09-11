@@ -536,9 +536,11 @@ rrRouter.get('/dashboard/stats', authenticateRRToken, async (req: any, res: Resp
     const vehCol = await RRService.getVehiclesCol();
     const bookingCol = await RRService.getBookingsCol();
 
-    const [totalFleet, maintenance, activeBookings, pendingPayments] = await Promise.all([
+    const [totalFleet, maintenance, available, contract, activeBookings, pendingPayments] = await Promise.all([
       vehCol.countDocuments({}),
       vehCol.countDocuments({ status: 'maintenance' }),
+      vehCol.countDocuments({ status: 'available' }),
+      vehCol.countDocuments({ status: { $in: ['contract', 'in_contract'] } }),
       bookingCol.countDocuments({ status: 'active' }),
       bookingCol.countDocuments({ status: 'active', pendingAmount: { $nin: ['0', '', null] } } as any)
     ]);
@@ -546,6 +548,8 @@ rrRouter.get('/dashboard/stats', authenticateRRToken, async (req: any, res: Resp
     res.json({
       totalFleet,
       maintenance,
+      available,
+      contract,
       activeBookings,
       pendingPayments
     });

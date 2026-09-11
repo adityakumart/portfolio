@@ -26,12 +26,14 @@ import {
   lucideUser,
   lucideAlertCircle,
   lucideCheck,
+  lucideFileText,
 } from '@ng-icons/lucide';
 import { Router } from '@angular/router';
 import { IVehicle, IBooking, IRRDashboardStats } from '@portfolio/shared-types';
 import { RRVehicleCardComponent } from '../../../../shared';
 
-export type StatCategory = 'fleet' | 'bookings' | 'maintenance' | 'payments';
+export type StatCategory = 'fleet' | 'available' | 'contract' | 'bookings' | 'maintenance' | 'payments';
+export type SeatingFilter = 'all' | '5' | '7';
 
 @Component({
   selector: 'app-rr-stats-view',
@@ -66,6 +68,7 @@ export type StatCategory = 'fleet' | 'bookings' | 'maintenance' | 'payments';
       lucideUser,
       lucideAlertCircle,
       lucideCheck,
+      lucideFileText,
     }),
   ],
   templateUrl: './stats-view.component.html',
@@ -79,6 +82,8 @@ export class RRStatsViewComponent implements OnInit {
   bookings = signal<IBooking[]>([]);
   stats = signal<IRRDashboardStats>({
     totalFleet: 0,
+    available: 0,
+    contract: 0,
     activeBookings: 0,
     maintenance: 0,
     pendingPayments: 0,
@@ -86,6 +91,9 @@ export class RRStatsViewComponent implements OnInit {
 
   // Active accordion section
   activeCategory = signal<StatCategory | null>(null);
+
+  // Seating filter for the expanded accordion: 'all', '5', or '7'
+  selectedSeating = signal<SeatingFilter>('all');
 
   ngOnInit() {
     this.loadVehicles();
@@ -121,6 +129,9 @@ export class RRStatsViewComponent implements OnInit {
   }
 
   getVehicleCount(status: string): number {
+    if (status === 'contract') {
+      return this.vehicles().filter((v) => v.status === 'contract' || v.status === 'in_contract').length;
+    }
     return this.vehicles().filter((v) => v.status === status).length;
   }
 
@@ -131,8 +142,12 @@ export class RRStatsViewComponent implements OnInit {
     return 'https://via.placeholder.com/150';
   }
 
+  getBookingVehicle(b: IBooking): IVehicle | undefined {
+    return this.vehicles().find((item) => item.regNo === b.vehicleRegNo);
+  }
+
   getBookingVehicleImage(b: IBooking): string {
-    const v = this.vehicles().find((item) => item.regNo === b.vehicleRegNo);
+    const v = this.getBookingVehicle(b);
     if (v && v.images && v.images.length > 0) {
       return v.images[0];
     }
@@ -144,6 +159,7 @@ export class RRStatsViewComponent implements OnInit {
       this.activeCategory.set(null);
       return;
     }
+    this.selectedSeating.set('all');
     await Promise.all([this.loadVehicles(), this.loadBookings(), this.loadStats()]);
     this.activeCategory.set(category);
   }
@@ -152,10 +168,18 @@ export class RRStatsViewComponent implements OnInit {
     this.activeCategory.set(null);
   }
 
+  setSeatingFilter(filter: SeatingFilter) {
+    this.selectedSeating.set(filter);
+  }
+
   get activeCategoryTitle(): string {
     switch (this.activeCategory()) {
       case 'fleet':
         return 'Total Fleet Inventory';
+      case 'available':
+        return 'Available Fleet';
+      case 'contract':
+        return 'In-Contract Fleet';
       case 'bookings':
         return 'Active Customer Bookings';
       case 'maintenance':
@@ -171,6 +195,10 @@ export class RRStatsViewComponent implements OnInit {
     switch (this.activeCategory()) {
       case 'fleet':
         return 'Complete directory of all registered vehicles in RoadReady Rentals';
+      case 'available':
+        return 'Vehicles ready and available for immediate customer rental and dispatch';
+      case 'contract':
+        return 'Vehicles committed to corporate accounts and long-term contract agreements';
       case 'bookings':
         return 'Active customer journeys currently on the road';
       case 'maintenance':
@@ -186,10 +214,14 @@ export class RRStatsViewComponent implements OnInit {
     switch (this.activeCategory()) {
       case 'fleet':
         return this.vehicles().length;
+      case 'available':
+        return this.getVehicleCount('available');
+      case 'contract':
+        return this.getVehicleCount('contract');
       case 'bookings':
         return this.bookings().filter((b) => b.status === 'active').length;
       case 'maintenance':
-        return this.vehicles().filter((v) => v.status === 'maintenance').length;
+        return this.getVehicleCount('maintenance');
       case 'payments':
         return this.bookings().filter((b) => b.status === 'active' && Number(b.pendingAmount) > 0).length;
       default:
@@ -197,14 +229,39 @@ export class RRStatsViewComponent implements OnInit {
     }
   }
 
+  get isVehicleCategory(): boolean {
+    const cat = this.activeCategory();
+    return cat === 'fleet' || cat === 'available' || cat === 'contract' || cat === 'maintenance';
+  }
+
+  get isBookingCategory(): boolean {
+    const cat = this.activeCategory();
+    return cat === 'bookings' || cat === 'payments';
+  }
+
   get activeVehicles(): IVehicle[] {
-    if (this.activeCategory() === 'fleet') {
+    const cat = this.activeCategory();
+    if (cat === 'fleet') {
       return this.vehicles();
     }
-    if (this.activeCategory() === 'maintenance') {
+    if (cat === 'available') {
+      return this.vehicles().filter((v) => v.status === 'available');
+    }
+    if (cat === 'contract') {
+      return this.vehicles().filter((v) => v.status === 'contract' || v.status === 'in_contract');
+    }
+    if (cat === 'maintenance') {
       return this.vehicles().filter((v) => v.status === 'maintenance');
     }
     return [];
+  }
+
+  get activeVehicles5Seater(): IVehicle[] {
+    return this.activeVehicles.filter((v) => (v.seating || '5') === '5');
+  }
+
+  get activeVehicles7Seater(): IVehicle[] {
+    return this.activeVehicles.filter((v) => v.seating === '7');
   }
 
   get activeBookingsList(): IBooking[] {
@@ -215,6 +272,44 @@ export class RRStatsViewComponent implements OnInit {
       return this.bookings().filter((b) => b.status === 'active' && Number(b.pendingAmount) > 0);
     }
     return [];
+  }
+
+  get activeBookings5Seater(): IBooking[] {
+    return this.activeBookingsList.filter((b) => {
+      const v = this.getBookingVehicle(b);
+      return (v?.seating || '5') === '5';
+    });
+  }
+
+  get activeBookings7Seater(): IBooking[] {
+    return this.activeBookingsList.filter((b) => {
+      const v = this.getBookingVehicle(b);
+      return v?.seating === '7';
+    });
+  }
+
+  get currentCategoryTotalCount(): number {
+    return this.activeCategoryCount;
+  }
+
+  get currentCategory5SeaterCount(): number {
+    if (this.isVehicleCategory) {
+      return this.activeVehicles5Seater.length;
+    }
+    if (this.isBookingCategory) {
+      return this.activeBookings5Seater.length;
+    }
+    return 0;
+  }
+
+  get currentCategory7SeaterCount(): number {
+    if (this.isVehicleCategory) {
+      return this.activeVehicles7Seater.length;
+    }
+    if (this.isBookingCategory) {
+      return this.activeBookings7Seater.length;
+    }
+    return 0;
   }
 
   bookVehicle(vehicle: any, event?: Event) {
