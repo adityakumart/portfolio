@@ -29,8 +29,13 @@ import {
   lucideFileText,
 } from '@ng-icons/lucide';
 import { Router } from '@angular/router';
+import { HlmDialogService } from '@spartan-ng/hel/dialog';
 import { IVehicle, IBooking, IRRDashboardStats } from '@portfolio/shared-types';
-import { RRVehicleCardComponent } from '../../../../shared';
+import {
+  RRVehicleCardComponent,
+  RRNewBookingDialogComponent,
+  RRModifyBookingDialogComponent,
+} from '../../../../shared';
 
 export type StatCategory = 'fleet' | 'available' | 'contract' | 'bookings' | 'maintenance' | 'payments';
 export type SeatingFilter = 'all' | '5' | '7';
@@ -312,17 +317,45 @@ export class RRStatsViewComponent implements OnInit {
     return 0;
   }
 
+  private dialog = inject(HlmDialogService);
+
   bookVehicle(vehicle: any, event?: Event) {
     event?.stopPropagation();
-    this.router.navigate(['/user/rr/booking/list'], {
-      queryParams: { vehicleRegNo: vehicle.regNo },
+    const ref = this.dialog.open(RRNewBookingDialogComponent, {
+      context: {
+        vehicleRegNo: vehicle.regNo,
+        vehicles: this.vehicles(),
+      },
+      contentClass:
+        'max-w-4xl w-full p-6 max-h-[90vh] flex flex-col overflow-hidden',
+    });
+
+    ref.closed$.subscribe((created) => {
+      if (created) {
+        this.loadVehicles();
+        this.loadBookings();
+        this.loadStats();
+      }
     });
   }
 
   viewBooking(b: IBooking, event?: Event) {
     event?.stopPropagation();
-    this.router.navigate(['/user/rr/booking/list'], {
-      queryParams: { vehicleRegNo: b.vehicleRegNo },
+    const ref = this.dialog.open(RRModifyBookingDialogComponent, {
+      context: {
+        booking: b,
+        vehicles: this.vehicles(),
+      },
+      contentClass:
+        'max-w-3xl w-full p-6 max-h-[90vh] flex flex-col overflow-hidden',
+    });
+
+    ref.closed$.subscribe((updated) => {
+      if (updated) {
+        this.loadVehicles();
+        this.loadBookings();
+        this.loadStats();
+      }
     });
   }
 }
