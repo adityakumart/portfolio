@@ -6,6 +6,8 @@ import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideCar,
   lucideChevronDown,
+  lucideChevronLeft,
+  lucideChevronRight,
   lucideUser,
   lucideHistory,
   lucideLogOut,
@@ -20,6 +22,7 @@ import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmInputImports } from '@spartan-ng/hel/input';
 import { HlmDropdownMenuImports } from '@spartan-ng/hel/dropdown-menu';
 import { HlmAvatarImports } from '@spartan-ng/hel/avatar';
+import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
 
 @Component({
   selector: 'app-rr-dashboard',
@@ -34,11 +37,14 @@ import { HlmAvatarImports } from '@spartan-ng/hel/avatar';
     HlmInputImports,
     HlmDropdownMenuImports,
     HlmAvatarImports,
+    HlmTooltipImports,
   ],
   providers: [
     provideIcons({
       lucideCar,
       lucideChevronDown,
+      lucideChevronLeft,
+      lucideChevronRight,
       lucideUser,
       lucideHistory,
       lucideLogOut,
@@ -74,10 +80,28 @@ export class RRDashboardComponent implements OnInit {
 
   // Shell UI State
   profileDropdownOpen = signal<boolean>(false);
+  isSidebarCollapsed = signal<boolean>(true);
 
   ngOnInit() {
     if (!this.rrApi.currentUser()) {
       this.router.navigate(['/user/rr/login']);
+    }
+
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const saved = localStorage.getItem('rr_sidebar_collapsed');
+      if (saved !== null) {
+        this.isSidebarCollapsed.set(saved === 'true');
+      } else {
+        this.isSidebarCollapsed.set(true);
+      }
+    }
+  }
+
+  toggleSidebar() {
+    const next = !this.isSidebarCollapsed();
+    this.isSidebarCollapsed.set(next);
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.setItem('rr_sidebar_collapsed', String(next));
     }
   }
 
