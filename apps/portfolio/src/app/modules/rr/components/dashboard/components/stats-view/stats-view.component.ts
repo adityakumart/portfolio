@@ -27,14 +27,18 @@ import {
   lucideAlertCircle,
   lucideCheck,
   lucideFileText,
+  lucidePencil,
+  lucideCalendarX,
 } from '@ng-icons/lucide';
 import { Router } from '@angular/router';
 import { HlmDialogService } from '@spartan-ng/hel/dialog';
 import { IVehicle, IBooking, IRRDashboardStats } from '@portfolio/shared-types';
+import { RRInvoicePdfService } from '../../../../services/rr-invoice-pdf.service';
 import {
   RRVehicleCardComponent,
   RRNewBookingDialogComponent,
   RRModifyBookingDialogComponent,
+  RREndBookingDialogComponent,
 } from '../../../../shared';
 
 export type StatCategory = 'fleet' | 'available' | 'contract' | 'bookings' | 'maintenance' | 'payments';
@@ -74,6 +78,8 @@ export type SeatingFilter = 'all' | '5' | '7';
       lucideAlertCircle,
       lucideCheck,
       lucideFileText,
+      lucidePencil,
+      lucideCalendarX,
     }),
   ],
   templateUrl: './stats-view.component.html',
@@ -318,6 +324,7 @@ export class RRStatsViewComponent implements OnInit {
   }
 
   private dialog = inject(HlmDialogService);
+  private invoicePdf = inject(RRInvoicePdfService);
 
   bookVehicle(vehicle: any, event?: Event) {
     event?.stopPropagation();
@@ -339,7 +346,7 @@ export class RRStatsViewComponent implements OnInit {
     });
   }
 
-  viewBooking(b: IBooking, event?: Event) {
+  modifyBooking(b: IBooking, event?: Event) {
     event?.stopPropagation();
     const ref = this.dialog.open(RRModifyBookingDialogComponent, {
       context: {
@@ -357,6 +364,35 @@ export class RRStatsViewComponent implements OnInit {
         this.loadStats();
       }
     });
+  }
+
+  printAgreement(b: IBooking, event?: Event) {
+    event?.stopPropagation();
+    this.invoicePdf.printAgreementPdf(b);
+  }
+
+  endBooking(b: IBooking, event?: Event) {
+    event?.stopPropagation();
+    const ref = this.dialog.open(RREndBookingDialogComponent, {
+      context: {
+        booking: b,
+        vehicles: this.vehicles(),
+      },
+      contentClass:
+        'max-w-xl w-full p-6 max-h-[90vh] flex flex-col overflow-hidden',
+    });
+
+    ref.closed$.subscribe((result) => {
+      if (result) {
+        this.loadVehicles();
+        this.loadBookings();
+        this.loadStats();
+      }
+    });
+  }
+
+  viewBooking(b: IBooking, event?: Event) {
+    this.modifyBooking(b, event);
   }
 }
 
