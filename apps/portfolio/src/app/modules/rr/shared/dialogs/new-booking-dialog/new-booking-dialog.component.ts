@@ -473,6 +473,8 @@ export class RRNewBookingDialogComponent implements OnInit {
       id: 'RRB-DRAFT',
       vehicleRegNo: val.vehicleRegNo || '____',
       vehicleName: val.vehicleName || '____',
+      vehicleManufacturer: val.vehicleManufacturer || '',
+      vehicleModel: val.vehicleModel || '',
       pickupDateTime: val.pickupDateTime || '____',
       returnDateTime: val.returnDateTime || '____',
       totalRentalAmount: val.totalRentalAmount || '____',
