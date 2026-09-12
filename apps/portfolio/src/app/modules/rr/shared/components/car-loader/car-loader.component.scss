@@ -1,0 +1,434 @@
+/* -----------------------------------------------------------
+   RoadReady Rentals - High-Tech Animated Car Loader
+----------------------------------------------------------- */
+
+:host {
+  display: block;
+}
+
+.rr-loader-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(
+    circle at 50% 45%,
+    rgba(14, 23, 47, 0.98) 0%,
+    rgba(6, 10, 20, 0.99) 70%,
+    rgba(2, 6, 12, 1) 100%
+  );
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  opacity: 1;
+  transform: scale(1);
+  transition:
+    opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0.6s;
+  pointer-events: auto;
+  user-select: none;
+
+  &.exit-fade {
+    opacity: 0;
+    transform: scale(1.04);
+    pointer-events: none;
+    visibility: hidden;
+  }
+}
+
+/* Ambient Radial Glow */
+.loader-ambient-glow {
+  position: absolute;
+  width: 550px;
+  height: 550px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(6, 182, 212, 0.18) 0%,
+    rgba(56, 189, 248, 0.08) 40%,
+    transparent 70%
+  );
+  filter: blur(80px);
+  pointer-events: none;
+  animation: glow-pulse 3s ease-in-out infinite alternate;
+}
+
+/* Loader Inner Content Box */
+.loader-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 520px;
+  width: 90%;
+  padding: 2rem 1.5rem;
+}
+
+/* Top System Badge */
+.loader-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.9rem;
+  margin-bottom: 1.75rem;
+  border-radius: 9999px;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  box-shadow: 0 0 15px rgba(6, 182, 212, 0.15);
+
+  .pulse-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #22d3ee;
+    box-shadow: 0 0 8px #22d3ee;
+    animation: dot-ping 1.2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+
+  .badge-text {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: #a5f3fc;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+}
+
+/* Car Stage & Motion Area */
+.car-stage {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  border-radius: 16px;
+  padding-bottom: 0.5rem;
+}
+
+/* Speed Streaks in Background */
+.speed-streaks {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 30px;
+  pointer-events: none;
+
+  .streak {
+    position: absolute;
+    height: 1.5px;
+    background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.8), transparent);
+    border-radius: 2px;
+    animation: streak-fly linear infinite;
+  }
+
+  .streak-1 {
+    top: 22%;
+    width: 90px;
+    animation-duration: 0.7s;
+    animation-delay: 0s;
+  }
+  .streak-2 {
+    top: 40%;
+    width: 130px;
+    animation-duration: 0.55s;
+    animation-delay: 0.2s;
+  }
+  .streak-3 {
+    top: 58%;
+    width: 80px;
+    animation-duration: 0.85s;
+    animation-delay: 0.35s;
+  }
+  .streak-4 {
+    top: 15%;
+    width: 110px;
+    animation-duration: 0.65s;
+    animation-delay: 0.5s;
+  }
+  .streak-5 {
+    top: 70%;
+    width: 95px;
+    animation-duration: 0.75s;
+    animation-delay: 0.15s;
+  }
+}
+
+/* Car Chassis Suspension Bobbing */
+.car-suspension-container {
+  width: 100%;
+  animation: car-bob 0.8s ease-in-out infinite alternate;
+}
+
+.car-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Headlight Projection Pulse */
+.headlight-beam {
+  animation: beam-flicker 1.5s ease-in-out infinite alternate;
+}
+
+/* Exhaust Flame Pulse */
+.exhaust-flame {
+  animation: exhaust-pulse 0.25s infinite alternate;
+}
+
+.exhaust-smoke {
+  animation: exhaust-puff 0.4s ease-out infinite;
+}
+
+/* Wheel Rotation */
+.wheel {
+  animation: wheel-spin 0.35s linear infinite;
+}
+
+/* Moving Road */
+.speed-road {
+  position: relative;
+  width: 100%;
+  height: 24px;
+  margin-top: -16px;
+  overflow: hidden;
+
+  .road-surface {
+    position: absolute;
+    top: 4px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent 0%, rgba(6, 182, 212, 0.4) 30%, rgba(6, 182, 212, 0.4) 70%, transparent 100%);
+    box-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
+  }
+
+  .road-lane-stripes {
+    position: absolute;
+    top: 10px;
+    left: 0;
+    display: flex;
+    width: 200%;
+    animation: road-scroll 0.45s linear infinite;
+
+    .stripe {
+      width: 28px;
+      height: 3px;
+      background: #38bdf8;
+      border-radius: 2px;
+      margin-right: 36px;
+      opacity: 0.75;
+      box-shadow: 0 0 6px rgba(56, 189, 248, 0.7);
+    }
+  }
+}
+
+/* Telemetry & Progress Box */
+.telemetry-box {
+  width: 100%;
+  max-width: 440px;
+  margin-top: 1.25rem;
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(51, 65, 85, 0.6);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+}
+
+.telemetry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+
+  .telemetry-status {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    letter-spacing: 0.02em;
+  }
+
+  .telemetry-pct {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #38bdf8;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+}
+
+/* Progress Track & Fill */
+.progress-track {
+  width: 100%;
+  height: 6px;
+  background: rgba(30, 41, 59, 0.9);
+  border-radius: 9999px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #0284c7 0%, #06b6d4 50%, #38bdf8 100%);
+    border-radius: 9999px;
+    position: relative;
+    transition: width 0.15s ease-out;
+    box-shadow: 0 0 12px rgba(6, 182, 212, 0.8);
+
+    .progress-glow-head {
+      position: absolute;
+      right: 0;
+      top: -2px;
+      bottom: -2px;
+      width: 10px;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow: 0 0 10px #38bdf8, 0 0 15px #06b6d4;
+    }
+  }
+}
+
+/* Fleet Telemetry Stats Readout */
+.telemetry-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.85rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid rgba(51, 65, 85, 0.4);
+
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+
+    .stat-label {
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: #64748b;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    .stat-val {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+  }
+}
+
+/* -----------------------------------------------------------
+   KEYFRAME ANIMATIONS
+----------------------------------------------------------- */
+
+@keyframes wheel-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes car-bob {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2.5px);
+  }
+  100% {
+    transform: translateY(0.5px);
+  }
+}
+
+@keyframes road-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-64px);
+  }
+}
+
+@keyframes streak-fly {
+  0% {
+    transform: translateX(450px);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-150px);
+    opacity: 0;
+  }
+}
+
+@keyframes beam-flicker {
+  0% {
+    opacity: 0.75;
+  }
+  50% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes exhaust-pulse {
+  0% {
+    r: 4.5;
+    opacity: 0.9;
+  }
+  100% {
+    r: 6.5;
+    opacity: 1;
+  }
+}
+
+@keyframes exhaust-puff {
+  0% {
+    transform: translateX(0) scale(0.8);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateX(-12px) scale(1.6);
+    opacity: 0;
+  }
+}
+
+@keyframes glow-pulse {
+  0% {
+    transform: scale(0.92);
+    opacity: 0.15;
+  }
+  100% {
+    transform: scale(1.08);
+    opacity: 0.28;
+  }
+}
+
+@keyframes dot-ping {
+  0% {
+    transform: scale(0.9);
+    box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.7);
+  }
+  70% {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 6px rgba(34, 211, 238, 0);
+  }
+  100% {
+    transform: scale(0.9);
+    box-shadow: 0 0 0 0 rgba(34, 211, 238, 0);
+  }
+}

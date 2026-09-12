@@ -501,7 +501,7 @@
   <div
     hlmCard
     class="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 cursor-pointer flex flex-col"
-    (click)="viewBooking(b, $event)"
+    (click)="modifyBooking(b, $event)"
   >
     <div class="relative w-full h-40 bg-muted/20 flex items-center justify-center p-3 border-b border-border overflow-hidden">
       <img [src]="getBookingVehicleImage(b)" [alt]="b.vehicleName" class="max-w-[90%] max-h-[90%] object-contain group-hover:scale-105 transition-transform duration-300" />
@@ -524,11 +524,39 @@
         </span>
       </div>
 
-      <!-- Hover "View Details" action overlay -->
-      <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-        <button hlmBtn size="sm" class="bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold rounded-full shadow-lg flex items-center gap-1.5 hover:from-cyan-400 hover:to-blue-500" (click)="viewBooking(b, $event)">
-          <ng-icon name="lucideEye"></ng-icon>
-          <span>View Booking</span>
+      <!-- Hover action overlay: Modify, Print Agreement, End Booking -->
+      <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-xs flex flex-col items-center justify-center gap-2 p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+        <button
+          hlmBtn
+          variant="secondary"
+          size="sm"
+          class="w-36 h-7.5 text-xs font-medium rounded-lg shadow-sm border border-border/40 flex items-center justify-center gap-1.5 transition-all active:scale-95"
+          (click)="modifyBooking(b, $event)"
+        >
+          <ng-icon name="lucidePencil" class="text-xs"></ng-icon>
+          <span>Modify</span>
+        </button>
+
+        <button
+          hlmBtn
+          variant="secondary"
+          size="sm"
+          class="w-36 h-7.5 text-xs font-medium rounded-lg shadow-sm border border-border/40 flex items-center justify-center gap-1.5 transition-all active:scale-95"
+          (click)="printAgreement(b, $event)"
+        >
+          <ng-icon name="lucideFileText" class="text-xs"></ng-icon>
+          <span>Print Agreement</span>
+        </button>
+
+        <button
+          hlmBtn
+          variant="secondary"
+          size="sm"
+          class="w-36 h-7.5 text-xs font-medium rounded-lg shadow-sm border border-border/40 flex items-center justify-center gap-1.5 transition-all active:scale-95"
+          (click)="endBooking(b, $event)"
+        >
+          <ng-icon name="lucideCalendarX" class="text-xs"></ng-icon>
+          <span>End Booking</span>
         </button>
       </div>
     </div>
