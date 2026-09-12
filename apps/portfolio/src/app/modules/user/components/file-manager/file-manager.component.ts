@@ -184,7 +184,6 @@ export class FileManagerComponent implements OnInit {
           node,
           downloadUrl: url,
         },
-        showCloseButton: false,
         contentClass: 'w-[90vw] max-w-[800px] p-0 border-0 bg-transparent shadow-none',
       });
     } catch (err: any) {

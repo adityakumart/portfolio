@@ -1,33 +1,24 @@
-import type { BooleanInput } from '@angular/cdk/coercion';
 import type { ComponentType } from '@angular/cdk/portal';
 import { NgComponentOutlet, NgTemplateOutlet } from '@angular/common';
 import {
-	booleanAttribute,
 	ChangeDetectionStrategy,
 	Component,
 	computed,
 	inject,
-	input,
 	TemplateRef,
 } from '@angular/core';
-import { NgIcon, provideIcons } from '@ng-icons/core';
-import { lucideX } from '@ng-icons/lucide';
 import { BrnDialogRef, injectBrnDialogContext } from '@spartan-ng/brain/dialog';
-import { HlmButton } from '@spartan-ng/hel-luma/button';
 
 import { classes } from '@spartan-ng/hel-luma/utils';
-import { HlmDialogClose } from './hlm-dialog-close';
 
 type HlmDialogContentContext = {
 	$component?: ComponentType<unknown> | TemplateRef<unknown>;
 	$dynamicComponentClass?: string;
-	$showCloseButton?: boolean;
 };
 
 @Component({
 	selector: 'hlm-dialog-content',
-	imports: [NgComponentOutlet, NgTemplateOutlet, HlmButton, HlmDialogClose, NgIcon],
-	providers: [provideIcons({ lucideX })],
+	imports: [NgComponentOutlet, NgTemplateOutlet],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	host: {
 		'data-slot': 'dialog-content',
@@ -41,13 +32,6 @@ type HlmDialogContentContext = {
 		} @else {
 			<ng-content />
 		}
-
-		@if (showCloseButton()) {
-			<button hlmBtn variant="ghost" size="icon-sm" class="absolute end-2 top-2" hlmDialogClose>
-				<span class="sr-only">close</span>
-				<ng-icon name="lucideX" />
-			</button>
-		}
 	`,
 })
 export class HlmDialogContent {
@@ -60,13 +44,6 @@ export class HlmDialogContent {
 	protected isTemplateRef(value: unknown): value is TemplateRef<unknown> {
 		return value instanceof TemplateRef;
 	}
-
-	public readonly showCloseButton = input<boolean, BooleanInput>(
-		this._dialogContext?.$showCloseButton ?? !this.isTemplateRef(this.component),
-		{
-			transform: booleanAttribute,
-		},
-	);
 
 	public readonly state = computed(() => this._dialogRef?.state() ?? 'closed');
 
