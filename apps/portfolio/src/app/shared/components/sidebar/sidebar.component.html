@@ -120,14 +120,16 @@
         </button>
 
         <!-- User account avatar -->
-        <hlm-avatar
-          class="cursor-pointer size-9 border border-border transition-colors hover:opacity-90"
-          [hlmDropdownMenuTrigger]="accountMenu"
-          [hlmTooltip]="userName()"
-          tooltipPosition="right"
-        >
-          <span hlmAvatarFallback class="bg-muted text-foreground font-semibold text-xs">{{ userInitials() }}</span>
-        </hlm-avatar>
+        @if (isLoggedIn()) {
+          <hlm-avatar
+            class="cursor-pointer size-9 border border-border transition-colors hover:opacity-90"
+            [hlmDropdownMenuTrigger]="accountMenu"
+            [hlmTooltip]="userName()"
+            tooltipPosition="right"
+          >
+            <span hlmAvatarFallback class="bg-muted text-foreground font-semibold text-xs">{{ userInitials() }}</span>
+          </hlm-avatar>
+        }
       </div>
 
       <!-- Unified drop-down account action panel -->

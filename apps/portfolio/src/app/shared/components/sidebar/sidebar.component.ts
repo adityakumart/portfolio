@@ -34,7 +34,7 @@ import {
   lucideSun,
   lucideMoon,
   lucideLogOut,
-  lucideZap
+  lucideZap,
 } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
@@ -85,8 +85,8 @@ export interface SidebarItem {
       lucideSun,
       lucideMoon,
       lucideLogOut,
-      lucideZap
-    })
+      lucideZap,
+    }),
   ],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss',
@@ -168,6 +168,8 @@ export class SidebarComponent implements OnDestroy {
 
   // User and Theme state
   currentUser = computed(() => this.authService.currentUser());
+  rrUser = computed(() => this.rrApiService.currentUser());
+  isLoggedIn = computed(() => !!this.currentUser() || !!this.rrUser());
   isDarkMode = computed(() => this.themeService.darkMode());
 
   // Track the current URL using toSignal
@@ -207,7 +209,11 @@ export class SidebarComponent implements OnDestroy {
         icon: 'lucideUser',
         children: [
           { label: 'Profile', link: '/user', icon: 'lucideUser' },
-          { label: 'AI Assistant', link: '/user/ai', icon: 'lucideMessageSquare' },
+          {
+            label: 'AI Assistant',
+            link: '/user/ai',
+            icon: 'lucideMessageSquare',
+          },
           { label: 'File Manager', link: '/user/files', icon: 'lucideFolder' },
         ],
       });
@@ -237,7 +243,11 @@ export class SidebarComponent implements OnDestroy {
             link: '/user/rr/employee/list',
             icon: 'lucideUsers',
           },
-          { label: 'History Logs', link: '/user/rr/history', icon: 'lucideHistory' },
+          {
+            label: 'History Logs',
+            link: '/user/rr/history',
+            icon: 'lucideHistory',
+          },
         ],
       });
     } else {
@@ -256,39 +266,43 @@ export class SidebarComponent implements OnDestroy {
     return items;
   });
 
-  // Mappings helper for dev tool category icons
-  private getDevToolIcon(header: string): string {
-    switch (header) {
-      case 'Calculator':
-        return 'lucideCalculator';
-      case 'Formatters':
+  private getDevToolIcon(category: string): string {
+    switch (category.toLowerCase()) {
+      case 'text tools':
         return 'lucideAlignLeft';
-      case 'Encode/Decode':
+      case 'crypto':
         return 'lucideKey';
-      case 'Converters':
+      case 'converters':
         return 'lucideRefreshCw';
-      case 'Generator':
+      case 'generators':
         return 'lucideHammer';
+      case 'calculators':
+        return 'lucideCalculator';
       default:
-        return 'lucideCode';
+        return 'lucideFolder';
     }
   }
 
-  // Check if item is active based on url
+  // Active item checking for selection highlighting
   isItemActive(item: SidebarItem): boolean {
-    const url = this.currentUrl().split('?')[0];
+    const url = this.currentUrl() || '';
 
     if (item.link) {
-      return url === item.link;
+      if (item.link === '/' && url === '/') {
+        return true;
+      }
+      if (item.link !== '/' && url.startsWith(item.link)) {
+        return true;
+      }
     }
 
-    if (item.children) {
+    if (item.children && item.children.length > 0) {
       const checkChildren = (children: SidebarItem[]): boolean => {
         return children.some((child) => {
-          if (child.link) {
-            return url === child.link;
+          if (child.link && url.startsWith(child.link)) {
+            return true;
           }
-          if (child.children) {
+          if (child.children && child.children.length > 0) {
             return checkChildren(child.children);
           }
           return false;
@@ -325,31 +339,57 @@ export class SidebarComponent implements OnDestroy {
   // Computed values for active user profile display
   userName = computed(() => {
     const user = this.currentUser();
-    if (!user) return 'Guest Account';
-    return `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'User';
+    if (user) {
+      return `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'User';
+    }
+    const rr = this.rrUser();
+    if (rr) {
+      return `${rr.firstName || ''} ${rr.lastName || ''}`.trim() || 'User';
+    }
+    return '';
   });
 
   userRole = computed(() => {
     const user = this.currentUser();
-    if (!user) return 'Visitor';
-    return user.admin ? 'ADMIN' : 'USER';
+    if (user) {
+      return user.admin ? 'ADMIN' : 'USER';
+    }
+    const rr = this.rrUser();
+    if (rr) {
+      return (rr.role || 'USER').toUpperCase();
+    }
+    return '';
   });
 
   userInitials = computed(() => {
     const user = this.currentUser();
-    if (!user) return 'GS';
-    const first = (user.first_name || '').charAt(0).toUpperCase();
-    const last = (user.last_name || '').charAt(0).toUpperCase();
-    return first + last || 'US';
+    if (user) {
+      const first = (user.first_name || '').charAt(0).toUpperCase();
+      const last = (user.last_name || '').charAt(0).toUpperCase();
+      return (first + last).trim() || 'U';
+    }
+    const rr = this.rrUser();
+    if (rr) {
+      const first = (rr.firstName || '').charAt(0).toUpperCase();
+      const last = (rr.lastName || '').charAt(0).toUpperCase();
+      return (first + last).trim() || 'U';
+    }
+    return '';
   });
 
   async onLogout(): Promise<void> {
+    const isRR = !!this.rrApiService.currentUser();
     try {
-      await this.authService.logout();
-      this.router.navigate(['/user/login']);
+      if (isRR) {
+        this.rrApiService.logout();
+      }
+      if (this.authService.currentUser()) {
+        await this.authService.logout();
+      }
+      this.router.navigate([isRR ? '/user/rr/login' : '/user/login']);
     } catch (err) {
       console.error('Sidebar logout error:', err);
-      this.router.navigate(['/user/login']);
+      this.router.navigate([isRR ? '/user/rr/login' : '/user/login']);
     }
   }
 }
