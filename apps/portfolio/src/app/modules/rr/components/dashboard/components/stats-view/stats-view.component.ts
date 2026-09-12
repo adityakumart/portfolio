@@ -4,6 +4,7 @@ import { RRApiService } from '../../../../services/rr-api.service';
 import { HlmCardImports } from '@spartan-ng/hel/card';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
+
 import { HlmBadgeImports } from '@spartan-ng/hel/badge';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
@@ -41,7 +42,13 @@ import {
   RREndBookingDialogComponent,
 } from '../../../../shared';
 
-export type StatCategory = 'fleet' | 'available' | 'contract' | 'bookings' | 'maintenance' | 'payments';
+export type StatCategory =
+  | 'fleet'
+  | 'available'
+  | 'contract'
+  | 'bookings'
+  | 'maintenance'
+  | 'payments';
 export type SeatingFilter = 'all' | '5' | '7';
 
 @Component({
@@ -141,7 +148,9 @@ export class RRStatsViewComponent implements OnInit {
 
   getVehicleCount(status: string): number {
     if (status === 'contract') {
-      return this.vehicles().filter((v) => v.status === 'contract' || v.status === 'in_contract').length;
+      return this.vehicles().filter(
+        (v) => v.status === 'contract' || v.status === 'in_contract',
+      ).length;
     }
     return this.vehicles().filter((v) => v.status === status).length;
   }
@@ -171,7 +180,11 @@ export class RRStatsViewComponent implements OnInit {
       return;
     }
     this.selectedSeating.set('all');
-    await Promise.all([this.loadVehicles(), this.loadBookings(), this.loadStats()]);
+    await Promise.all([
+      this.loadVehicles(),
+      this.loadBookings(),
+      this.loadStats(),
+    ]);
     this.activeCategory.set(category);
   }
 
@@ -234,7 +247,9 @@ export class RRStatsViewComponent implements OnInit {
       case 'maintenance':
         return this.getVehicleCount('maintenance');
       case 'payments':
-        return this.bookings().filter((b) => b.status === 'active' && Number(b.pendingAmount) > 0).length;
+        return this.bookings().filter(
+          (b) => b.status === 'active' && Number(b.pendingAmount) > 0,
+        ).length;
       default:
         return 0;
     }
@@ -242,7 +257,12 @@ export class RRStatsViewComponent implements OnInit {
 
   get isVehicleCategory(): boolean {
     const cat = this.activeCategory();
-    return cat === 'fleet' || cat === 'available' || cat === 'contract' || cat === 'maintenance';
+    return (
+      cat === 'fleet' ||
+      cat === 'available' ||
+      cat === 'contract' ||
+      cat === 'maintenance'
+    );
   }
 
   get isBookingCategory(): boolean {
@@ -259,7 +279,9 @@ export class RRStatsViewComponent implements OnInit {
       return this.vehicles().filter((v) => v.status === 'available');
     }
     if (cat === 'contract') {
-      return this.vehicles().filter((v) => v.status === 'contract' || v.status === 'in_contract');
+      return this.vehicles().filter(
+        (v) => v.status === 'contract' || v.status === 'in_contract',
+      );
     }
     if (cat === 'maintenance') {
       return this.vehicles().filter((v) => v.status === 'maintenance');
@@ -280,7 +302,9 @@ export class RRStatsViewComponent implements OnInit {
       return this.bookings().filter((b) => b.status === 'active');
     }
     if (this.activeCategory() === 'payments') {
-      return this.bookings().filter((b) => b.status === 'active' && Number(b.pendingAmount) > 0);
+      return this.bookings().filter(
+        (b) => b.status === 'active' && Number(b.pendingAmount) > 0,
+      );
     }
     return [];
   }
@@ -395,5 +419,3 @@ export class RRStatsViewComponent implements OnInit {
     this.modifyBooking(b, event);
   }
 }
-
-
