@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -32,7 +32,7 @@ import { HlmToggleGroupImports } from '@spartan-ng/hel/toggle-group';
 import { HlmEmptyImports } from '@spartan-ng/hel/empty';
 import { toast } from '@spartan-ng/hel/sonner';
 import { IVehicle } from '@portfolio/shared-types';
-import { RRVehicleCardComponent } from '../../shared';
+import { RRVehicleCardComponent, RRCarLoaderComponent } from '../../shared';
 
 @Component({
   selector: 'app-rr-homepage',
@@ -49,6 +49,7 @@ import { RRVehicleCardComponent } from '../../shared';
     HlmEmptyImports,
     NgIconComponent,
     RRVehicleCardComponent,
+    RRCarLoaderComponent,
   ],
   providers: [
     provideIcons({
@@ -75,7 +76,7 @@ import { RRVehicleCardComponent } from '../../shared';
   templateUrl: './homepage.component.html',
   styleUrl: './homepage.component.scss',
 })
-export class RRHomepageComponent implements OnInit {
+export class RRHomepageComponent implements OnInit, OnDestroy {
   private rrApi = inject(RRApiService);
   private router = inject(Router);
 
@@ -86,6 +87,13 @@ export class RRHomepageComponent implements OnInit {
   searchQuery = signal<string>('');
   selectedVehicleForModal = signal<IVehicle | null>(null);
   inquirySubmitted = signal<boolean>(false);
+
+  // Car Loading State Signals
+  isPageLoading = signal<boolean>(true);
+  isLoaderExiting = signal<boolean>(false);
+  loadingProgress = signal<number>(14);
+  loadingStatus = signal<string>('Igniting engines...');
+  private loaderTimers: ReturnType<typeof setTimeout>[] = [];
 
   // Inquiry form fields
   inquiryName = '';
@@ -130,7 +138,64 @@ export class RRHomepageComponent implements OnInit {
   currentUser = computed(() => this.rrApi.currentUser());
 
   ngOnInit() {
+    this.startCarLoaderSequence();
     this.loadVehicles();
+  }
+
+  ngOnDestroy() {
+    this.clearLoaderTimers();
+  }
+
+  private clearLoaderTimers() {
+    this.loaderTimers.forEach((t) => clearTimeout(t));
+    this.loaderTimers = [];
+  }
+
+  private startCarLoaderSequence() {
+    this.loaderTimers.push(
+      setTimeout(() => {
+        this.loadingProgress.set(38);
+        this.loadingStatus.set('Calibrating fleet telemetry...');
+      }, 350)
+    );
+
+    this.loaderTimers.push(
+      setTimeout(() => {
+        this.loadingProgress.set(74);
+        this.loadingStatus.set('Syncing RoadReady fleet...');
+      }, 800)
+    );
+
+    this.loaderTimers.push(
+      setTimeout(() => {
+        this.loadingProgress.set(100);
+        this.loadingStatus.set('Engines ready! Welcome aboard.');
+      }, 1250)
+    );
+
+    // Trigger smooth fade-out
+    this.loaderTimers.push(
+      setTimeout(() => {
+        this.isLoaderExiting.set(true);
+      }, 1550)
+    );
+
+    // Cleanly unmount from DOM after transition finishes
+    this.loaderTimers.push(
+      setTimeout(() => {
+        this.isPageLoading.set(false);
+      }, 2150)
+    );
+  }
+
+  skipLoading() {
+    this.clearLoaderTimers();
+    this.loadingProgress.set(100);
+    this.loadingStatus.set('Welcome!');
+    this.isLoaderExiting.set(true);
+    setTimeout(() => {
+      this.isPageLoading.set(false);
+    }, 400);
   }
 
   async loadVehicles() {

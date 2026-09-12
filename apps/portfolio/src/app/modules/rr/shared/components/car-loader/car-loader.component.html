@@ -1,0 +1,276 @@
+<div class="rr-loader-backdrop" [class.exit-fade]="isExiting">
+  <!-- Atmospheric Glow Backdrop -->
+  <div class="loader-ambient-glow"></div>
+
+  <div class="loader-content">
+    <!-- Brand / System Pill -->
+    <div class="loader-badge">
+      <span class="pulse-dot"></span>
+      <span class="badge-text">ROADREADY FLEET COMMAND</span>
+    </div>
+
+    <!-- Animated Car Stage -->
+    <div class="car-stage">
+      <!-- Speed Streaks in Background -->
+      <div class="speed-streaks">
+        <span class="streak streak-1"></span>
+        <span class="streak streak-2"></span>
+        <span class="streak streak-3"></span>
+        <span class="streak streak-4"></span>
+        <span class="streak streak-5"></span>
+      </div>
+
+      <!-- Car SVG Vector with Suspension Bobbing -->
+      <div class="car-suspension-container">
+        <svg
+          class="car-svg"
+          viewBox="0 0 400 160"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <defs>
+            <!-- Car Body Gradient -->
+            <linearGradient id="chassisGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#0f172a" />
+              <stop offset="45%" stop-color="#1e293b" />
+              <stop offset="85%" stop-color="#090d16" />
+            </linearGradient>
+
+            <!-- Neon Cyan Accent Gradient -->
+            <linearGradient id="neonAccentGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#06b6d4" />
+              <stop offset="50%" stop-color="#38bdf8" />
+              <stop offset="100%" stop-color="#22d3ee" />
+            </linearGradient>
+
+            <!-- Window Glass Gradient -->
+            <linearGradient id="glassGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.75" />
+              <stop offset="70%" stop-color="#0284c7" stop-opacity="0.4" />
+              <stop offset="100%" stop-color="#0369a1" stop-opacity="0.15" />
+            </linearGradient>
+
+            <!-- Headlight Cone Light Projection -->
+            <linearGradient id="headlightBeam" x1="0%" y1="50%" x2="100%" y2="50%">
+              <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.7" />
+              <stop offset="25%" stop-color="#22d3ee" stop-opacity="0.35" />
+              <stop offset="70%" stop-color="#06b6d4" stop-opacity="0.12" />
+              <stop offset="100%" stop-color="#06b6d4" stop-opacity="0" />
+            </linearGradient>
+
+            <!-- Rim Glow Filter -->
+            <filter id="cyanGlow" x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur stdDeviation="3" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+
+            <filter id="intenseGlow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="5" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+
+          <!-- Headlight Projector Beam -->
+          <polygon
+            points="328,95 400,68 400,136 328,106"
+            fill="url(#headlightBeam)"
+            class="headlight-beam"
+          />
+
+          <!-- Car Ground Shadow -->
+          <ellipse
+            cx="185"
+            cy="134"
+            rx="145"
+            ry="9"
+            fill="#020617"
+            opacity="0.75"
+            class="car-shadow"
+          />
+
+          <!-- Turbo / Exhaust Heat Flare -->
+          <circle cx="34" cy="108" r="5" fill="#f43f5e" filter="url(#intenseGlow)" class="exhaust-flame" />
+          <ellipse cx="24" cy="108" rx="8" ry="3" fill="#fb923c" opacity="0.8" class="exhaust-smoke" />
+
+          <!-- Main Car Body Group -->
+          <g class="car-chassis">
+            <!-- Aero Rear Wing / Spoiler -->
+            <path
+              d="M 32 76 L 50 76 L 46 84 L 30 84 Z"
+              fill="#06b6d4"
+              filter="url(#cyanGlow)"
+            />
+            <path
+              d="M 38 84 L 42 98 L 46 98 L 44 84 Z"
+              fill="#1e293b"
+            />
+
+            <!-- Body Base Silhouette -->
+            <path
+              d="M 40 102
+                 C 40 95, 55 92, 75 90
+                 C 90 88, 115 64, 140 56
+                 C 170 48, 225 48, 248 58
+                 C 265 66, 290 84, 315 88
+                 C 328 90, 338 96, 338 104
+                 C 338 112, 332 118, 320 120
+                 L 294 120
+                 A 24 24 0 0 0 246 120
+                 L 119 120
+                 A 24 24 0 0 0 71 120
+                 L 46 120
+                 C 40 118, 40 108, 40 102 Z"
+              fill="url(#chassisGrad)"
+              stroke="#334155"
+              stroke-width="1.5"
+            />
+
+            <!-- Aerodynamic Side Contours & Door Panel -->
+            <path
+              d="M 125 90
+                 C 165 88, 220 88, 260 92
+                 L 255 112
+                 C 215 110, 160 110, 120 112 Z"
+              fill="#111827"
+              opacity="0.85"
+            />
+
+            <!-- Neon Cyan Racing Shoulder Line -->
+            <path
+              d="M 52 94
+                 C 95 91, 195 89, 265 92
+                 C 285 93, 310 97, 326 98"
+              fill="none"
+              stroke="url(#neonAccentGrad)"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              filter="url(#cyanGlow)"
+            />
+
+            <!-- Cabin Glass Windows -->
+            <path
+              d="M 142 60
+                 C 165 53, 215 53, 238 60
+                 C 252 66, 268 78, 280 84
+                 L 135 84
+                 C 137 76, 139 67, 142 60 Z"
+              fill="url(#glassGrad)"
+              stroke="#0284c7"
+              stroke-width="1"
+            />
+
+            <!-- Window Pillar Separator -->
+            <line x1="205" y1="55" x2="202" y2="84" stroke="#0f172a" stroke-width="3" />
+
+            <!-- Side Mirror -->
+            <polygon points="236,78 248,78 245,84 233,83" fill="#06b6d4" filter="url(#cyanGlow)" />
+
+            <!-- Front Headlight Projector Flare -->
+            <polygon
+              points="322,94 332,97 328,102 318,99"
+              fill="#38bdf8"
+              filter="url(#intenseGlow)"
+              class="headlight-flare"
+            />
+
+            <!-- Rear Taillight Glow Line -->
+            <path
+              d="M 40 97 L 48 97 L 46 102 L 40 102 Z"
+              fill="#f43f5e"
+              filter="url(#intenseGlow)"
+              class="taillight"
+            />
+
+            <!-- Front Lower Splitter & Rear Diffuser -->
+            <path d="M 318 122 L 336 122 L 334 125 L 315 125 Z" fill="#06b6d4" filter="url(#cyanGlow)" />
+            <path d="M 38 122 L 52 122 L 50 125 L 36 125 Z" fill="#06b6d4" />
+          </g>
+
+          <!-- WHEEL 1: REAR WHEEL (Center at 95, 120) -->
+          <g class="wheel rear-wheel" style="transform-origin: 95px 120px;">
+            <!-- Outer Tire -->
+            <circle cx="95" cy="120" r="21" fill="#090d16" stroke="#1e293b" stroke-width="2" />
+            <circle cx="95" cy="120" r="16" fill="#0f172a" stroke="#06b6d4" stroke-width="1.5" stroke-dasharray="4,2" />
+            <!-- Glowing Brake Caliper -->
+            <path d="M 90 106 A 14 14 0 0 1 106 112" fill="none" stroke="#22d3ee" stroke-width="3.5" stroke-linecap="round" />
+            <!-- Alloy Rim Spokes -->
+            <line x1="95" y1="104" x2="95" y2="136" stroke="#38bdf8" stroke-width="2" />
+            <line x1="81" y1="112" x2="109" y2="128" stroke="#38bdf8" stroke-width="2" />
+            <line x1="81" y1="128" x2="109" y2="112" stroke="#38bdf8" stroke-width="2" />
+            <!-- Center Cap -->
+            <circle cx="95" cy="120" r="4.5" fill="#06b6d4" filter="url(#cyanGlow)" />
+          </g>
+
+          <!-- WHEEL 2: FRONT WHEEL (Center at 270, 120) -->
+          <g class="wheel front-wheel" style="transform-origin: 270px 120px;">
+            <!-- Outer Tire -->
+            <circle cx="270" cy="120" r="21" fill="#090d16" stroke="#1e293b" stroke-width="2" />
+            <circle cx="270" cy="120" r="16" fill="#0f172a" stroke="#06b6d4" stroke-width="1.5" stroke-dasharray="4,2" />
+            <!-- Glowing Brake Caliper -->
+            <path d="M 265 106 A 14 14 0 0 1 281 112" fill="none" stroke="#22d3ee" stroke-width="3.5" stroke-linecap="round" />
+            <!-- Alloy Rim Spokes -->
+            <line x1="270" y1="104" x2="270" y2="136" stroke="#38bdf8" stroke-width="2" />
+            <line x1="256" y1="112" x2="284" y2="128" stroke="#38bdf8" stroke-width="2" />
+            <line x1="256" y1="128" x2="284" y2="112" stroke="#38bdf8" stroke-width="2" />
+            <!-- Center Cap -->
+            <circle cx="270" cy="120" r="4.5" fill="#06b6d4" filter="url(#cyanGlow)" />
+          </g>
+        </svg>
+      </div>
+
+      <!-- High-Speed Endless Road -->
+      <div class="speed-road">
+        <div class="road-surface"></div>
+        <div class="road-lane-stripes">
+          <span class="stripe"></span>
+          <span class="stripe"></span>
+          <span class="stripe"></span>
+          <span class="stripe"></span>
+          <span class="stripe"></span>
+          <span class="stripe"></span>
+          <span class="stripe"></span>
+          <span class="stripe"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Telemetry Status & Progress Section -->
+    <div class="telemetry-box">
+      <div class="telemetry-header">
+        <span class="telemetry-status">{{ statusText }}</span>
+        <span class="telemetry-pct">{{ progress }}%</span>
+      </div>
+
+      <!-- High-Tech Neon Progress Bar -->
+      <div class="progress-track">
+        <div
+          class="progress-fill"
+          [style.width.%]="progress"
+        >
+          <span class="progress-glow-head"></span>
+        </div>
+      </div>
+
+      <!-- Fleet Stats Badges -->
+      <div class="telemetry-footer">
+        <div class="stat-item">
+          <span class="stat-label">STATUS</span>
+          <span class="stat-val text-cyan-400">OPTIMAL</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">FLEET SYNC</span>
+          <span class="stat-val text-emerald-400">READY</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">SPEED</span>
+          <span class="stat-val text-blue-400">TURBO</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

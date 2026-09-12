@@ -1,4 +1,14 @@
 <div class="rr-wrapper">
+  <!-- Animated Car Loader Screen -->
+  @if (isPageLoading()) {
+    <app-rr-car-loader
+      [progress]="loadingProgress()"
+      [statusText]="loadingStatus()"
+      [isExiting]="isLoaderExiting()"
+      (skip)="skipLoading()"
+    />
+  }
+
   <!-- Glow Bubbles -->
   <div class="glow-bubble glow-bubble-1"></div>
   <div class="glow-bubble glow-bubble-2"></div>
