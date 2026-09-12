@@ -1,11 +1,14 @@
 import { Injectable } from '@angular/core';
 import jsPDF from 'jspdf';
-import * as QRCode from 'qrcode';
 
 export function formatToIndianDate(dateStr: string): string {
-  if (!dateStr || dateStr === '____' || dateStr === 'N/A') return dateStr;
+  if (!dateStr || dateStr === '________' || dateStr === 'N/A') return dateStr;
 
-  const separator = dateStr.includes('T') ? 'T' : dateStr.includes(' ') ? ' ' : null;
+  const separator = dateStr.includes('T')
+    ? 'T'
+    : dateStr.includes(' ')
+      ? ' '
+      : null;
   if (separator) {
     const parts = dateStr.split(separator);
     const datePart = parts[0];
@@ -36,39 +39,71 @@ export class RRInvoicePdfService {
     const id = b.id || 'DRAFT';
     const renterFirstName = b.renterFirstName || '';
     const renterSecondName = b.renterSecondName || '';
-    const renterFatherName = b.renterFatherName || '____';
-    const renterAddress = b.renterAddress || '____';
-    const renterPhone = b.renterPhone || '____';
-    const renterAltPhone = b.renterAltPhone || '-';
-    const renterAadhar = b.renterAadhar || '____';
-    const renterDL = b.renterDL || '____';
+    const renterFatherName = b.renterFatherName || '________';
+    const renterAddress = b.renterAddress || '________';
+    const renterPhone = b.renterPhone || '________';
+    const renterAltPhone =
+      b.renterAltPhone &&
+      b.renterAltPhone !== '-' &&
+      b.renterAltPhone !== '________'
+        ? b.renterAltPhone
+        : '';
+    const renterAadhar = b.renterAadhar || '________';
+    const renterDL = b.renterDL || '________';
 
-    const vehicleRegNo = b.vehicleRegNo || '____';
-    const vehicleName = b.vehicleName || '____';
-    const vehicleOdometerStart = b.vehicleOdometerStart || '____';
+    const vehicleRegNo = b.vehicleRegNo || '________';
+    const vehicleName = b.vehicleName || '';
+    const vehicleManufacturer = b.vehicleManufacturer || '';
+    const vehicleModel = b.vehicleModel || '';
 
-    const rawPickupDateTime = b.pickupDateTime || '____';
-    const rawReturnDateTime = b.returnDateTime || '____';
-    const pickupDateTime = formatToIndianDate(rawPickupDateTime);
-    const returnDateTime = formatToIndianDate(rawReturnDateTime);
-    const travelFrom = b.travelFrom || '____';
-    const travelTo = b.travelTo || '____';
+    let vehicleModelDisplay = '________';
+    if (vehicleManufacturer && vehicleName && vehicleModel) {
+      vehicleModelDisplay = `${vehicleManufacturer} - ${vehicleName} (${vehicleModel})`;
+    } else if (vehicleManufacturer && vehicleName) {
+      vehicleModelDisplay = `${vehicleManufacturer} - ${vehicleName}`;
+    } else if (vehicleName && vehicleModel) {
+      vehicleModelDisplay = `${vehicleName} (${vehicleModel})`;
+    } else if (vehicleName) {
+      vehicleModelDisplay = vehicleName;
+    } else if (vehicleModel) {
+      vehicleModelDisplay = vehicleModel;
+    }
 
-    const extraHourPrice = b.extraHourPrice || '____';
-    const extraKmPrice = b.extraKmPrice || '____';
+    const vehicleOdometerStart =
+      b.vehicleOdometerStart !== undefined &&
+      b.vehicleOdometerStart !== null &&
+      b.vehicleOdometerStart !== ''
+        ? String(b.vehicleOdometerStart).trim()
+        : '________';
+    const vehicleOdometerEnd =
+      b.vehicleOdometerEnd !== undefined &&
+      b.vehicleOdometerEnd !== null &&
+      b.vehicleOdometerEnd !== ''
+        ? String(b.vehicleOdometerEnd).trim()
+        : '';
+
+    const rawPickupDateTime = b.pickupDateTime || '________';
+    const rawReturnDateTime = b.returnDateTime || '________';
+    const travelFrom = b.travelFrom || '________';
+    const travelTo = b.travelTo || '________';
+
+    const extraHourPrice = b.extraHourPrice || '500';
+    const extraKmPrice = b.extraKmPrice || '8';
 
     // Use finalRentalAmount if present, else totalRentalAmount
     const rentalAmountVal =
-      b.finalRentalAmount !== undefined && b.finalRentalAmount !== null
+      b.finalRentalAmount !== undefined &&
+      b.finalRentalAmount !== null &&
+      b.finalRentalAmount !== ''
         ? b.finalRentalAmount
-        : b.totalRentalAmount || '____';
+        : b.totalRentalAmount || '________';
 
-    const paymentMode = b.paymentMode || '____';
+    const paymentMode = b.paymentMode || '________';
 
     const guarFirstName = b.guarFirstName || '';
     const guarSecondName = b.guarSecondName || '';
-    const guarFatherName = b.guarFatherName || '____';
-    const guarAddress = b.guarAddress || '____';
+    const guarFatherName = b.guarFatherName || '________';
+    const guarAddress = b.guarAddress || '________';
 
     const depositType = b.depositType || 'none';
 
@@ -80,40 +115,24 @@ export class RRInvoicePdfService {
     let y = 15;
     const pageWidth = doc.internal.pageSize.getWidth();
 
-    try {
-      const qrData = JSON.stringify({
-        bookingId: id,
-        vehicle: vehicleRegNo,
-        renter: `${renterFirstName} ${renterSecondName}`.trim(),
-        phone: renterPhone,
-        pickup: pickupDateTime,
-        return: returnDateTime,
-        amount: rentalAmountVal,
-      });
-      const qrCodeUrl = await QRCode.toDataURL(qrData, { width: 100, margin: 1 });
-      doc.addImage(qrCodeUrl, 'PNG', pageWidth - 35, 8, 24, 24);
-    } catch (e) {
-      console.warn('QR code generation for PDF skipped:', e);
-    }
-
-    doc.setFontSize(18);
+    doc.setFontSize(16);
     doc.setFont('Helvetica', 'bold');
     const title1 = "RAM & RAM'S CAR RENTALS";
     doc.text(title1, (pageWidth - doc.getTextWidth(title1)) / 2, y);
-    y += 7;
+    y += 6.5;
 
-    doc.setFontSize(15);
-    const title2 = 'RENTAL AGREEMENT';
+    doc.setFontSize(13);
+    const title2 = 'AGREEMENT';
     doc.text(title2, (pageWidth - doc.getTextWidth(title2)) / 2, y);
-    y += 10;
+    y += 9;
 
-    doc.setFontSize(12);
+    doc.setFontSize(11);
     doc.setFont('Helvetica', 'bold');
     doc.text('Renter Person Details:', 15, y);
     doc.text('Rented Vehicle Details:', 115, y);
-    y += 7;
+    y += 6;
 
-    doc.setFontSize(11);
+    doc.setFontSize(10);
     doc.setFont('Helvetica', 'normal');
 
     const leftX = 15;
@@ -121,42 +140,65 @@ export class RRInvoicePdfService {
 
     let depositValue = 'None';
     if (depositType === 'bike') {
-      depositValue = `${b.bikeManufacturer || ''} - ${b.bikeModel || ''} (${b.bikeRegNo || ''})`;
+      const bikeDetails = [b.bikeManufacturer, b.bikeModel]
+        .filter(Boolean)
+        .join(' - ');
+      depositValue =
+        `${bikeDetails}${b.bikeRegNo ? ` (${b.bikeRegNo})` : ''}` || 'None';
     } else if (depositType === 'cash') {
       depositValue = `Rs. ${b.cashAmount || ''}`;
     } else if (depositType === 'other') {
       depositValue = `${b.otherItemName || ''} - Rs. ${b.otherItemValue || ''}`;
     }
 
-    const renterPairs = [
+    const odoStartFormatted =
+      vehicleOdometerStart && vehicleOdometerStart !== '________'
+        ? String(vehicleOdometerStart).endsWith('kms')
+          ? String(vehicleOdometerStart)
+          : `${vehicleOdometerStart} kms`
+        : '________';
+
+    const odoEndFormatted =
+      vehicleOdometerEnd && vehicleOdometerEnd !== '________'
+        ? String(vehicleOdometerEnd).endsWith('kms')
+          ? String(vehicleOdometerEnd)
+          : `${vehicleOdometerEnd} kms`
+        : '';
+
+    const renterPairs: [string, string, string, string][] = [
       [
         'Name',
-        (renterFirstName + ' ' + renterSecondName).trim() || '____',
-        'Vehicle Reg No',
+        (renterFirstName + ' ' + renterSecondName).trim() || '________',
+        'Vehicle Registered Number',
         vehicleRegNo,
       ],
-      ['Father Name', renterFatherName, 'Vehicle Model', vehicleName],
+      ['Father Name', renterFatherName, 'Vehicle Model', vehicleModelDisplay],
       [
-        'Alternate Phone',
+        'Alternate Contact Number',
         renterAltPhone,
-        'Pickup Date & Time',
-        pickupDateTime,
+        'Vehicle Pickup Date & Time',
+        rawPickupDateTime,
       ],
       [
         'Aadhar Number',
         renterAadhar,
-        'Odometer Reading',
-        vehicleOdometerStart,
+        'Odometer Reading - Pickup',
+        odoStartFormatted,
       ],
-      ['Driving License', renterDL, 'Return Date & Time', returnDateTime],
+      [
+        'Driving License Number',
+        renterDL,
+        'Vehicle Return Date & Time',
+        rawReturnDateTime,
+      ],
       [
         'Contact Number',
         renterPhone,
-        'Rental Amount',
-        `Rs. ${rentalAmountVal}`,
+        'Odometer Reading - Return',
+        odoEndFormatted,
       ],
-      ['Address', renterAddress, 'Security Deposit', depositValue],
-      ['Payment Mode', paymentMode, '', ''],
+      ['Address', renterAddress, 'Rental Amount', `${rentalAmountVal}`],
+      ['Security Deposit', depositValue, 'Payment Mode', paymentMode],
     ];
 
     renterPairs.forEach(([label1, val1, label2, val2]) => {
@@ -164,48 +206,60 @@ export class RRInvoicePdfService {
       const rightText = label2 ? `${label2}: ${val2}` : '';
 
       const leftWrapped = doc.splitTextToSize(leftText, 95);
-      const rightWrapped = doc.splitTextToSize(rightText, 95);
+      const rightWrapped = doc.splitTextToSize(rightText, 90);
       const lineCount = Math.max(leftWrapped.length, rightWrapped.length);
 
       for (let i = 0; i < lineCount; i++) {
         if (leftWrapped[i]) doc.text(leftWrapped[i], leftX, y);
         if (rightWrapped[i]) doc.text(rightWrapped[i], rightX, y);
-        y += 5.5;
+        y += 5.2;
       }
     });
 
-    y += 5;
-
-    doc.setFontSize(12);
-    doc.setFont('Helvetica', 'bold');
-    doc.text('Guarantee Person Details:', 15, y);
-    y += 7;
+    y += 4;
 
     doc.setFontSize(11);
+    doc.setFont('Helvetica', 'bold');
+    doc.text('Guarantee Person Details:', 15, y);
+    y += 6;
+
+    doc.setFontSize(10);
     doc.setFont('Helvetica', 'normal');
     doc.text(
-      `Name: ${(guarFirstName + ' ' + guarSecondName).trim() || '____'}`,
+      `Name: ${(guarFirstName + ' ' + guarSecondName).trim() || '________'}`,
       leftX,
       y,
     );
     doc.text(`Father Name: ${guarFatherName}`, rightX, y);
-    y += 5.5;
-    doc.text(`Address: ${guarAddress}`, 15, y);
-    y += 10;
+    y += 5.2;
+
+    const guarAddressText = `Address: ${guarAddress}`;
+    const guarAddressWrapped = doc.splitTextToSize(guarAddressText, 185);
+    guarAddressWrapped.forEach((line: string) => {
+      doc.text(line, leftX, y);
+      y += 5.2;
+    });
+
+    y += 5;
 
     const pickupDate =
-      rawPickupDateTime !== '____'
-        ? formatToIndianDate(rawPickupDateTime.split('T')[0])
-        : '____';
+      rawPickupDateTime !== '________'
+        ? rawPickupDateTime.includes('T')
+          ? rawPickupDateTime.split('T')[0]
+          : rawPickupDateTime.split(' ')[0]
+        : '________';
     const returnDate =
-      rawReturnDateTime !== '____'
-        ? formatToIndianDate(rawReturnDateTime.split('T')[0])
-        : '____';
-    const fullParagraph = `For my (Renter) need I hired your above-mentioned Vehicle for Self-Drive/Driver Assisted Car/Vehicle bearing registration number ${vehicleRegNo} from Dt. ${pickupDate} To Dt. ${returnDate} to travel from ${travelFrom} to ${travelTo}.`;
+      rawReturnDateTime !== '________'
+        ? rawReturnDateTime.includes('T')
+          ? rawReturnDateTime.split('T')[0]
+          : rawReturnDateTime.split(' ')[0]
+        : '________';
+
+    const fullParagraph = `For my (Renter) need I hired your above-mentioned Vehicle for Self-Drive/Driver Assisted Car/Vehicle with bearing registered number ${vehicleRegNo} from Dt. ${pickupDate} To Dt. ${returnDate} to travel from ${travelFrom} to ${travelTo}.`;
 
     doc.text(fullParagraph, 15, y, { maxWidth: 185, lineHeightFactor: 1.35 });
     const splitParagraph = doc.splitTextToSize(fullParagraph, 185);
-    y += splitParagraph.length * 5.5 + 4;
+    y += splitParagraph.length * 5.2 + 3.5;
 
     const paraRest =
       'On my own assurance I will use the above-mentioned vehicle, I shall not use the vehicle for any illegal activities and also solely responsible for causing accidents or causing any damage to the vehicle. ' +
@@ -215,15 +269,22 @@ export class RRInvoicePdfService {
 
     doc.text(paraRest, 15, y, { maxWidth: 185, lineHeightFactor: 1.35 });
     const splitRest = doc.splitTextToSize(paraRest, 185);
-    y += splitRest.length * 5.5 + 8;
+    y += splitRest.length * 5.2 + 5.5;
 
-    doc.setFontSize(12);
+    doc.setFontSize(11);
     doc.setFont('Helvetica', 'bold');
     doc.text('Terms & Conditions:', 15, y);
-    y += 7;
+    y += 5.5;
 
     doc.setFontSize(10);
     doc.setFont('Helvetica', 'normal');
+    doc.text(
+      'I Agree and abide the following Terms & Conditions and completely responsible for the following,',
+      15,
+      y,
+    );
+    y += 5.2;
+
     const terms = [
       'No Insurance is claimed or paid, in case of any damage to vehicle I (Renter) bear the complete amount.',
       'I (Renter) is/am responsible for Half Clutch Failure.',
@@ -231,37 +292,59 @@ export class RRInvoicePdfService {
       'I (Renter) agree that I am responsible for any Criminal / Legal Police Charges / Cases during rental period.',
       'I (Renter) agree to pay rent everyday if any damage to the vehicle untill the completion of the repair/damage.',
       'I (Renter) agree that Half-day booking must be done before 9AM and should be returned by 9PM same-day.',
-      'Wrong Fuel: I take full responsibility for any engine failures due to wrong fuel type filled in the vehicle.',
+      'I (Renter) is/am solely responsible to check/know whick type of fuel to be filled in the vehicle at the time of Pre-agreement documentation, in case of any Engine failure due to wrong fuel filled in the vehicle, I (Renter) will take the complete responsibility of the damage occured to the vehicle.',
     ];
 
     terms.forEach((t) => {
-      doc.text('• ' + t, 18, y, { maxWidth: 185, lineHeightFactor: 1.35 });
-      const splitT = doc.splitTextToSize('• ' + t, 185);
-      y += splitT.length * 5.5;
+      const itemText = '• ' + t;
+      doc.text(itemText, 18, y, { maxWidth: 182, lineHeightFactor: 1.3 });
+      const splitT = doc.splitTextToSize(itemText, 182);
+      y += splitT.length * 5.0;
     });
 
-    y += 5;
+    y += 4;
 
     doc.setFontSize(11);
     doc.setFont('Helvetica', 'bold');
-    doc.text('Extra Fee Charged Slabs:', 15, y);
-    y += 6;
+    doc.text('Important Notice & Extra Fee Charged:', 15, y);
+    y += 5.5;
 
+    doc.setFontSize(10);
     doc.setFont('Helvetica', 'normal');
-    doc.text(`• Late Return Fee: Rs. ${extraHourPrice}/- per hour`, 18, y);
-    y += 5.5;
-    doc.text(`• Extra Kilometer Fee: Rs. ${extraKmPrice}/- per km`, 18, y);
-    y += 5.5;
-    doc.text(
-      `• Cleanliness Fee: Rs. 500 to Rs. 1000 in case of dirty vehicle returns`,
-      18,
-      y,
-    );
-    y += 10;
 
-    const yy = doc.internal.pageSize.getHeight() - 25;
-    doc.text('Renter Signature: _______________________', 15, yy);
-    doc.text('Authorized Representative: _______________________', 115, yy);
+    const extraHourText = `• Late Fee: Rs.${extraHourPrice}/- per hour`;
+    const extraKmText = `• Extra Kilometer Fee: Rs.${extraKmPrice}/- per km`;
+
+    const feeBullets = [
+      '• Extension Fee: Extra Rs.1000/- per day + Rent Amount.',
+      extraHourText,
+      extraKmText,
+      '• Cleanliness Fee: Rs.500 to Rs.1000.',
+    ];
+
+    feeBullets.forEach((f) => {
+      doc.text(f, 18, y);
+      y += 5.0;
+    });
+
+    y += 5.5;
+
+    const declarations = [
+      'I agree to keep my bike or item as Security Deposit until the complete settlement of the Rent or any damage after returning the rented Vehicle/Car.',
+      'I have read all the Terms & conditions and Extra charges applied upon my rental of vehicle bearing above mentioned Registration number and aggreeing to this agreement.',
+      'I agree to the legal action you may take against me if I act contrary to the above terms and conditions.',
+      'I am signing this with my full consent.',
+    ];
+
+    declarations.forEach((d) => {
+      doc.text(d, 15, y, { maxWidth: 185, lineHeightFactor: 1.35 });
+      const splitD = doc.splitTextToSize(d, 185);
+      y += splitD.length * 5.0 + 2.5;
+    });
+
+    y += 12;
+
+    doc.text('Renter Signature', 130, y);
 
     doc.save(`Agreement_${id}.pdf`);
   }
