@@ -84,6 +84,13 @@ export type BookingStatus = 'active' | 'completed' | 'cancelled';
 export type DepositType = 'bike' | 'cash' | 'other' | 'none' | string;
 export type DiscountType = 'percentage' | 'rupee' | string;
 
+export interface IDamageItem {
+  id: string;
+  description: string;
+  amount: number;
+  confirmed?: boolean;
+}
+
 export interface IBooking {
   _id?: ObjectId | string;
   id: string; // Unique booking ID e.g. 'RRB001'
@@ -145,6 +152,23 @@ export interface IBooking {
   createdAt: string;
   endedAt?: string | null;
   activityLogs?: string[];
+
+  // End booking settlement fields
+  returnDateTimeActual?: string;
+  cleanlinessFee?: string;
+  extraKmsTravelled?: string;
+  extraKmFee?: string;
+  extraHoursTaken?: string;
+  extraHourFee?: string;
+  damages?: IDamageItem[];
+  damagesTotal?: string;
+  challanaAmount?: string;
+  tollAmount?: string;
+  finesAmount?: string;
+  challanaTollFinesTotal?: string;
+  nonIntimationFine?: string;
+  recalculateSlabMode?: boolean;
+  totalAdditionalFees?: string;
 }
 
 export interface ILog {

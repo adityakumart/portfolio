@@ -1,53 +1,1036 @@
-<div class="flex flex-col h-full max-h-[calc(90vh-3rem)] overflow-hidden bg-card text-foreground">
+<div
+  class="flex flex-col h-full max-h-[calc(92vh-2rem)] overflow-hidden bg-card text-foreground"
+>
   <!-- Fixed Header -->
-  <div class="shrink-0 flex items-center justify-between pb-3 border-b border-border">
-    <h3 class="text-lg font-bold flex items-center gap-2 text-foreground">
-      <ng-icon name="lucideCalendarX" class="text-primary text-xl"></ng-icon>
-      <span>Finalize & End Rental Booking - ID: {{ booking()?.id }}</span>
-    </h3>
-    <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 text-muted-foreground hover:text-foreground" (click)="closeDialog()" aria-label="Close dialog">
+  <div
+    class="shrink-0 flex items-center justify-between pb-3 border-b border-border"
+  >
+    <div class="flex items-center gap-2">
+      <div
+        class="h-9 w-9 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center border border-amber-500/20"
+      >
+        <ng-icon name="lucideCalendarX" class="text-xl"></ng-icon>
+      </div>
+      <div>
+        <h3 class="text-base font-bold text-foreground">
+          Finalize & End Rental Booking
+        </h3>
+        <p class="text-xs text-muted-foreground font-mono">
+          Booking ID:
+          <span class="font-semibold text-foreground">{{ booking()?.id }}</span>
+        </p>
+      </div>
+    </div>
+    <button
+      hlmBtn
+      size="icon"
+      variant="ghost"
+      class="h-8 w-8 text-muted-foreground hover:text-foreground"
+      (click)="closeDialog()"
+      aria-label="Close dialog"
+    >
       <ng-icon name="lucideX"></ng-icon>
     </button>
   </div>
 
   <!-- Scrollable Body -->
   <div class="flex-1 min-h-0 overflow-y-auto py-3 pr-1 space-y-4 text-xs">
-    <div class="p-3 rounded-xl border border-border bg-muted/20 space-y-1">
-      <p><strong>Active Vehicle:</strong> {{ booking()?.vehicleManufacturer }} {{ booking()?.vehicleName }} ({{ booking()?.vehicleRegNo }})</p>
-      <p><strong>Odometer Pickup Reading:</strong> {{ booking()?.vehicleOdometerStart }} KM</p>
+    <!-- Active Vehicle Information Bar -->
+    <div
+      class="p-3 rounded-xl border border-border bg-muted/20 flex flex-wrap items-center justify-between gap-2"
+    >
+      <div class="space-y-0.5">
+        <p class="font-semibold text-foreground text-sm">
+          {{ booking()?.vehicleManufacturer }} {{ booking()?.vehicleName }}
+          <span
+            class="ml-1 text-xs px-2 py-0.5 rounded bg-primary/10 text-primary font-mono font-medium"
+            >{{ booking()?.vehicleRegNo }}</span
+          >
+        </p>
+        <p class="text-xs text-muted-foreground">
+          Renter:
+          <span class="font-medium text-foreground"
+            >{{ booking()?.renterFirstName }}
+            {{ booking()?.renterSecondName }}</span
+          >
+          ({{ booking()?.renterPhone }})
+        </p>
+      </div>
+      <div class="flex items-center gap-3 text-right">
+        <div>
+          <span
+            class="text-[10px] text-muted-foreground uppercase block font-semibold"
+            >Pickup Odometer</span
+          >
+          <span class="font-mono font-bold text-foreground text-xs"
+            >{{ booking()?.vehicleOdometerStart }} KM</span
+          >
+        </div>
+        <div class="border-l border-border pl-3">
+          <span
+            class="text-[10px] text-muted-foreground uppercase block font-semibold"
+            >KM Limit</span
+          >
+          <span class="font-mono font-bold text-foreground text-xs"
+            >{{ booking()?.totalKmLimit }} KM</span
+          >
+        </div>
+        <div class="border-l border-border pl-3">
+          <span
+            class="text-[10px] text-muted-foreground uppercase block font-semibold"
+            >Booked Return</span
+          >
+          <span class="font-mono font-bold text-foreground text-xs">{{
+            booking()?.returnDateTime | date: 'short'
+          }}</span>
+        </div>
+      </div>
     </div>
 
-    <div>
-      <label hlmLabel class="text-xs text-muted-foreground block mb-1">Odometer Return Reading (KM) *</label>
-      <input hlmInput type="number" [(ngModel)]="endBookingFields.odometerEnd" (input)="calculateEndBookingFees()" class="w-full text-sm" placeholder="Enter final odometer" required />
+    <!-- Active Validation Scenario Status Badge -->
+    <div
+      class="p-2.5 rounded-lg border text-xs flex items-center justify-between gap-2"
+      [ngClass]="{
+        'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300':
+          activeScenario() === 'case1',
+        'bg-blue-500/10 border-blue-500/30 text-blue-700 dark:text-blue-300':
+          activeScenario() === 'case2',
+        'bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-300':
+          activeScenario() === 'case3',
+        'bg-purple-500/10 border-purple-500/30 text-purple-700 dark:text-purple-300':
+          activeScenario() === 'case4_1',
+        'bg-indigo-500/10 border-indigo-500/30 text-indigo-700 dark:text-indigo-300':
+          activeScenario() === 'case4_2',
+      }"
+    >
+      <div class="flex items-center gap-2">
+        <ng-icon name="lucideInfo" class="text-sm shrink-0"></ng-icon>
+        <div>
+          @if (activeScenario() === 'case1') {
+            <span class="font-bold">Case 1 Applied:</span> KMs & Hours are
+            within limit. Both Extra KMs [2] & Extra Hrs [3] are ₹0.
+          } @else if (activeScenario() === 'case2') {
+            <span class="font-bold">Case 2 Applied:</span> KMs exceeded &
+            returned within Hours. Extra Hrs [3] is ₹0.
+          } @else if (activeScenario() === 'case3') {
+            <span class="font-bold">Case 3 Applied:</span> Hours exceeded &
+            returned within KMs limit. Extra KMs [2] is ₹0.
+          } @else if (activeScenario() === 'case4_1') {
+            <span class="font-bold">Case 4.1 Applied:</span> Both KMs & Hours
+            exceeded (Standard mode: all charges added).
+          } @else if (activeScenario() === 'case4_2') {
+            <span class="font-bold">Case 4.2 Applied:</span> Extension / Slab
+            Recalculation Mode (New limit & renting price applied).
+          }
+        </div>
+      </div>
+      <span
+        class="text-[10px] font-mono uppercase px-2 py-0.5 rounded font-bold bg-background/50 border shrink-0"
+      >
+        {{ activeScenario().toUpperCase() }}
+      </span>
     </div>
 
-    <div>
-      <label class="flex items-center gap-2 cursor-pointer text-xs">
-        <input type="checkbox" [(ngModel)]="endBookingFields.cleanlinessFine" (change)="calculateEndBookingFees()" class="rounded accent-primary h-4 w-4" />
-        <span>Apply Cleanliness Maintenance Fine (Rs. 500)</span>
-      </label>
+    <!-- TOP SECTION: Final Odometer [A] & Return Date/Time [B] -->
+    <div
+      class="grid grid-cols-1 md:grid-cols-2 gap-3 p-3 rounded-xl border border-border bg-card"
+    >
+      <div>
+        <label
+          hlmLabel
+          class="text-xs font-semibold text-foreground flex items-center justify-between mb-1"
+        >
+          <span>Final Odometer Reading [A] (KM) *</span>
+          <span class="text-[11px] text-muted-foreground font-normal font-mono"
+            >Min: {{ booking()?.vehicleOdometerStart }} KM</span
+          >
+        </label>
+        <div class="relative">
+          <input
+            hlmInput
+            type="number"
+            [(ngModel)]="endBookingFields.odometerEnd"
+            (input)="calculateEndBookingFees()"
+            class="w-full text-sm pr-12 font-mono font-semibold"
+            placeholder="e.g. {{
+              (Number(booking()?.vehicleOdometerStart) || 0) + 150
+            }}"
+            required
+          />
+          <span
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground pointer-events-none"
+            >KM</span
+          >
+        </div>
+        @if (endBookingFields.actualDistanceDriven > 0) {
+          <p class="text-[11px] text-muted-foreground mt-1">
+            Distance Driven:
+            <strong class="text-foreground"
+              >{{ endBookingFields.actualDistanceDriven }} KM</strong
+            >
+            @if (endBookingFields.effectiveKmLimit > 0) {
+              (Limit: {{ endBookingFields.effectiveKmLimit }} KM)
+            }
+          </p>
+        }
+      </div>
+
+      <div>
+        <label
+          hlmLabel
+          class="text-xs font-semibold text-foreground flex items-center justify-between mb-1"
+        >
+          <span>Return Date and Time [B] *</span>
+          <span class="text-[11px] text-muted-foreground font-normal"
+            >Actual return</span
+          >
+        </label>
+        <input
+          hlmInput
+          type="datetime-local"
+          [(ngModel)]="endBookingFields.returnDateTimeActual"
+          (input)="calculateEndBookingFees()"
+          (change)="calculateEndBookingFees()"
+          class="w-full text-sm font-mono"
+          required
+        />
+        <p class="text-[11px] text-muted-foreground mt-1">
+          Scheduled:
+          <span class="font-medium text-foreground">{{
+            booking()?.returnDateTime | date: 'medium'
+          }}</span>
+        </p>
+      </div>
     </div>
 
-    <div class="p-4 rounded-xl border border-border bg-muted/10 space-y-1.5">
-      <p><strong>Extra Mileage Travelled:</strong> {{ endBookingFields.extraKms }} KM (Rate charge: Rs. {{ endBookingFields.extraKmFee }})</p>
-      <p><strong>Extra Return Delay:</strong> {{ endBookingFields.extraHours }} Hours (Rate charge: Rs. {{ endBookingFields.extraHourFee }})</p>
-      <p><strong>Original Agreement Rent:</strong> Rs. {{ booking()?.finalRentalAmount }}</p>
-      <p><strong>Total Overrun/Additional Fees:</strong> Rs. {{ endBookingFields.totalAdditionalFees }}</p>
-      <p><strong>Total Final Payable amount:</strong> Rs. {{ endBookingFields.finalTotalPayable }}</p>
-      <p class="text-emerald-600 font-bold"><strong>Advance Amount Paid:</strong> Rs. {{ booking()?.amountPaid }}</p>
-      <p class="text-sm pt-2 border-t border-border font-bold">
-        Net Balance Due: <span [class.text-destructive]="endBookingFields.balancePending > 0" [class.text-emerald-600]="endBookingFields.balancePending <= 0">Rs. {{ endBookingFields.balancePending }}</span>
+    <!-- SECTION 1: Cleanliness Fee/Charges -->
+    <div class="rounded-xl border border-amber-500/30 overflow-hidden bg-card">
+      <div
+        class="bg-amber-500/15 dark:bg-amber-500/20 border-b border-amber-500/30 px-3 py-2 flex items-center justify-between"
+      >
+        <h4
+          class="font-bold text-xs text-amber-900 dark:text-amber-200 uppercase tracking-wide flex items-center gap-1.5"
+        >
+          <ng-icon name="lucideSparkles" class="text-sm"></ng-icon>
+          <span>Cleanliness Fee/Charges</span>
+        </h4>
+        <span
+          class="font-mono font-bold text-xs text-amber-900 dark:text-amber-200"
+        >
+          Amount [1]: ₹{{ endBookingFields.cleanlinessFee }}
+        </span>
+      </div>
+      <div class="p-3 space-y-2">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <!-- None / 0 -->
+          <button
+            type="button"
+            (click)="setCleanlinessChoice('none')"
+            class="px-3 py-2 rounded-lg border text-left transition-all"
+            [ngClass]="
+              endBookingFields.cleanlinessChoice === 'none'
+                ? 'border-primary bg-primary/10 text-primary font-bold shadow-sm'
+                : 'border-border hover:bg-muted/40 text-foreground'
+            "
+          >
+            <div class="text-[10px] text-muted-foreground">
+              No Cleanliness Fee
+            </div>
+            <div class="text-xs">₹0/-</div>
+          </button>
+
+          <!-- 500 -->
+          <button
+            type="button"
+            (click)="setCleanlinessChoice('500')"
+            class="px-3 py-2 rounded-lg border text-left transition-all"
+            [ngClass]="
+              endBookingFields.cleanlinessChoice === '500'
+                ? 'border-primary bg-primary/10 text-primary font-bold shadow-sm'
+                : 'border-border hover:bg-muted/40 text-foreground'
+            "
+          >
+            <div class="text-[10px] text-muted-foreground">
+              Default Charge 1
+            </div>
+            <div class="text-xs">₹500/-</div>
+          </button>
+
+          <!-- 1000 -->
+          <button
+            type="button"
+            (click)="setCleanlinessChoice('1000')"
+            class="px-3 py-2 rounded-lg border text-left transition-all"
+            [ngClass]="
+              endBookingFields.cleanlinessChoice === '1000'
+                ? 'border-primary bg-primary/10 text-primary font-bold shadow-sm'
+                : 'border-border hover:bg-muted/40 text-foreground'
+            "
+          >
+            <div class="text-[10px] text-muted-foreground">
+              Default Charge 2
+            </div>
+            <div class="text-xs">₹1000/-</div>
+          </button>
+
+          <!-- Custom / Other -->
+          <button
+            type="button"
+            (click)="setCleanlinessChoice('custom')"
+            class="px-3 py-2 rounded-lg border text-left transition-all"
+            [ngClass]="
+              endBookingFields.cleanlinessChoice === 'custom'
+                ? 'border-primary bg-primary/10 text-primary font-bold shadow-sm'
+                : 'border-border hover:bg-muted/40 text-foreground'
+            "
+          >
+            <div class="text-[10px] text-muted-foreground">
+              (or) Other any amount
+            </div>
+            <div class="text-xs">Custom ₹</div>
+          </button>
+        </div>
+
+        @if (endBookingFields.cleanlinessChoice === 'custom') {
+          <div class="pt-2 border-t border-border/50 flex items-center gap-2">
+            <label class="text-xs text-muted-foreground whitespace-nowrap"
+              >Enter Custom Amount:</label
+            >
+            <div class="relative w-48">
+              <span
+                class="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-bold"
+                >₹</span
+              >
+              <input
+                hlmInput
+                type="number"
+                [(ngModel)]="endBookingFields.customCleanlinessAmount"
+                (input)="onCustomCleanlinessChange()"
+                class="w-full text-xs pl-6 font-mono font-bold"
+                placeholder="0"
+                min="0"
+              />
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- SECTION 2: Extra KM's & Hrs Charges -->
+    <div class="rounded-xl border border-amber-500/30 overflow-hidden bg-card">
+      <div
+        class="bg-amber-500/15 dark:bg-amber-500/20 border-b border-amber-500/30 px-3 py-2 flex items-center justify-between"
+      >
+        <h4
+          class="font-bold text-xs text-amber-900 dark:text-amber-200 uppercase tracking-wide flex items-center gap-1.5"
+        >
+          <ng-icon name="lucideGauge" class="text-sm"></ng-icon>
+          <span>Extra KM's & Hrs Charges</span>
+        </h4>
+        <div
+          class="flex items-center gap-3 font-mono font-bold text-xs text-amber-900 dark:text-amber-200"
+        >
+          <span>Total [2]: ₹{{ endBookingFields.extraKmFee }}</span>
+          <span>•</span>
+          <span>Total [3]: ₹{{ endBookingFields.extraHourFee }}</span>
+        </div>
+      </div>
+
+      <div class="p-3 space-y-3">
+        <!-- Rates Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div
+            class="flex items-center justify-between p-2 rounded-lg bg-muted/20 border border-border"
+          >
+            <div>
+              <span class="text-xs font-semibold text-foreground block"
+                >Charge for extra KMs [C]</span
+              >
+              <span class="text-[10px] text-muted-foreground"
+                >Rate per excess kilometer</span
+              >
+            </div>
+            <div class="flex items-center gap-1">
+              <span class="text-xs text-muted-foreground">₹</span>
+              <input
+                hlmInput
+                type="number"
+                [(ngModel)]="endBookingFields.extraKmRate"
+                (input)="calculateEndBookingFees()"
+                class="w-20 text-xs font-mono font-bold text-right py-1 h-8"
+                min="0"
+              />
+              <span class="text-[10px] text-muted-foreground">/km</span>
+            </div>
+          </div>
+
+          <div
+            class="flex items-center justify-between p-2 rounded-lg bg-muted/20 border border-border"
+          >
+            <div>
+              <span class="text-xs font-semibold text-foreground block"
+                >Charge for extra Hr [D]</span
+              >
+              <span class="text-[10px] text-muted-foreground"
+                >Rate per excess hour</span
+              >
+            </div>
+            <div class="flex items-center gap-1">
+              <span class="text-xs text-muted-foreground">₹</span>
+              <input
+                hlmInput
+                type="number"
+                [(ngModel)]="endBookingFields.extraHourRate"
+                (input)="calculateEndBookingFees()"
+                class="w-20 text-xs font-mono font-bold text-right py-1 h-8"
+                min="0"
+              />
+              <span class="text-[10px] text-muted-foreground">/hr</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Extra Calculations Breakdown Table -->
+        <div class="rounded-lg border border-border overflow-hidden">
+          <div
+            class="grid grid-cols-12 bg-muted/40 font-semibold p-2 border-b border-border text-[11px]"
+          >
+            <div class="col-span-4">Charge Category</div>
+            <div class="col-span-3 text-center">Travelled / Taken</div>
+            <div class="col-span-2 text-center">Rate</div>
+            <div class="col-span-3 text-right">Subtotal</div>
+          </div>
+
+          <!-- Extra KMs Row -->
+          <div
+            class="grid grid-cols-12 p-2.5 items-center border-b border-border/50 text-xs hover:bg-muted/10"
+          >
+            <div class="col-span-4 font-medium text-foreground">
+              Extra KMs travelled
+              @if (
+                activeScenario() === 'case1' || activeScenario() === 'case3'
+              ) {
+                <span class="text-[10px] text-emerald-600 block"
+                  >(Within Limit)</span
+                >
+              }
+            </div>
+            <div class="col-span-3 text-center font-mono font-semibold">
+              {{ endBookingFields.extraKms }} KM
+            </div>
+            <div class="col-span-2 text-center font-mono text-muted-foreground">
+              ₹{{ endBookingFields.extraKmRate }}
+            </div>
+            <div
+              class="col-span-3 text-right font-mono font-bold text-foreground"
+            >
+              A*C = Total [2]: ₹{{ endBookingFields.extraKmFee }}
+            </div>
+          </div>
+
+          <!-- Extra Hrs Row -->
+          <div
+            class="grid grid-cols-12 p-2.5 items-center text-xs hover:bg-muted/10"
+          >
+            <div class="col-span-4 font-medium text-foreground">
+              Extra Hrs taken
+              @if (
+                activeScenario() === 'case1' || activeScenario() === 'case2'
+              ) {
+                <span class="text-[10px] text-emerald-600 block"
+                  >(Within Limit)</span
+                >
+              }
+            </div>
+            <div class="col-span-3 text-center font-mono font-semibold">
+              {{ endBookingFields.extraHours }} Hours
+            </div>
+            <div class="col-span-2 text-center font-mono text-muted-foreground">
+              ₹{{ endBookingFields.extraHourRate }}
+            </div>
+            <div
+              class="col-span-3 text-right font-mono font-bold text-foreground"
+            >
+              B*D = Total [3]: ₹{{ endBookingFields.extraHourFee }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Case 4.2 Extension Option (When both KMs & Hours exceeded) -->
+        @if (activeScenario() === 'case4_1' || activeScenario() === 'case4_2') {
+          <div
+            class="p-3 rounded-xl border border-indigo-500/30 bg-indigo-500/5 space-y-2"
+          >
+            <div class="flex items-center justify-between">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="endBookingFields.recalculateSlabMode"
+                  (change)="calculateEndBookingFees()"
+                  class="rounded accent-indigo-600 h-4 w-4"
+                />
+                <span class="font-bold text-xs text-foreground">
+                  Case 4.2: Recalculate Extra KMs & Hrs via Vehicle Slab Pricing
+                </span>
+              </label>
+              <span
+                class="text-[10px] bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 font-semibold px-2 py-0.5 rounded"
+              >
+                Slab Extension
+              </span>
+            </div>
+            <p class="text-[11px] text-muted-foreground leading-relaxed">
+              Adds respective KM limit for extra hours and re-evaluates renting
+              price [6(new)], producing new [2(new)] and [3(new)] values.
+            </p>
+
+            @if (endBookingFields.recalculateSlabMode) {
+              <div
+                class="pt-2 border-t border-indigo-500/20 grid grid-cols-2 gap-2 text-xs font-mono"
+              >
+                <div class="p-2 rounded bg-background border border-border">
+                  <span class="text-[10px] text-muted-foreground block"
+                    >Added KM Allowance</span
+                  >
+                  <span class="font-bold text-indigo-600"
+                    >+{{ endBookingFields.slabExtraKmAllowance }} KM</span
+                  >
+                  <span class="text-[10px] text-muted-foreground block"
+                    >(New Limit:
+                    {{ endBookingFields.effectiveKmLimit }} KM)</span
+                  >
+                </div>
+                <div class="p-2 rounded bg-background border border-border">
+                  <span class="text-[10px] text-muted-foreground block"
+                    >Slab Rent for Extra Time</span
+                  >
+                  <span class="font-bold text-indigo-600"
+                    >+₹{{ endBookingFields.slabExtraRent }}</span
+                  >
+                  <span class="text-[10px] text-muted-foreground block"
+                    >(Included in Rent [6])</span
+                  >
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- SECTION 3: Damages -->
+    <div class="rounded-xl border border-amber-500/30 overflow-hidden bg-card">
+      <div
+        class="bg-amber-500/15 dark:bg-amber-500/20 border-b border-amber-500/30 px-3 py-2 flex items-center justify-between"
+      >
+        <h4
+          class="font-bold text-xs text-amber-900 dark:text-amber-200 uppercase tracking-wide flex items-center gap-1.5"
+        >
+          <ng-icon name="lucideShieldAlert" class="text-sm"></ng-icon>
+          <span>Damages</span>
+        </h4>
+        <div class="flex items-center gap-2">
+          <span
+            class="font-mono font-bold text-xs text-amber-900 dark:text-amber-200"
+          >
+            Total [4]: ₹{{ endBookingFields.damagesTotal }}
+          </span>
+          <button
+            type="button"
+            hlmBtn
+            size="sm"
+            variant="outline"
+            (click)="addDamage()"
+            class="h-7 text-xs flex items-center gap-1 bg-background hover:bg-muted font-semibold"
+          >
+            <ng-icon name="lucidePlus" class="text-xs"></ng-icon>
+            <span>Add Damage</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="p-3 space-y-2">
+        @if (damages.length === 0) {
+          <div
+            class="p-3 rounded-lg border border-dashed border-border text-center text-muted-foreground text-xs flex items-center justify-center gap-2"
+          >
+            <ng-icon
+              name="lucideCheckCircle"
+              class="text-emerald-500 text-sm"
+            ></ng-icon>
+            <span
+              >No damages reported. Click <strong>+ Add Damage</strong> if
+              vehicle has any damages.</span
+            >
+          </div>
+        } @else {
+          <div class="space-y-2">
+            @for (dmg of damages; track dmg.id; let idx = $index) {
+              <div
+                class="p-2.5 rounded-lg border border-border bg-muted/15 flex flex-col sm:flex-row items-center gap-2 transition-all"
+              >
+                <span
+                  class="text-xs font-semibold text-muted-foreground shrink-0 w-16"
+                >
+                  Damage {{ idx + 1 }}:
+                </span>
+                <input
+                  hlmInput
+                  type="text"
+                  [(ngModel)]="dmg.description"
+                  class="flex-1 text-xs"
+                  placeholder="Damage description (e.g. Dent on rear fender)"
+                />
+                <div class="relative w-32 shrink-0">
+                  <span
+                    class="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-bold"
+                    >₹</span
+                  >
+                  <input
+                    hlmInput
+                    type="number"
+                    [(ngModel)]="dmg.amount"
+                    (input)="calculateEndBookingFees()"
+                    class="w-full text-xs pl-6 font-mono font-bold"
+                    placeholder="Amount"
+                    min="0"
+                  />
+                </div>
+
+                <!-- Right and Wrong Action Icons beside added damage -->
+                <div class="flex items-center gap-1 shrink-0">
+                  <button
+                    type="button"
+                    (click)="toggleDamageConfirm(dmg)"
+                    class="h-8 w-8 rounded-md flex items-center justify-center border transition-all"
+                    [ngClass]="
+                      dmg.confirmed
+                        ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-600 dark:text-emerald-400'
+                        : 'bg-muted border-border text-muted-foreground hover:text-foreground'
+                    "
+                    title="{{
+                      dmg.confirmed
+                        ? 'Damage Confirmed / Verified'
+                        : 'Click to Verify'
+                    }}"
+                  >
+                    <ng-icon name="lucideCheck" class="text-base"></ng-icon>
+                  </button>
+                  <button
+                    type="button"
+                    (click)="removeDamage(dmg.id)"
+                    class="h-8 w-8 rounded-md flex items-center justify-center border border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground transition-all"
+                    title="Remove Damage Entry"
+                  >
+                    <ng-icon name="lucideX" class="text-base"></ng-icon>
+                  </button>
+                </div>
+              </div>
+            }
+
+            <div
+              class="text-right pt-1 font-mono font-bold text-xs text-foreground"
+            >
+              Total [4] sum of above all amounts:
+              <span class="text-primary"
+                >₹{{ endBookingFields.damagesTotal }}</span
+              >
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- SECTION 4: Challana / Toll / Fines -->
+    <div class="rounded-xl border border-amber-500/30 overflow-hidden bg-card">
+      <div
+        class="bg-amber-500/15 dark:bg-amber-500/20 border-b border-amber-500/30 px-3 py-2 flex items-center justify-between"
+      >
+        <h4
+          class="font-bold text-xs text-amber-900 dark:text-amber-200 uppercase tracking-wide flex items-center gap-1.5"
+        >
+          <ng-icon name="lucideReceipt" class="text-sm"></ng-icon>
+          <span>Challana / Toll / Fines</span>
+        </h4>
+        <span
+          class="font-mono font-bold text-xs text-amber-900 dark:text-amber-200"
+        >
+          A1+A2+A3 = Total [5]: ₹{{ endBookingFields.challanaTollFinesTotal }}
+        </span>
+      </div>
+
+      <div class="p-3">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label
+              hlmLabel
+              class="text-xs font-medium text-foreground block mb-1"
+              >Challana (A1)</label
+            >
+            <div class="relative">
+              <span
+                class="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-bold"
+                >₹</span
+              >
+              <input
+                hlmInput
+                type="number"
+                [(ngModel)]="endBookingFields.challanaAmount"
+                (input)="calculateEndBookingFees()"
+                class="w-full text-xs pl-6 font-mono font-semibold"
+                placeholder="0"
+                min="0"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label
+              hlmLabel
+              class="text-xs font-medium text-foreground block mb-1"
+              >Toll (A2)</label
+            >
+            <div class="relative">
+              <span
+                class="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-bold"
+                >₹</span
+              >
+              <input
+                hlmInput
+                type="number"
+                [(ngModel)]="endBookingFields.tollAmount"
+                (input)="calculateEndBookingFees()"
+                class="w-full text-xs pl-6 font-mono font-semibold"
+                placeholder="0"
+                min="0"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label
+              hlmLabel
+              class="text-xs font-medium text-foreground block mb-1"
+              >Fines (A3)</label
+            >
+            <div class="relative">
+              <span
+                class="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-bold"
+                >₹</span
+              >
+              <input
+                hlmInput
+                type="number"
+                [(ngModel)]="endBookingFields.finesAmount"
+                (input)="calculateEndBookingFees()"
+                class="w-full text-xs pl-6 font-mono font-semibold"
+                placeholder="0"
+                min="0"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 5: Late / Non-Intimation Fine [7] (Optional / Not mandatory) -->
+    <div class="p-3 rounded-xl border border-border bg-muted/10 space-y-2">
+      <div class="flex items-center justify-between">
+        <label class="flex items-center gap-2 cursor-pointer text-xs">
+          <input
+            type="checkbox"
+            [(ngModel)]="endBookingFields.applyNonIntimationFine"
+            (change)="onToggleNonIntimationFine()"
+            class="rounded accent-primary h-4 w-4"
+          />
+          <span class="font-semibold text-foreground"
+            >Apply Fine of Not Intimation [7] (Optional / Non-mandatory)</span
+          >
+        </label>
+        <span class="text-[10px] text-muted-foreground"
+          >* Up to ₹1,000 (varies based on vehicle)</span
+        >
+      </div>
+
+      @if (endBookingFields.applyNonIntimationFine) {
+        <div class="pt-2 border-t border-border flex items-center gap-3">
+          <label class="text-xs text-muted-foreground whitespace-nowrap"
+            >Fine Amount [7]:</label
+          >
+          <div class="relative w-44">
+            <span
+              class="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-bold"
+              >₹</span
+            >
+            <input
+              hlmInput
+              type="number"
+              [(ngModel)]="endBookingFields.nonIntimationFine"
+              (input)="onNonIntimationFineInput()"
+              class="w-full text-xs pl-6 font-mono font-bold"
+              placeholder="500"
+              min="0"
+              max="1000"
+            />
+          </div>
+          <span class="text-[11px] text-muted-foreground">Max ₹1,000</span>
+        </div>
+      }
+    </div>
+
+    <!-- SECTION 6: Amount Pending [6] -->
+    <div class="rounded-xl border border-amber-500/30 overflow-hidden bg-card">
+      <div
+        class="bg-amber-500/15 dark:bg-amber-500/20 border-b border-amber-500/30 px-3 py-2 flex items-center justify-between"
+      >
+        <h4
+          class="font-bold text-xs text-amber-900 dark:text-amber-200 uppercase tracking-wide flex items-center gap-1.5"
+        >
+          <ng-icon name="lucideCalendarX" class="text-sm"></ng-icon>
+          <span>Amount Pending</span>
+        </h4>
+        <span
+          class="font-mono font-bold text-xs text-amber-900 dark:text-amber-200"
+        >
+          Pending/Balance [6]: ₹{{ endBookingFields.balancePending }}
+        </span>
+      </div>
+
+      <div class="p-3">
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+          <!-- Total Rent Amount (displayed and disabled) -->
+          <div
+            class="p-2 rounded-lg bg-muted/30 border border-border opacity-85"
+          >
+            <span
+              class="text-[10px] text-muted-foreground uppercase font-semibold block"
+              >Total Rent Amount</span
+            >
+            <span class="font-mono font-bold text-xs text-foreground"
+              >₹{{ endBookingFields.totalRentAmount }}</span
+            >
+            <span class="text-[9px] text-muted-foreground block"
+              >(disabled)</span
+            >
+          </div>
+
+          <!-- Discount (displayed and disabled) -->
+          <div
+            class="p-2 rounded-lg bg-muted/30 border border-border opacity-85"
+          >
+            <span
+              class="text-[10px] text-muted-foreground uppercase font-semibold block"
+              >Discount</span
+            >
+            <span class="font-mono font-bold text-xs text-foreground"
+              >₹{{ endBookingFields.discountAmount }}</span
+            >
+            <span class="text-[9px] text-muted-foreground block"
+              >(disabled)</span
+            >
+          </div>
+
+          <!-- Final Rent Amount (displayed and disabled) -->
+          <div
+            class="p-2 rounded-lg bg-muted/30 border border-border opacity-85"
+          >
+            <span
+              class="text-[10px] text-muted-foreground uppercase font-semibold block"
+            >
+              Final Rent Amount
+              {{ endBookingFields.recalculateSlabMode ? '[6(new)]' : '' }}
+            </span>
+            <span class="font-mono font-bold text-xs text-foreground"
+              >₹{{ endBookingFields.finalRentAmount }}</span
+            >
+            <span class="text-[9px] text-muted-foreground block"
+              >(disabled)</span
+            >
+          </div>
+
+          <!-- Paid Amount (displayed and disabled) -->
+          <div
+            class="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 opacity-90"
+          >
+            <span
+              class="text-[10px] text-emerald-700 dark:text-emerald-400 uppercase font-semibold block"
+              >Paid Amount</span
+            >
+            <span
+              class="font-mono font-bold text-xs text-emerald-600 dark:text-emerald-400"
+              >₹{{ endBookingFields.paidAmount }}</span
+            >
+            <span class="text-[9px] text-muted-foreground block"
+              >(advance paid)</span
+            >
+          </div>
+
+          <!-- Pending/Balance Amount [6] (displayed & disabled) -->
+          <div
+            class="p-2 rounded-lg bg-destructive/10 border border-destructive/20 col-span-2 sm:col-span-1"
+          >
+            <span
+              class="text-[10px] text-destructive uppercase font-bold block"
+            >
+              Pending/Balance [6]
+            </span>
+            <span
+              class="font-mono font-bold text-sm"
+              [class.text-destructive]="endBookingFields.balancePending > 0"
+              [class.text-emerald-600]="endBookingFields.balancePending <= 0"
+            >
+              ₹{{ endBookingFields.balancePending }}
+            </span>
+            <span class="text-[9px] text-muted-foreground block"
+              >(displayed & disabled)</span
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Final Formula Breakdown & Totals Box -->
+    <div
+      class="p-4 rounded-xl border border-border bg-gradient-to-r from-muted/30 to-muted/10 space-y-3"
+    >
+      <div
+        class="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-2"
+      >
+        <span class="font-bold text-xs text-foreground">
+          @if (endBookingFields.recalculateSlabMode) {
+            Final Amount = 1 + 2(new) + 3(new) + 4 + 5 + 6(new)
+            {{ endBookingFields.applyNonIntimationFine ? '+ 7' : '' }}
+          } @else {
+            Final Amount = 1 + 2 + 3 + 4 + 5 + 6
+            {{ endBookingFields.applyNonIntimationFine ? '+ 7' : '' }}
+          }
+        </span>
+        <span class="text-xs font-mono font-bold text-primary">
+          Total Additional Fees: ₹{{ endBookingFields.totalAdditionalFees }}
+        </span>
+      </div>
+
+      <!-- Quick summary chips -->
+      <div class="flex flex-wrap gap-1.5 text-[11px] font-mono">
+        <span class="px-2 py-0.5 rounded bg-muted border border-border">
+          [1] Cleanliness: ₹{{ endBookingFields.cleanlinessFee }}
+        </span>
+        <span class="px-2 py-0.5 rounded bg-muted border border-border">
+          [2] Extra KM: ₹{{ endBookingFields.extraKmFee }}
+        </span>
+        <span class="px-2 py-0.5 rounded bg-muted border border-border">
+          [3] Extra Hr: ₹{{ endBookingFields.extraHourFee }}
+        </span>
+        <span class="px-2 py-0.5 rounded bg-muted border border-border">
+          [4] Damages: ₹{{ endBookingFields.damagesTotal }}
+        </span>
+        <span class="px-2 py-0.5 rounded bg-muted border border-border">
+          [5] Toll/Fines: ₹{{ endBookingFields.challanaTollFinesTotal }}
+        </span>
+        @if (endBookingFields.applyNonIntimationFine) {
+          <span class="px-2 py-0.5 rounded bg-muted border border-border">
+            [7] Late Fine: ₹{{ endBookingFields.nonIntimationFine }}
+          </span>
+        }
+      </div>
+
+      <div
+        class="pt-2 border-t border-border flex flex-wrap items-center justify-between gap-2"
+      >
+        <div>
+          <span class="text-xs text-muted-foreground block"
+            >Total Final Payable Amount:</span
+          >
+          <span class="font-mono font-bold text-base text-foreground"
+            >₹{{ endBookingFields.finalTotalPayable }}</span
+          >
+        </div>
+        <div class="text-right">
+          <span class="text-xs text-muted-foreground block"
+            >Net Balance to Collect Now:</span
+          >
+          <span
+            class="font-mono font-bold text-lg"
+            [class.text-destructive]="endBookingFields.balancePending > 0"
+            [class.text-emerald-600]="endBookingFields.balancePending <= 0"
+          >
+            ₹{{ endBookingFields.balancePending }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settlement Options -->
+    <div class="p-3 rounded-xl border border-primary/20 bg-primary/5 space-y-2">
+      <div class="flex items-center justify-between">
+        <label
+          class="flex items-center gap-2 cursor-pointer text-xs font-semibold text-foreground"
+        >
+          <input
+            type="checkbox"
+            [(ngModel)]="endBookingFields.settleNow"
+            class="rounded accent-primary h-4 w-4"
+          />
+          <span
+            >Collect Remaining Due Balance (₹{{
+              endBookingFields.balancePending
+            }}) Now & Settle Account</span
+          >
+        </label>
+
+        @if (endBookingFields.settleNow) {
+          <div class="flex items-center gap-2">
+            <label class="text-[11px] text-muted-foreground whitespace-nowrap"
+              >Payment Mode:</label
+            >
+            <select
+              [(ngModel)]="endBookingFields.paymentMode"
+              class="h-7 px-2 text-xs rounded border border-border bg-background text-foreground font-medium"
+            >
+              <option value="Cash">Cash</option>
+              <option value="UPI">UPI</option>
+              <option value="Card">Card</option>
+              <option value="Net Banking">Net Banking</option>
+            </select>
+          </div>
+        }
+      </div>
+      <p class="text-[11px] text-muted-foreground">
+        {{
+          endBookingFields.settleNow
+            ? 'Account will be fully settled with pending balance set to ₹0 and booking marked completed.'
+            : 'Unpaid balance of ₹' +
+              endBookingFields.balancePending +
+              ' will remain pending under customer booking account.'
+        }}
       </p>
     </div>
   </div>
 
   <!-- Fixed Footer -->
-  <div class="shrink-0 flex items-center justify-end gap-2 pt-3 border-t border-border">
-    <button hlmBtn class="action-btn success flex items-center gap-1.5" [disabled]="!endBookingFields.odometerEnd || isSubmitting()" (click)="submitEndBooking()">
-      <ng-icon name="lucideCheckCircle"></ng-icon>
-      <span>{{ isSubmitting() ? 'Finalizing...' : 'Finalize & Close Booking' }}</span>
-    </button>
-    <button hlmBtn variant="outline" (click)="closeDialog()">Cancel</button>
+  <div
+    class="shrink-0 flex items-center justify-between pt-3 border-t border-border"
+  >
+    <div class="text-xs font-mono">
+      <span class="text-muted-foreground"
+        >Vehicle {{ booking()?.vehicleRegNo }} will be released to
+      </span>
+      <span class="font-bold text-emerald-600">AVAILABLE</span>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button hlmBtn variant="outline" (click)="closeDialog()">Cancel</button>
+      <button
+        hlmBtn
+        class="action-btn success flex items-center gap-1.5 font-bold"
+        [disabled]="!endBookingFields.odometerEnd || isSubmitting()"
+        (click)="submitEndBooking()"
+      >
+        <ng-icon name="lucideCheckCircle"></ng-icon>
+        <span>{{
+          isSubmitting() ? 'Finalizing...' : 'Finalize & Close Booking'
+        }}</span>
+      </button>
+    </div>
   </div>
 </div>

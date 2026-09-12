@@ -379,7 +379,7 @@ export class RRStatsViewComponent implements OnInit {
         vehicles: this.vehicles(),
       },
       contentClass:
-        'max-w-xl w-full p-6 max-h-[90vh] flex flex-col overflow-hidden',
+        'max-w-3xl w-full p-6 max-h-[90vh] flex flex-col overflow-hidden',
     });
 
     ref.closed$.subscribe((result) => {
