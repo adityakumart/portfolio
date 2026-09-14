@@ -16,6 +16,12 @@
       <div class="p-3 rounded-xl border border-border bg-muted/20 text-xs space-y-1">
         <p><strong>Customer:</strong> {{ selectedBooking()?.renterFirstName }} {{ selectedBooking()?.renterSecondName }} ({{ selectedBooking()?.renterPhone }})</p>
         <p><strong>Vehicle:</strong> {{ selectedBooking()?.vehicleManufacturer }} {{ selectedBooking()?.vehicleName }} ({{ selectedBooking()?.vehicleRegNo }})</p>
+        @if (selectedBooking()?.lastIntimation) {
+          <div class="pt-1.5 mt-1 border-t border-border/60 flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-medium">
+            <span class="font-bold">Prior Customer Intimation:</span>
+            <span>{{ selectedBooking()?.lastIntimation?.intimationType | titlecase }} &mdash; "{{ selectedBooking()?.lastIntimation?.notes }}"</span>
+          </div>
+        }
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">

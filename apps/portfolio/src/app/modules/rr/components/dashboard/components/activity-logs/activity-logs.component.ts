@@ -156,10 +156,51 @@ export class RRActivityLogsComponent implements OnInit {
     this.loadActivityLogs();
   }
 
+  activeCategory = signal<string>('all');
+
+  setCategory(category: string) {
+    this.activeCategory.set(category);
+    this.currentPage.set(1);
+    this.loadActivityLogs();
+  }
+
+  getActionBadge(action: string): { label: string; class: string } {
+    const act = (action || '').toLowerCase();
+    if (act.includes('logged in')) {
+      return { label: 'LOGIN', class: 'bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30' };
+    }
+    if (act.includes('logged out')) {
+      return { label: 'LOGOUT', class: 'bg-slate-500/15 text-slate-700 dark:text-slate-400 border-slate-500/30' };
+    }
+    if (act.includes('started booking')) {
+      return { label: 'BOOKING START', class: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30' };
+    }
+    if (act.includes('modified booking')) {
+      return { label: 'BOOKING MODIFY', class: 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30' };
+    }
+    if (act.includes('ended booking')) {
+      return { label: 'BOOKING END', class: 'bg-purple-500/15 text-purple-700 dark:text-purple-400 border-purple-500/30' };
+    }
+    if (act.includes('cancelled booking')) {
+      return { label: 'BOOKING CANCEL', class: 'bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-500/30' };
+    }
+    if (act.includes('intimation')) {
+      return { label: 'INTIMATION', class: 'bg-orange-500/15 text-orange-700 dark:text-orange-400 border-orange-500/30' };
+    }
+    if (act.includes('vehicle')) {
+      return { label: 'VEHICLE', class: 'bg-cyan-500/15 text-cyan-700 dark:text-cyan-400 border-cyan-500/30' };
+    }
+    if (act.includes('employee')) {
+      return { label: 'STAFF', class: 'bg-indigo-500/15 text-indigo-700 dark:text-indigo-400 border-indigo-500/30' };
+    }
+    return { label: 'AUDIT', class: 'bg-muted text-muted-foreground border-border' };
+  }
+
   clearFilters() {
     this.selectedRange.set('last_week');
     this.applyPresetDates('last_week');
     this.searchQuery = '';
+    this.activeCategory.set('all');
     this.currentPage.set(1);
     this.loadActivityLogs();
   }
@@ -167,12 +208,26 @@ export class RRActivityLogsComponent implements OnInit {
   async loadActivityLogs() {
     this.isLoading.set(true);
     try {
+      let combinedSearch = this.searchQuery.trim();
+      const cat = this.activeCategory();
+      if (cat === 'auth') {
+        combinedSearch = combinedSearch ? `${combinedSearch} Logged` : 'Logged';
+      } else if (cat === 'booking') {
+        combinedSearch = combinedSearch ? `${combinedSearch} booking` : 'booking';
+      } else if (cat === 'intimation') {
+        combinedSearch = combinedSearch ? `${combinedSearch} Intimation` : 'Intimation';
+      } else if (cat === 'vehicle') {
+        combinedSearch = combinedSearch ? `${combinedSearch} vehicle` : 'vehicle';
+      } else if (cat === 'employee') {
+        combinedSearch = combinedSearch ? `${combinedSearch} employee` : 'employee';
+      }
+
       const res = await this.rrApi.getLogs({
         from: this.logFilterFrom || undefined,
         to: this.logFilterTo || undefined,
         page: this.currentPage(),
         limit: this.pageSize(),
-        search: this.searchQuery.trim() || undefined,
+        search: combinedSearch || undefined,
       });
 
       this.logs.set(res?.logs || []);

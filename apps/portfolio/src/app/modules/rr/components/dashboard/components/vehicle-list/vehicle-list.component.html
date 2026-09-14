@@ -66,10 +66,40 @@
             
             <div class="status-section">
               <span class="label text-xs text-muted-foreground block mb-1">Rental Availability Status</span>
-              <div class="detail-status-badge badge-{{ selectedVehicleDetails()?.status }}">
-                <span class="status-dot"></span>
-                <span>{{ selectedVehicleDetails()?.status | uppercase }}</span>
-              </div>
+              <span
+                hlmBadge
+                variant="outline"
+                class="font-bold text-xs px-2.5 py-1 uppercase tracking-wider inline-flex items-center gap-1.5 backdrop-blur-xs"
+                [ngClass]="{
+                  'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/30': selectedVehicleDetails()?.status === 'available',
+                  'text-orange-600 dark:text-orange-400 bg-orange-500/10 border-orange-500/30': selectedVehicleDetails()?.status === 'in_booking' || selectedVehicleDetails()?.status === 'rented',
+                  'text-rose-600 dark:text-rose-400 bg-rose-500/10 border-rose-500/30': selectedVehicleDetails()?.status === 'maintenance',
+                  'text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 border-cyan-500/30': selectedVehicleDetails()?.status === 'contract' || selectedVehicleDetails()?.status === 'in_contract'
+                }"
+              >
+                <span
+                  class="w-2 h-2 rounded-full"
+                  [ngClass]="{
+                    'bg-emerald-500': selectedVehicleDetails()?.status === 'available',
+                    'bg-orange-500': selectedVehicleDetails()?.status === 'in_booking' || selectedVehicleDetails()?.status === 'rented',
+                    'bg-rose-500': selectedVehicleDetails()?.status === 'maintenance',
+                    'bg-cyan-500': selectedVehicleDetails()?.status === 'contract' || selectedVehicleDetails()?.status === 'in_contract'
+                  }"
+                ></span>
+                <span>
+                  @if (selectedVehicleDetails()?.status === 'available') {
+                    AVAILABLE
+                  } @else if (selectedVehicleDetails()?.status === 'in_booking' || selectedVehicleDetails()?.status === 'rented') {
+                    ACTIVE BOOKING
+                  } @else if (selectedVehicleDetails()?.status === 'maintenance') {
+                    IN SERVICE
+                  } @else if (selectedVehicleDetails()?.status === 'contract' || selectedVehicleDetails()?.status === 'in_contract') {
+                    IN CONTRACT
+                  } @else {
+                    {{ selectedVehicleDetails()?.status | uppercase }}
+                  }
+                </span>
+              </span>
             </div>
           </div>
         </div>

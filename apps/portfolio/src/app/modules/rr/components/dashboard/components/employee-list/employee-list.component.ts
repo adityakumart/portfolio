@@ -18,6 +18,7 @@ import {
   lucideBadgeCheck,
   lucideContact,
   lucideCheck,
+  lucideTrash2,
 } from '@ng-icons/lucide';
 
 @Component({
@@ -42,6 +43,7 @@ import {
       lucideBadgeCheck,
       lucideContact,
       lucideCheck,
+      lucideTrash2,
     }),
   ],
   templateUrl: './employee-list.component.html',
@@ -161,6 +163,27 @@ export class RREmployeeListComponent implements OnInit {
       this.loadEmployees();
     } catch (err: any) {
       toast.error(err.message || 'Operation failed.');
+    }
+  }
+
+  async deleteEmployee(e: IEmployee) {
+    const currentUser = this.rrApi.currentUser();
+    if (currentUser?.id === e.id) {
+      toast.error('You cannot delete your own administrative account.');
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to delete staff member ${e.firstName} ${e.lastName} (${e.id})? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      await this.rrApi.deleteEmployee(e.id);
+      toast.success(`Employee ${e.id} removed from system.`);
+      this.loadEmployees();
+    } catch (err: any) {
+      console.error('Failed to delete employee:', err);
+      toast.error(err.error?.message || err.message || 'Failed to delete employee.');
     }
   }
 

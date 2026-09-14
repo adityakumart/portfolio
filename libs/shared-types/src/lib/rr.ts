@@ -80,6 +80,13 @@ export interface IVehicle {
   updatedAt?: string | null;
 }
 
+export interface IVehicleAutocompleteItem {
+  regNo: string;
+  name: string;
+  manufacturer: string;
+  type?: string;
+}
+
 export type BookingStatus = 'active' | 'completed' | 'cancelled';
 export type DepositType = 'bike' | 'cash' | 'other' | 'none' | string;
 export type DiscountType = 'percentage' | 'rupee' | string;
@@ -153,6 +160,14 @@ export interface IBooking {
   endedAt?: string | null;
   activityLogs?: string[];
 
+  // Staff audit tracking (who booked and who ended)
+  bookedBy?: string;
+  bookedByName?: string;
+  bookedByRole?: string;
+  endedBy?: string | null;
+  endedByName?: string | null;
+  endedByRole?: string | null;
+
   // End booking settlement fields
   returnDateTimeActual?: string;
   cleanlinessFee?: string;
@@ -169,6 +184,21 @@ export interface IBooking {
   nonIntimationFine?: string;
   recalculateSlabMode?: boolean;
   totalAdditionalFees?: string;
+
+  // Customer intimation audit tracking
+  intimations?: ICustomerIntimation[];
+  lastIntimation?: ICustomerIntimation;
+}
+
+export interface ICustomerIntimation {
+  id: string;
+  intimationType: 'delay' | 'extension' | 'route_change' | 'early_return' | 'emergency' | 'other' | string;
+  notes: string;
+  expectedReturnDateTime?: string;
+  recordedBy: string;
+  recordedByName?: string;
+  recordedByRole?: string;
+  recordedAt: string;
 }
 
 export interface ILog {
@@ -184,6 +214,14 @@ export interface ILog {
 
 export interface ILogsResponse {
   logs: ILog[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface IBookingsResponse {
+  bookings: IBooking[];
   total: number;
   page: number;
   limit: number;

@@ -1,11 +1,15 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ViewChild, TemplateRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { HlmTableImports } from '@spartan-ng/hel/table';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmBadgeImports } from '@spartan-ng/hel/badge';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
+import { HlmInputImports } from '@spartan-ng/hel/input';
+import { HlmLabelImports } from '@spartan-ng/hel/label';
 import { HlmDialogService } from '@spartan-ng/hel/dialog';
+import { toast } from '@spartan-ng/hel/sonner';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucidePlus,
@@ -15,8 +19,13 @@ import {
   lucideCalendarX,
   lucideFileText,
   lucideInfo,
+  lucidePhoneCall,
+  lucideBell,
+  lucideClock,
+  lucideX,
+  lucideSave,
 } from '@ng-icons/lucide';
-import { IBooking, IVehicle } from '@portfolio/shared-types';
+import { IBooking, IVehicle, ICustomerIntimation } from '@portfolio/shared-types';
 import { RRApiService } from '../../../../services/rr-api.service';
 import { RRInvoicePdfService } from '../../../../services/rr-invoice-pdf.service';
 import {
@@ -30,10 +39,14 @@ import {
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
     HlmTableImports,
     HlmButtonImports,
     HlmBadgeImports,
     HlmTooltipImports,
+    HlmInputImports,
+    HlmLabelImports,
     NgIconComponent,
   ],
   providers: [
@@ -45,6 +58,11 @@ import {
       lucideCalendarX,
       lucideFileText,
       lucideInfo,
+      lucidePhoneCall,
+      lucideBell,
+      lucideClock,
+      lucideX,
+      lucideSave,
     }),
   ],
   templateUrl: './booking-list.component.html',
@@ -174,7 +192,62 @@ export class RRBookingListComponent implements OnInit {
     });
   }
 
+  private fb = inject(FormBuilder);
+
+  // Intimation modal state
+  @ViewChild('intimationDialog') intimationDialogTemplate!: TemplateRef<any>;
+  selectedIntimationBooking = signal<IBooking | null>(null);
+  isSubmittingIntimation = signal<boolean>(false);
+  intimationFormGroup: FormGroup = this.fb.group({
+    intimationType: ['delay', Validators.required],
+    notes: ['', [Validators.required, Validators.minLength(3)]],
+    expectedReturnDateTime: [''],
+  });
+
   exportBookingPdf(b: IBooking) {
     this.invoicePdf.printAgreementPdf(b);
+  }
+
+  openIntimationModal(booking: IBooking) {
+    this.selectedIntimationBooking.set(booking);
+    this.intimationFormGroup.reset({
+      intimationType: 'delay',
+      notes: '',
+      expectedReturnDateTime: booking.returnDateTime || '',
+    });
+    this.dialog.open(this.intimationDialogTemplate, {
+      contentClass: 'max-w-lg w-full p-6 max-h-[85vh] flex flex-col overflow-hidden',
+    });
+  }
+
+  closeIntimationModal() {
+    this.dialog.closeAll();
+    this.selectedIntimationBooking.set(null);
+  }
+
+  async submitCustomerIntimation() {
+    if (this.intimationFormGroup.invalid) return;
+
+    const booking = this.selectedIntimationBooking();
+    if (!booking) return;
+
+    try {
+      this.isSubmittingIntimation.set(true);
+      const val = this.intimationFormGroup.value;
+      await this.rrApi.recordCustomerIntimation(booking.id, {
+        intimationType: val.intimationType,
+        notes: val.notes,
+        expectedReturnDateTime: val.expectedReturnDateTime || undefined,
+      });
+
+      toast.success(`Customer intimation logged for booking #${booking.id}`);
+      this.closeIntimationModal();
+      await this.loadBookings();
+    } catch (err: any) {
+      console.error('Error logging customer intimation:', err);
+      toast.error(err.error?.message || 'Failed to record customer intimation.');
+    } finally {
+      this.isSubmittingIntimation.set(false);
+    }
   }
 }

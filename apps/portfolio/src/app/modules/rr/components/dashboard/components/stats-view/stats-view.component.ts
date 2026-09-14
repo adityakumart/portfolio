@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RRApiService } from '../../../../services/rr-api.service';
 import { HlmCardImports } from '@spartan-ng/hel/card';
@@ -30,10 +30,14 @@ import {
   lucideFileText,
   lucidePencil,
   lucideCalendarX,
+  lucideActivity,
+  lucideClock,
+  lucidePhoneCall,
+  lucideExternalLink,
 } from '@ng-icons/lucide';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { HlmDialogService } from '@spartan-ng/hel/dialog';
-import { IVehicle, IBooking, IRRDashboardStats } from '@portfolio/shared-types';
+import { IVehicle, IBooking, IRRDashboardStats, ILog } from '@portfolio/shared-types';
 import { RRInvoicePdfService } from '../../../../services/rr-invoice-pdf.service';
 import {
   RRVehicleCardComponent,
@@ -56,6 +60,7 @@ export type SeatingFilter = 'all' | '5' | '7';
   standalone: true,
   imports: [
     CommonModule,
+    RouterLink,
     HlmCardImports,
     HlmTooltipImports,
     HlmButtonImports,
@@ -87,6 +92,10 @@ export type SeatingFilter = 'all' | '5' | '7';
       lucideFileText,
       lucidePencil,
       lucideCalendarX,
+      lucideActivity,
+      lucideClock,
+      lucidePhoneCall,
+      lucideExternalLink,
     }),
   ],
   templateUrl: './stats-view.component.html',
@@ -98,6 +107,9 @@ export class RRStatsViewComponent implements OnInit {
 
   vehicles = signal<IVehicle[]>([]);
   bookings = signal<IBooking[]>([]);
+  recentLogs = signal<ILog[]>([]);
+  isAdmin = computed(() => this.rrApi.currentUser()?.role === 'admin');
+
   stats = signal<IRRDashboardStats>({
     totalFleet: 0,
     available: 0,
@@ -117,6 +129,50 @@ export class RRStatsViewComponent implements OnInit {
     this.loadVehicles();
     this.loadBookings();
     this.loadStats();
+    this.loadRecentLogs();
+  }
+
+  async loadRecentLogs() {
+    try {
+      if (this.isAdmin()) {
+        const res = await this.rrApi.getLogs({ page: 1, limit: 5 });
+        this.recentLogs.set(res?.logs || []);
+      }
+    } catch (e) {
+      console.warn('Could not load recent activity logs:', e);
+    }
+  }
+
+  getActionBadge(action: string): { label: string; class: string } {
+    const act = (action || '').toLowerCase();
+    if (act.includes('logged in')) {
+      return { label: 'LOGIN', class: 'bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30' };
+    }
+    if (act.includes('logged out')) {
+      return { label: 'LOGOUT', class: 'bg-slate-500/15 text-slate-700 dark:text-slate-400 border-slate-500/30' };
+    }
+    if (act.includes('started booking')) {
+      return { label: 'BOOKING START', class: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30' };
+    }
+    if (act.includes('modified booking')) {
+      return { label: 'BOOKING MODIFY', class: 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30' };
+    }
+    if (act.includes('ended booking')) {
+      return { label: 'BOOKING END', class: 'bg-purple-500/15 text-purple-700 dark:text-purple-400 border-purple-500/30' };
+    }
+    if (act.includes('cancelled booking')) {
+      return { label: 'BOOKING CANCEL', class: 'bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-500/30' };
+    }
+    if (act.includes('intimation')) {
+      return { label: 'INTIMATION', class: 'bg-orange-500/15 text-orange-700 dark:text-orange-400 border-orange-500/30' };
+    }
+    if (act.includes('vehicle')) {
+      return { label: 'VEHICLE', class: 'bg-cyan-500/15 text-cyan-700 dark:text-cyan-400 border-cyan-500/30' };
+    }
+    if (act.includes('employee')) {
+      return { label: 'STAFF', class: 'bg-indigo-500/15 text-indigo-700 dark:text-indigo-400 border-indigo-500/30' };
+    }
+    return { label: 'AUDIT', class: 'bg-muted text-muted-foreground border-border' };
   }
 
   async loadVehicles() {
@@ -155,7 +211,7 @@ export class RRStatsViewComponent implements OnInit {
     return this.vehicles().filter((v) => v.status === status).length;
   }
 
-  getVehicleImage(v: any): string {
+  getVehicleImage(v?: IVehicle | null): string {
     if (v && v.images && v.images.length > 0) {
       return v.images[0];
     }
@@ -350,7 +406,7 @@ export class RRStatsViewComponent implements OnInit {
   private dialog = inject(HlmDialogService);
   private invoicePdf = inject(RRInvoicePdfService);
 
-  bookVehicle(vehicle: any, event?: Event) {
+  bookVehicle(vehicle: IVehicle, event?: Event) {
     event?.stopPropagation();
     const ref = this.dialog.open(RRNewBookingDialogComponent, {
       context: {

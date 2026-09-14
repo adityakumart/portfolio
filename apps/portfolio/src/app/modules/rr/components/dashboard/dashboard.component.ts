@@ -16,6 +16,7 @@ import {
   lucideCalendarDays,
   lucideBadgeCheck,
   lucideX,
+  lucideActivity,
 } from '@ng-icons/lucide';
 import { HlmDialogService } from '@spartan-ng/hel/dialog';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
@@ -53,6 +54,7 @@ import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
       lucideCalendarDays,
       lucideBadgeCheck,
       lucideX,
+      lucideActivity,
     }),
   ],
   templateUrl: './dashboard.component.html',
