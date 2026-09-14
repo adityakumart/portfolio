@@ -167,6 +167,20 @@
                   <span>Staff Registry</span>
                 </div>
               </li>
+              <li
+                class="menu-item"
+                [routerLink]="['/user/rr/activity-logs']"
+                routerLinkActive="active-menu"
+                [hlmTooltip]="'Audit Logs'"
+                [tooltipDisabled]="!isSidebarCollapsed()"
+                tooltipPosition="right"
+              >
+                <div class="menu-item-pill"></div>
+                <div class="menu-item-content">
+                  <ng-icon name="lucideActivity"></ng-icon>
+                  <span>Audit Logs</span>
+                </div>
+              </li>
             }
 
             <li

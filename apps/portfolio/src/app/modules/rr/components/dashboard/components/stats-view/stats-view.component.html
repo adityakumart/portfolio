@@ -488,6 +488,72 @@
   </div>
 }
 
+<!-- SYSTEM AUDIT & ACTIVITY STREAM (ADMIN ONLY) -->
+@if (isAdmin()) {
+  <div class="mt-8 border border-border rounded-2xl bg-card p-5 shadow-xs">
+    <div class="flex items-center justify-between pb-3 border-b border-border mb-4 flex-wrap gap-2">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 flex items-center justify-center border border-cyan-500/30">
+          <ng-icon name="lucideActivity" class="text-base"></ng-icon>
+        </div>
+        <div>
+          <h3 class="text-base font-black text-foreground">Operational Audit Stream</h3>
+          <p class="text-[11px] text-muted-foreground">Recent real-time system activities and staff dispatch events</p>
+        </div>
+      </div>
+      <a
+        [routerLink]="['/user/rr/activity-logs']"
+        hlmBtn
+        variant="outline"
+        size="sm"
+        class="h-8 text-xs flex items-center gap-1.5"
+      >
+        <span>Full Audit Console</span>
+        <ng-icon name="lucideExternalLink" class="text-xs"></ng-icon>
+      </a>
+    </div>
+
+    @if (recentLogs().length > 0) {
+      <div class="space-y-2.5">
+        @for (log of recentLogs(); track log._id || log.time + log.action) {
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl bg-muted/20 hover:bg-muted/40 border border-border/50 transition-colors gap-2 text-xs">
+            <div class="flex items-center gap-2.5 flex-wrap flex-1 min-w-0">
+              <span
+                hlmBadge
+                variant="outline"
+                class="text-[9px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded border shrink-0"
+                [ngClass]="getActionBadge(log.action).class"
+              >
+                {{ getActionBadge(log.action).label }}
+              </span>
+              <span class="font-bold text-foreground truncate">{{ log.action }}</span>
+              @if (log.details) {
+                <span class="text-[11px] text-muted-foreground font-mono truncate max-w-lg hidden md:inline">
+                  &bull; {{ log.details }}
+                </span>
+              }
+            </div>
+
+            <div class="flex items-center gap-3 shrink-0 text-muted-foreground text-[11px]">
+              <span class="font-mono font-semibold text-foreground bg-muted/50 px-2 py-0.5 rounded border border-border/40">
+                {{ log.performedBy || log.user }}
+              </span>
+              <span class="flex items-center gap-1 font-mono text-[10px]">
+                <ng-icon name="lucideClock" class="text-xs"></ng-icon>
+                {{ log.timestamp || log.time | date:'hh:mm a, dd MMM' }}
+              </span>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="text-center py-6 text-muted-foreground text-xs">
+        No recent audit logs available.
+      </div>
+    }
+  </div>
+}
+
 <!-- REUSABLE BOOKING CARD TEMPLATE -->
 <ng-template #bookingCardTpl let-b>
   <div
@@ -566,6 +632,13 @@
           <span>{{ b.renterPhone }}</span>
         </span>
       </div>
+
+      @if (b.lastIntimation) {
+        <div class="inline-flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400 font-semibold mb-2 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+          <ng-icon name="lucidePhoneCall" class="text-[10px]"></ng-icon>
+          <span>Intimated: {{ b.lastIntimation.intimationType | titlecase }}</span>
+        </div>
+      }
 
       <div class="flex flex-wrap gap-1.5 mt-auto pt-2 border-t border-border/50">
         <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-md" hlmTooltip="Total Rental Amount">

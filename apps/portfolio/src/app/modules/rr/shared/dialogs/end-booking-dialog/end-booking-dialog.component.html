@@ -715,7 +715,17 @@
 
     <!-- SECTION 5: Late / Non-Intimation Fine (Only when both KMs & Hours are exceeded) -->
     @if (activeScenario() === 'case4_1' || activeScenario() === 'case4_2') {
-      <div class="p-3 rounded-xl border border-border bg-muted/10 space-y-2">
+      <div class="p-3 rounded-xl border border-border bg-muted/10 space-y-2.5">
+        @if (booking()?.lastIntimation) {
+          <div class="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-xs text-amber-700 dark:text-amber-400 flex items-start gap-2">
+            <ng-icon name="lucidePhoneCall" class="text-sm shrink-0 mt-0.5"></ng-icon>
+            <div>
+              <span class="font-bold">Customer Intimation on Record:</span>
+              <span> Customer previously intimated <strong>{{ booking()?.lastIntimation?.intimationType | titlecase }}</strong> ("{{ booking()?.lastIntimation?.notes }}"). Consider waiving the non-intimation delay fine.</span>
+            </div>
+          </div>
+        }
+
         <div class="flex items-center justify-between">
           <label class="flex items-center gap-2 cursor-pointer text-xs">
             <input

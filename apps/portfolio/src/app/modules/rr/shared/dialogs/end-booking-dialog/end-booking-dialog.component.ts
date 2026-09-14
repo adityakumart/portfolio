@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BrnDialogRef, injectBrnDialogContext } from '@spartan-ng/brain/dialog';
@@ -20,9 +20,15 @@ import {
   lucideReceipt,
   lucideSparkles,
   lucideInfo,
+  lucidePhoneCall,
 } from '@ng-icons/lucide';
 import { toast } from '@spartan-ng/hel/sonner';
-import { IBooking, IVehicle, IVehiclePricing, IDamageItem } from '@portfolio/shared-types';
+import {
+  IBooking,
+  IVehicle,
+  IVehiclePricing,
+  IDamageItem,
+} from '@portfolio/shared-types';
 import { RRApiService } from '../../../services/rr-api.service';
 import { RRInvoicePdfService } from '../../../services/rr-invoice-pdf.service';
 
@@ -31,7 +37,12 @@ export interface EndBookingDialogContext {
   vehicles?: IVehicle[];
 }
 
-export type EndBookingScenario = 'case1' | 'case2' | 'case3' | 'case4_1' | 'case4_2';
+export type EndBookingScenario =
+  | 'case1'
+  | 'case2'
+  | 'case3'
+  | 'case4_1'
+  | 'case4_2';
 
 @Component({
   selector: 'app-rr-end-booking-dialog',
@@ -59,6 +70,7 @@ export type EndBookingScenario = 'case1' | 'case2' | 'case3' | 'case4_1' | 'case
       lucideReceipt,
       lucideSparkles,
       lucideInfo,
+      lucidePhoneCall,
     }),
   ],
   templateUrl: './end-booking-dialog.component.html',
@@ -151,7 +163,8 @@ export class RREndBookingDialogComponent implements OnInit {
   }
 
   getActualDurationText(): string {
-    const startStr = this.booking()?.pickupDateTime || this.booking()?.createdAt;
+    const startStr =
+      this.booking()?.pickupDateTime || this.booking()?.createdAt;
     const endStr = this.endBookingFields.returnDateTimeActual;
     if (!startStr || !endStr) return '';
 
@@ -198,25 +211,38 @@ export class RREndBookingDialogComponent implements OnInit {
 
       // Match vehicle
       if (this.data.vehicles && this.data.vehicles.length > 0) {
-        const matchedVeh = this.data.vehicles.find((v) => v.regNo === b.vehicleRegNo);
+        const matchedVeh = this.data.vehicles.find(
+          (v) => v.regNo === b.vehicleRegNo,
+        );
         if (matchedVeh) {
           this.vehicle.set(matchedVeh);
         }
       }
 
       // Initialize default rates
-      this.endBookingFields.extraKmRate = Number(b.extraKmPrice) || (this.vehicle() ? Number(this.vehicle()?.extraKmPrice) : 0) || 0;
-      this.endBookingFields.extraHourRate = Number(b.extraHourPrice) || (this.vehicle() ? Number(this.vehicle()?.extraHourPrice) : 0) || 0;
+      this.endBookingFields.extraKmRate =
+        Number(b.extraKmPrice) ||
+        (this.vehicle() ? Number(this.vehicle()?.extraKmPrice) : 0) ||
+        0;
+      this.endBookingFields.extraHourRate =
+        Number(b.extraHourPrice) ||
+        (this.vehicle() ? Number(this.vehicle()?.extraHourPrice) : 0) ||
+        0;
 
       // Initialize default return time to current local time
-      this.endBookingFields.returnDateTimeActual = this.formatDateTimeLocal(new Date());
+      this.endBookingFields.returnDateTimeActual = this.formatDateTimeLocal(
+        new Date(),
+      );
 
       // Base rent values
       this.endBookingFields.totalRentAmount = Number(b.totalRentalAmount) || 0;
       this.endBookingFields.discountAmount = Number(b.discount) || 0;
       this.endBookingFields.finalRentAmount = Number(b.finalRentalAmount) || 0;
       this.endBookingFields.paidAmount = Number(b.amountPaid) || 0;
-      this.endBookingFields.basePendingAmount = Number(b.pendingAmount) || (this.endBookingFields.finalRentAmount - this.endBookingFields.paidAmount);
+      this.endBookingFields.basePendingAmount =
+        Number(b.pendingAmount) ||
+        this.endBookingFields.finalRentAmount -
+          this.endBookingFields.paidAmount;
 
       this.calculateEndBookingFees();
     }
@@ -242,14 +268,18 @@ export class RREndBookingDialogComponent implements OnInit {
     } else if (choice === 'none') {
       this.endBookingFields.cleanlinessFee = 0;
     } else {
-      this.endBookingFields.cleanlinessFee = Number(this.endBookingFields.customCleanlinessAmount) || 0;
+      this.endBookingFields.cleanlinessFee =
+        Number(this.endBookingFields.customCleanlinessAmount) || 0;
     }
     this.calculateEndBookingFees();
   }
 
   onCustomCleanlinessChange() {
     if (this.endBookingFields.cleanlinessChoice === 'custom') {
-      this.endBookingFields.cleanlinessFee = Math.max(0, Number(this.endBookingFields.customCleanlinessAmount) || 0);
+      this.endBookingFields.cleanlinessFee = Math.max(
+        0,
+        Number(this.endBookingFields.customCleanlinessAmount) || 0,
+      );
       this.calculateEndBookingFees();
     }
   }
@@ -257,7 +287,8 @@ export class RREndBookingDialogComponent implements OnInit {
   // --- Damages Handlers ---
   addDamage() {
     const newDamage: IDamageItem = {
-      id: 'dmg_' + Date.now() + '_' + Math.random().toString(36).substring(2, 5),
+      id:
+        'dmg_' + Date.now() + '_' + Math.random().toString(36).substring(2, 5),
       description: '',
       amount: '' as any,
       confirmed: true,
@@ -380,7 +411,8 @@ export class RREndBookingDialogComponent implements OnInit {
       }
     }
 
-    const rawKmsExceeded = baseKmLimit > 0 ? Math.max(0, distanceDriven - baseKmLimit) : 0;
+    const rawKmsExceeded =
+      baseKmLimit > 0 ? Math.max(0, distanceDriven - baseKmLimit) : 0;
     const isKmExceeded = rawKmsExceeded > 0;
     const isHrsExceeded = rawHoursExceeded > 0;
 
@@ -390,7 +422,10 @@ export class RREndBookingDialogComponent implements OnInit {
     } else if (this.endBookingFields.cleanlinessChoice === '1000') {
       this.endBookingFields.cleanlinessFee = 1000;
     } else if (this.endBookingFields.cleanlinessChoice === 'custom') {
-      this.endBookingFields.cleanlinessFee = Math.max(0, Number(this.endBookingFields.customCleanlinessAmount) || 0);
+      this.endBookingFields.cleanlinessFee = Math.max(
+        0,
+        Number(this.endBookingFields.customCleanlinessAmount) || 0,
+      );
     } else {
       this.endBookingFields.cleanlinessFee = 0;
     }
@@ -398,11 +433,14 @@ export class RREndBookingDialogComponent implements OnInit {
     // [4] Damages total
     this.endBookingFields.damagesTotal = this.damages.reduce(
       (sum, d) => sum + (Number(d.amount) || 0),
-      0
+      0,
     );
 
     // Challana / Toll total (fines merged with challan)
-    const challana = Math.max(0, Number(this.endBookingFields.challanaAmount) || 0);
+    const challana = Math.max(
+      0,
+      Number(this.endBookingFields.challanaAmount) || 0,
+    );
     const toll = Math.max(0, Number(this.endBookingFields.tollAmount) || 0);
     this.endBookingFields.challanaTollFinesTotal = challana + toll;
 
@@ -415,7 +453,8 @@ export class RREndBookingDialogComponent implements OnInit {
     let extraHours = 0;
     let extraHourFee = 0;
     let finalRent = Number(b.finalRentalAmount) || 0;
-    let basePending = Number(b.pendingAmount) || (finalRent - (Number(b.amountPaid) || 0));
+    let basePending =
+      Number(b.pendingAmount) || finalRent - (Number(b.amountPaid) || 0);
 
     this.endBookingFields.effectiveKmLimit = baseKmLimit;
     this.endBookingFields.slabExtraKmAllowance = 0;
@@ -449,8 +488,14 @@ export class RREndBookingDialogComponent implements OnInit {
         this.activeScenario.set('case4_2');
         const veh = this.vehicle();
         if (veh && veh.pricing) {
-          const addedKmLimit = this.calculateSlabKm(rawHoursExceeded, veh.pricing);
-          const addedRent = this.calculateSlabRent(rawHoursExceeded, veh.pricing);
+          const addedKmLimit = this.calculateSlabKm(
+            rawHoursExceeded,
+            veh.pricing,
+          );
+          const addedRent = this.calculateSlabRent(
+            rawHoursExceeded,
+            veh.pricing,
+          );
 
           this.endBookingFields.slabExtraKmAllowance = addedKmLimit;
           this.endBookingFields.slabExtraRent = addedRent;
@@ -489,7 +534,10 @@ export class RREndBookingDialogComponent implements OnInit {
     const isBothExceeded = isKmExceeded && isHrsExceeded;
     let nonIntimationFine = 0;
     if (isBothExceeded && this.endBookingFields.applyNonIntimationFine) {
-      nonIntimationFine = Math.max(0, Number(this.endBookingFields.nonIntimationFine) || 0);
+      nonIntimationFine = Math.max(
+        0,
+        Number(this.endBookingFields.nonIntimationFine) || 0,
+      );
     } else if (!isBothExceeded) {
       this.endBookingFields.applyNonIntimationFine = false;
     }
@@ -534,7 +582,9 @@ export class RREndBookingDialogComponent implements OnInit {
     const endOdo = Number(this.endBookingFields.odometerEnd);
     const startOdo = Number(b.vehicleOdometerStart) || 0;
     if (endOdo < startOdo) {
-      toast.error(`Return odometer (${endOdo} KM) cannot be less than pickup odometer (${startOdo} KM).`);
+      toast.error(
+        `Return odometer (${endOdo} KM) cannot be less than pickup odometer (${startOdo} KM).`,
+      );
       return;
     }
 
@@ -547,19 +597,27 @@ export class RREndBookingDialogComponent implements OnInit {
       this.isSubmitting.set(true);
 
       const isSettlingNow = this.endBookingFields.settleNow;
-      const finalRentalAmountToSave = String(this.endBookingFields.finalTotalPayable);
-      const pendingAmountToSave = isSettlingNow ? '0' : String(this.endBookingFields.balancePending);
+      const finalRentalAmountToSave = String(
+        this.endBookingFields.finalTotalPayable,
+      );
+      const pendingAmountToSave = isSettlingNow
+        ? '0'
+        : String(this.endBookingFields.balancePending);
       const amountPaidToSave = isSettlingNow
         ? String(this.endBookingFields.finalTotalPayable)
         : String(b.amountPaid || '0');
 
-      const isBothExceeded = this.activeScenario() === 'case4_1' || this.activeScenario() === 'case4_2';
+      const isBothExceeded =
+        this.activeScenario() === 'case4_1' ||
+        this.activeScenario() === 'case4_2';
       const currentUser = this.rrApi.currentUser();
       const patch: Partial<IBooking> = {
         status: 'completed',
         endedAt: new Date().toISOString(),
         endedBy: currentUser?.id,
-        endedByName: currentUser ? `${currentUser.firstName} ${currentUser.lastName}`.trim() : undefined,
+        endedByName: currentUser
+          ? `${currentUser.firstName} ${currentUser.lastName}`.trim()
+          : undefined,
         endedByRole: currentUser?.role,
         vehicleOdometerEnd: String(endOdo),
         returnDateTimeActual: this.endBookingFields.returnDateTimeActual,
@@ -573,14 +631,21 @@ export class RREndBookingDialogComponent implements OnInit {
         challanaAmount: String(this.endBookingFields.challanaAmount || 0),
         tollAmount: String(this.endBookingFields.tollAmount || 0),
         finesAmount: '0',
-        challanaTollFinesTotal: String(this.endBookingFields.challanaTollFinesTotal),
-        nonIntimationFine: isBothExceeded && this.endBookingFields.applyNonIntimationFine ? String(this.endBookingFields.nonIntimationFine || 0) : '0',
+        challanaTollFinesTotal: String(
+          this.endBookingFields.challanaTollFinesTotal,
+        ),
+        nonIntimationFine:
+          isBothExceeded && this.endBookingFields.applyNonIntimationFine
+            ? String(this.endBookingFields.nonIntimationFine || 0)
+            : '0',
         recalculateSlabMode: this.endBookingFields.recalculateSlabMode,
         totalAdditionalFees: String(this.endBookingFields.totalAdditionalFees),
         finalRentalAmount: finalRentalAmountToSave,
         pendingAmount: pendingAmountToSave,
         amountPaid: amountPaidToSave,
-        paymentMode: isSettlingNow ? this.endBookingFields.paymentMode : (b.paymentMode || 'Cash'),
+        paymentMode: isSettlingNow
+          ? this.endBookingFields.paymentMode
+          : b.paymentMode || 'Cash',
       };
 
       await this.rrApi.updateBooking(b.id, patch);
