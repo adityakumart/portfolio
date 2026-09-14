@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -23,11 +23,15 @@ import {
   lucideGlobe,
   lucideX,
   lucideCheckCircle,
+  lucideCopy,
+  lucideCheck,
+  lucideExternalLink,
 } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmBadgeImports } from '@spartan-ng/hel/badge';
 import { HlmCardImports } from '@spartan-ng/hel/card';
 import { HlmInputImports } from '@spartan-ng/hel/input';
+import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
 import { HlmToggleGroupImports } from '@spartan-ng/hel/toggle-group';
 import { HlmEmptyImports } from '@spartan-ng/hel/empty';
 import { toast } from '@spartan-ng/hel/sonner';
@@ -45,6 +49,7 @@ import { RRVehicleCardComponent, RRCarLoaderComponent } from '../../shared';
     HlmBadgeImports,
     HlmCardImports,
     HlmInputImports,
+    HlmTooltipImports,
     HlmToggleGroupImports,
     HlmEmptyImports,
     NgIconComponent,
@@ -71,6 +76,9 @@ import { RRVehicleCardComponent, RRCarLoaderComponent } from '../../shared';
       lucideGlobe,
       lucideX,
       lucideCheckCircle,
+      lucideCopy,
+      lucideCheck,
+      lucideExternalLink,
     }),
   ],
   templateUrl: './homepage.component.html',
@@ -80,13 +88,20 @@ export class RRHomepageComponent implements OnInit, OnDestroy {
   private rrApi = inject(RRApiService);
   private router = inject(Router);
 
+  // Desk Phone Info
+  readonly primaryPhone = '+91 9494873336';
+  readonly primaryPhoneRaw = '9494873336';
+  readonly secondaryPhone = '+91 9494893336';
+  readonly secondaryPhoneRaw = '9494893336';
+
   // State Signals
   vehicles = signal<IVehicle[]>([]);
   mobileMenuOpen = signal<boolean>(false);
   selectedCategory = signal<string>('all');
   searchQuery = signal<string>('');
   selectedVehicleForModal = signal<IVehicle | null>(null);
-  inquirySubmitted = signal<boolean>(false);
+  copiedPhone = signal<string | null>(null);
+  isMobileDevice = signal<boolean>(false);
 
   // Car Loading State Signals
   isPageLoading = signal<boolean>(true);
@@ -94,12 +109,6 @@ export class RRHomepageComponent implements OnInit, OnDestroy {
   loadingProgress = signal<number>(14);
   loadingStatus = signal<string>('Igniting engines...');
   private loaderTimers: ReturnType<typeof setTimeout>[] = [];
-
-  // Inquiry form fields
-  inquiryName = '';
-  inquiryPhone = '';
-  inquiryPickupDate = '';
-  inquiryDuration = '23';
 
   // Computed lists
   filteredVehicles = computed(() => {
@@ -138,8 +147,24 @@ export class RRHomepageComponent implements OnInit, OnDestroy {
   currentUser = computed(() => this.rrApi.currentUser());
 
   ngOnInit() {
+    this.checkDeviceType();
     this.startCarLoaderSequence();
     this.loadVehicles();
+  }
+
+  @HostListener('window:resize')
+  onResize() {
+    this.checkDeviceType();
+  }
+
+  checkDeviceType() {
+    if (typeof window !== 'undefined') {
+      const ua = navigator.userAgent || '';
+      const isMobile =
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua) ||
+        window.innerWidth < 768;
+      this.isMobileDevice.set(isMobile);
+    }
   }
 
   ngOnDestroy() {
@@ -228,7 +253,6 @@ export class RRHomepageComponent implements OnInit, OnDestroy {
 
   openVehicleModal(v: IVehicle) {
     this.selectedVehicleForModal.set(v);
-    this.inquirySubmitted.set(false);
   }
 
   closeVehicleModal() {
@@ -245,15 +269,44 @@ export class RRHomepageComponent implements OnInit, OnDestroy {
     }
   }
 
-  submitInquiry() {
-    if (!this.inquiryName || !this.inquiryPhone) return;
-    this.inquirySubmitted.set(true);
-    toast.success('Rental reservation inquiry received! We will contact you shortly.');
-    setTimeout(() => {
-      this.closeVehicleModal();
-      this.inquiryName = '';
-      this.inquiryPhone = '';
-      this.inquirySubmitted.set(false);
-    }, 2500);
+  // Reserve Actions
+  redirectToWhatsApp(vehicle: IVehicle) {
+    const text = `Hello RoadReady Rentals, I would like to reserve ${vehicle.manufacturer} ${vehicle.name} (${vehicle.regNo}). Please share availability and booking details.`;
+    const url = `https://wa.me/91${this.primaryPhoneRaw}?text=${encodeURIComponent(text)}`;
+    if (typeof window !== 'undefined') {
+      window.open(url, '_blank');
+    }
+  }
+
+  makeDirectCall(phoneRaw: string = this.primaryPhoneRaw) {
+    if (typeof window !== 'undefined') {
+      window.location.href = `tel:+91${phoneRaw}`;
+    }
+  }
+
+  handleCardPhoneClick(vehicle: IVehicle) {
+    if (this.isMobileDevice()) {
+      this.makeDirectCall(this.primaryPhoneRaw);
+    } else {
+      this.openVehicleModal(vehicle);
+    }
+  }
+
+  copyPhoneNumber(phone: string) {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(phone).then(() => {
+        this.copiedPhone.set(phone);
+        toast.success(`Copied ${phone} to clipboard`);
+        setTimeout(() => {
+          if (this.copiedPhone() === phone) {
+            this.copiedPhone.set(null);
+          }
+        }, 3000);
+      }).catch(() => {
+        toast.info(`Phone: ${phone}`);
+      });
+    } else {
+      toast.info(`Phone: ${phone}`);
+    }
   }
 }

@@ -14,6 +14,7 @@ import {
   lucideTrash2,
   lucidePalette,
   lucideArrowRight,
+  lucidePhone,
 } from '@ng-icons/lucide';
 import { IVehicle } from '@portfolio/shared-types';
 
@@ -40,6 +41,7 @@ export type VehicleCardVariant = 'fleet' | 'stats' | 'homepage';
       lucideTrash2,
       lucidePalette,
       lucideArrowRight,
+      lucidePhone,
     }),
   ],
   templateUrl: './vehicle-card.component.html',
@@ -55,6 +57,8 @@ export class RRVehicleCardComponent {
   @Output() editClick = new EventEmitter<IVehicle>();
   @Output() deleteClick = new EventEmitter<string>();
   @Output() reserveClick = new EventEmitter<IVehicle>();
+  @Output() whatsappClick = new EventEmitter<IVehicle>();
+  @Output() phoneClick = new EventEmitter<IVehicle>();
 
   get showBookNowOverlay(): boolean {
     return this.variant === 'stats' && this.vehicle?.status === 'available';
@@ -120,5 +124,15 @@ export class RRVehicleCardComponent {
   onReserveClick(event: Event) {
     event.stopPropagation();
     this.reserveClick.emit(this.vehicle);
+  }
+
+  onWhatsAppClick(event: Event) {
+    event.stopPropagation();
+    this.whatsappClick.emit(this.vehicle);
+  }
+
+  onPhoneClick(event: Event) {
+    event.stopPropagation();
+    this.phoneClick.emit(this.vehicle);
   }
 }
