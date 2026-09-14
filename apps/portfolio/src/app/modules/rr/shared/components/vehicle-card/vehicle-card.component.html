@@ -18,11 +18,23 @@
         <span
           hlmBadge
           [variant]="statusBadgeVariant"
-          class="font-bold text-[11px]"
+          class="font-bold text-[11px] backdrop-blur-xs"
           [class.text-emerald-600]="vehicle.status === 'available'"
           [class.dark:text-emerald-400]="vehicle.status === 'available'"
-          [class.text-amber-500]="vehicle.status === 'in_booking' || vehicle.status === 'rented'"
-          [class.text-cyan-500]="vehicle.status === 'contract' || vehicle.status === 'in_contract'"
+          [class.bg-emerald-500/10]="vehicle.status === 'available'"
+          [class.border-emerald-500/30]="vehicle.status === 'available'"
+          [class.text-orange-600]="vehicle.status === 'in_booking' || vehicle.status === 'rented'"
+          [class.dark:text-orange-400]="vehicle.status === 'in_booking' || vehicle.status === 'rented'"
+          [class.bg-orange-500/10]="vehicle.status === 'in_booking' || vehicle.status === 'rented'"
+          [class.border-orange-500/30]="vehicle.status === 'in_booking' || vehicle.status === 'rented'"
+          [class.text-rose-600]="vehicle.status === 'maintenance'"
+          [class.dark:text-rose-400]="vehicle.status === 'maintenance'"
+          [class.bg-rose-500/10]="vehicle.status === 'maintenance'"
+          [class.border-rose-500/30]="vehicle.status === 'maintenance'"
+          [class.text-cyan-600]="vehicle.status === 'contract' || vehicle.status === 'in_contract'"
+          [class.dark:text-cyan-400]="vehicle.status === 'contract' || vehicle.status === 'in_contract'"
+          [class.bg-cyan-500/10]="vehicle.status === 'contract' || vehicle.status === 'in_contract'"
+          [class.border-cyan-500/30]="vehicle.status === 'contract' || vehicle.status === 'in_contract'"
         >
           {{ statusBadgeLabel }}
         </span>

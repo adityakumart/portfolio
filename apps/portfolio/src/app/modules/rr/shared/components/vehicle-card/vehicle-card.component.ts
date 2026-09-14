@@ -65,12 +65,6 @@ export class RRVehicleCardComponent {
   }
 
   get statusBadgeVariant(): 'secondary' | 'destructive' | 'outline' {
-    if (this.vehicle?.status === 'available') {
-      return 'secondary';
-    }
-    if (this.vehicle?.status === 'maintenance') {
-      return 'destructive';
-    }
     return 'outline';
   }
 
@@ -79,8 +73,17 @@ export class RRVehicleCardComponent {
     if (this.variant === 'homepage' && this.vehicle.status === 'available') {
       return 'Available';
     }
-    if (this.vehicle.status === 'in_booking') {
-      return 'RENTED';
+    if (this.vehicle.status === 'available') {
+      return 'AVAILABLE';
+    }
+    if (this.vehicle.status === 'in_booking' || this.vehicle.status === 'rented') {
+      return 'ACTIVE BOOKING';
+    }
+    if (this.vehicle.status === 'maintenance') {
+      return 'IN SERVICE';
+    }
+    if (this.vehicle.status === 'contract' || this.vehicle.status === 'in_contract') {
+      return 'IN CONTRACT';
     }
     return (this.vehicle.status || '').toUpperCase();
   }

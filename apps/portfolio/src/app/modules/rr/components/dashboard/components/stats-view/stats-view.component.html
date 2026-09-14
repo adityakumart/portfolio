@@ -58,6 +58,58 @@
     </div>
   </div>
 
+  <!-- Active Bookings Card -->
+  <div
+    hlmCard
+    class="p-5 rounded-2xl border border-border bg-card shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border-l-4 border-l-orange-500 relative overflow-hidden flex flex-col justify-between"
+    [class.ring-2]="activeCategory() === 'bookings'"
+    [class.ring-orange-500]="activeCategory() === 'bookings'"
+    [class.bg-orange-500/5]="activeCategory() === 'bookings'"
+    [class.shadow-lg]="activeCategory() === 'bookings'"
+    (click)="toggleCategory('bookings')"
+    [hlmTooltip]="activeCategory() === 'bookings' ? 'Click to collapse' : 'Click to view active bookings'"
+  >
+    <div>
+      <div class="flex items-center justify-between w-full mb-2.5">
+        <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Active Bookings</span>
+        <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-orange-500/10 text-orange-500">
+          <ng-icon name="lucideKey" class="text-base"></ng-icon>
+        </div>
+      </div>
+      <div class="text-3xl font-black tracking-tight text-foreground leading-none mb-2">{{ stats().activeBookings }}</div>
+    </div>
+    <div class="flex items-center justify-between text-[11px] font-medium text-muted-foreground pt-1 border-t border-border/40">
+      <span>On the road</span>
+      <ng-icon [name]="activeCategory() === 'bookings' ? 'lucideChevronUp' : 'lucideChevronDown'" class="text-xs transition-transform duration-200" [class.text-orange-500]="activeCategory() === 'bookings'"></ng-icon>
+    </div>
+  </div>
+
+  <!-- Maintenance (In Service) Card -->
+  <div
+    hlmCard
+    class="p-5 rounded-2xl border border-border bg-card shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border-l-4 border-l-rose-500 relative overflow-hidden flex flex-col justify-between"
+    [class.ring-2]="activeCategory() === 'maintenance'"
+    [class.ring-rose-500]="activeCategory() === 'maintenance'"
+    [class.bg-rose-500/5]="activeCategory() === 'maintenance'"
+    [class.shadow-lg]="activeCategory() === 'maintenance'"
+    (click)="toggleCategory('maintenance')"
+    [hlmTooltip]="activeCategory() === 'maintenance' ? 'Click to collapse' : 'Click to view fleet in service'"
+  >
+    <div>
+      <div class="flex items-center justify-between w-full mb-2.5">
+        <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground">In Service</span>
+        <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-rose-500/10 text-rose-500">
+          <ng-icon name="lucideWrench" class="text-base"></ng-icon>
+        </div>
+      </div>
+      <div class="text-3xl font-black tracking-tight text-foreground leading-none mb-2">{{ getVehicleCount('maintenance') }}</div>
+    </div>
+    <div class="flex items-center justify-between text-[11px] font-medium text-muted-foreground pt-1 border-t border-border/40">
+      <span>Repairs & servicing</span>
+      <ng-icon [name]="activeCategory() === 'maintenance' ? 'lucideChevronUp' : 'lucideChevronDown'" class="text-xs transition-transform duration-200" [class.text-rose-500]="activeCategory() === 'maintenance'"></ng-icon>
+    </div>
+  </div>
+
   <!-- In-Contract Card -->
   <div
     hlmCard
@@ -81,58 +133,6 @@
     <div class="flex items-center justify-between text-[11px] font-medium text-muted-foreground pt-1 border-t border-border/40">
       <span>Corporate lease</span>
       <ng-icon [name]="activeCategory() === 'contract' ? 'lucideChevronUp' : 'lucideChevronDown'" class="text-xs transition-transform duration-200" [class.text-cyan-500]="activeCategory() === 'contract'"></ng-icon>
-    </div>
-  </div>
-
-  <!-- Active Bookings Card -->
-  <div
-    hlmCard
-    class="p-5 rounded-2xl border border-border bg-card shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border-l-4 border-l-amber-500 relative overflow-hidden flex flex-col justify-between"
-    [class.ring-2]="activeCategory() === 'bookings'"
-    [class.ring-amber-500]="activeCategory() === 'bookings'"
-    [class.bg-amber-500/5]="activeCategory() === 'bookings'"
-    [class.shadow-lg]="activeCategory() === 'bookings'"
-    (click)="toggleCategory('bookings')"
-    [hlmTooltip]="activeCategory() === 'bookings' ? 'Click to collapse' : 'Click to view active bookings'"
-  >
-    <div>
-      <div class="flex items-center justify-between w-full mb-2.5">
-        <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Active Bookings</span>
-        <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-amber-500/10 text-amber-500">
-          <ng-icon name="lucideKey" class="text-base"></ng-icon>
-        </div>
-      </div>
-      <div class="text-3xl font-black tracking-tight text-foreground leading-none mb-2">{{ stats().activeBookings }}</div>
-    </div>
-    <div class="flex items-center justify-between text-[11px] font-medium text-muted-foreground pt-1 border-t border-border/40">
-      <span>On the road</span>
-      <ng-icon [name]="activeCategory() === 'bookings' ? 'lucideChevronUp' : 'lucideChevronDown'" class="text-xs transition-transform duration-200" [class.text-amber-500]="activeCategory() === 'bookings'"></ng-icon>
-    </div>
-  </div>
-
-  <!-- Maintenance Card -->
-  <div
-    hlmCard
-    class="p-5 rounded-2xl border border-border bg-card shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border-l-4 border-l-rose-500 relative overflow-hidden flex flex-col justify-between"
-    [class.ring-2]="activeCategory() === 'maintenance'"
-    [class.ring-rose-500]="activeCategory() === 'maintenance'"
-    [class.bg-rose-500/5]="activeCategory() === 'maintenance'"
-    [class.shadow-lg]="activeCategory() === 'maintenance'"
-    (click)="toggleCategory('maintenance')"
-    [hlmTooltip]="activeCategory() === 'maintenance' ? 'Click to collapse' : 'Click to view fleet in service'"
-  >
-    <div>
-      <div class="flex items-center justify-between w-full mb-2.5">
-        <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground">In Service</span>
-        <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-rose-500/10 text-rose-500">
-          <ng-icon name="lucideWrench" class="text-base"></ng-icon>
-        </div>
-      </div>
-      <div class="text-3xl font-black tracking-tight text-foreground leading-none mb-2">{{ getVehicleCount('maintenance') }}</div>
-    </div>
-    <div class="flex items-center justify-between text-[11px] font-medium text-muted-foreground pt-1 border-t border-border/40">
-      <span>Repairs & servicing</span>
-      <ng-icon [name]="activeCategory() === 'maintenance' ? 'lucideChevronUp' : 'lucideChevronDown'" class="text-xs transition-transform duration-200" [class.text-rose-500]="activeCategory() === 'maintenance'"></ng-icon>
     </div>
   </div>
 
@@ -174,9 +174,9 @@
           [ngClass]="{
             'bg-blue-500/15 text-blue-500 border border-blue-500/30': activeCategory() === 'fleet',
             'bg-emerald-500/15 text-emerald-500 border border-emerald-500/30': activeCategory() === 'available',
-            'bg-cyan-500/15 text-cyan-500 border border-cyan-500/30': activeCategory() === 'contract',
-            'bg-amber-500/15 text-amber-500 border border-amber-500/30': activeCategory() === 'bookings',
+            'bg-orange-500/15 text-orange-500 border border-orange-500/30': activeCategory() === 'bookings',
             'bg-rose-500/15 text-rose-500 border border-rose-500/30': activeCategory() === 'maintenance',
+            'bg-cyan-500/15 text-cyan-500 border border-cyan-500/30': activeCategory() === 'contract',
             'bg-purple-500/15 text-purple-500 border border-purple-500/30': activeCategory() === 'payments'
           }"
         >
@@ -186,12 +186,12 @@
                 ? 'lucideCar'
                 : activeCategory() === 'available'
                 ? 'lucideCheckCircle'
-                : activeCategory() === 'contract'
-                ? 'lucideFileText'
                 : activeCategory() === 'bookings'
                 ? 'lucideCalendarCheck'
                 : activeCategory() === 'maintenance'
                 ? 'lucideWrench'
+                : activeCategory() === 'contract'
+                ? 'lucideFileText'
                 : 'lucideAlertTriangle'
             "
             class="text-2xl"
@@ -205,12 +205,12 @@
               variant="secondary"
               class="font-bold text-xs"
               [ngClass]="{
-                'text-blue-600 dark:text-blue-400 bg-blue-500/10': activeCategory() === 'fleet',
-                'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10': activeCategory() === 'available',
-                'text-cyan-600 dark:text-cyan-400 bg-cyan-500/10': activeCategory() === 'contract',
-                'text-amber-600 dark:text-amber-400 bg-amber-500/10': activeCategory() === 'bookings',
-                'text-rose-600 dark:text-rose-400 bg-rose-500/10': activeCategory() === 'maintenance',
-                'text-purple-600 dark:text-purple-400 bg-purple-500/10': activeCategory() === 'payments'
+                'text-blue-600 dark:text-blue-400 bg-blue-500/10 border border-blue-500/20': activeCategory() === 'fleet',
+                'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20': activeCategory() === 'available',
+                'text-orange-600 dark:text-orange-400 bg-orange-500/10 border border-orange-500/20': activeCategory() === 'bookings',
+                'text-rose-600 dark:text-rose-400 bg-rose-500/10 border border-rose-500/20': activeCategory() === 'maintenance',
+                'text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 border border-cyan-500/20': activeCategory() === 'contract',
+                'text-purple-600 dark:text-purple-400 bg-purple-500/10 border border-purple-500/20': activeCategory() === 'payments'
               }"
             >
               {{ activeCategoryCount }} {{ isVehicleCategory ? 'Vehicles' : 'Bookings' }}
@@ -504,7 +504,7 @@
             DUE: ₹{{ b.pendingAmount }}
           </span>
         } @else {
-          <span hlmBadge variant="secondary" class="font-bold text-[10px] text-emerald-600 dark:text-emerald-400">
+          <span hlmBadge variant="outline" class="font-bold text-[10px] text-orange-600 dark:text-orange-400 bg-orange-500/10 border-orange-500/30">
             ACTIVE BOOKING
           </span>
         }
