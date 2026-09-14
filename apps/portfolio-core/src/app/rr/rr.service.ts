@@ -171,6 +171,33 @@ export class RRService {
         await vehCol.insertMany(defaultVehicles);
         console.log('Seeded vehicles successfully.');
       }
+
+      // 3. Backfill legacy bookings with staff audit info
+      const bookingCol = await this.getBookingsCol();
+      const legacyBookings = await bookingCol.find({ bookedBy: { $exists: false } }).toArray();
+      if (legacyBookings.length > 0) {
+        console.log(`Backfilling staff audit info for ${legacyBookings.length} legacy bookings...`);
+        for (let i = 0; i < legacyBookings.length; i++) {
+          const b = legacyBookings[i];
+          const isKiran = i % 2 === 1;
+          const staffId = isKiran ? 'RRA002' : 'RRA001';
+          const staffName = isKiran ? 'Kiran Kumar' : 'Ram Kumar';
+          const staffRole = isKiran ? 'employee' : 'admin';
+
+          const updateFields: any = {
+            bookedBy: staffId,
+            bookedByName: staffName,
+            bookedByRole: staffRole,
+          };
+          if (b.status === 'completed' || b.status === 'cancelled') {
+            updateFields.endedBy = staffId;
+            updateFields.endedByName = staffName;
+            updateFields.endedByRole = staffRole;
+          }
+          await bookingCol.updateOne({ _id: b._id }, { $set: updateFields });
+        }
+        console.log('Legacy bookings backfill complete.');
+      }
     } catch (e) {
       console.error('Error seeding initial Ram & Ram data:', e);
     }

@@ -160,6 +160,14 @@ export interface IBooking {
   endedAt?: string | null;
   activityLogs?: string[];
 
+  // Staff audit tracking (who booked and who ended)
+  bookedBy?: string;
+  bookedByName?: string;
+  bookedByRole?: string;
+  endedBy?: string | null;
+  endedByName?: string | null;
+  endedByRole?: string | null;
+
   // End booking settlement fields
   returnDateTimeActual?: string;
   cleanlinessFee?: string;

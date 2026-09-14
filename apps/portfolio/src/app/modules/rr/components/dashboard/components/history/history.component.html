@@ -4,7 +4,18 @@
       <ng-icon style="font-size: 14px; width: 14px; height: 14px;" name="lucideHistory"></ng-icon>
       <span>History &bull; Finished & Cancelled Bookings</span>
     </div>
-    <h2 style="margin: 0; font-size: 1.85rem; font-weight: 800; color: var(--foreground);">Rental History Logs</h2>
+    <div class="flex items-center gap-3 flex-wrap">
+      <h2 style="margin: 0; font-size: 1.85rem; font-weight: 800; color: var(--foreground);">Rental History Logs</h2>
+      @if (isAdmin()) {
+        <span hlmBadge variant="outline" class="text-xs font-semibold px-2.5 py-0.5 rounded-full border-primary/30 text-primary bg-primary/10">
+          All Records (Admin View)
+        </span>
+      } @else {
+        <span hlmBadge variant="outline" class="text-xs font-semibold px-2.5 py-0.5 rounded-full border-amber-500/30 text-amber-500 bg-amber-500/10" title="Showing only bookings you created or ended">
+          My Bookings & Settlements (Staff View)
+        </span>
+      }
+    </div>
   </div>
 </div>
 
@@ -208,6 +219,18 @@
               <!-- Booking ID -->
               <td hlmTd>
                 <span class="font-mono font-bold text-xs bg-muted/50 px-2 py-0.5 rounded border border-border">{{ b.id }}</span>
+                @if (b.bookedByName) {
+                  <div class="text-[10px] text-muted-foreground mt-1 flex items-center gap-1" title="Booked by {{ b.bookedByName }} ({{ b.bookedBy }})">
+                    <span class="font-semibold text-foreground/70">Booked:</span>
+                    <span class="truncate max-w-[110px]">{{ b.bookedByName }}</span>
+                  </div>
+                }
+                @if (b.endedByName) {
+                  <div class="text-[10px] text-muted-foreground flex items-center gap-1" title="Ended by {{ b.endedByName }} ({{ b.endedBy }})">
+                    <span class="font-semibold text-foreground/70">Ended:</span>
+                    <span class="truncate max-w-[110px]">{{ b.endedByName }}</span>
+                  </div>
+                }
               </td>
 
               <!-- Customer Details -->

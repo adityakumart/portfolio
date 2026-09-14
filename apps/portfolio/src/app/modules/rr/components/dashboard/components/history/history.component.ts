@@ -91,6 +91,10 @@ export class RRHistoryComponent implements OnInit {
 
   @ViewChild('breakdownDialog') breakdownDialog!: TemplateRef<any>;
 
+  // User role context
+  isAdmin = this.rrApi.isAdmin;
+  currentUser = this.rrApi.currentUser;
+
   // Data signals from API
   bookings = signal<IBooking[]>([]);
   vehicles = signal<IVehicleAutocompleteItem[]>([]);
@@ -159,7 +163,7 @@ export class RRHistoryComponent implements OnInit {
 
   // --- API Methods ---
 
-  async loadVehiclesFromApi(search: string = '') {
+  async loadVehiclesFromApi(search = '') {
     this.isVehiclesLoading.set(true);
     try {
       const data = await this.rrApi.getVehiclesAutocomplete({

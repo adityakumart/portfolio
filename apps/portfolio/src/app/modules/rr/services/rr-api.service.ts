@@ -1,4 +1,4 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
@@ -41,6 +41,7 @@ export class RRApiService {
 
   // Signals
   currentUser = signal<IRRUser | null>(null);
+  isAdmin = computed(() => this.currentUser()?.role === 'admin');
 
   constructor() {
     this.loadSession();

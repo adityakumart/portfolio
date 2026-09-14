@@ -554,8 +554,13 @@ export class RREndBookingDialogComponent implements OnInit {
         : String(b.amountPaid || '0');
 
       const isBothExceeded = this.activeScenario() === 'case4_1' || this.activeScenario() === 'case4_2';
+      const currentUser = this.rrApi.currentUser();
       const patch: Partial<IBooking> = {
         status: 'completed',
+        endedAt: new Date().toISOString(),
+        endedBy: currentUser?.id,
+        endedByName: currentUser ? `${currentUser.firstName} ${currentUser.lastName}`.trim() : undefined,
+        endedByRole: currentUser?.role,
         vehicleOdometerEnd: String(endOdo),
         returnDateTimeActual: this.endBookingFields.returnDateTimeActual,
         cleanlinessFee: String(this.endBookingFields.cleanlinessFee),

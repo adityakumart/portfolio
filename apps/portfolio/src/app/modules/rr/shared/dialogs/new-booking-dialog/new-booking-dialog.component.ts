@@ -456,7 +456,13 @@ export class RRNewBookingDialogComponent implements OnInit {
 
     try {
       this.isSubmitting.set(true);
-      const created = await this.rrApi.createBooking(this.bookingFormGroup.value);
+      const currentUser = this.rrApi.currentUser();
+      const payload = {
+        ...this.bookingFormGroup.value,
+        bookedBy: currentUser?.id,
+        bookedByName: currentUser ? `${currentUser.firstName} ${currentUser.lastName}`.trim() : undefined,
+      };
+      const created = await this.rrApi.createBooking(payload);
       toast.success('Booking created successfully.');
       this.dialogRef?.close(created);
     } catch (e: any) {

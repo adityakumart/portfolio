@@ -407,6 +407,30 @@ rrRouter.get('/bookings', authenticateRRToken, async (req: any, res: Response) =
       });
     }
 
+    // Role-based access control for rental history:
+    // Admin has full view of all rental history records.
+    // Employees can only see history of bookings they personally booked or ended.
+    if (req.userRole !== 'admin') {
+      const isHistoryFilter = (status && (status.includes('completed') || status.includes('cancelled'))) || req.query.history === 'true';
+      if (isHistoryFilter) {
+        andConditions.push({
+          $or: [
+            { bookedBy: req.userId },
+            { endedBy: req.userId }
+          ]
+        });
+      } else {
+        // If not strictly filtering history, restrict completed/cancelled to user's own
+        andConditions.push({
+          $or: [
+            { status: { $nin: ['completed', 'cancelled'] } },
+            { bookedBy: req.userId },
+            { endedBy: req.userId }
+          ]
+        });
+      }
+    }
+
     const query = andConditions.length > 0 ? { $and: andConditions } : {};
 
     const isPaginated = paginate === 'true' || page !== undefined || limit !== undefined;
@@ -438,12 +462,13 @@ rrRouter.get('/bookings', authenticateRRToken, async (req: any, res: Response) =
   }
 });
 
-// POST create booking (Authenticated)
+// POST create booking (Authenticated - records who booked)
 rrRouter.post('/bookings', authenticateRRToken, async (req: any, res: Response) => {
   try {
     const bookingData: Omit<IBooking, 'id' | 'createdAt'> = req.body;
     const bookingCol = await RRService.getBookingsCol();
     const vehCol = await RRService.getVehiclesCol();
+    const empCol = await RRService.getEmployeesCol();
 
     const selectedVehicle = await vehCol.findOne({ regNo: bookingData.vehicleRegNo });
     if (!selectedVehicle) {
@@ -460,9 +485,17 @@ rrRouter.post('/bookings', authenticateRRToken, async (req: any, res: Response) 
     const count = await bookingCol.countDocuments();
     const bookingId = 'RRB' + String(count + 1).padStart(3, '0');
 
+    // Look up staff details for audit trail
+    const staff = await empCol.findOne({ id: req.userId });
+    const staffName = staff ? `${staff.firstName} ${staff.lastName}`.trim() : (req.userId || 'Staff');
+    const staffRole = req.userRole || staff?.role || 'employee';
+
     const newBooking: IBooking = {
       ...bookingData,
       id: bookingId,
+      bookedBy: req.userId || 'RRA001',
+      bookedByName: staffName,
+      bookedByRole: staffRole,
       createdAt: new Date().toISOString()
     };
 
@@ -488,13 +521,14 @@ rrRouter.post('/bookings', authenticateRRToken, async (req: any, res: Response) 
   }
 });
 
-// PUT update booking / end booking (Authenticated)
+// PUT update booking / end booking (Authenticated - records who ended)
 rrRouter.put('/bookings/:id', authenticateRRToken, async (req: any, res: Response) => {
   try {
     const bookingId = req.params.id;
     const updateData = req.body;
     const bookingCol = await RRService.getBookingsCol();
     const vehCol = await RRService.getVehiclesCol();
+    const empCol = await RRService.getEmployeesCol();
 
     const booking = await bookingCol.findOne({ id: bookingId });
     if (!booking) {
@@ -506,13 +540,29 @@ rrRouter.put('/bookings/:id', authenticateRRToken, async (req: any, res: Respons
     delete updateData.id;
     delete updateData.createdAt;
 
+    const isClosing = updateData.status === 'completed' || updateData.status === 'cancelled';
+    let enderName: string | undefined = undefined;
+    let enderRole: string | undefined = undefined;
+    if (isClosing) {
+      const staff = await empCol.findOne({ id: req.userId });
+      enderName = staff ? `${staff.firstName} ${staff.lastName}`.trim() : (req.userId || 'Staff');
+      enderRole = req.userRole || staff?.role || 'employee';
+    }
+
+    const setDoc: any = {
+      ...updateData,
+    };
+    if (isClosing) {
+      setDoc.endedAt = updateData.endedAt || new Date().toISOString();
+      setDoc.endedBy = req.userId || 'RRA001';
+      setDoc.endedByName = enderName;
+      setDoc.endedByRole = enderRole;
+    }
+
     await bookingCol.updateOne(
       { id: bookingId },
       {
-        $set: {
-          ...updateData,
-          endedAt: updateData.status === 'completed' || updateData.status === 'cancelled' ? new Date().toISOString() : null
-        }
+        $set: setDoc
       }
     );
 
