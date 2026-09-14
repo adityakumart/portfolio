@@ -123,7 +123,7 @@
     }
 
     <!-- Search input -->
-    <div class="relative flex items-center min-w-[240px]">
+    <div class="relative flex items-center flex-1 sm:flex-initial min-w-[180px] sm:min-w-[240px]">
       <ng-icon
         name="lucideSearch"
         class="absolute left-3 text-muted-foreground text-sm pointer-events-none"
@@ -235,7 +235,7 @@
         <tr hlmTr class="border-b border-border">
           <th hlmTh class="w-[190px]">Timestamp</th>
           <th hlmTh class="w-[140px]">Operator</th>
-          <th hlmTh class="w-[100px]">Role</th>
+          <th hlmTh class="w-[100px] hidden sm:table-cell">Role</th>
           <th hlmTh>Action / Activity Performed</th>
         </tr>
       </thead>
@@ -250,7 +250,7 @@
               <td hlmTd>
                 <div class="h-4 bg-muted rounded w-24"></div>
               </td>
-              <td hlmTd>
+              <td hlmTd class="hidden sm:table-cell">
                 <div class="h-5 bg-muted rounded w-16"></div>
               </td>
               <td hlmTd>
@@ -278,13 +278,21 @@
 
               <!-- Operator -->
               <td hlmTd class="whitespace-nowrap">
-                <span class="font-bold text-foreground font-mono">{{
-                  log.performedBy || log.user
-                }}</span>
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="font-bold text-foreground font-mono">{{
+                    log.performedBy || log.user
+                  }}</span>
+                  <span
+                    class="sm:hidden text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded"
+                    [ngClass]="log.role === 'admin' ? 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-400' : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'"
+                  >
+                    {{ log.role === 'admin' ? 'Admin' : 'Staff' }}
+                  </span>
+                </div>
               </td>
 
               <!-- Role -->
-              <td hlmTd class="whitespace-nowrap">
+              <td hlmTd class="whitespace-nowrap hidden sm:table-cell">
                 @if (log.role === 'admin') {
                   <span
                     hlmBadge

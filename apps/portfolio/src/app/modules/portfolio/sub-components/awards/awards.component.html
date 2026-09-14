@@ -4,7 +4,7 @@
     <p class="mt-1 text-sm leading-relaxed text-muted-foreground">Key achievements and honors received.</p>
   </div>
 
-  <div class="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-4.5">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4.5">
     @for (award of awards(); track award.title) {
       <div class="reveal-on-scroll">
         <div hlmCard class="award-card-with-accent relative min-h-[110px] overflow-hidden rounded-2xl border border-border bg-card p-4 pl-6 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-sky-500 hover:bg-secondary">
