@@ -71,7 +71,12 @@
                   </span>
                 }
               </td>
-              <td hlmTd class="text-center whitespace-nowrap">
+              <td hlmTd class="text-center whitespace-nowrap space-x-1">
+                @if (b.status === 'completed') {
+                  <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 rounded-full text-emerald-600 dark:text-emerald-400" hlmTooltip="Print Customer Invoice PDF" (click)="exportInvoicePdf(b)">
+                    <ng-icon name="lucideReceipt"></ng-icon>
+                  </button>
+                }
                 <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 rounded-full text-primary" hlmTooltip="Print Agreement PDF" (click)="exportBookingPdf(b)">
                   <ng-icon name="lucideFileText"></ng-icon>
                 </button>

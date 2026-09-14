@@ -24,6 +24,7 @@ import {
 import { toast } from '@spartan-ng/hel/sonner';
 import { IBooking, IVehicle, IVehiclePricing, IDamageItem } from '@portfolio/shared-types';
 import { RRApiService } from '../../../services/rr-api.service';
+import { RRInvoicePdfService } from '../../../services/rr-invoice-pdf.service';
 
 export interface EndBookingDialogContext {
   booking: IBooking;
@@ -68,6 +69,7 @@ export class RREndBookingDialogComponent implements OnInit {
   data = injectBrnDialogContext<EndBookingDialogContext>({ optional: true });
 
   private rrApi = inject(RRApiService);
+  private invoicePdf = inject(RRInvoicePdfService);
   isSubmitting = signal(false);
 
   booking = signal<IBooking | null>(null);
@@ -589,7 +591,19 @@ export class RREndBookingDialogComponent implements OnInit {
         console.warn('Vehicle odometer update note:', ve);
       }
 
-      toast.success(`Booking ${b.id} completed & finalized successfully!`);
+      // Automatically generate & download customer invoice
+      const completedBooking: IBooking = {
+        ...b,
+        ...patch,
+      } as IBooking;
+
+      try {
+        await this.invoicePdf.printInvoicePdf(completedBooking);
+      } catch (pdfErr) {
+        console.error('Customer invoice generation note:', pdfErr);
+      }
+
+      toast.success(`Booking ${b.id} ended & customer invoice generated!`);
       this.dialogRef?.close(true);
     } catch (e: any) {
       console.error(e);

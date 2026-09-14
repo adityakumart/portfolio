@@ -7,7 +7,7 @@ import { HlmTableImports } from '@spartan-ng/hel/table';
 import { HlmBadgeImports } from '@spartan-ng/hel/badge';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
-import { lucideHistory, lucideInbox, lucideFileText } from '@ng-icons/lucide';
+import { lucideHistory, lucideInbox, lucideFileText, lucideReceipt } from '@ng-icons/lucide';
 import { RRInvoicePdfService } from '../../../../services/rr-invoice-pdf.service';
 
 @Component({
@@ -21,7 +21,7 @@ import { RRInvoicePdfService } from '../../../../services/rr-invoice-pdf.service
     HlmButtonImports,
     HlmTooltipImports,
   ],
-  providers: [provideIcons({ lucideHistory, lucideInbox, lucideFileText })],
+  providers: [provideIcons({ lucideHistory, lucideInbox, lucideFileText, lucideReceipt })],
   templateUrl: './history.component.html',
   styleUrl: './history.component.scss',
 })
@@ -50,5 +50,9 @@ export class RRHistoryComponent implements OnInit {
 
   exportBookingPdf(b: IBooking) {
     this.invoicePdf.printAgreementPdf(b);
+  }
+
+  exportInvoicePdf(b: IBooking) {
+    this.invoicePdf.printInvoicePdf(b);
   }
 }

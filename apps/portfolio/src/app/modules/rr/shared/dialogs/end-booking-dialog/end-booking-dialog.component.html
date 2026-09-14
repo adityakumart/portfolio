@@ -1022,13 +1022,13 @@
       <button hlmBtn variant="outline" (click)="closeDialog()">Cancel</button>
       <button
         hlmBtn
-        class="action-btn success flex items-center gap-1.5 font-bold"
+        class="action-btn success flex items-center gap-1.5 font-bold shadow-md"
         [disabled]="!endBookingFields.odometerEnd || isOdometerEndInvalid() || isSubmitting()"
         (click)="submitEndBooking()"
       >
-        <ng-icon name="lucideCheckCircle"></ng-icon>
+        <ng-icon name="lucideReceipt"></ng-icon>
         <span>{{
-          isSubmitting() ? 'Finalizing...' : 'Finalize & Close Booking'
+          isSubmitting() ? 'Finalizing & Generating Invoice...' : 'End Booking & Generate Invoice'
         }}</span>
       </button>
     </div>
