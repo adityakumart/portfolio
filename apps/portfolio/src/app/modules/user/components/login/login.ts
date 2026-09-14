@@ -2,10 +2,16 @@ import { Component, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { HlmInput } from '@spartan-ng/hel/input';
-import { HlmLabel } from '@spartan-ng/hel/label';
-import { HlmButton } from '@spartan-ng/hel/button';
-import { HlmSpinner } from '@spartan-ng/hel/spinner';
+import { HlmCardImports } from '@spartan-ng/hel/card';
+import { HlmTabsImports } from '@spartan-ng/hel/tabs';
+import { HlmInputImports } from '@spartan-ng/hel/input';
+import { HlmLabelImports } from '@spartan-ng/hel/label';
+import { HlmButtonImports } from '@spartan-ng/hel/button';
+import { HlmSpinnerImports } from '@spartan-ng/hel/spinner';
+import { HlmBadgeImports } from '@spartan-ng/hel/badge';
+import { HlmSeparatorImports } from '@spartan-ng/hel/separator';
+import { HlmAlertImports } from '@spartan-ng/hel/alert';
+import { toast } from '@spartan-ng/hel/sonner';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideLock,
@@ -20,6 +26,9 @@ import {
   lucideCircleUser,
   lucideHome,
   lucideLogOut,
+  lucideShieldCheck,
+  lucideSparkles,
+  lucideArrowRight,
 } from '@ng-icons/lucide';
 import { AuthService } from '../../services/auth';
 
@@ -30,10 +39,15 @@ import { AuthService } from '../../services/auth';
     CommonModule,
     FormsModule,
     RouterLink,
-    HlmInput,
-    HlmLabel,
-    HlmButton,
-    HlmSpinner,
+    HlmCardImports,
+    HlmTabsImports,
+    HlmInputImports,
+    HlmLabelImports,
+    HlmButtonImports,
+    HlmSpinnerImports,
+    HlmBadgeImports,
+    HlmSeparatorImports,
+    HlmAlertImports,
     NgIconComponent,
   ],
   providers: [
@@ -50,6 +64,9 @@ import { AuthService } from '../../services/auth';
       lucideCircleUser,
       lucideHome,
       lucideLogOut,
+      lucideShieldCheck,
+      lucideSparkles,
+      lucideArrowRight,
     }),
   ],
   templateUrl: './login.html',
@@ -127,12 +144,14 @@ export class LoginComponent {
       if (this.mode() === 'login') {
         await this.authService.login(emailVal, passwordVal);
         this.success.set('Successfully logged in! Redirecting...');
+        toast.success('Successfully logged in! Redirecting...');
         setTimeout(() => {
           this.router.navigate(['/user']);
         }, 1000);
       } else {
         await this.authService.register(emailVal, passwordVal, firstNameVal, lastNameVal);
         this.success.set('Account created successfully! Redirecting...');
+        toast.success('Account created successfully! Redirecting...');
         setTimeout(() => {
           this.router.navigate(['/user']);
         }, 1500);
@@ -146,7 +165,9 @@ export class LoginComponent {
     } catch (err: unknown) {
       console.error('Authentication error:', err);
       const errorObj = err as { code?: string; message?: string };
-      this.error.set(this.getErrorMessage(errorObj.code || errorObj.message || ''));
+      const errText = this.getErrorMessage(errorObj.code || errorObj.message || '');
+      this.error.set(errText);
+      toast.error(errText);
     } finally {
       this.loading.set(false);
     }

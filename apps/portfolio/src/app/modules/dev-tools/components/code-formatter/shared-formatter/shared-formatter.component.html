@@ -23,7 +23,7 @@
 
             @if (config.showSortOption) {
               <label class="flex items-center gap-2 cursor-pointer text-sm">
-                <input type="checkbox" formControlName="sortKeys" class="rounded accent-primary h-4 w-4" />
+                <hlm-checkbox formControlName="sortKeys" />
                 <span>{{ config.sortOptionLabel }}</span>
               </label>
             }
@@ -116,11 +116,11 @@
 
           <div class="card-content-fill flex-1 flex flex-col space-y-3">
             <textarea
-              hlmInput
+              hlmTextarea
               formControlName="inputCode"
               [placeholder]="config.inputPlaceholder"
               rows="20"
-              class="code-textarea font-mono text-xs w-full flex-1 resize-y"
+              class="code-textarea font-mono text-xs w-full flex-1 resize-y min-h-[300px]"
             ></textarea>
             @if (form.get('inputCode')?.hasError('required') && form.get('inputCode')?.touched) {
               <span class="text-xs text-destructive">{{ config.language | uppercase }} input is required</span>
@@ -128,12 +128,10 @@
 
             <!-- Dynamic Error Detail Panel -->
             @if (validationState === 'invalid' && errorMessage) {
-              <div class="error-detail-box p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-start gap-2">
-                <ng-icon class="error-box-icon text-base shrink-0 mt-0.5" name="lucideAlertTriangle"></ng-icon>
-                <div class="error-box-content">
-                  <strong>Parsing Error Detail:</strong>
-                  <p class="error-message-text mt-0.5">{{ errorMessage }}</p>
-                </div>
+              <div hlmAlert variant="destructive">
+                <ng-icon class="text-base shrink-0" name="lucideAlertTriangle"></ng-icon>
+                <h4 hlmAlertTitle>Parsing Error Detail</h4>
+                <p hlmAlertDescription>{{ errorMessage }}</p>
               </div>
             }
           </div>
@@ -164,12 +162,12 @@
 
           <div class="card-content-fill flex-1 flex flex-col">
             <textarea
-              hlmInput
+              hlmTextarea
               [value]="outputText"
               [placeholder]="'Formatted, minified, or validated ' + (config.language | uppercase) + ' output will appear here...'"
               rows="20"
               readonly
-              class="code-textarea readonly-textarea font-mono text-xs w-full flex-1 resize-y bg-muted/20"
+              class="code-textarea readonly-textarea font-mono text-xs w-full flex-1 resize-y min-h-[300px] bg-muted/20"
             ></textarea>
           </div>
         </div>

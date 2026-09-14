@@ -1,0 +1,120 @@
+<div class="flex flex-col h-full max-h-[calc(90vh-3rem)] overflow-hidden bg-card text-foreground">
+  <!-- Fixed Header -->
+  <div class="shrink-0 flex items-center justify-between pb-3 border-b border-border">
+    <h3 class="text-lg font-bold flex items-center gap-2 text-foreground">
+      <ng-icon name="lucideCalendarRange" class="text-primary text-xl"></ng-icon>
+      <span>Modify Active Booking Agreement - ID: {{ selectedBooking()?.id }}</span>
+    </h3>
+    <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 text-muted-foreground hover:text-foreground" (click)="closeDialog()" aria-label="Close dialog">
+      <ng-icon name="lucideX"></ng-icon>
+    </button>
+  </div>
+
+  <form [formGroup]="modifyBookingFormGroup" class="flex flex-col flex-1 min-h-0">
+    <!-- Scrollable Body -->
+    <div class="flex-1 min-h-0 overflow-y-auto py-3 pr-1 space-y-4">
+      <div class="p-3 rounded-xl border border-border bg-muted/20 text-xs space-y-1">
+        <p><strong>Customer:</strong> {{ selectedBooking()?.renterFirstName }} {{ selectedBooking()?.renterSecondName }} ({{ selectedBooking()?.renterPhone }})</p>
+        <p><strong>Vehicle:</strong> {{ selectedBooking()?.vehicleManufacturer }} {{ selectedBooking()?.vehicleName }} ({{ selectedBooking()?.vehicleRegNo }})</p>
+        @if (selectedBooking()?.lastIntimation) {
+          <div class="pt-1.5 mt-1 border-t border-border/60 flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-medium">
+            <span class="font-bold">Prior Customer Intimation:</span>
+            <span>{{ selectedBooking()?.lastIntimation?.intimationType | titlecase }} &mdash; "{{ selectedBooking()?.lastIntimation?.notes }}"</span>
+          </div>
+        }
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <div>
+          <label hlmLabel class="text-xs text-muted-foreground block mb-1">Pickup Date & Time</label>
+          <input hlmInput type="datetime-local" formControlName="pickupDateTime" (change)="calculateModifyReturnDate()" class="w-full text-sm" />
+        </div>
+
+        <div>
+          <label hlmLabel class="text-xs text-muted-foreground block mb-1">Duration Days</label>
+          <select hlmInput formControlName="durationDays" (change)="calculateModifyReturnDate()" class="w-full text-sm">
+            <option value="0">0 days</option>
+            @for (day of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]; track day) {
+              <option [value]="'' + day">{{ day }} day{{ day > 1 ? 's' : '' }}</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label hlmLabel class="text-xs text-muted-foreground block mb-1">Duration Hours</label>
+          <select hlmInput formControlName="durationHours" (change)="calculateModifyReturnDate()" class="w-full text-sm">
+            <option value="0">0 hours</option>
+            @for (hour of [1,2,3,4,5,6,7,8,9,10,11,12]; track hour) {
+              <option [value]="'' + hour">{{ hour }} hour{{ hour > 1 ? 's' : '' }}</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label hlmLabel class="text-xs text-muted-foreground block mb-1">Return Date & Time (Auto)</label>
+          <input hlmInput type="datetime-local" formControlName="returnDateTime" readonly class="w-full text-sm bg-muted/20" />
+        </div>
+
+        <div>
+          <label hlmLabel class="text-xs text-muted-foreground block mb-1">Total Rental Amount (Rs. Auto)</label>
+          <input hlmInput formControlName="totalRentalAmount" readonly class="w-full text-sm bg-muted/20" />
+        </div>
+
+        <div>
+          <label hlmLabel class="text-xs text-muted-foreground block mb-1">Discount Type</label>
+          <select hlmInput formControlName="discountType" (change)="recalculateModifyFinalAmount()" class="w-full text-sm">
+            <option value="none">None</option>
+            <option value="rupee">Rupee (Rs.)</option>
+            <option value="percentage">Percentage (%)</option>
+          </select>
+        </div>
+
+        <div>
+          <label hlmLabel class="text-xs text-muted-foreground block mb-1">Discount Amount</label>
+          <input hlmInput type="number" formControlName="discount" (input)="recalculateModifyFinalAmount()" (change)="recalculateModifyFinalAmount()" [readonly]="modifyBookingFormGroup.get('discountType')?.value === 'none'" class="w-full text-sm" />
+          @if (modifyBookingFormGroup.get('discount')?.touched && modifyBookingFormGroup.get('discount')?.hasError('max') && modifyBookingFormGroup.get('discountType')?.value === 'percentage') {
+            <span class="text-xs text-destructive">Discount cannot exceed 100%.</span>
+          }
+          @if (modifyBookingFormGroup.get('discount')?.touched && modifyBookingFormGroup.get('discount')?.hasError('max') && modifyBookingFormGroup.get('discountType')?.value !== 'percentage') {
+            <span class="text-xs text-destructive">Discount cannot exceed total rent.</span>
+          }
+        </div>
+
+        <div>
+          <label hlmLabel class="text-xs text-muted-foreground block mb-1">Final Rental Amount (Rs. Auto)</label>
+          <input hlmInput formControlName="finalRentalAmount" readonly class="w-full text-sm bg-muted/20 font-bold" />
+        </div>
+
+        <div>
+          <label hlmLabel class="text-xs text-muted-foreground block mb-1">Amount Already Paid (Rs.)</label>
+          <input hlmInput type="number" formControlName="amountPaid" (input)="recalculateModifyFinalAmount()" (change)="recalculateModifyFinalAmount()" class="w-full text-sm" />
+        </div>
+
+        <div>
+          <label hlmLabel class="text-xs text-muted-foreground block mb-1">Balance Pending Amount (Rs. Auto)</label>
+          <input hlmInput formControlName="pendingAmount" readonly class="w-full text-sm bg-muted/20 font-bold" />
+        </div>
+
+        @if (modifyBookingFormGroup.get('pendingAmount')?.value && modifyBookingFormGroup.get('pendingAmount')?.value.startsWith('-')) {
+          <div class="sm:col-span-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs flex items-center gap-2">
+            <ng-icon name="lucideAlertTriangle" class="text-base shrink-0"></ng-icon>
+            <span><strong>Warning:</strong> Excess advance amount paid. Refund/credit of Rs. {{ modifyBookingFormGroup.get('pendingAmount')?.value.replace('-', '') }} is pending.</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Fixed Footer -->
+    <div class="shrink-0 flex items-center justify-end gap-2 pt-3 border-t border-border">
+      <button hlmBtn class="action-btn success flex items-center gap-1.5" [disabled]="modifyBookingFormGroup.invalid || isSubmitting()" (click)="submitModifyBooking()">
+        <ng-icon name="lucideSave"></ng-icon>
+        <span>{{ isSubmitting() ? 'Saving...' : 'Save Changes' }}</span>
+      </button>
+      <button hlmBtn variant="outline" class="action-btn flex items-center gap-1.5" [disabled]="modifyBookingFormGroup.invalid" (click)="printAgreementPDFFromModifyForm()">
+        <ng-icon name="lucideFileText"></ng-icon>
+        <span>Print Agreement PDF</span>
+      </button>
+      <button hlmBtn variant="ghost" (click)="closeDialog()">Cancel</button>
+    </div>
+  </form>
+</div>

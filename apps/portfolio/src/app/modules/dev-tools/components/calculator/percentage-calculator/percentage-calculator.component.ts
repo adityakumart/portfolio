@@ -4,10 +4,8 @@ import {
   signal,
   ChangeDetectionStrategy,
 } from '@angular/core';
-import { HlmCardDirective } from '@spartan-ng/hel/card';
-import { HlmInputDirective } from '@spartan-ng/hel/input';
-import { HlmLabelDirective } from '@spartan-ng/hel/label';
-import { HlmButtonDirective } from '@spartan-ng/hel/button';
+import { HlmCardImports } from '@spartan-ng/hel/card';
+import { HlmInputImports } from '@spartan-ng/hel/input';
 import { FormsModule } from '@angular/forms';
 
 @Component({
@@ -15,10 +13,8 @@ import { FormsModule } from '@angular/forms';
   standalone: true,
   imports: [
     FormsModule,
-    HlmCardDirective,
-    HlmInputDirective,
-    HlmLabelDirective,
-    HlmButtonDirective,
+    HlmCardImports,
+    HlmInputImports,
   ],
   templateUrl: './percentage-calculator.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,

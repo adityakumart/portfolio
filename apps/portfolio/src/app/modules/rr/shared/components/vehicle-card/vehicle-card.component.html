@@ -1,0 +1,155 @@
+<div
+  hlmCard
+  class="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 cursor-pointer flex flex-col h-full"
+  (click)="onCardClick($event)"
+>
+  <!-- Vehicle Image Container -->
+  <div class="relative w-full h-40 bg-muted/20 flex items-center justify-center p-3 border-b border-border overflow-hidden">
+    <img
+      [src]="vehicleImage"
+      [alt]="vehicle.manufacturer + ' ' + vehicle.name"
+      (error)="onImageError($event)"
+      class="max-w-[90%] max-h-[90%] object-contain group-hover:scale-105 transition-transform duration-300"
+    />
+
+    <!-- Status Badge (Hidden for public portal homepage) -->
+    @if (variant !== 'homepage') {
+      <div class="absolute top-3 left-3">
+        <span
+          hlmBadge
+          [variant]="statusBadgeVariant"
+          class="font-bold text-[11px] backdrop-blur-xs"
+          [class.text-emerald-600]="vehicle.status === 'available'"
+          [class.dark:text-emerald-400]="vehicle.status === 'available'"
+          [class.bg-emerald-500/10]="vehicle.status === 'available'"
+          [class.border-emerald-500/30]="vehicle.status === 'available'"
+          [class.text-orange-600]="vehicle.status === 'in_booking' || vehicle.status === 'rented'"
+          [class.dark:text-orange-400]="vehicle.status === 'in_booking' || vehicle.status === 'rented'"
+          [class.bg-orange-500/10]="vehicle.status === 'in_booking' || vehicle.status === 'rented'"
+          [class.border-orange-500/30]="vehicle.status === 'in_booking' || vehicle.status === 'rented'"
+          [class.text-rose-600]="vehicle.status === 'maintenance'"
+          [class.dark:text-rose-400]="vehicle.status === 'maintenance'"
+          [class.bg-rose-500/10]="vehicle.status === 'maintenance'"
+          [class.border-rose-500/30]="vehicle.status === 'maintenance'"
+          [class.text-cyan-600]="vehicle.status === 'contract' || vehicle.status === 'in_contract'"
+          [class.dark:text-cyan-400]="vehicle.status === 'contract' || vehicle.status === 'in_contract'"
+          [class.bg-cyan-500/10]="vehicle.status === 'contract' || vehicle.status === 'in_contract'"
+          [class.border-cyan-500/30]="vehicle.status === 'contract' || vehicle.status === 'in_contract'"
+        >
+          {{ statusBadgeLabel }}
+        </span>
+      </div>
+    }
+
+    <!-- Hover "Book Now" Overlay (Stats Variant for available vehicles) -->
+    @if (showBookNowOverlay) {
+      <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <button
+          hlmBtn
+          size="sm"
+          class="bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold rounded-full shadow-lg flex items-center gap-1.5 hover:from-cyan-400 hover:to-blue-500"
+          (click)="onBookNowClick($event)"
+        >
+          <ng-icon name="lucideKey"></ng-icon>
+          <span>Book Now</span>
+        </button>
+      </div>
+    }
+  </div>
+
+  <!-- Card Body -->
+  <div class="p-4 flex flex-col flex-1">
+    <!-- Homepage Variant -->
+    @if (variant === 'homepage') {
+      <div class="font-extrabold text-base text-foreground leading-tight mb-1">
+        {{ vehicle.manufacturer }} {{ vehicle.name }}
+      </div>
+      <div class="flex flex-wrap gap-1.5 my-2">
+        <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-md">
+          <ng-icon name="lucidePalette"></ng-icon> {{ vehicle.color || 'Premium' }}
+        </span>
+        <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-md">
+          <ng-icon name="lucideFuel"></ng-icon> {{ vehicle.fuelType || 'Petrol' }}
+        </span>
+        <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-md">
+          <ng-icon name="lucideUsers"></ng-icon> {{ vehicle.seating }} Seats
+        </span>
+      </div>
+
+      <div class="flex justify-between items-center mt-auto pt-3 border-t border-border/50 gap-2">
+        <span class="text-xs font-bold uppercase text-cyan-500 tracking-wider truncate">{{ vehicle.type || 'Sedan' }}</span>
+        <div class="flex items-center gap-1.5 shrink-0">
+          <!-- Quick WhatsApp button -->
+          <button
+            hlmBtn
+            size="icon"
+            variant="outline"
+            class="h-8 w-8 rounded-lg border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 transition-colors"
+            title="Reserve via WhatsApp"
+            type="button"
+            (click)="onWhatsAppClick($event)"
+          >
+            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+              <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
+            </svg>
+          </button>
+          <!-- Quick Call button -->
+          <button
+            hlmBtn
+            size="icon"
+            variant="outline"
+            class="h-8 w-8 rounded-lg border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10 transition-colors"
+            title="Call Desk"
+            type="button"
+            (click)="onPhoneClick($event)"
+          >
+            <ng-icon name="lucidePhone" class="text-sm"></ng-icon>
+          </button>
+          <!-- Reserve button -->
+          <button
+            hlmBtn
+            size="sm"
+            class="bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold rounded-lg shadow-sm flex items-center gap-1 hover:from-cyan-400 hover:to-blue-500 text-xs px-2.5 h-8"
+            type="button"
+            (click)="onReserveClick($event)"
+          >
+            <span>Reserve</span>
+            <ng-icon name="lucideArrowRight" class="text-xs"></ng-icon>
+          </button>
+        </div>
+      </div>
+    } @else {
+      <!-- Fleet & Stats Variants -->
+      <div class="text-[10px] font-extrabold text-cyan-500 tracking-wider uppercase mb-1">{{ vehicle.type }}</div>
+      <div class="font-extrabold text-base text-foreground leading-tight mb-1 truncate">{{ vehicle.manufacturer }} {{ vehicle.name }}</div>
+      <div class="font-mono text-xs text-muted-foreground bg-muted/40 px-2 py-0.5 rounded w-fit mb-3">{{ vehicle.regNo }}</div>
+
+      <div class="flex flex-wrap gap-1.5 mt-auto pt-2 border-t border-border/50">
+        <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-md" hlmTooltip="Capacity">
+          <ng-icon name="lucideUsers" class="text-xs"></ng-icon>
+          <span>{{ vehicle.seating }} Seats</span>
+        </span>
+        <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-md" hlmTooltip="Fuel Type">
+          <ng-icon name="lucideFuel" class="text-xs"></ng-icon>
+          <span>{{ vehicle.fuelType | uppercase }}</span>
+        </span>
+        <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-md" hlmTooltip="Odometer">
+          <ng-icon name="lucideGauge" class="text-xs"></ng-icon>
+          <span>{{ vehicle.odometer }} KM</span>
+        </span>
+      </div>
+    }
+  </div>
+
+  <!-- Admin Quick Actions (Fleet Variant) -->
+  @if (isAdmin && variant === 'fleet') {
+    <div class="absolute bottom-3 right-3 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+      <button hlmBtn size="icon" variant="secondary" class="h-8 w-8 rounded-full shadow-md" (click)="onEditClick($event)" hlmTooltip="Edit Vehicle">
+        <ng-icon name="lucidePencil"></ng-icon>
+      </button>
+      <button hlmBtn size="icon" variant="destructive" class="h-8 w-8 rounded-full shadow-md" (click)="onDeleteClick($event)" hlmTooltip="Delete Vehicle">
+        <ng-icon name="lucideTrash2"></ng-icon>
+      </button>
+    </div>
+  }
+</div>

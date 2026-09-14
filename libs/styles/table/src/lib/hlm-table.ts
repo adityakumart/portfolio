@@ -20,7 +20,7 @@ export class HlmTableContainer {
 })
 export class HlmTable {
 	constructor() {
-		classes(() => 'w-full caption-bottom text-sm');
+		classes(() => 'w-full caption-bottom text-xs');
 	}
 }
 
@@ -118,6 +118,6 @@ export class HlmTd {
 })
 export class HlmCaption {
 	constructor() {
-		classes(() => 'text-muted-foreground mt-4 text-sm');
+		classes(() => 'text-muted-foreground mt-4 text-xs');
 	}
 }

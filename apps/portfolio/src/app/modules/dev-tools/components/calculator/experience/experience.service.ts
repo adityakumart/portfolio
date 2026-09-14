@@ -1,6 +1,6 @@
 // src/app/services/experience.service.ts
-import { inject, Injectable, signal, WritableSignal } from '@angular/core';
-import { ToastrService } from '../../../../../shared/services/toaster.service';
+import { Injectable, signal, WritableSignal } from '@angular/core';
+import { toast } from '@spartan-ng/hel/sonner';
 import { IndexedDbService } from '../../../../../../shared/services/indexed-db-base.service';
 
 import { UserExperienceRecord, DateRange } from '@portfolio/shared-types';
@@ -12,7 +12,6 @@ import { UserExperienceRecord, DateRange } from '@portfolio/shared-types';
 })
 export class ExperienceService {
   private storeName = 'experience_calculator';
-  private snackBar = inject(ToastrService);
 
   // Dynamically declare DB configuration parameters here
   private experienceDbService = new IndexedDbService<UserExperienceRecord>(
@@ -35,7 +34,7 @@ export class ExperienceService {
       const list = await this.experienceDbService.getAll();
       this.experienceSignal.set(list);
     } catch {
-      this.snackBar.open('Failed to load experiences', 'error');
+      toast.error('Failed to load experiences');
     }
   }
 
@@ -43,25 +42,25 @@ export class ExperienceService {
     experience: Omit<UserExperienceRecord, 'id'>,
   ): Promise<void> {
     await this.experienceDbService.add(experience);
-    this.snackBar.open('Experience added successfully!', 'success');
+    toast.success('Experience added successfully!');
     await this.refreshExperiences();
   }
 
   async updateExperience(experience: UserExperienceRecord): Promise<void> {
     await this.experienceDbService.update(experience);
-    this.snackBar.open('Experience updated successfully!', 'success');
+    toast.success('Experience updated successfully!');
     await this.refreshExperiences();
   }
 
   async deleteExperience(id: number): Promise<void> {
     await this.experienceDbService.deleteById(id);
-    this.snackBar.open('Experience deleted successfully!', 'warning');
+    toast.warning('Experience deleted successfully!');
     await this.refreshExperiences();
   }
 
   async clearUserTable(): Promise<void> {
     await this.experienceDbService.deleteTable();
-    this.snackBar.open('All experience records cleared!', 'error');
+    toast.error('All experience records cleared!');
     await this.refreshExperiences();
   }
 

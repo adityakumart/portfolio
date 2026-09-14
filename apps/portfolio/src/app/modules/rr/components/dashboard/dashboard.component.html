@@ -3,55 +3,104 @@
   <header class="app-header">
     <div class="header-brand" routerLink="/user/rr/home">
       <ng-icon class="brand-icon" name="lucideCar"></ng-icon>
-      <h2 class="app-title">RoadReady Command</h2>
+      <h2 class="app-title">RoadReady</h2>
     </div>
 
-    <div class="profile-container">
-      <div (click)="toggleProfileDropdown()" class="profile-button">
-        <div class="user-avatar-bubble">
-          {{ getInitials() }}
-        </div>
-        <div class="user-profile-meta">
-          <span class="user-name"
+    <div class="relative">
+      <button
+        hlmBtn
+        variant="ghost"
+        [hlmDropdownMenuTrigger]="profileMenu"
+        class="flex items-center gap-3 px-3 py-1.5 h-auto rounded-xl border border-border bg-card/60 hover:bg-muted/50 transition-all"
+      >
+        <hlm-avatar class="h-8 w-8">
+          <span
+            hlmAvatarFallback
+            class="bg-gradient-to-tr from-cyan-500 to-blue-600 text-white font-bold text-xs shadow-sm"
+          >
+            {{ getInitials() }}
+          </span>
+        </hlm-avatar>
+        <div class="flex flex-col text-left">
+          <span class="font-bold text-xs leading-tight text-foreground"
             >{{ currentUser()?.firstName }} {{ currentUser()?.lastName }}</span
           >
-          <span class="user-role">{{ currentUser()?.role | uppercase }}</span>
+          <span
+            class="text-[10px] font-extrabold text-cyan-500 tracking-wider uppercase"
+            >{{ currentUser()?.role }}</span
+          >
         </div>
-        <ng-icon class="arrow-icon" name="lucideChevronDown"></ng-icon>
-      </div>
+        <ng-icon
+          class="text-muted-foreground text-sm"
+          name="lucideChevronDown"
+        ></ng-icon>
+      </button>
 
-      @if (profileDropdownOpen()) {
-        <div class="profile-dropdown">
-          <div class="dropdown-item" (click)="showProfilePopup()">
-            <ng-icon name="lucideUser"></ng-icon>
+      <ng-template #profileMenu>
+        <div
+          hlmDropdownMenu
+          class="w-56 p-1 rounded-xl shadow-xl border border-border bg-card/95 backdrop-blur-md"
+        >
+          <button
+            hlmDropdownMenuItem
+            class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
+            (click)="showProfilePopup()"
+          >
+            <ng-icon name="lucideUser" class="text-muted-foreground"></ng-icon>
             <span>View Profile</span>
-          </div>
+          </button>
           @if (isAdmin()) {
-            <div
-              class="dropdown-item"
+            <button
+              hlmDropdownMenuItem
+              class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
               [routerLink]="['/user/rr/activity-logs']"
-              (click)="profileDropdownOpen.set(false)"
             >
-              <ng-icon name="lucideHistory"></ng-icon>
+              <ng-icon
+                name="lucideHistory"
+                class="text-muted-foreground"
+              ></ng-icon>
               <span>Activity Logs</span>
-            </div>
+            </button>
           }
-          <div class="dropdown-item logout" (click)="logout()">
-            <ng-icon name="lucideLogOut"></ng-icon>
+          <div
+            hlmDropdownMenuSeparator
+            class="my-1 border-t border-border"
+          ></div>
+          <button
+            hlmDropdownMenuItem
+            class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg text-destructive hover:bg-destructive/10 w-full text-left"
+            (click)="logout()"
+          >
+            <ng-icon name="lucideLogOut" class="text-destructive"></ng-icon>
             <span>Logout</span>
-          </div>
+          </button>
         </div>
-      }
+      </ng-template>
     </div>
   </header>
 
   <div class="admin-layout">
     <!-- Sidebar -->
-    <aside class="sidebar">
-      <div class="sidebar-brand">
-        <div class="brand-glow"></div>
-        <ng-icon class="brand-icon" name="lucideShieldAlert"></ng-icon>
-        <span>Control Desk</span>
+    <aside class="sidebar" [class.collapsed]="isSidebarCollapsed()">
+      <div class="sidebar-toggle-bar">
+        <button
+          type="button"
+          class="sidebar-toggle-btn"
+          (click)="toggleSidebar()"
+          [hlmTooltip]="
+            isSidebarCollapsed() ? 'Expand sidebar' : 'Collapse sidebar'
+          "
+          tooltipPosition="right"
+          [attr.aria-label]="
+            isSidebarCollapsed() ? 'Expand sidebar' : 'Collapse sidebar'
+          "
+        >
+          <ng-icon
+            [name]="
+              isSidebarCollapsed() ? 'lucideChevronRight' : 'lucideChevronLeft'
+            "
+          ></ng-icon>
+        </button>
       </div>
 
       <div class="sidebar-scroll">
@@ -63,6 +112,9 @@
               [routerLink]="['/user/rr/dashboard']"
               routerLinkActive="active-menu"
               [routerLinkActiveOptions]="{ exact: true }"
+              [hlmTooltip]="'Overview'"
+              [tooltipDisabled]="!isSidebarCollapsed()"
+              tooltipPosition="right"
             >
               <div class="menu-item-pill"></div>
               <div class="menu-item-content">
@@ -74,6 +126,9 @@
               class="menu-item"
               [routerLink]="['/user/rr/booking/list']"
               routerLinkActive="active-menu"
+              [hlmTooltip]="'Active Rentals'"
+              [tooltipDisabled]="!isSidebarCollapsed()"
+              tooltipPosition="right"
             >
               <div class="menu-item-pill"></div>
               <div class="menu-item-content">
@@ -85,6 +140,9 @@
               class="menu-item"
               [routerLink]="['/user/rr/vehicle/list']"
               routerLinkActive="active-menu"
+              [hlmTooltip]="'Vehicles Inventory'"
+              [tooltipDisabled]="!isSidebarCollapsed()"
+              tooltipPosition="right"
             >
               <div class="menu-item-pill"></div>
               <div class="menu-item-content">
@@ -99,11 +157,28 @@
                 class="menu-item"
                 [routerLink]="['/user/rr/employee/list']"
                 routerLinkActive="active-menu"
+                [hlmTooltip]="'Staff Registry'"
+                [tooltipDisabled]="!isSidebarCollapsed()"
+                tooltipPosition="right"
               >
                 <div class="menu-item-pill"></div>
                 <div class="menu-item-content">
                   <ng-icon name="lucideBadgeCheck"></ng-icon>
                   <span>Staff Registry</span>
+                </div>
+              </li>
+              <li
+                class="menu-item"
+                [routerLink]="['/user/rr/activity-logs']"
+                routerLinkActive="active-menu"
+                [hlmTooltip]="'Audit Logs'"
+                [tooltipDisabled]="!isSidebarCollapsed()"
+                tooltipPosition="right"
+              >
+                <div class="menu-item-pill"></div>
+                <div class="menu-item-content">
+                  <ng-icon name="lucideActivity"></ng-icon>
+                  <span>Audit Logs</span>
                 </div>
               </li>
             }
@@ -112,6 +187,9 @@
               class="menu-item"
               [routerLink]="['/user/rr/history']"
               routerLinkActive="active-menu"
+              [hlmTooltip]="'Historical Logs'"
+              [tooltipDisabled]="!isSidebarCollapsed()"
+              tooltipPosition="right"
             >
               <div class="menu-item-pill"></div>
               <div class="menu-item-content">
@@ -132,15 +210,44 @@
 
   <!-- POPUP: VIEW PROFILE POPUP -->
   <ng-template #profileInfoDialog>
-    <div class="space-y-4">
-      <h3 class="text-lg font-bold">Desk Agent Profile</h3>
-      <div class="space-y-3">
+    <div class="flex flex-col h-full max-h-[calc(85vh-3rem)] overflow-hidden">
+      <!-- Fixed Header -->
+      <div class="shrink-0 flex items-center justify-between pb-3 border-b">
+        <h3 class="text-lg font-bold flex items-center gap-2">
+          <ng-icon name="lucideUser" class="text-primary"></ng-icon>
+          <span>Desk Agent Profile</span>
+        </h3>
+        <button
+          hlmBtn
+          size="icon"
+          variant="ghost"
+          class="h-8 w-8 text-muted-foreground hover:text-foreground"
+          (click)="closeProfilePopup()"
+          aria-label="Close dialog"
+        >
+          <ng-icon name="lucideX"></ng-icon>
+        </button>
+      </div>
+
+      <!-- Scrollable Body -->
+      <div class="flex-1 min-h-0 overflow-y-auto py-3 pr-1 space-y-3">
         <div>
-          <label class="text-xs text-muted-foreground block mb-1">Agent Identifier</label>
-          <input hlmInput type="text" [value]="currentUser()?.id" readonly disabled class="w-full text-sm" />
+          <label class="text-xs text-muted-foreground block mb-1"
+            >Agent Identifier</label
+          >
+          <input
+            hlmInput
+            type="text"
+            [value]="currentUser()?.id"
+            readonly
+            disabled
+            class="w-full text-sm"
+          />
         </div>
         <div>
-          <label class="text-xs text-muted-foreground block mb-1">Full Legal Name</label>
+          <label class="text-xs text-muted-foreground block mb-1"
+            >Full Legal Name</label
+          >
           <input
             hlmInput
             type="text"
@@ -151,11 +258,22 @@
           />
         </div>
         <div>
-          <label class="text-xs text-muted-foreground block mb-1">Registered Email Address</label>
-          <input hlmInput type="text" [value]="currentUser()?.email" readonly disabled class="w-full text-sm" />
+          <label class="text-xs text-muted-foreground block mb-1"
+            >Registered Email Address</label
+          >
+          <input
+            hlmInput
+            type="text"
+            [value]="currentUser()?.email"
+            readonly
+            disabled
+            class="w-full text-sm"
+          />
         </div>
         <div>
-          <label class="text-xs text-muted-foreground block mb-1">Authorized System Role</label>
+          <label class="text-xs text-muted-foreground block mb-1"
+            >Authorized System Role</label
+          >
           <input
             hlmInput
             type="text"
@@ -166,7 +284,9 @@
           />
         </div>
       </div>
-      <div class="flex justify-end pt-2">
+
+      <!-- Fixed Footer -->
+      <div class="shrink-0 flex justify-end pt-3 border-t">
         <button
           hlmBtn
           variant="outline"

@@ -1,4 +1,4 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
@@ -6,23 +6,33 @@ import { environment } from '../../../../environments/environment';
 import {
   IRRUser,
   IVehicle,
+  IVehicleAutocompleteItem,
   IBooking,
   IEmployee,
   ILog,
+  ILogsResponse,
+  IBookingsResponse,
   IRRDashboardStats,
   IRRVehicleAvailability,
   IRRLoginRequest,
   IRRLoginResponse,
+  ICustomerIntimation,
 } from '@portfolio/shared-types';
 
 export {
   IRRUser,
   IVehicle,
+  IVehicleAutocompleteItem,
   IBooking,
   IEmployee,
   ILog,
+  ILogsResponse,
+  IBookingsResponse,
   IRRDashboardStats,
   IRRVehicleAvailability,
+  IRRLoginRequest,
+  IRRLoginResponse,
+  ICustomerIntimation,
 };
 
 @Injectable({
@@ -35,6 +45,7 @@ export class RRApiService {
 
   // Signals
   currentUser = signal<IRRUser | null>(null);
+  isAdmin = computed(() => this.currentUser()?.role === 'admin');
 
   constructor() {
     this.loadSession();
@@ -106,15 +117,45 @@ export class RRApiService {
   }
 
   // Auth Logout
-  logout() {
-    this.clearSession();
-    this.router.navigate(['/user/rr/login']);
+  async logout(): Promise<void> {
+    try {
+      if (this.getToken()) {
+        await firstValueFrom(
+          this.http.post(`${this.baseUrl}/auth/logout`, {}, { headers: this.getHeaders() })
+        );
+      }
+    } catch (e) {
+      console.warn('Logout notification error:', e);
+    } finally {
+      this.clearSession();
+      this.router.navigate(['/user/rr/login']);
+    }
   }
 
   // Vehicles
-  async getVehicles(): Promise<IVehicle[]> {
+  async getVehicles(params?: { search?: string; limit?: number }): Promise<IVehicle[]> {
+    let httpParams = new HttpParams();
+    if (params?.search) httpParams = httpParams.set('search', params.search);
+    if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
+
     return firstValueFrom(
-      this.http.get<IVehicle[]>(`${this.baseUrl}/vehicles`, { headers: this.getHeaders() })
+      this.http.get<IVehicle[]>(`${this.baseUrl}/vehicles`, {
+        headers: this.getHeaders(),
+        params: httpParams,
+      })
+    );
+  }
+
+  async getVehiclesAutocomplete(params?: { search?: string; limit?: number }): Promise<IVehicleAutocompleteItem[]> {
+    let httpParams = new HttpParams();
+    if (params?.search) httpParams = httpParams.set('search', params.search);
+    if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
+
+    return firstValueFrom(
+      this.http.get<IVehicleAutocompleteItem[]>(`${this.baseUrl}/vehicles/autocomplete`, {
+        headers: this.getHeaders(),
+        params: httpParams,
+      })
     );
   }
 
@@ -137,9 +178,55 @@ export class RRApiService {
   }
 
   // Bookings
-  async getBookings(): Promise<IBooking[]> {
+  async getBookings(params?: {
+    status?: string;
+    vehicle?: string;
+    customer?: string;
+    from?: string;
+    to?: string;
+    search?: string;
+  }): Promise<IBooking[]> {
+    let httpParams = new HttpParams();
+    if (params?.status) httpParams = httpParams.set('status', params.status);
+    if (params?.vehicle) httpParams = httpParams.set('vehicle', params.vehicle);
+    if (params?.customer) httpParams = httpParams.set('customer', params.customer);
+    if (params?.from) httpParams = httpParams.set('from', params.from);
+    if (params?.to) httpParams = httpParams.set('to', params.to);
+    if (params?.search) httpParams = httpParams.set('search', params.search);
+
     return firstValueFrom(
-      this.http.get<IBooking[]>(`${this.baseUrl}/bookings`, { headers: this.getHeaders() })
+      this.http.get<IBooking[]>(`${this.baseUrl}/bookings`, {
+        headers: this.getHeaders(),
+        params: httpParams,
+      })
+    );
+  }
+
+  async getBookingsPaginated(params?: {
+    status?: string;
+    vehicle?: string;
+    customer?: string;
+    from?: string;
+    to?: string;
+    search?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<IBookingsResponse> {
+    let httpParams = new HttpParams().set('paginate', 'true');
+    if (params?.status) httpParams = httpParams.set('status', params.status);
+    if (params?.vehicle) httpParams = httpParams.set('vehicle', params.vehicle);
+    if (params?.customer) httpParams = httpParams.set('customer', params.customer);
+    if (params?.from) httpParams = httpParams.set('from', params.from);
+    if (params?.to) httpParams = httpParams.set('to', params.to);
+    if (params?.search) httpParams = httpParams.set('search', params.search);
+    if (params?.page) httpParams = httpParams.set('page', params.page.toString());
+    if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
+
+    return firstValueFrom(
+      this.http.get<IBookingsResponse>(`${this.baseUrl}/bookings`, {
+        headers: this.getHeaders(),
+        params: httpParams,
+      })
     );
   }
 
@@ -152,6 +239,19 @@ export class RRApiService {
   async updateBooking(id: string, data: Partial<IBooking>): Promise<IBooking> {
     return firstValueFrom(
       this.http.put<IBooking>(`${this.baseUrl}/bookings/${id}`, data, { headers: this.getHeaders() })
+    );
+  }
+
+  async recordCustomerIntimation(
+    id: string,
+    data: { intimationType: string; notes: string; expectedReturnDateTime?: string }
+  ): Promise<{ success: boolean; message: string; intimation: ICustomerIntimation; booking: IBooking }> {
+    return firstValueFrom(
+      this.http.post<{ success: boolean; message: string; intimation: ICustomerIntimation; booking: IBooking }>(
+        `${this.baseUrl}/bookings/${id}/customer-intimation`,
+        data,
+        { headers: this.getHeaders() }
+      )
     );
   }
 
@@ -174,16 +274,31 @@ export class RRApiService {
     );
   }
 
+  async deleteEmployee(id: string): Promise<{ message: string }> {
+    return firstValueFrom(
+      this.http.delete<{ message: string }>(`${this.baseUrl}/employees/${id}`, { headers: this.getHeaders() })
+    );
+  }
+
   // Logs
-  async getLogs(from?: string, to?: string): Promise<ILog[]> {
-    let params = new HttpParams();
-    if (from) params = params.set('from', from);
-    if (to) params = params.set('to', to);
+  async getLogs(params?: {
+    from?: string;
+    to?: string;
+    page?: number;
+    limit?: number;
+    search?: string;
+  }): Promise<ILogsResponse> {
+    let httpParams = new HttpParams();
+    if (params?.from) httpParams = httpParams.set('from', params.from);
+    if (params?.to) httpParams = httpParams.set('to', params.to);
+    if (params?.page) httpParams = httpParams.set('page', params.page.toString());
+    if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
+    if (params?.search) httpParams = httpParams.set('search', params.search);
 
     return firstValueFrom(
-      this.http.get<ILog[]>(`${this.baseUrl}/logs`, {
+      this.http.get<ILogsResponse>(`${this.baseUrl}/logs`, {
         headers: this.getHeaders(),
-        params: params,
+        params: httpParams,
       })
     );
   }

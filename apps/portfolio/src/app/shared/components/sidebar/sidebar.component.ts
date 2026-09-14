@@ -4,6 +4,9 @@ import {
   inject,
   signal,
   ChangeDetectionStrategy,
+  OnDestroy,
+  ElementRef,
+  HostListener,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NavigationEnd, Router } from '@angular/router';
@@ -31,11 +34,12 @@ import {
   lucideSun,
   lucideMoon,
   lucideLogOut,
-  lucideZap
+  lucideZap,
 } from '@ng-icons/lucide';
-import { HlmButton } from '@spartan-ng/hel/button';
+import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
 import { HlmDropdownMenuImports } from '@spartan-ng/hel/dropdown-menu';
+import { HlmAvatarImports } from '@spartan-ng/hel/avatar';
 import { AuthService } from '../../../modules/user/services/auth';
 import { ThemeService } from '../../../theme.service';
 import { devToolsRoutingList } from '../../data/routes';
@@ -54,9 +58,10 @@ export interface SidebarItem {
   imports: [
     CommonModule,
     NgIconComponent,
-    HlmButton,
+    HlmButtonImports,
     HlmTooltipImports,
     HlmDropdownMenuImports,
+    HlmAvatarImports,
   ],
   providers: [
     provideIcons({
@@ -80,25 +85,91 @@ export interface SidebarItem {
       lucideSun,
       lucideMoon,
       lucideLogOut,
-      lucideZap
-    })
+      lucideZap,
+    }),
   ],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnDestroy {
   private router = inject(Router);
   private authService = inject(AuthService);
   private themeService = inject(ThemeService);
   private rrApiService = inject(RRApiService);
+  private elementRef = inject(ElementRef);
 
   // Active hover tracking signals for fly-out panel visibility control
   activeLevel0Item = signal<SidebarItem | null>(null);
   activeLevel1Item = signal<SidebarItem | null>(null);
 
+  // Timers to provide a smooth grace period when moving cursor between icon and fly-out panels
+  private closeLevel0Timer: ReturnType<typeof setTimeout> | null = null;
+  private closeLevel1Timer: ReturnType<typeof setTimeout> | null = null;
+
+  private clearTimers(): void {
+    if (this.closeLevel0Timer) {
+      clearTimeout(this.closeLevel0Timer);
+      this.closeLevel0Timer = null;
+    }
+    if (this.closeLevel1Timer) {
+      clearTimeout(this.closeLevel1Timer);
+      this.closeLevel1Timer = null;
+    }
+  }
+
+  onLevel0Enter(item: SidebarItem): void {
+    this.clearTimers();
+    if (this.activeLevel0Item() !== item) {
+      this.activeLevel0Item.set(item);
+      this.activeLevel1Item.set(null);
+    }
+  }
+
+  onLevel0Leave(): void {
+    if (this.closeLevel0Timer) {
+      clearTimeout(this.closeLevel0Timer);
+    }
+    this.closeLevel0Timer = setTimeout(() => {
+      this.activeLevel0Item.set(null);
+      this.activeLevel1Item.set(null);
+      this.closeLevel0Timer = null;
+    }, 300);
+  }
+
+  onLevel1Enter(subItem: SidebarItem): void {
+    this.clearTimers();
+    this.activeLevel1Item.set(subItem);
+  }
+
+  onLevel1Leave(): void {
+    if (this.closeLevel1Timer) {
+      clearTimeout(this.closeLevel1Timer);
+    }
+    this.closeLevel1Timer = setTimeout(() => {
+      this.activeLevel1Item.set(null);
+      this.closeLevel1Timer = null;
+    }, 300);
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (!this.elementRef.nativeElement.contains(target)) {
+      this.clearTimers();
+      this.activeLevel0Item.set(null);
+      this.activeLevel1Item.set(null);
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.clearTimers();
+  }
+
   // User and Theme state
   currentUser = computed(() => this.authService.currentUser());
+  rrUser = computed(() => this.rrApiService.currentUser());
+  isLoggedIn = computed(() => !!this.currentUser() || !!this.rrUser());
   isDarkMode = computed(() => this.themeService.darkMode());
 
   // Track the current URL using toSignal
@@ -138,7 +209,11 @@ export class SidebarComponent {
         icon: 'lucideUser',
         children: [
           { label: 'Profile', link: '/user', icon: 'lucideUser' },
-          { label: 'AI Assistant', link: '/user/ai', icon: 'lucideMessageSquare' },
+          {
+            label: 'AI Assistant',
+            link: '/user/ai',
+            icon: 'lucideMessageSquare',
+          },
           { label: 'File Manager', link: '/user/files', icon: 'lucideFolder' },
         ],
       });
@@ -168,7 +243,11 @@ export class SidebarComponent {
             link: '/user/rr/employee/list',
             icon: 'lucideUsers',
           },
-          { label: 'History Logs', link: '/user/rr/history', icon: 'lucideHistory' },
+          {
+            label: 'History Logs',
+            link: '/user/rr/history',
+            icon: 'lucideHistory',
+          },
         ],
       });
     } else {
@@ -187,39 +266,43 @@ export class SidebarComponent {
     return items;
   });
 
-  // Mappings helper for dev tool category icons
-  private getDevToolIcon(header: string): string {
-    switch (header) {
-      case 'Calculator':
-        return 'lucideCalculator';
-      case 'Formatters':
+  private getDevToolIcon(category: string): string {
+    switch (category.toLowerCase()) {
+      case 'text tools':
         return 'lucideAlignLeft';
-      case 'Encode/Decode':
+      case 'crypto':
         return 'lucideKey';
-      case 'Converters':
+      case 'converters':
         return 'lucideRefreshCw';
-      case 'Generator':
+      case 'generators':
         return 'lucideHammer';
+      case 'calculators':
+        return 'lucideCalculator';
       default:
-        return 'lucideCode';
+        return 'lucideFolder';
     }
   }
 
-  // Check if item is active based on url
+  // Active item checking for selection highlighting
   isItemActive(item: SidebarItem): boolean {
-    const url = this.currentUrl().split('?')[0];
+    const url = this.currentUrl() || '';
 
     if (item.link) {
-      return url === item.link;
+      if (item.link === '/' && url === '/') {
+        return true;
+      }
+      if (item.link !== '/' && url.startsWith(item.link)) {
+        return true;
+      }
     }
 
-    if (item.children) {
+    if (item.children && item.children.length > 0) {
       const checkChildren = (children: SidebarItem[]): boolean => {
         return children.some((child) => {
-          if (child.link) {
-            return url === child.link;
+          if (child.link && url.startsWith(child.link)) {
+            return true;
           }
-          if (child.children) {
+          if (child.children && child.children.length > 0) {
             return checkChildren(child.children);
           }
           return false;
@@ -236,6 +319,14 @@ export class SidebarComponent {
     if (item.link) {
       this.router.navigateByUrl(item.link);
       // Close all submenus immediately on click
+      if (this.closeLevel0Timer) {
+        clearTimeout(this.closeLevel0Timer);
+        this.closeLevel0Timer = null;
+      }
+      if (this.closeLevel1Timer) {
+        clearTimeout(this.closeLevel1Timer);
+        this.closeLevel1Timer = null;
+      }
       this.activeLevel0Item.set(null);
       this.activeLevel1Item.set(null);
     }
@@ -248,31 +339,57 @@ export class SidebarComponent {
   // Computed values for active user profile display
   userName = computed(() => {
     const user = this.currentUser();
-    if (!user) return 'Guest Account';
-    return `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'User';
+    if (user) {
+      return `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'User';
+    }
+    const rr = this.rrUser();
+    if (rr) {
+      return `${rr.firstName || ''} ${rr.lastName || ''}`.trim() || 'User';
+    }
+    return '';
   });
 
   userRole = computed(() => {
     const user = this.currentUser();
-    if (!user) return 'Visitor';
-    return user.admin ? 'ADMIN' : 'USER';
+    if (user) {
+      return user.admin ? 'ADMIN' : 'USER';
+    }
+    const rr = this.rrUser();
+    if (rr) {
+      return (rr.role || 'USER').toUpperCase();
+    }
+    return '';
   });
 
   userInitials = computed(() => {
     const user = this.currentUser();
-    if (!user) return 'GS';
-    const first = (user.first_name || '').charAt(0).toUpperCase();
-    const last = (user.last_name || '').charAt(0).toUpperCase();
-    return first + last || 'US';
+    if (user) {
+      const first = (user.first_name || '').charAt(0).toUpperCase();
+      const last = (user.last_name || '').charAt(0).toUpperCase();
+      return (first + last).trim() || 'U';
+    }
+    const rr = this.rrUser();
+    if (rr) {
+      const first = (rr.firstName || '').charAt(0).toUpperCase();
+      const last = (rr.lastName || '').charAt(0).toUpperCase();
+      return (first + last).trim() || 'U';
+    }
+    return '';
   });
 
   async onLogout(): Promise<void> {
+    const isRR = !!this.rrApiService.currentUser();
     try {
-      await this.authService.logout();
-      this.router.navigate(['/user/login']);
+      if (isRR) {
+        this.rrApiService.logout();
+      }
+      if (this.authService.currentUser()) {
+        await this.authService.logout();
+      }
+      this.router.navigate([isRR ? '/user/rr/login' : '/user/login']);
     } catch (err) {
       console.error('Sidebar logout error:', err);
-      this.router.navigate(['/user/login']);
+      this.router.navigate([isRR ? '/user/rr/login' : '/user/login']);
     }
   }
 }

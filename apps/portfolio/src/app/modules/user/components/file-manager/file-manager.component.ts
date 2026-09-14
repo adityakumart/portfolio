@@ -36,10 +36,19 @@ import {
   lucideRefreshCw,
   lucideCheck,
 } from '@ng-icons/lucide';
-import { HlmButton } from '@spartan-ng/hel/button';
+import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
 import { HlmProgressImports } from '@spartan-ng/hel/progress';
-import { HlmSpinner } from '@spartan-ng/hel/spinner';
+import { HlmSpinnerImports } from '@spartan-ng/hel/spinner';
+import { HlmCardImports } from '@spartan-ng/hel/card';
+import { HlmBadgeImports } from '@spartan-ng/hel/badge';
+import { HlmInputImports } from '@spartan-ng/hel/input';
+import { HlmAlertImports } from '@spartan-ng/hel/alert';
+import { HlmEmptyImports } from '@spartan-ng/hel/empty';
+import { HlmBreadcrumbImports } from '@spartan-ng/hel/breadcrumb';
+import { HlmTableImports } from '@spartan-ng/hel/table';
+import { HlmTextareaImports } from '@spartan-ng/hel/textarea';
+import { toast } from '@spartan-ng/hel/sonner';
 import { FileManagerService } from '../../services/file-manager.service';
 import { AuthService } from '../../services/auth';
 import { FileNode } from '@portfolio/shared-types';
@@ -52,10 +61,18 @@ import { FilePreviewDialogComponent } from './file-preview-dialog.component';
     CommonModule,
     FormsModule,
     NgIconComponent,
-    HlmButton,
+    HlmButtonImports,
     HlmTooltipImports,
     HlmProgressImports,
-    HlmSpinner,
+    HlmSpinnerImports,
+    HlmCardImports,
+    HlmBadgeImports,
+    HlmInputImports,
+    HlmAlertImports,
+    HlmEmptyImports,
+    HlmBreadcrumbImports,
+    HlmTableImports,
+    HlmTextareaImports,
   ],
   providers: [
     provideIcons({
@@ -181,8 +198,10 @@ export class FileManagerComponent implements OnInit {
     try {
       const url = await this.fileService.getDownloadUrl(node.path);
       window.open(url, '_blank');
+      toast.info(`Downloading ${node.name}...`);
     } catch (err: any) {
       console.error('Download url retrieval failed:', err);
+      toast.error('Download url retrieval failed.');
     }
   }
 
@@ -207,14 +226,17 @@ export class FileManagerComponent implements OnInit {
     if (!node) return;
     try {
       await this.fileService.askAiAboutFile(node.path, this.aiPrompt());
+      toast.success('AI analysis completed!');
     } catch (err) {
       console.error('AI Analysis failed:', err);
+      toast.error('AI Analysis failed.');
     }
   }
 
   copyAiResponse(text: string): void {
     navigator.clipboard.writeText(text);
     this.copiedAiReply.set(true);
+    toast.success('AI response copied to clipboard!');
     setTimeout(() => this.copiedAiReply.set(false), 2000);
   }
 
@@ -234,8 +256,9 @@ export class FileManagerComponent implements OnInit {
       const file = input.files[0];
       try {
         await this.fileService.uploadFile(file);
-      } catch {
-        // Handled in service
+        toast.success(`File "${file.name}" uploaded successfully.`);
+      } catch (err: any) {
+        toast.error(err.message || 'File upload failed.');
       } finally {
         input.value = '';
       }
@@ -251,15 +274,17 @@ export class FileManagerComponent implements OnInit {
 
     if (name.includes('/') || name.includes('\\')) {
       this.fileService.error.set('Folder name cannot contain slashes.');
+      toast.error('Folder name cannot contain slashes.');
       return;
     }
 
     try {
       await this.fileService.createFolder(name);
+      toast.success(`Folder "${name}" created successfully.`);
       this.newFolderName.set('');
       this.showFolderInput.set(false);
-    } catch {
-      // Handled in service
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to create folder.');
     }
   }
 
@@ -287,8 +312,9 @@ export class FileManagerComponent implements OnInit {
       const file = event.dataTransfer.files[0];
       try {
         await this.fileService.uploadFile(file);
-      } catch {
-        // Handled in service
+        toast.success(`File "${file.name}" uploaded successfully.`);
+      } catch (err: any) {
+        toast.error(err.message || 'File upload failed.');
       }
     }
   }

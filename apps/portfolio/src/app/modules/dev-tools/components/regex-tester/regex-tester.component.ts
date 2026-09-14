@@ -1,10 +1,11 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { HlmCardDirective } from '@spartan-ng/hel/card';
-import { HlmInputDirective } from '@spartan-ng/hel/input';
-import { HlmLabelDirective } from '@spartan-ng/hel/label';
-import { HlmButtonDirective } from '@spartan-ng/hel/button';
+import { HlmCardImports } from '@spartan-ng/hel/card';
+import { HlmInputImports } from '@spartan-ng/hel/input';
+import { HlmButtonImports } from '@spartan-ng/hel/button';
+import { HlmBadgeImports } from '@spartan-ng/hel/badge';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
+import { HlmAlertImports } from '@spartan-ng/hel/alert';
 import { toast } from '@spartan-ng/hel/sonner';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
@@ -33,11 +34,12 @@ export interface RegexOption {
   standalone: true,
   imports: [
     ReactiveFormsModule,
-    HlmCardDirective,
-    HlmInputDirective,
-    HlmLabelDirective,
-    HlmButtonDirective,
+    HlmCardImports,
+    HlmInputImports,
+    HlmButtonImports,
+    HlmBadgeImports,
     HlmTooltipImports,
+    HlmAlertImports,
     NgIconComponent,
     RegexHighlightPipe,
   ],

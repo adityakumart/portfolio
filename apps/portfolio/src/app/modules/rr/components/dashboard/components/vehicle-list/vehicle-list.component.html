@@ -13,56 +13,22 @@
   }
 </div>
 
-<div class="vehicle-grid">
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-10">
   @for (v of vehicles(); track v.regNo) {
-    <div hlmCard class="vehicle-card cursor-pointer overflow-hidden border shadow-sm" (click)="viewVehicleDetails(v)">
-      <div class="card-img-container">
-        <img [src]="getVehicleImage(v)" alt="Vehicle Image" />
-        <div class="active-status-badge status-badge-{{ v.status }}">
-          <span class="status-dot"></span>
-          <span>{{ v.status | uppercase }}</span>
-        </div>
-      </div>
-      
-      <div class="card-content p-4">
-        <div class="veh-type-tag">{{ v.type | uppercase }}</div>
-        <div class="veh-title">{{ v.manufacturer }} {{ v.name }}</div>
-        <div class="veh-subtitle reg-no">{{ v.regNo }}</div>
-        
-        <div class="veh-specs flex flex-wrap gap-2 mt-3">
-          <span class="spec-badge flex items-center gap-1 text-xs" hlmTooltip="Capacity">
-            <ng-icon name="lucideUsers"></ng-icon>
-            <span>{{ v.seating }} Seats</span>
-          </span>
-          <span class="spec-badge flex items-center gap-1 text-xs" hlmTooltip="Fuel Type">
-            <ng-icon name="lucideFuel"></ng-icon>
-            <span>{{ v.fuelType | uppercase }}</span>
-          </span>
-          <span class="spec-badge flex items-center gap-1 text-xs" hlmTooltip="Odometer">
-            <ng-icon name="lucideGauge"></ng-icon>
-            <span>{{ v.odometer }} KM</span>
-          </span>
-        </div>
-      </div>
-
-      <!-- Quick Action Overlay for Admin -->
-      @if (isAdmin()) {
-        <div class="card-actions-overlay">
-          <button hlmBtn size="icon" variant="default" class="mini-action-btn h-8 w-8 rounded-full" (click)="$event.stopPropagation(); selectedVehicleDetails.set(v); openEditVehicleModal()" hlmTooltip="Edit Vehicle">
-            <ng-icon name="lucidePencil"></ng-icon>
-          </button>
-          <button hlmBtn size="icon" variant="destructive" class="mini-action-btn danger h-8 w-8 rounded-full" (click)="$event.stopPropagation(); deleteVehicle(v.regNo)" hlmTooltip="Delete Vehicle">
-            <ng-icon name="lucideTrash2"></ng-icon>
-          </button>
-        </div>
-      }
-    </div>
+    <app-rr-vehicle-card
+      [vehicle]="v"
+      variant="fleet"
+      [isAdmin]="isAdmin()"
+      (cardClick)="viewVehicleDetails(v)"
+      (editClick)="onEditVehicle(v)"
+      (deleteClick)="deleteVehicle($event)"
+    />
   } @empty {
-    <div class="empty-fleet-card p-12 text-center border rounded-2xl">
-      <div class="empty-icon-wrapper mb-3">
-        <ng-icon name="lucideCar" class="text-3xl text-muted-foreground"></ng-icon>
+    <div class="col-span-full flex flex-col items-center justify-center p-12 border border-border rounded-2xl bg-card text-center my-8 shadow-sm">
+      <div class="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-4">
+        <ng-icon name="lucideCar" class="text-3xl text-primary"></ng-icon>
       </div>
-      <h3 class="text-lg font-bold">No Vehicles Registered</h3>
+      <h3 class="text-lg font-bold text-foreground mb-1">No Vehicles Registered</h3>
       <p class="text-sm text-muted-foreground mb-4">There are currently no vehicles in your fleet registry database.</p>
       @if (isAdmin()) {
         <button hlmBtn (click)="openAddVehicleModal()" class="flex items-center gap-1.5 mx-auto">
@@ -75,15 +41,20 @@
 
 <!-- POPUP 1: VEHICLE DETAILS DIALOG TEMPLATE -->
 <ng-template #vehicleDetailsDialog>
-  <div class="space-y-4">
-    <div class="flex items-center justify-between pb-3 border-b">
+  <div class="flex flex-col h-full max-h-[calc(90vh-3rem)] overflow-hidden">
+    <!-- Fixed Header -->
+    <div class="shrink-0 flex items-center justify-between pb-3 border-b">
       <h3 class="text-lg font-bold flex items-center gap-2">
         <ng-icon name="lucideCar" class="text-primary"></ng-icon>
         <span>Fleet Vehicle Specification Details</span>
       </h3>
+      <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 text-muted-foreground hover:text-foreground" (click)="closeVehicleDetailsPopup()" aria-label="Close dialog">
+        <ng-icon name="lucideX"></ng-icon>
+      </button>
     </div>
     
-    <div class="details-content space-y-4">
+    <!-- Scrollable Body -->
+    <div class="flex-1 min-h-0 overflow-y-auto py-3 pr-1 details-content space-y-4">
       <div class="details-layout-grid grid grid-cols-1 md:grid-cols-2 gap-6">
         
         <!-- Visual Left Panel -->
@@ -95,10 +66,40 @@
             
             <div class="status-section">
               <span class="label text-xs text-muted-foreground block mb-1">Rental Availability Status</span>
-              <div class="detail-status-badge badge-{{ selectedVehicleDetails()?.status }}">
-                <span class="status-dot"></span>
-                <span>{{ selectedVehicleDetails()?.status | uppercase }}</span>
-              </div>
+              <span
+                hlmBadge
+                variant="outline"
+                class="font-bold text-xs px-2.5 py-1 uppercase tracking-wider inline-flex items-center gap-1.5 backdrop-blur-xs"
+                [ngClass]="{
+                  'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/30': selectedVehicleDetails()?.status === 'available',
+                  'text-orange-600 dark:text-orange-400 bg-orange-500/10 border-orange-500/30': selectedVehicleDetails()?.status === 'in_booking' || selectedVehicleDetails()?.status === 'rented',
+                  'text-rose-600 dark:text-rose-400 bg-rose-500/10 border-rose-500/30': selectedVehicleDetails()?.status === 'maintenance',
+                  'text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 border-cyan-500/30': selectedVehicleDetails()?.status === 'contract' || selectedVehicleDetails()?.status === 'in_contract'
+                }"
+              >
+                <span
+                  class="w-2 h-2 rounded-full"
+                  [ngClass]="{
+                    'bg-emerald-500': selectedVehicleDetails()?.status === 'available',
+                    'bg-orange-500': selectedVehicleDetails()?.status === 'in_booking' || selectedVehicleDetails()?.status === 'rented',
+                    'bg-rose-500': selectedVehicleDetails()?.status === 'maintenance',
+                    'bg-cyan-500': selectedVehicleDetails()?.status === 'contract' || selectedVehicleDetails()?.status === 'in_contract'
+                  }"
+                ></span>
+                <span>
+                  @if (selectedVehicleDetails()?.status === 'available') {
+                    AVAILABLE
+                  } @else if (selectedVehicleDetails()?.status === 'in_booking' || selectedVehicleDetails()?.status === 'rented') {
+                    ACTIVE BOOKING
+                  } @else if (selectedVehicleDetails()?.status === 'maintenance') {
+                    IN SERVICE
+                  } @else if (selectedVehicleDetails()?.status === 'contract' || selectedVehicleDetails()?.status === 'in_contract') {
+                    IN CONTRACT
+                  } @else {
+                    {{ selectedVehicleDetails()?.status | uppercase }}
+                  }
+                </span>
+              </span>
             </div>
           </div>
         </div>
@@ -125,48 +126,45 @@
               <span class="font-semibold">{{ selectedVehicleDetails()?.seating }} Persons</span>
             </div>
             <div>
-              <span class="text-muted-foreground block">Fuel</span>
-              <span class="font-semibold">{{ selectedVehicleDetails()?.fuelType | uppercase }}</span>
+              <span class="text-muted-foreground block">Color</span>
+              <span class="font-semibold">{{ selectedVehicleDetails()?.color }}</span>
+            </div>
+            <div>
+              <span class="text-muted-foreground block">Fuel Type</span>
+              <span class="font-semibold">{{ selectedVehicleDetails()?.fuelType }}</span>
             </div>
             <div>
               <span class="text-muted-foreground block">Odometer</span>
               <span class="font-semibold">{{ selectedVehicleDetails()?.odometer }} KM</span>
             </div>
             <div>
-              <span class="text-muted-foreground block">Color</span>
-              <span class="font-semibold">{{ selectedVehicleDetails()?.color }}</span>
+              <span class="text-muted-foreground block">Engine No</span>
+              <span class="font-mono text-muted-foreground">{{ selectedVehicleDetails()?.engineNo || 'N/A' }}</span>
             </div>
             <div>
-              <span class="text-muted-foreground block">Engine Serial</span>
-              <span class="font-mono font-semibold">{{ selectedVehicleDetails()?.engineNo }}</span>
+              <span class="text-muted-foreground block">Chassis No</span>
+              <span class="font-mono text-muted-foreground">{{ selectedVehicleDetails()?.chassisNo || 'N/A' }}</span>
             </div>
             <div>
-              <span class="text-muted-foreground block">Chassis Serial</span>
-              <span class="font-mono font-semibold">{{ selectedVehicleDetails()?.chassisNo }}</span>
+              <span class="text-muted-foreground block">Insurance Expiry</span>
+              <span class="font-medium">{{ (selectedVehicleDetails()?.insuranceExpiry | date:'dd-MM-yyyy':'UTC') || 'N/A' }}</span>
             </div>
-          </div>
-
-          <div class="pt-2 border-t">
-            <span class="text-xs font-semibold uppercase text-muted-foreground block mb-2">Compliance Expiries</span>
-            <div class="grid grid-cols-2 gap-2 text-xs">
-              <div class="p-2 rounded-lg bg-muted/20 border">
-                <span class="text-muted-foreground block">Insurance</span>
-                <span class="font-semibold">{{ (selectedVehicleDetails()?.insuranceExpiry | date:'dd-MM-yyyy':'UTC') || 'N/A' }}</span>
-              </div>
-              <div class="p-2 rounded-lg bg-muted/20 border">
-                <span class="text-muted-foreground block">Pollution</span>
-                <span class="font-semibold">{{ (selectedVehicleDetails()?.pollutionExpiry | date:'dd-MM-yyyy':'UTC') || 'N/A' }}</span>
-              </div>
+            <div>
+              <span class="text-muted-foreground block">Pollution Expiry</span>
+              <span class="font-medium">{{ (selectedVehicleDetails()?.pollutionExpiry | date:'dd-MM-yyyy':'UTC') || 'N/A' }}</span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- PRICING SLABS SECTION -->
-      <div class="details-pricing-panel pt-3 border-t">
-        <span class="text-xs font-semibold uppercase text-muted-foreground block mb-3">Pricing Slabs & Rental Overruns</span>
-        
-        <div class="pricing-slabs-grid grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs mb-3">
+      <!-- Pricing Slabs Section -->
+      <div class="pricing-slabs-container pt-3 border-t space-y-3">
+        <h4 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+          <ng-icon name="lucideIndianRupee"></ng-icon>
+          <span>Standard Hourly Tariff Packages</span>
+        </h4>
+
+        <div class="slabs-grid grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
           <div class="slab-card p-3 rounded-xl border bg-muted/10 text-center">
             <div class="font-medium text-muted-foreground">24 Hours</div>
             <div class="text-base font-bold text-primary my-0.5">₹{{ selectedVehicleDetails()?.pricing?.h23?.price || '0' }}</div>
@@ -208,7 +206,8 @@
       </div>
     </div>
     
-    <div class="flex items-center justify-end gap-2 pt-3 border-t">
+    <!-- Fixed Footer -->
+    <div class="shrink-0 flex items-center justify-end gap-2 pt-3 border-t">
       @if (isAdmin()) {
         <button hlmBtn size="sm" class="flex items-center gap-1.5" (click)="openEditVehicleModal()">
           <ng-icon name="lucidePencil"></ng-icon> Modify
@@ -224,15 +223,21 @@
 
 <!-- POPUP 2: ADD/MODIFY VEHICLE FORM DIALOG TEMPLATE -->
 <ng-template #vehicleFormDialog>
-  <div class="space-y-4">
-    <div class="flex items-center justify-between pb-3 border-b">
+  <div class="flex flex-col h-full max-h-[calc(90vh-3rem)] overflow-hidden">
+    <!-- Fixed Header -->
+    <div class="shrink-0 flex items-center justify-between pb-3 border-b">
       <h3 class="text-lg font-bold flex items-center gap-2">
         <ng-icon name="lucideCar" class="text-primary"></ng-icon>
         <span>{{ editingVehicleMode() ? 'Modify Fleet Vehicle Metadata' : 'Register New Fleet Vehicle' }}</span>
       </h3>
+      <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 text-muted-foreground hover:text-foreground" (click)="closeVehicleFormModal()" aria-label="Close dialog">
+        <ng-icon name="lucideX"></ng-icon>
+      </button>
     </div>
     
-    <form [formGroup]="vehicleFormGroup" class="space-y-6">
+    <form [formGroup]="vehicleFormGroup" class="flex flex-col flex-1 min-h-0">
+      <!-- Scrollable Body -->
+      <div class="flex-1 min-h-0 overflow-y-auto py-3 pr-1 space-y-6">
       <!-- Section 1: Metadata -->
       <div class="p-4 rounded-xl border bg-card space-y-4">
         <h4 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
@@ -498,8 +503,10 @@
           </div>
         </div>
       </div>
+      </div>
 
-      <div class="flex items-center justify-end gap-2 pt-3 border-t">
+      <!-- Fixed Footer -->
+      <div class="shrink-0 flex items-center justify-end gap-2 pt-3 border-t">
         <button hlmBtn class="action-btn success flex items-center gap-1.5" [disabled]="vehicleFormGroup.invalid" (click)="saveVehicle($event)">
           <ng-icon name="lucideCheck"></ng-icon>
           <span>{{ editingVehicleMode() ? 'Update Vehicle' : 'Register Vehicle' }}</span>

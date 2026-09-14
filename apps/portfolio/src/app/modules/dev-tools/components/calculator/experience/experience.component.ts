@@ -13,12 +13,10 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { HlmCardDirective } from '@spartan-ng/hel/card';
-import { HlmInputDirective } from '@spartan-ng/hel/input';
-import { HlmLabelDirective } from '@spartan-ng/hel/label';
-import { HlmButtonDirective } from '@spartan-ng/hel/button';
+import { HlmCardImports } from '@spartan-ng/hel/card';
+import { HlmInputImports } from '@spartan-ng/hel/input';
+import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
-import { HlmSeparatorDirective } from '@spartan-ng/hel/separator';
 import { HlmDialogService } from '@spartan-ng/hel/dialog';
 import { ExperienceService } from './experience.service';
 import { UserExperienceRecord } from '@portfolio/shared-types';
@@ -37,12 +35,10 @@ import { ExperienceListDialogComponent } from './experience-list-dialog.componen
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    HlmCardDirective,
-    HlmInputDirective,
-    HlmLabelDirective,
-    HlmButtonDirective,
+    HlmCardImports,
+    HlmInputImports,
+    HlmButtonImports,
     HlmTooltipImports,
-    HlmSeparatorDirective,
     NgIconComponent,
     ErrorMessageComponent,
   ],

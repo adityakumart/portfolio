@@ -1,17 +1,35 @@
 <section class="py-4 reveal-on-scroll" aria-label="Technical Skills">
-  <div class="mb-4">
-    <h2 class="text-2xl font-bold tracking-tight text-foreground">Technical Skills</h2>
-    <p class="mt-1 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-      A curated skillset aligned with modern frontend product delivery,
-      interface design, and engineering best practices.
-    </p>
+  <div class="mb-5 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+    <div>
+      <h2 class="text-2xl font-bold tracking-tight text-foreground">Technical Skills</h2>
+      <p class="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+        A curated skillset aligned with modern frontend product delivery,
+        interface design, and engineering best practices.
+      </p>
+    </div>
+
+    <!-- Spartan UI Tabs Category Selector -->
+    <hlm-tabs [tab]="selectedCategory()" (tabActivated)="selectedCategory.set($any($event))" class="shrink-0">
+      <hlm-tabs-list class="flex flex-wrap gap-1 p-1 bg-muted/60 rounded-xl h-auto">
+        @for (cat of categories; track cat.id) {
+          <button
+            [hlmTabsTrigger]="cat.id"
+            type="button"
+            (click)="selectedCategory.set(cat.id)"
+            class="rounded-lg text-xs font-semibold px-3 py-1.5 transition-all cursor-pointer"
+          >
+            {{ cat.label }}
+          </button>
+        }
+      </hlm-tabs-list>
+    </hlm-tabs>
   </div>
 
   <div
-    class="grid gap-4.5"
+    class="grid gap-4.5 transition-all duration-300"
     [style.grid-template-columns]="'repeat(' + gridColumns() + ', 1fr)'"
   >
-    @for (skill of resume().skills; track skill.name) {
+    @for (skill of filteredSkills(); track skill.name) {
       <div class="reveal-on-scroll">
         <div hlmCard class="skill-card-with-accent relative min-h-[210px] overflow-hidden rounded-2xl border border-border bg-card p-4 pl-6 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-sky-500 hover:bg-secondary">
           <div hlmCardHeader class="p-0">

@@ -50,7 +50,7 @@ export class ProfileAiChatService {
             .then(() => {
               const originalText = button.innerHTML;
               button.innerHTML =
-                '<span class="material-icons">check</span> Copied!';
+                '<svg class="inline-block w-4 h-4 mr-1 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Copied!';
               button.classList.add('copied');
               button.disabled = true;
               setTimeout(() => {
@@ -93,7 +93,7 @@ export class ProfileAiChatService {
           <div class="code-block-header">
             <span class="code-block-lang">${displayLang}</span>
             <button class="copy-code-btn" onclick="window.copyCodeToClipboard(this)">
-              <span class="material-icons">content_copy</span> Copy
+              <svg class="inline-block w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg> Copy
             </button>
           </div>
           <pre class="code-block-pre"><code class="code-block-content">${escapedCode}</code></pre>
@@ -316,7 +316,7 @@ export class ProfileAiChatService {
 * **Frontend Framework:** Angular 22 (using standalone components, Signals, and the elegant control flow template structures).
 * **State Management:** Fully reactive system using native Angular Signals (\`signal\`, \`computed\`).
 * **Styling & Theme:** Vanilla SCSS with a custom glassmorphism design that features automatic system or manual toggle dark/light theme support.
-* **Component Framework:** Angular Material for layout wrappers, tooltips, buttons, and animations.
+* **Component Framework:** Spartan UI (Headless Brain & Helm primitives) with Tailwind CSS and Lucide icons.
 * **Build System:** Nx Monorepo workspace setup for multi-app management.
 * **Backend Core:** Express.js API server running on Node.js.
 * **Database:** MongoDB Atlas cluster with mongoose configuration for user details and credentials.

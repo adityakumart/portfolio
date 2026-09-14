@@ -1,24 +1,17 @@
 import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { AbstractControl } from '@angular/forms';
+import { HlmFieldError } from '@spartan-ng/hel/field';
 
 @Component({
   selector: 'app-error-message',
   standalone: true,
-  changeDetection: ChangeDetectionStrategy.Eager,
-  host: {
-    class: 'block text-xs text-destructive mt-1',
-    '[class.hidden]': '!errorMessage',
-  },
-  styles: `
-    :host {
-      display: block;
-      color: var(--destructive, #dc2626);
-    }
-    :host(.hidden) {
-      display: none;
+  imports: [HlmFieldError],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    @if (errorMessage) {
+      <hlm-field-error>{{ errorMessage }}</hlm-field-error>
     }
   `,
-  template: `{{ errorMessage }}`,
 })
 export class ErrorMessageComponent {
   /** The reactive form control to check for errors */
@@ -53,10 +46,10 @@ export class ErrorMessageComponent {
     if (errors['email']) {
       return 'Invalid email format';
     }
-    if (errors['matStartDateInvalid']) {
+    if (errors['startDateInvalid']) {
       return 'Invalid start date';
     }
-    if (errors['matEndDateInvalid']) {
+    if (errors['endDateInvalid']) {
       return 'Invalid end date';
     }
     if (errors['minlength']) {

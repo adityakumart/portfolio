@@ -7,6 +7,6 @@ import { classes } from '@spartan-ng/hel/utils';
 })
 export class HlmCardDescription {
 	constructor() {
-		classes(() => 'text-muted-foreground text-sm');
+		classes(() => 'text-muted-foreground text-xs/relaxed');
 	}
 }

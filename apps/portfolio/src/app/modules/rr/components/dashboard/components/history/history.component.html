@@ -1,74 +1,692 @@
-<div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 16px;">
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
   <div>
     <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--color-cyan-500); font-weight: 800; margin-bottom: 6px; display: inline-flex; align-items: center; gap: 6px;">
       <ng-icon style="font-size: 14px; width: 14px; height: 14px;" name="lucideHistory"></ng-icon>
       <span>History &bull; Finished & Cancelled Bookings</span>
     </div>
-    <h2 style="margin: 0; font-size: 1.85rem; font-weight: 800; color: var(--foreground);">Rental History Logs</h2>
+    <div class="flex items-center gap-3 flex-wrap">
+      <h2 style="margin: 0; font-size: 1.85rem; font-weight: 800; color: var(--foreground);">Rental History Logs</h2>
+      @if (isAdmin()) {
+        <span hlmBadge variant="outline" class="text-xs font-semibold px-2.5 py-0.5 rounded-full border-primary/30 text-primary bg-primary/10">
+          All Records (Admin View)
+        </span>
+      } @else {
+        <span hlmBadge variant="outline" class="text-xs font-semibold px-2.5 py-0.5 rounded-full border-amber-500/30 text-amber-500 bg-amber-500/10" title="Showing only bookings you created or ended">
+          My Bookings & Settlements (Staff View)
+        </span>
+      }
+    </div>
   </div>
 </div>
 
-@if (historyBookings().length > 0) {
-  <div class="table-card-wrapper border rounded-2xl overflow-hidden shadow-sm bg-card">
-    <div class="table-container overflow-x-auto">
-      <table class="modern-history-table w-full text-xs text-left">
-        <thead class="bg-muted/40 uppercase font-semibold text-muted-foreground">
-          <tr>
-            <th class="p-3">Booking ID</th>
-            <th class="p-3">Customer Details</th>
-            <th class="p-3">Vehicle Details</th>
-            <th class="p-3">Creation Date</th>
-            <th class="p-3">Rental Billings</th>
-            <th class="p-3">Final Odometer</th>
-            <th class="p-3">Status</th>
+<!-- FILTERS TOOLBAR CARD -->
+<div class="p-4 rounded-2xl border border-border bg-card shadow-xs mb-6">
+  <div class="flex items-center justify-between gap-3 mb-3 flex-wrap">
+    <div class="flex items-center gap-2">
+      <ng-icon name="lucideFilter" class="text-primary text-base"></ng-icon>
+      <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Search & Filter Logs</span>
+      @if (hasActiveFilters()) {
+        <span hlmBadge variant="secondary" class="text-[10px] font-bold text-primary bg-primary/10">Filtered</span>
+      }
+    </div>
+    <div class="flex items-center gap-3">
+      @if (isLoading()) {
+        <span class="text-xs text-primary flex items-center gap-1.5 animate-pulse font-medium">
+          <ng-icon name="lucideLoader2" class="animate-spin text-sm"></ng-icon>
+          <span>Loading ...</span>
+        </span>
+      }
+      @if (hasActiveFilters()) {
+        <button hlmBtn variant="ghost" size="sm" class="h-7 text-xs flex items-center gap-1 text-muted-foreground hover:text-foreground" (click)="resetFilters()">
+          <ng-icon name="lucideRotateCcw" class="text-xs"></ng-icon>
+          <span>Reset Filters</span>
+        </button>
+      }
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-end">
+    <!-- 1. Vehicle Autocomplete (loads from API vehicles list) -->
+    <div class="relative vehicle-autocomplete-container lg:col-span-3">
+      <div class="flex items-center justify-between mb-1">
+        <label hlmLabel class="text-[11px] text-muted-foreground block">Vehicle (Autocomplete)</label>
+        @if (isVehiclesLoading()) {
+          <span class="text-[10px] text-primary flex items-center gap-1">
+            <ng-icon name="lucideLoader2" class="animate-spin text-[10px]"></ng-icon>
+            <span>Loading...</span>
+          </span>
+        }
+      </div>
+      <div class="relative">
+        <input
+          hlmInput
+          type="text"
+          placeholder="Vehicle name, reg no, manufacturer..."
+          [ngModel]="vehicleFilter()"
+          (focus)="openVehicleDropdown()"
+          (input)="onVehicleInput($any($event.target).value)"
+          (keyup.enter)="applyFilters()"
+          class="w-full text-xs pl-8 pr-7 h-9"
+          autocomplete="off"
+        />
+        <ng-icon name="lucideCar" class="absolute left-2.5 top-2.5 text-muted-foreground text-sm pointer-events-none"></ng-icon>
+        @if (vehicleFilter()) {
+          <button type="button" class="absolute right-2 top-2 text-muted-foreground hover:text-foreground text-xs" (click)="clearVehicleFilter()">
+            <ng-icon name="lucideX"></ng-icon>
+          </button>
+        }
+      </div>
+
+      <!-- Autocomplete Dropdown List -->
+      @if (isVehicleDropdownOpen() && vehicleOptions().length > 0) {
+        <div class="absolute left-0 right-0 top-full mt-1 z-50 bg-popover text-popover-foreground border border-border rounded-xl shadow-xl max-h-60 overflow-y-auto py-1 text-xs divide-y divide-border/40">
+          @for (v of vehicleOptions(); track v.regNo) {
+            <div
+              (mousedown)="selectVehicle(v)"
+              class="px-3 py-2 cursor-pointer hover:bg-muted/80 transition-colors flex items-center justify-between gap-2"
+            >
+              <div class="min-w-0">
+                <div class="font-semibold text-foreground truncate">
+                  {{ v.manufacturer }} {{ v.name }}
+                </div>
+                <div class="text-[11px] text-muted-foreground flex items-center gap-2 mt-0.5">
+                  <span class="font-mono bg-muted px-1.5 py-0.5 rounded border border-border/60">{{ v.regNo }}</span>
+                </div>
+              </div>
+              @if (vehicleFilter().toLowerCase() === v.regNo.toLowerCase() || vehicleFilter().toLowerCase() === v.name.toLowerCase()) {
+                <ng-icon name="lucideCheck" class="text-primary text-sm shrink-0"></ng-icon>
+              }
+            </div>
+          }
+        </div>
+      } @else if (isVehicleDropdownOpen() && !isVehiclesLoading()) {
+        <div class="absolute left-0 right-0 top-full mt-1 z-50 bg-popover text-popover-foreground border border-border rounded-xl shadow-xl p-3 text-xs text-center text-muted-foreground">
+          No vehicles matching "{{ vehicleFilter() }}"
+        </div>
+      }
+    </div>
+
+    <!-- 2. Booking Date From -->
+    <div class="lg:col-span-2">
+      <label hlmLabel class="text-[11px] text-muted-foreground block mb-1">Booking Date &bull; From</label>
+      <div class="relative">
+        <input
+          hlmInput
+          type="date"
+          [ngModel]="fromDateFilter()"
+          (ngModelChange)="fromDateFilter.set($event)"
+          (keyup.enter)="applyFilters()"
+          class="w-full text-xs pl-8 h-9"
+        />
+        <ng-icon name="lucideCalendar" class="absolute left-2.5 top-2.5 text-muted-foreground text-sm pointer-events-none"></ng-icon>
+      </div>
+    </div>
+
+    <!-- 3. Booking Date To -->
+    <div class="lg:col-span-2">
+      <label hlmLabel class="text-[11px] text-muted-foreground block mb-1">Booking Date &bull; To</label>
+      <div class="relative">
+        <input
+          hlmInput
+          type="date"
+          [ngModel]="toDateFilter()"
+          (ngModelChange)="toDateFilter.set($event)"
+          (keyup.enter)="applyFilters()"
+          class="w-full text-xs pl-8 h-9"
+        />
+        <ng-icon name="lucideCalendar" class="absolute left-2.5 top-2.5 text-muted-foreground text-sm pointer-events-none"></ng-icon>
+      </div>
+    </div>
+
+    <!-- 4. Customer Name Filter -->
+    <div class="relative lg:col-span-3">
+      <label hlmLabel class="text-[11px] text-muted-foreground block mb-1">Customer Name / Phone</label>
+      <div class="relative">
+        <input
+          hlmInput
+          type="text"
+          placeholder="Search customer name or phone..."
+          [ngModel]="customerFilter()"
+          (input)="onCustomerInput($any($event.target).value)"
+          (ngModelChange)="customerFilter.set($event)"
+          (keyup.enter)="applyFilters()"
+          class="w-full text-xs pl-8 pr-7 h-9"
+        />
+        <ng-icon name="lucideUser" class="absolute left-2.5 top-2.5 text-muted-foreground text-sm pointer-events-none"></ng-icon>
+        @if (customerFilter()) {
+          <button type="button" class="absolute right-2 top-2 text-muted-foreground hover:text-foreground text-xs" (click)="clearCustomerFilter()">
+            <ng-icon name="lucideX"></ng-icon>
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- 5. Search & Reset at the end -->
+    <div class="flex items-center gap-2 lg:col-span-2">
+      <button
+        hlmBtn
+        type="button"
+        (click)="applyFilters()"
+        class="flex-1 h-9 text-xs font-semibold gap-1.5 shadow-xs"
+      >
+        <ng-icon name="lucideSearch" class="text-sm"></ng-icon>
+        <span>Search</span>
+      </button>
+      <button
+        hlmBtn
+        type="button"
+        variant="outline"
+        (click)="resetFilters()"
+        class="h-9 px-2.5 text-xs text-muted-foreground hover:text-foreground gap-1"
+        hlmTooltip="Reset all filters"
+      >
+        <ng-icon name="lucideRotateCcw" class="text-xs"></ng-icon>
+        <span class="sm:hidden">Reset</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORY RECORDS TABLE -->
+@if (bookings().length > 0) {
+  <div class="border border-border rounded-2xl overflow-hidden shadow-sm bg-card mb-10 relative">
+    @if (isLoading()) {
+      <div class="absolute inset-0 bg-background/50 backdrop-blur-[1px] z-20 flex items-center justify-center">
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card border border-border shadow-md text-xs font-semibold text-primary">
+          <ng-icon name="lucideLoader2" class="animate-spin text-base"></ng-icon>
+          <span>Updating table from API...</span>
+        </div>
+      </div>
+    }
+    <div hlmTableContainer class="max-h-[calc(100vh-360px)] overflow-auto">
+      <table hlmTable class="w-full text-xs">
+        <thead hlmTHead class="sticky top-0 z-10 bg-card backdrop-blur-md">
+          <tr hlmTr>
+            <th hlmTh>Booking ID</th>
+            <th hlmTh>Customer Details</th>
+            <th hlmTh>Vehicle Details</th>
+            <th hlmTh>Creation Date</th>
+            <th hlmTh>Rental Billings</th>
+            <th hlmTh>Final Odometer</th>
+            <th hlmTh class="text-center">Status</th>
+            <th hlmTh class="text-center">Agreement</th>
+            <th hlmTh class="text-center">Invoice</th>
           </tr>
         </thead>
-        <tbody class="divide-y">
-          @for (b of historyBookings(); track b.id) {
-            <tr class="hover:bg-muted/10 transition-colors">
-              <td class="p-3">
-                <span class="booking-id-tag font-mono font-bold">{{ b.id }}</span>
-              </td>
-              <td class="p-3">
-                <div class="customer-name font-semibold">{{ b.renterFirstName }} {{ b.renterSecondName }}</div>
-                <div class="customer-phone text-muted-foreground text-xs">{{ b.renterPhone }}</div>
-              </td>
-              <td class="p-3">
-                <div class="vehicle-title font-semibold">{{ b.vehicleManufacturer }} {{ b.vehicleName }}</div>
-                <div class="vehicle-reg font-mono text-muted-foreground text-xs">{{ b.vehicleRegNo }}</div>
-              </td>
-              <td class="p-3">
-                <div class="creation-date font-medium">{{ b.createdAt | date:'dd-MM-yyyy' }}</div>
-                <div class="creation-time text-muted-foreground text-xs">{{ b.createdAt | date:'shortTime' }}</div>
-              </td>
-              <td class="p-3">
-                <span class="billing-amount font-semibold">₹{{ b.finalRentalAmount }}</span>
-              </td>
-              <td class="p-3">
-                @if (b.vehicleOdometerEnd) {
-                  <span class="odometer-end">{{ b.vehicleOdometerEnd }} KM</span>
-                } @else {
-                  <span class="no-odometer text-muted-foreground">&mdash;</span>
+        <tbody hlmTBody>
+          @for (b of bookings(); track b.id) {
+            <tr hlmTr>
+              <!-- Booking ID -->
+              <td hlmTd>
+                <span class="font-mono font-bold text-xs bg-muted/50 px-2 py-0.5 rounded border border-border">{{ b.id }}</span>
+                @if (b.bookedByName) {
+                  <div class="text-[10px] text-muted-foreground mt-1 flex items-center gap-1" title="Booked by {{ b.bookedByName }} ({{ b.bookedBy }})">
+                    <span class="font-semibold text-foreground/70">Booked:</span>
+                    <span class="truncate max-w-[110px]">{{ b.bookedByName }}</span>
+                  </div>
+                }
+                @if (b.endedByName) {
+                  <div class="text-[10px] text-muted-foreground flex items-center gap-1" title="Ended by {{ b.endedByName }} ({{ b.endedBy }})">
+                    <span class="font-semibold text-foreground/70">Ended:</span>
+                    <span class="truncate max-w-[110px]">{{ b.endedByName }}</span>
+                  </div>
                 }
               </td>
-              <td class="p-3">
-                <div class="status-badge status-badge-{{ b.status }}">
-                  <span class="status-dot"></span>
-                  <span>{{ b.status | uppercase }}</span>
-                </div>
+
+              <!-- Customer Details -->
+              <td hlmTd>
+                <div class="font-semibold">{{ b.renterFirstName }} {{ b.renterSecondName }}</div>
+                <div class="text-muted-foreground text-xs">{{ b.renterPhone }}</div>
+              </td>
+
+              <!-- Vehicle Details -->
+              <td hlmTd>
+                <div class="font-semibold">{{ b.vehicleManufacturer }} {{ b.vehicleName }}</div>
+                <div class="font-mono text-muted-foreground text-xs">{{ b.vehicleRegNo }}</div>
+              </td>
+
+              <!-- Creation Date -->
+              <td hlmTd>
+                <div class="font-medium">{{ b.createdAt | date:'dd-MM-yyyy' }}</div>
+                <div class="text-muted-foreground text-xs">{{ b.createdAt | date:'shortTime' }}</div>
+              </td>
+
+              <!-- Rental Billings (Clickable to open breakdown popup) -->
+              <td hlmTd>
+                <button
+                  type="button"
+                  class="font-bold font-mono text-xs px-2.5 py-1 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 border border-primary/25 cursor-pointer inline-flex items-center gap-1.5 transition-all group shadow-2xs active:scale-95"
+                  hlmTooltip="Click to view itemized breakdown & print invoice"
+                  (click)="openBreakdownModal(b)"
+                >
+                  <span>₹{{ b.finalRentalAmount }}</span>
+                  <ng-icon name="lucideInfo" class="text-[11px] opacity-70 group-hover:opacity-100"></ng-icon>
+                </button>
+              </td>
+
+              <!-- Final Odometer -->
+              <td hlmTd>
+                @if (b.vehicleOdometerEnd) {
+                  <span class="font-mono font-medium">{{ b.vehicleOdometerEnd }} KM</span>
+                } @else {
+                  <span class="text-muted-foreground">&mdash;</span>
+                }
+              </td>
+
+              <!-- Status Badge -->
+              <td hlmTd class="text-center">
+                @if (b.status === 'completed') {
+                  <span hlmBadge variant="outline" class="font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/30">
+                    COMPLETED
+                  </span>
+                } @else if (b.status === 'cancelled') {
+                  <span hlmBadge variant="destructive" class="font-semibold">
+                    CANCELLED
+                  </span>
+                } @else if (b.status === 'active') {
+                  <span hlmBadge variant="outline" class="font-semibold text-orange-600 dark:text-orange-400 bg-orange-500/10 border-orange-500/30">
+                    ACTIVE BOOKING
+                  </span>
+                } @else {
+                  <span hlmBadge variant="outline" class="font-semibold uppercase">
+                    {{ b.status }}
+                  </span>
+                }
+              </td>
+
+              <!-- Agreement PDF -->
+              <td hlmTd class="text-center whitespace-nowrap">
+                <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 rounded-full text-primary hover:bg-primary/10" hlmTooltip="Print Agreement PDF" (click)="exportBookingPdf(b)">
+                  <ng-icon name="lucideFileText"></ng-icon>
+                </button>
+              </td>
+
+              <!-- Invoice at the end -->
+              <td hlmTd class="text-center whitespace-nowrap">
+                @if (b.status === 'completed') {
+                  <button
+                    hlmBtn
+                    size="sm"
+                    variant="outline"
+                    class="h-7 px-2.5 text-xs text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 font-semibold gap-1 inline-flex items-center"
+                    hlmTooltip="Generate & Print Customer Invoice PDF"
+                    (click)="exportInvoicePdf(b)"
+                  >
+                    <ng-icon name="lucideReceipt" class="text-xs"></ng-icon>
+                    <span>Invoice</span>
+                  </button>
+                } @else {
+                  <span class="text-muted-foreground text-xs">&mdash;</span>
+                }
               </td>
             </tr>
           }
         </tbody>
       </table>
     </div>
+
+    <!-- Pagination Footer Bar (Server-Side) -->
+    <div class="p-3 sm:p-4 border-t border-border flex items-center justify-between text-xs text-muted-foreground flex-wrap gap-3 bg-muted/10">
+      <div>
+        Showing
+        <strong class="text-foreground">{{ totalRecords() === 0 ? 0 : (currentPage() * pageSize() + 1) }}</strong>
+        to
+        <strong class="text-foreground">{{ Math.min((currentPage() + 1) * pageSize(), totalRecords()) }}</strong>
+        of
+        <strong class="text-foreground">{{ totalRecords() }}</strong>
+        records
+        @if (hasActiveFilters()) {
+          <span class="ml-1 opacity-75">(filtered from server)</span>
+        }
+      </div>
+
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-1.5">
+          <span class="text-xs">Per page:</span>
+          <select
+            [ngModel]="pageSize()"
+            (ngModelChange)="onPageSizeChange($event)"
+            class="h-8 rounded-md border border-input bg-background px-2 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+          >
+            <option [ngValue]="5">5</option>
+            <option [ngValue]="10">10</option>
+            <option [ngValue]="20">20</option>
+            <option [ngValue]="50">50</option>
+          </select>
+        </div>
+
+        <div class="flex items-center gap-1.5">
+          <button
+            hlmBtn
+            variant="outline"
+            size="sm"
+            class="h-8 px-2.5 text-xs"
+            [disabled]="currentPage() === 0 || isLoading()"
+            (click)="prevPage()"
+          >
+            Previous
+          </button>
+          <span class="font-medium text-foreground px-1">Page {{ currentPage() + 1 }} of {{ totalPages() }}</span>
+          <button
+            hlmBtn
+            variant="outline"
+            size="sm"
+            class="h-8 px-2.5 text-xs"
+            [disabled]="currentPage() >= totalPages() - 1 || isLoading()"
+            (click)="nextPage()"
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+} @else if (hasActiveFilters()) {
+  <!-- Empty State when filters yield no matches -->
+  <div class="flex flex-col items-center justify-center p-12 border border-border rounded-2xl bg-card text-center my-8 shadow-sm">
+    <div class="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4 text-muted-foreground">
+      <ng-icon name="lucideFilter" class="text-2xl"></ng-icon>
+    </div>
+    <h3 class="text-lg font-bold text-foreground mb-1">No Matching Records</h3>
+    <p class="text-sm text-muted-foreground max-w-md mb-4">No historical bookings match your current filter criteria on the server.</p>
+    <button hlmBtn variant="outline" class="flex items-center gap-1.5" (click)="resetFilters()">
+      <ng-icon name="lucideRotateCcw"></ng-icon>
+      <span>Reset All Filters</span>
+    </button>
   </div>
 } @else {
-  <div class="empty-state-card">
-    <div class="empty-icon-wrapper">
-      <ng-icon name="lucideHistory"></ng-icon>
+  <!-- Empty State when no history in database -->
+  <div class="flex flex-col items-center justify-center p-12 border border-border rounded-2xl bg-card text-center my-8 shadow-sm">
+    <div class="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-4">
+      <ng-icon name="lucideHistory" class="text-2xl"></ng-icon>
     </div>
-    <h3>No History Found</h3>
-    <p>There are no completed or cancelled booking records in the fleet archive database.</p>
+    <h3 class="text-lg font-bold text-foreground mb-1">No History Found</h3>
+    <p class="text-sm text-muted-foreground max-w-md">There are no completed or cancelled booking records in the fleet archive database.</p>
   </div>
 }
+
+<!-- POPUP: RENTAL BILLING BREAKDOWN DIALOG -->
+<ng-template #breakdownDialog>
+  @if (selectedBooking()) {
+    <div class="flex flex-col h-full max-h-[calc(90vh-3rem)] overflow-hidden">
+      <!-- Fixed Header -->
+      <div class="shrink-0 flex items-center justify-between pb-3 border-b border-border">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20">
+            <ng-icon name="lucideReceipt" class="text-lg"></ng-icon>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-foreground flex items-center gap-2">
+              <span>Rental Billing Breakdown</span>
+              <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-muted/60 text-muted-foreground border border-border">
+                #{{ selectedBooking()?.id }}
+              </span>
+            </h3>
+            <p class="text-xs text-muted-foreground">
+              Customer: <span class="font-semibold text-foreground">{{ selectedBooking()?.renterFirstName }} {{ selectedBooking()?.renterSecondName }}</span>
+              ({{ selectedBooking()?.renterPhone }})
+            </p>
+          </div>
+        </div>
+        <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 text-muted-foreground hover:text-foreground" (click)="closeBreakdownModal()" aria-label="Close dialog">
+          <ng-icon name="lucideX"></ng-icon>
+        </button>
+      </div>
+
+      <!-- Scrollable Body -->
+      <div class="flex-1 min-h-0 overflow-y-auto py-4 space-y-4 text-xs pr-1">
+        <!-- Vehicle & Telemetry summary card -->
+        <div class="p-3 rounded-xl border border-border bg-muted/20 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <span class="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">Vehicle Information</span>
+            <span class="font-bold text-sm text-foreground">
+              {{ selectedBooking()?.vehicleManufacturer }} {{ selectedBooking()?.vehicleName }}
+            </span>
+            <span class="font-mono text-muted-foreground ml-1 text-xs">({{ selectedBooking()?.vehicleRegNo }})</span>
+          </div>
+
+          <div class="flex items-center gap-4 text-right">
+            <div>
+              <span class="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">Pickup Odo</span>
+              <span class="font-mono font-bold text-foreground">{{ selectedBooking()?.vehicleOdometerStart || 0 }} KM</span>
+            </div>
+            <div class="border-l border-border pl-3">
+              <span class="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">Return Odo</span>
+              <span class="font-mono font-bold text-foreground">{{ selectedBooking()?.vehicleOdometerEnd || 0 }} KM</span>
+            </div>
+            <div class="border-l border-border pl-3">
+              <span class="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">Total Driven</span>
+              <span class="font-mono font-bold text-primary">{{ getDistanceDriven(selectedBooking()!) }} KM</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Itemized Charges Table -->
+        <div class="border border-border rounded-xl overflow-hidden bg-card">
+          <div class="px-3.5 py-2.5 bg-muted/40 border-b border-border flex items-center justify-between font-bold text-xs uppercase tracking-wider text-muted-foreground">
+            <span>Billing Component</span>
+            <span>Charge Details / Amount</span>
+          </div>
+
+          <div class="divide-y divide-border text-xs">
+            <!-- Base Rental Tariff -->
+            <div class="p-3 flex items-center justify-between">
+              <div>
+                <span class="font-bold text-foreground block">Base Rental Tariff</span>
+                <span class="text-muted-foreground text-[11px]">
+                  Duration: {{ selectedBooking()?.durationDays || 0 }} Days, {{ selectedBooking()?.durationHours || 0 }} Hours
+                  (Limit: {{ selectedBooking()?.totalKmLimit || 0 }} KM)
+                </span>
+              </div>
+              <span class="font-mono font-bold text-sm text-foreground">₹{{ selectedBooking()?.totalRentalAmount }}</span>
+            </div>
+
+            <!-- Extra KMs -->
+            @if (Number(selectedBooking()?.extraKmFee || 0) > 0 || Number(selectedBooking()?.extraKmsTravelled || 0) > 0) {
+              <div class="p-3 flex items-center justify-between bg-muted/5">
+                <div>
+                  <span class="font-bold text-foreground block">Extra Kilometers Traveled</span>
+                  <span class="text-muted-foreground text-[11px]">
+                    {{ selectedBooking()?.extraKmsTravelled || 0 }} KM @ ₹{{ selectedBooking()?.extraKmPrice }}/KM
+                  </span>
+                </div>
+                <span class="font-mono font-bold text-sm text-amber-600 dark:text-amber-400">
+                  +₹{{ selectedBooking()?.extraKmFee || 0 }}
+                </span>
+              </div>
+            }
+
+            <!-- Extra Hours -->
+            @if (Number(selectedBooking()?.extraHourFee || 0) > 0 || Number(selectedBooking()?.extraHoursTaken || 0) > 0) {
+              <div class="p-3 flex items-center justify-between bg-muted/5">
+                <div>
+                  <span class="font-bold text-foreground block">Extra Time / Late Handover</span>
+                  <span class="text-muted-foreground text-[11px]">
+                    {{ selectedBooking()?.extraHoursTaken || 0 }} Hours @ ₹{{ selectedBooking()?.extraHourPrice }}/HR
+                  </span>
+                </div>
+                <span class="font-mono font-bold text-sm text-amber-600 dark:text-amber-400">
+                  +₹{{ selectedBooking()?.extraHourFee || 0 }}
+                </span>
+              </div>
+            }
+
+            <!-- Cleanliness Fee -->
+            @if (Number(selectedBooking()?.cleanlinessFee || 0) > 0) {
+              <div class="p-3 flex items-center justify-between">
+                <div>
+                  <span class="font-bold text-foreground block">Cleanliness & Sanitization Fee</span>
+                  <span class="text-muted-foreground text-[11px]">Vehicle interior cleaning fee</span>
+                </div>
+                <span class="font-mono font-bold text-sm text-foreground">
+                  +₹{{ selectedBooking()?.cleanlinessFee }}
+                </span>
+              </div>
+            }
+
+            <!-- FASTag Tolls & Challans -->
+            @if (Number(selectedBooking()?.challanaTollFinesTotal || 0) > 0 || Number(selectedBooking()?.challanaAmount || 0) > 0 || Number(selectedBooking()?.tollAmount || 0) > 0) {
+              <div class="p-3 flex items-center justify-between">
+                <div>
+                  <span class="font-bold text-foreground block">FASTag Tolls & Traffic Challans</span>
+                  <span class="text-muted-foreground text-[11px]">
+                    Tolls: ₹{{ selectedBooking()?.tollAmount || 0 }} | Challans: ₹{{ selectedBooking()?.challanaAmount || 0 }}
+                  </span>
+                </div>
+                <span class="font-mono font-bold text-sm text-foreground">
+                  +₹{{ selectedBooking()?.challanaTollFinesTotal || (Number(selectedBooking()?.challanaAmount || 0) + Number(selectedBooking()?.tollAmount || 0)) }}
+                </span>
+              </div>
+            }
+
+            <!-- Damages -->
+            @if (Number(selectedBooking()?.damagesTotal || 0) > 0 || (selectedBooking()?.damages && selectedBooking()!.damages!.length > 0)) {
+              <div class="p-3 bg-rose-500/5 space-y-2">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <span class="font-bold text-rose-600 dark:text-rose-400 block">Vehicle Damages Assessment</span>
+                    <span class="text-muted-foreground text-[11px]">{{ selectedBooking()?.damages?.length || 0 }} reported damage repair items</span>
+                  </div>
+                  <span class="font-mono font-bold text-sm text-rose-600 dark:text-rose-400">
+                    +₹{{ selectedBooking()?.damagesTotal }}
+                  </span>
+                </div>
+                @if (selectedBooking()?.damages && selectedBooking()!.damages!.length > 0) {
+                  <div class="pl-3 border-l-2 border-rose-500/30 space-y-1">
+                    @for (d of selectedBooking()!.damages; track d.id || $index) {
+                      <div class="flex items-center justify-between text-[11px]">
+                        <span class="text-muted-foreground">&bull; {{ d.description }}</span>
+                        <span class="font-mono font-semibold">₹{{ d.amount }}</span>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+
+            <!-- Non-intimation fine -->
+            @if (Number(selectedBooking()?.nonIntimationFine || 0) > 0) {
+              <div class="p-3 flex items-center justify-between bg-rose-500/5">
+                <div>
+                  <span class="font-bold text-rose-600 dark:text-rose-400 block">Non-Intimation Delay Fine</span>
+                  <span class="text-muted-foreground text-[11px]">Penalty for unnotified overtime</span>
+                </div>
+                <span class="font-mono font-bold text-sm text-rose-600 dark:text-rose-400">
+                  +₹{{ selectedBooking()?.nonIntimationFine }}
+                </span>
+              </div>
+            }
+
+            <!-- Discount -->
+            @if (Number(selectedBooking()?.discount || 0) > 0) {
+              <div class="p-3 flex items-center justify-between bg-emerald-500/5">
+                <div>
+                  <span class="font-bold text-emerald-600 dark:text-emerald-400 block">Promotional Discount</span>
+                  <span class="text-muted-foreground text-[11px]">Voucher credit deducted</span>
+                </div>
+                <span class="font-mono font-bold text-sm text-emerald-600 dark:text-emerald-400">
+                  -₹{{ selectedBooking()?.discount }}
+                </span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Staff & Intimations Audit Trail Card -->
+        <div class="p-3.5 rounded-xl border border-border bg-card space-y-2.5">
+          <div class="flex items-center justify-between font-bold text-xs border-b border-border pb-1.5">
+            <span class="flex items-center gap-1.5 text-muted-foreground uppercase tracking-wider text-[10px]">
+              <ng-icon name="lucideShieldCheck" class="text-cyan-500"></ng-icon>
+              <span>Operational Audit Trail</span>
+            </span>
+            <span class="font-mono text-[10px] text-muted-foreground">ID: {{ selectedBooking()?.id }}</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            <div class="p-2.5 rounded-lg bg-muted/40 border border-border/40">
+              <span class="text-muted-foreground block text-[10px] uppercase font-bold tracking-wider">Booking Started By</span>
+              <span class="font-bold text-foreground">{{ selectedBooking()?.bookedByName || selectedBooking()?.bookedBy || 'Admin Desk' }}</span>
+              <span class="text-[10px] text-muted-foreground block font-mono">
+                Role: {{ (selectedBooking()?.bookedByRole || 'Admin') | uppercase }} &bull; {{ selectedBooking()?.createdAt | date:'dd MMM yyyy, hh:mm a' }}
+              </span>
+            </div>
+
+            <div class="p-2.5 rounded-lg bg-muted/40 border border-border/40">
+              <span class="text-muted-foreground block text-[10px] uppercase font-bold tracking-wider">Booking Closed By</span>
+              <span class="font-bold text-foreground">{{ selectedBooking()?.endedByName || selectedBooking()?.endedBy || 'Admin Desk' }}</span>
+              <span class="text-[10px] text-muted-foreground block font-mono">
+                Role: {{ (selectedBooking()?.endedByRole || 'Staff') | uppercase }} &bull; {{ (selectedBooking()?.endedAt || selectedBooking()?.returnDateTimeActual) | date:'dd MMM yyyy, hh:mm a' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Customer Intimations Logged if any -->
+          @if (selectedBooking()?.intimations?.length) {
+            <div class="pt-2 border-t border-border/60">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-1 mb-1.5">
+                <ng-icon name="lucidePhoneCall"></ng-icon>
+                <span>Customer Intimations Recorded ({{ selectedBooking()?.intimations?.length }})</span>
+              </span>
+              <div class="space-y-1.5">
+                @for (intm of selectedBooking()?.intimations; track intm.id) {
+                  <div class="p-2 rounded bg-amber-500/5 border border-amber-500/20 text-[11px]">
+                    <div class="flex items-center justify-between text-muted-foreground text-[10px]">
+                      <span class="font-bold text-foreground uppercase">{{ intm.intimationType }}</span>
+                      <span>{{ intm.recordedAt | date:'dd MMM yyyy, hh:mm a' }} (Logged by: {{ intm.recordedByName || intm.recordedBy }})</span>
+                    </div>
+                    <p class="text-foreground mt-0.5">{{ intm.notes }}</p>
+                    @if (intm.expectedReturnDateTime) {
+                      <div class="text-[10px] text-muted-foreground font-mono mt-0.5">
+                        New Intimated Return: {{ intm.expectedReturnDateTime | date:'dd MMM yyyy, hh:mm a' }}
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Settlement Summary Card -->
+        <div class="p-3.5 rounded-xl border border-border bg-card space-y-2.5">
+          <div class="flex items-center justify-between font-bold text-sm border-b border-border pb-2">
+            <span>Grand Total Final Bill</span>
+            <span class="text-primary font-mono text-base font-black">₹{{ selectedBooking()?.finalRentalAmount }}</span>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs pt-1">
+            <div class="p-2.5 rounded-lg bg-muted/40">
+              <span class="text-muted-foreground block text-[10px]">Total Amount Paid</span>
+              <span class="font-mono font-bold text-emerald-600 dark:text-emerald-400">₹{{ selectedBooking()?.amountPaid }}</span>
+            </div>
+            <div class="p-2.5 rounded-lg bg-muted/40">
+              <span class="text-muted-foreground block text-[10px]">Outstanding Balance</span>
+              <span class="font-mono font-bold" [class.text-rose-600]="Number(selectedBooking()?.pendingAmount || 0) > 0" [class.text-emerald-600]="Number(selectedBooking()?.pendingAmount || 0) <= 0">
+                ₹{{ selectedBooking()?.pendingAmount || 0 }}
+              </span>
+            </div>
+            <div class="p-2.5 rounded-lg bg-muted/40 col-span-2 sm:col-span-1">
+              <span class="text-muted-foreground block text-[10px]">Payment Method</span>
+              <span class="font-semibold">{{ selectedBooking()?.paymentMode || 'Cash' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fixed Footer -->
+      <div class="shrink-0 flex items-center justify-between pt-3 border-t border-border mt-2">
+        <button hlmBtn variant="outline" size="sm" (click)="closeBreakdownModal()">Close</button>
+        <div class="flex items-center gap-2">
+          <button hlmBtn variant="outline" size="sm" class="flex items-center gap-1.5" (click)="exportBookingPdf(selectedBooking()!)">
+            <ng-icon name="lucideFileText"></ng-icon>
+            <span>Agreement</span>
+          </button>
+          <button hlmBtn size="sm" class="action-btn success flex items-center gap-1.5 font-bold shadow-sm" (click)="exportInvoicePdf(selectedBooking()!)">
+            <ng-icon name="lucideReceipt"></ng-icon>
+            <span>Print Invoice PDF</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</ng-template>

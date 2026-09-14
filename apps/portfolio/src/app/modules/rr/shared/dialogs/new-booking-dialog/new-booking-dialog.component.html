@@ -1,0 +1,372 @@
+<div class="flex flex-col h-full max-h-[calc(90vh-3rem)] overflow-hidden bg-card text-foreground">
+  <!-- Fixed Header -->
+  <div class="shrink-0 flex items-center justify-between pb-3 border-b border-border">
+    <h3 class="text-lg font-bold flex items-center gap-2 text-foreground">
+      <ng-icon name="lucideCalendarDays" class="text-primary text-xl"></ng-icon>
+      <span>Establish New Rental Agreement</span>
+    </h3>
+    <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 text-muted-foreground hover:text-foreground" (click)="closeDialog()" aria-label="Close dialog">
+      <ng-icon name="lucideX"></ng-icon>
+    </button>
+  </div>
+
+  <form [formGroup]="bookingFormGroup" class="flex flex-col flex-1 min-h-0">
+    <!-- Scrollable Body -->
+    <div class="flex-1 min-h-0 overflow-y-auto py-3 pr-1 space-y-4">
+      <!-- 1. Travel Details -->
+      <div class="p-4 rounded-xl border border-border bg-card/60 space-y-4">
+        <h4 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+          <ng-icon name="lucideCar"></ng-icon>
+          <span>Travel Details (Step 1)</span>
+        </h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Select Vehicle</label>
+            <select hlmInput formControlName="vehicleRegNo" (change)="onVehicleSelectChange()" class="w-full text-sm">
+              <option value="">-- Select Available --</option>
+              @for (v of vehicles(); track v.regNo) {
+                @if (v.status === 'available') {
+                  <option [value]="v.regNo">{{ v.manufacturer }} {{ v.name }} ({{ v.regNo }})</option>
+                }
+              }
+            </select>
+            @if (bookingFormGroup.get('vehicleRegNo')?.invalid && bookingFormGroup.get('vehicleRegNo')?.touched) {
+              <span class="text-xs text-destructive">Vehicle is required.</span>
+            }
+          </div>
+
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Pickup Date & Time</label>
+            <input hlmInput type="datetime-local" formControlName="pickupDateTime" (change)="calculateReturnDate()" class="w-full text-sm" />
+            @if (bookingFormGroup.get('pickupDateTime')?.invalid && bookingFormGroup.get('pickupDateTime')?.touched) {
+              <span class="text-xs text-destructive">Required.</span>
+            }
+          </div>
+
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Duration Days</label>
+            <select hlmInput formControlName="durationDays" (change)="calculateReturnDate()" class="w-full text-sm">
+              <option value="0">0 days</option>
+              @for (day of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]; track day) {
+                <option [value]="'' + day">{{ day }} day{{ day > 1 ? 's' : '' }}</option>
+              }
+            </select>
+          </div>
+
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Duration Hours</label>
+            <select hlmInput formControlName="durationHours" (change)="calculateReturnDate()" class="w-full text-sm">
+              <option value="0">0 hours</option>
+              @for (hour of [1,2,3,4,5,6,7,8,9,10,11,12]; track hour) {
+                <option [value]="'' + hour">{{ hour }} hour{{ hour > 1 ? 's' : '' }}</option>
+              }
+            </select>
+          </div>
+
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Return Date & Time (Auto)</label>
+            <input hlmInput type="datetime-local" formControlName="returnDateTime" readonly class="w-full text-sm bg-muted/20" />
+          </div>
+
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Total KM Limit (Auto)</label>
+            <input hlmInput formControlName="totalKmLimit" readonly class="w-full text-sm bg-muted/20" />
+          </div>
+
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Odometer Pickup Reading</label>
+            <input hlmInput type="number" formControlName="vehicleOdometerStart" [readonly]="!overrideOdometer" class="w-full text-sm" />
+            <label class="flex items-center gap-1.5 text-xs text-muted-foreground mt-1 cursor-pointer">
+              <input type="checkbox" [checked]="overrideOdometer" (change)="onOverrideOdometerChange($any($event.target).checked)" class="rounded accent-primary" />
+              <span>Override Odometer</span>
+            </label>
+          </div>
+
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Travel Purpose</label>
+            <input hlmInput formControlName="travelPurpose" placeholder="e.g. Vacation" class="w-full text-sm" />
+          </div>
+
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Travel From</label>
+            <input hlmInput formControlName="travelFrom" placeholder="Kakinada" class="w-full text-sm" />
+          </div>
+
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Travel To</label>
+            <input hlmInput formControlName="travelTo" placeholder="Hyderabad" class="w-full text-sm" />
+          </div>
+        </div>
+      </div>
+
+      <!-- REST OF THE SECTIONS LOCKED UNTIL TRAVEL DETAILS CONFIRMED -->
+      <fieldset [disabled]="!isTravelDetailsConfigured" class="space-y-4 disabled:opacity-50">
+        <!-- 2. Renter Details -->
+        <div class="p-4 rounded-xl border border-border bg-card/60 space-y-4">
+          <h4 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+            <ng-icon name="lucideUser"></ng-icon>
+            <span>Renter Person Details (Step 2)</span>
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Renter First Name</label>
+              <input hlmInput formControlName="renterFirstName" class="w-full text-sm" />
+              @if (bookingFormGroup.get('renterFirstName')?.invalid && bookingFormGroup.get('renterFirstName')?.touched) {
+                <span class="text-xs text-destructive">Required (letters only).</span>
+              }
+            </div>
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Renter Second Name</label>
+              <input hlmInput formControlName="renterSecondName" class="w-full text-sm" />
+              @if (bookingFormGroup.get('renterSecondName')?.invalid && bookingFormGroup.get('renterSecondName')?.touched) {
+                <span class="text-xs text-destructive">Required (letters only).</span>
+              }
+            </div>
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Father Name</label>
+              <input hlmInput formControlName="renterFatherName" class="w-full text-sm" />
+              @if (bookingFormGroup.get('renterFatherName')?.invalid && bookingFormGroup.get('renterFatherName')?.touched) {
+                <span class="text-xs text-destructive">Required (letters only).</span>
+              }
+            </div>
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Aadhar Number</label>
+              <input hlmInput formControlName="renterAadhar" maxlength="12" class="w-full text-sm" />
+              @if (bookingFormGroup.get('renterAadhar')?.invalid && bookingFormGroup.get('renterAadhar')?.touched) {
+                <span class="text-xs text-destructive">Must be 12 digits.</span>
+              }
+            </div>
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Driving License Number</label>
+              <input hlmInput formControlName="renterDL" maxlength="16" class="w-full text-sm" />
+              @if (bookingFormGroup.get('renterDL')?.invalid && bookingFormGroup.get('renterDL')?.touched) {
+                <span class="text-xs text-destructive">Must be 16 chars.</span>
+              }
+            </div>
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Phone Number</label>
+              <input hlmInput formControlName="renterPhone" maxlength="10" class="w-full text-sm" />
+              @if (bookingFormGroup.get('renterPhone')?.invalid && bookingFormGroup.get('renterPhone')?.touched) {
+                <span class="text-xs text-destructive">Must be 10 digits.</span>
+              }
+            </div>
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Alternative Phone Number</label>
+              <input hlmInput formControlName="renterAltPhone" maxlength="10" class="w-full text-sm" />
+            </div>
+            <div class="sm:col-span-2">
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Address</label>
+              <textarea hlmInput formControlName="renterAddress" rows="2" class="w-full text-sm"></textarea>
+              @if (bookingFormGroup.get('renterAddress')?.invalid && bookingFormGroup.get('renterAddress')?.touched) {
+                <span class="text-xs text-destructive">Required.</span>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Guarantee Details -->
+        <div class="p-4 rounded-xl border border-border bg-card/60 space-y-4">
+          <h4 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+            <ng-icon name="lucideShieldCheck"></ng-icon>
+            <span>Guarantee Person Details (Step 3)</span>
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Guarantee First Name</label>
+              <input hlmInput formControlName="guarFirstName" class="w-full text-sm" />
+              @if (bookingFormGroup.get('guarFirstName')?.invalid && bookingFormGroup.get('guarFirstName')?.touched) {
+                <span class="text-xs text-destructive">Required.</span>
+              }
+            </div>
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Guarantee Second Name</label>
+              <input hlmInput formControlName="guarSecondName" class="w-full text-sm" />
+              @if (bookingFormGroup.get('guarSecondName')?.invalid && bookingFormGroup.get('guarSecondName')?.touched) {
+                <span class="text-xs text-destructive">Required.</span>
+              }
+            </div>
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Guarantee Father Name</label>
+              <input hlmInput formControlName="guarFatherName" class="w-full text-sm" />
+              @if (bookingFormGroup.get('guarFatherName')?.invalid && bookingFormGroup.get('guarFatherName')?.touched) {
+                <span class="text-xs text-destructive">Required.</span>
+              }
+            </div>
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Aadhar Number (optional)</label>
+              <input hlmInput formControlName="guarAadhar" maxlength="12" class="w-full text-sm" />
+            </div>
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Driving License (optional)</label>
+              <input hlmInput formControlName="guarDL" maxlength="16" class="w-full text-sm" />
+            </div>
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Phone Number</label>
+              <input hlmInput formControlName="guarPhone" maxlength="10" class="w-full text-sm" />
+              @if (bookingFormGroup.get('guarPhone')?.invalid && bookingFormGroup.get('guarPhone')?.touched) {
+                <span class="text-xs text-destructive">Must be 10 digits.</span>
+              }
+            </div>
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Alternative Phone Number</label>
+              <input hlmInput formControlName="guarAltPhone" maxlength="10" class="w-full text-sm" />
+            </div>
+            <div class="sm:col-span-2">
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Address</label>
+              <textarea hlmInput formControlName="guarAddress" rows="2" class="w-full text-sm"></textarea>
+              @if (bookingFormGroup.get('guarAddress')?.invalid && bookingFormGroup.get('guarAddress')?.touched) {
+                <span class="text-xs text-destructive">Required.</span>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Security Deposit -->
+        <div class="p-4 rounded-xl border border-border bg-card/60 space-y-4">
+          <h4 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+            <ng-icon name="lucidePackage"></ng-icon>
+            <span>Security Deposit Details (Step 4)</span>
+          </h4>
+          <div class="flex flex-wrap gap-4 text-xs">
+            <label class="flex items-center gap-1.5 cursor-pointer">
+              <input type="radio" formControlName="depositType" value="none" class="accent-primary" />
+              <span>None Required</span>
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer">
+              <input type="radio" formControlName="depositType" value="bike" class="accent-primary" />
+              <span>Two Wheeler Asset</span>
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer">
+              <input type="radio" formControlName="depositType" value="cash" class="accent-primary" />
+              <span>Cash Deposit</span>
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer">
+              <input type="radio" formControlName="depositType" value="other" class="accent-primary" />
+              <span>Other Item</span>
+            </label>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            @if (bookingFormGroup.get('depositType')?.value === 'bike') {
+              <div>
+                <label hlmLabel class="text-xs text-muted-foreground block mb-1">Bike Reg Number</label>
+                <input hlmInput formControlName="bikeRegNo" class="w-full text-sm" />
+              </div>
+              <div>
+                <label hlmLabel class="text-xs text-muted-foreground block mb-1">Bike Manufacturer</label>
+                <input hlmInput formControlName="bikeManufacturer" class="w-full text-sm" />
+              </div>
+              <div>
+                <label hlmLabel class="text-xs text-muted-foreground block mb-1">Bike Model</label>
+                <input hlmInput formControlName="bikeModel" class="w-full text-sm" />
+              </div>
+              <div>
+                <label hlmLabel class="text-xs text-muted-foreground block mb-1">Bike Owner</label>
+                <input hlmInput formControlName="bikeOwner" class="w-full text-sm" />
+              </div>
+            }
+
+            @if (bookingFormGroup.get('depositType')?.value === 'cash') {
+              <div>
+                <label hlmLabel class="text-xs text-muted-foreground block mb-1">Cash Deposit Amount (Rs.)</label>
+                <input hlmInput type="number" formControlName="cashAmount" class="w-full text-sm" />
+              </div>
+            }
+
+            @if (bookingFormGroup.get('depositType')?.value === 'other') {
+              <div>
+                <label hlmLabel class="text-xs text-muted-foreground block mb-1">Item Name</label>
+                <input hlmInput formControlName="otherItemName" class="w-full text-sm" />
+              </div>
+              <div>
+                <label hlmLabel class="text-xs text-muted-foreground block mb-1">Item Value (Rs.)</label>
+                <input hlmInput type="number" formControlName="otherItemValue" class="w-full text-sm" />
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- 5. Financials -->
+        <div class="p-4 rounded-xl border border-border bg-card/60 space-y-4">
+          <h4 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+            <ng-icon name="lucideCreditCard"></ng-icon>
+            <span>Financial Billings (Step 5)</span>
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Total Rental Amount (Rs. Auto)</label>
+              <input hlmInput formControlName="totalRentalAmount" readonly class="w-full text-sm bg-muted/20" />
+            </div>
+
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Discount Type</label>
+              <select hlmInput formControlName="discountType" (change)="recalculateFinalAmount()" class="w-full text-sm">
+                <option value="none">None</option>
+                <option value="rupee">Rupee (Rs.)</option>
+                <option value="percentage">Percentage (%)</option>
+              </select>
+            </div>
+
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Discount</label>
+              <input hlmInput type="number" formControlName="discount" (input)="recalculateFinalAmount()" (change)="recalculateFinalAmount()" [readonly]="bookingFormGroup.get('discountType')?.value === 'none'" class="w-full text-sm" />
+              @if (bookingFormGroup.get('discount')?.touched && bookingFormGroup.get('discount')?.hasError('max') && bookingFormGroup.get('discountType')?.value === 'percentage') {
+                <span class="text-xs text-destructive">Discount cannot exceed 100%.</span>
+              }
+              @if (bookingFormGroup.get('discount')?.touched && bookingFormGroup.get('discount')?.hasError('max') && bookingFormGroup.get('discountType')?.value !== 'percentage') {
+                <span class="text-xs text-destructive">Discount cannot exceed total rent.</span>
+              }
+            </div>
+
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Final Rental Amount (Rs. Auto)</label>
+              <input hlmInput formControlName="finalRentalAmount" readonly class="w-full text-sm bg-muted/20 font-bold" />
+            </div>
+
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Advance Amount Paid (Rs.)</label>
+              <input hlmInput type="number" formControlName="amountPaid" (input)="recalculateFinalAmount()" (change)="recalculateFinalAmount()" class="w-full text-sm" />
+              @if (bookingFormGroup.get('amountPaid')?.invalid && bookingFormGroup.get('amountPaid')?.touched) {
+                <span class="text-xs text-destructive">Must be positive number.</span>
+              }
+            </div>
+
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Balance Pending Amount (Rs. Auto)</label>
+              <input hlmInput formControlName="pendingAmount" readonly class="w-full text-sm bg-muted/20 font-bold" />
+            </div>
+
+            @if (bookingFormGroup.get('pendingAmount')?.value && bookingFormGroup.get('pendingAmount')?.value.startsWith('-')) {
+              <div class="sm:col-span-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs flex items-center gap-2">
+                <ng-icon name="lucideAlertTriangle" class="text-base shrink-0"></ng-icon>
+                <span><strong>Warning:</strong> Excess advance amount paid. Refund/credit of Rs. {{ bookingFormGroup.get('pendingAmount')?.value.replace('-', '') }} is pending.</span>
+              </div>
+            }
+
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Payment Mode</label>
+              <select hlmInput formControlName="paymentMode" class="w-full text-sm">
+                <option value="Cash">Cash</option>
+                <option value="Online">Online / UPI</option>
+                <option value="Card">Credit/Debit Card</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+    </div>
+
+    <!-- Fixed Footer -->
+    <div class="shrink-0 flex items-center justify-end gap-2 pt-3 border-t border-border">
+      <button hlmBtn class="action-btn success flex items-center gap-1.5" [disabled]="bookingFormGroup.invalid || isSubmitting()" (click)="createBooking($event)">
+        <ng-icon name="lucideCheck"></ng-icon>
+        <span>{{ isSubmitting() ? 'Creating...' : 'Create Booking' }}</span>
+      </button>
+      <button hlmBtn variant="outline" class="action-btn flex items-center gap-1.5" [disabled]="bookingFormGroup.invalid" (click)="printAgreementPDFFromForm()">
+        <ng-icon name="lucideFileText"></ng-icon>
+        <span>Print Agreement PDF</span>
+      </button>
+      <button hlmBtn variant="ghost" (click)="closeDialog()">Cancel</button>
+    </div>
+  </form>
+</div>

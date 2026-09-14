@@ -25,7 +25,7 @@ export interface AppRouteConfig {
   path: string; // Route path for Angular Router (e.g., 'calculator')
   link: string; // Complete navigation URL (e.g., '/calculator')
   label: string; // Display label in SideNav
-  icon: string; // Material Icon name
+  icon: string; // Icon identifier
   loadComponent?: Route['loadComponent']; // Standalone lazy-loaded component
   loadChildren?: Route['loadChildren']; // Lazy-loaded child routing module
   groups?: ToolGroupConfig[]; // Sub-menu groupings (specific to Dev Tools)

@@ -2,13 +2,15 @@ import { Component, OnInit, inject, signal, computed, ViewChild, TemplateRef } f
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
 import { RRApiService } from '../../../../services/rr-api.service';
-import { HlmButtonDirective } from '@spartan-ng/hel/button';
-import { HlmCardDirective } from '@spartan-ng/hel/card';
-import { HlmInputDirective } from '@spartan-ng/hel/input';
-import { HlmLabelDirective } from '@spartan-ng/hel/label';
+import { HlmButtonImports } from '@spartan-ng/hel/button';
+import { HlmCardImports } from '@spartan-ng/hel/card';
+import { HlmInputImports } from '@spartan-ng/hel/input';
 import { HlmDialogService } from '@spartan-ng/hel/dialog';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
+import { HlmBadgeImports } from '@spartan-ng/hel/badge';
+import { toast } from '@spartan-ng/hel/sonner';
 import { IVehicle } from '@portfolio/shared-types';
+import { RRVehicleCardComponent } from '../../../../shared';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideCar,
@@ -40,12 +42,13 @@ import {
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
-    HlmCardDirective,
-    HlmInputDirective,
-    HlmLabelDirective,
-    HlmButtonDirective,
+    HlmCardImports,
+    HlmInputImports,
+    HlmButtonImports,
     HlmTooltipImports,
+    HlmBadgeImports,
     NgIconComponent,
+    RRVehicleCardComponent,
   ],
   providers: [
     provideIcons({
@@ -167,7 +170,7 @@ export class RRVehicleListComponent implements OnInit {
   viewVehicleDetails(v: any) {
     this.selectedVehicleDetails.set(v);
     this.dialog.open(this.vehicleDetailsDialog, {
-      contentClass: 'max-w-xl w-full p-6 max-h-[90vh] overflow-y-auto',
+      contentClass: 'max-w-xl w-full p-6 max-h-[90vh] flex flex-col overflow-hidden',
     });
   }
 
@@ -187,8 +190,13 @@ export class RRVehicleListComponent implements OnInit {
       status: 'available'
     });
     this.dialog.open(this.vehicleFormDialog, {
-      contentClass: 'max-w-3xl w-full p-6 max-h-[90vh] overflow-y-auto',
+      contentClass: 'max-w-3xl w-full p-6 max-h-[90vh] flex flex-col overflow-hidden',
     });
+  }
+
+  onEditVehicle(v: IVehicle) {
+    this.selectedVehicleDetails.set(v);
+    this.openEditVehicleModal();
   }
 
   openEditVehicleModal() {
@@ -232,7 +240,7 @@ export class RRVehicleListComponent implements OnInit {
       this.selectedFileName.set('Current vehicle image');
     }
     this.dialog.open(this.vehicleFormDialog, {
-      contentClass: 'max-w-3xl w-full p-6 max-h-[90vh] overflow-y-auto',
+      contentClass: 'max-w-3xl w-full p-6 max-h-[90vh] flex flex-col overflow-hidden',
     });
   }
 
@@ -255,16 +263,16 @@ export class RRVehicleListComponent implements OnInit {
     try {
       if (this.editingVehicleMode()) {
         await this.rrApi.updateVehicle(payload.regNo, payload);
-        alert('Vehicle updated successfully.');
+        toast.success('Vehicle updated successfully.');
       } else {
         await this.rrApi.createVehicle(payload);
-        alert('Vehicle added successfully.');
+        toast.success('Vehicle added successfully.');
       }
       this.closeVehicleFormModal();
       this.loadVehicles();
     } catch (err: any) {
       console.error(err);
-      alert(err.error?.message || 'Error saving vehicle.');
+      toast.error(err.error?.message || 'Error saving vehicle.');
     }
   }
 
@@ -273,12 +281,12 @@ export class RRVehicleListComponent implements OnInit {
 
     try {
       await this.rrApi.deleteVehicle(regNo);
-      alert('Vehicle deleted successfully.');
+      toast.success('Vehicle deleted successfully.');
       this.closeVehicleFormModal();
       this.loadVehicles();
     } catch (err: any) {
       console.error(err);
-      alert(err.error?.message || 'Error deleting vehicle.');
+      toast.error(err.error?.message || 'Error deleting vehicle.');
     }
   }
 

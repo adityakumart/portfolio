@@ -3,12 +3,13 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
 import { RRApiService } from '../../../../services/rr-api.service';
 import { IEmployee } from '@portfolio/shared-types';
-import { HlmCardDirective } from '@spartan-ng/hel/card';
-import { HlmInputDirective } from '@spartan-ng/hel/input';
-import { HlmLabelDirective } from '@spartan-ng/hel/label';
-import { HlmButtonDirective } from '@spartan-ng/hel/button';
+import { HlmInputImports } from '@spartan-ng/hel/input';
+import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmDialogService } from '@spartan-ng/hel/dialog';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
+import { HlmTableImports } from '@spartan-ng/hel/table';
+import { HlmBadgeImports } from '@spartan-ng/hel/badge';
+import { toast } from '@spartan-ng/hel/sonner';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideUsers,
@@ -17,6 +18,7 @@ import {
   lucideBadgeCheck,
   lucideContact,
   lucideCheck,
+  lucideTrash2,
 } from '@ng-icons/lucide';
 
 @Component({
@@ -26,11 +28,11 @@ import {
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
-    HlmCardDirective,
-    HlmInputDirective,
-    HlmLabelDirective,
-    HlmButtonDirective,
+    HlmInputImports,
+    HlmButtonImports,
     HlmTooltipImports,
+    HlmTableImports,
+    HlmBadgeImports,
     NgIconComponent,
   ],
   providers: [
@@ -41,6 +43,7 @@ import {
       lucideBadgeCheck,
       lucideContact,
       lucideCheck,
+      lucideTrash2,
     }),
   ],
   templateUrl: './employee-list.component.html',
@@ -113,7 +116,7 @@ export class RREmployeeListComponent implements OnInit {
       allowLogin: true
     });
     this.dialog.open(this.employeeFormDialog, {
-      contentClass: 'max-w-3xl w-full p-6 max-h-[85vh] overflow-y-auto',
+      contentClass: 'max-w-3xl w-full p-6 max-h-[85vh] flex flex-col overflow-hidden',
     });
   }
 
@@ -134,7 +137,7 @@ export class RREmployeeListComponent implements OnInit {
       address: e.address
     });
     this.dialog.open(this.employeeFormDialog, {
-      contentClass: 'max-w-3xl w-full p-6 max-h-[85vh] overflow-y-auto',
+      contentClass: 'max-w-3xl w-full p-6 max-h-[85vh] flex flex-col overflow-hidden',
     });
   }
 
@@ -151,15 +154,36 @@ export class RREmployeeListComponent implements OnInit {
     try {
       if (this.editingEmployeeMode()) {
         await this.rrApi.updateEmployee(payload.id, payload);
-        alert('Employee details updated.');
+        toast.success('Employee details updated.');
       } else {
         await this.rrApi.createEmployee(payload);
-        alert('Employee registered successfully.');
+        toast.success('Employee registered successfully.');
       }
       this.closeEmployeeFormModal();
       this.loadEmployees();
     } catch (err: any) {
-      alert(err.message || 'Operation failed.');
+      toast.error(err.message || 'Operation failed.');
+    }
+  }
+
+  async deleteEmployee(e: IEmployee) {
+    const currentUser = this.rrApi.currentUser();
+    if (currentUser?.id === e.id) {
+      toast.error('You cannot delete your own administrative account.');
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to delete staff member ${e.firstName} ${e.lastName} (${e.id})? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      await this.rrApi.deleteEmployee(e.id);
+      toast.success(`Employee ${e.id} removed from system.`);
+      this.loadEmployees();
+    } catch (err: any) {
+      console.error('Failed to delete employee:', err);
+      toast.error(err.error?.message || err.message || 'Failed to delete employee.');
     }
   }
 
