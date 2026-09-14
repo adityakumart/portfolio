@@ -105,16 +105,16 @@
     </div>
 
     <!-- Fixed Footer -->
-    <div class="shrink-0 flex items-center justify-end gap-2 pt-3 border-t border-border">
-      <button hlmBtn class="action-btn success flex items-center gap-1.5" [disabled]="modifyBookingFormGroup.invalid || isSubmitting()" (click)="submitModifyBooking()">
-        <ng-icon name="lucideSave"></ng-icon>
-        <span>{{ isSubmitting() ? 'Saving...' : 'Save Changes' }}</span>
-      </button>
-      <button hlmBtn variant="outline" class="action-btn flex items-center gap-1.5" [disabled]="modifyBookingFormGroup.invalid" (click)="printAgreementPDFFromModifyForm()">
+    <div class="shrink-0 flex flex-wrap items-center justify-end gap-2 pt-3 border-t border-border">
+      <button hlmBtn variant="ghost" class="order-3 sm:order-1" (click)="closeDialog()">Cancel</button>
+      <button hlmBtn variant="outline" class="action-btn flex items-center gap-1.5 order-2" [disabled]="modifyBookingFormGroup.invalid" (click)="printAgreementPDFFromModifyForm()">
         <ng-icon name="lucideFileText"></ng-icon>
         <span>Print Agreement PDF</span>
       </button>
-      <button hlmBtn variant="ghost" (click)="closeDialog()">Cancel</button>
+      <button hlmBtn class="action-btn success flex items-center gap-1.5 order-1 sm:order-3 font-bold shadow-sm" [disabled]="modifyBookingFormGroup.invalid || isSubmitting()" (click)="submitModifyBooking()">
+        <ng-icon name="lucideSave"></ng-icon>
+        <span>{{ isSubmitting() ? 'Saving...' : 'Save Changes' }}</span>
+      </button>
     </div>
   </form>
 </div>

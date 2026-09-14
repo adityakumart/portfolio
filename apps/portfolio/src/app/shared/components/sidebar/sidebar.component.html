@@ -1,6 +1,202 @@
-<div class="app-layout flex h-screen w-screen overflow-hidden bg-background text-foreground">
-  <!-- Single Collapsible Sidebar (Fixed Width 72px) -->
-  <aside class="single-sidebar flex h-full w-[72px] flex-col border-r border-border bg-card px-3 py-4 select-none">
+<div class="app-layout flex flex-col lg:flex-row h-screen w-screen overflow-hidden bg-background text-foreground">
+  <!-- Mobile Top Header (Screens < 1024px) -->
+  <header class="lg:hidden flex items-center justify-between px-4 py-2.5 border-b border-border bg-card/95 backdrop-blur-md z-30 shrink-0">
+    <div class="flex items-center gap-3">
+      <button
+        hlmBtn
+        variant="ghost"
+        size="icon"
+        class="h-9 w-9 rounded-xl border border-border/70 text-foreground hover:bg-muted"
+        (click)="toggleMobileDrawer()"
+        aria-label="Toggle navigation menu"
+      >
+        <ng-icon [name]="isMobileDrawerOpen() ? 'lucideX' : 'lucideMenu'" class="text-lg"></ng-icon>
+      </button>
+      <div class="flex items-center gap-2 cursor-pointer" routerLink="/user" (click)="closeMobileDrawer()">
+        <div class="h-7 w-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
+          A
+        </div>
+        <span class="font-bold text-sm text-foreground">Console</span>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <!-- Theme toggle -->
+      <button
+        hlmBtn
+        variant="ghost"
+        size="icon"
+        class="text-muted-foreground hover:text-foreground hover:bg-muted h-8 w-8 rounded-full"
+        (click)="toggleTheme()"
+        aria-label="Toggle theme"
+      >
+        <ng-icon [name]="isDarkMode() ? 'lucideSun' : 'lucideMoon'" class="size-4.5" />
+      </button>
+
+      <!-- User avatar dropdown -->
+      @if (isLoggedIn()) {
+        <hlm-avatar
+          class="cursor-pointer size-8 border border-border"
+          [hlmDropdownMenuTrigger]="accountMenuMobile"
+          aria-label="User account menu"
+        >
+          <span hlmAvatarFallback class="bg-muted text-foreground font-semibold text-xs">{{ userInitials() }}</span>
+        </hlm-avatar>
+        <ng-template #accountMenuMobile>
+          <div hlmDropdownMenu class="w-56 p-1 rounded-xl shadow-xl border border-border bg-card/95 backdrop-blur-md">
+            <div class="p-3 border-b border-border">
+              <div class="font-semibold text-sm text-foreground">{{ userName() }}</div>
+              <div class="text-xs text-muted-foreground mt-0.5">{{ userRole() }}</div>
+            </div>
+            <div class="p-1">
+              <button hlmDropdownMenuItem class="flex items-center gap-2 text-destructive w-full" (click)="onLogout()">
+                <ng-icon name="lucideLogOut" class="size-4 text-destructive" />
+                <span>Sign Out</span>
+              </button>
+            </div>
+          </div>
+        </ng-template>
+      }
+    </div>
+  </header>
+
+  <!-- Mobile Backdrop Overlay -->
+  @if (isMobileDrawerOpen()) {
+    <div
+      class="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-40 animate-in fade-in duration-200"
+      (click)="closeMobileDrawer()"
+    ></div>
+  }
+
+  <!-- Mobile Off-Canvas Drawer (Screens < 1024px) -->
+  <aside
+    class="lg:hidden fixed inset-y-0 left-0 w-[280px] bg-card border-r border-border z-50 flex flex-col p-4 shadow-2xl transition-transform duration-300 ease-out"
+    [class.-translate-x-full]="!isMobileDrawerOpen()"
+    [class.translate-x-0]="isMobileDrawerOpen()"
+  >
+    <div class="flex items-center justify-between pb-3 border-b border-border mb-3">
+      <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Navigation Menu</span>
+      <button
+        hlmBtn
+        variant="ghost"
+        size="icon"
+        class="h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground"
+        (click)="closeMobileDrawer()"
+      >
+        <ng-icon name="lucideX" class="text-sm"></ng-icon>
+      </button>
+    </div>
+
+    <div class="flex-1 overflow-y-auto space-y-1.5 touch-scroll-x pr-1">
+      @for (item of menuItems(); track item.label) {
+        <div>
+          @if (item.link) {
+            <button
+              type="button"
+              class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
+              [class.bg-secondary]="isItemActive(item)"
+              [class.text-primary]="isItemActive(item)"
+              [class.hover:bg-muted]="!isItemActive(item)"
+              (click)="onItemClick(item)"
+            >
+              @if (item.icon) {
+                <ng-icon [name]="item.icon" class="text-base shrink-0"></ng-icon>
+              }
+              <span class="truncate">{{ item.label }}</span>
+            </button>
+          } @else {
+            <div>
+              <button
+                type="button"
+                class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+                (click)="toggleMobileAccordion(item.label)"
+              >
+                <div class="flex items-center gap-3">
+                  @if (item.icon) {
+                    <ng-icon [name]="item.icon" class="text-base shrink-0"></ng-icon>
+                  }
+                  <span class="truncate">{{ item.label }}</span>
+                </div>
+                <ng-icon
+                  name="lucideChevronRight"
+                  class="text-xs transition-transform duration-200"
+                  [class.rotate-90]="isMobileAccordionExpanded(item.label)"
+                ></ng-icon>
+              </button>
+
+              @if (isMobileAccordionExpanded(item.label) && item.children) {
+                <div class="pl-4 pr-1 py-1 space-y-1 border-l-2 border-primary/20 ml-4 mt-1">
+                  @for (sub of item.children; track sub.label) {
+                    @if (sub.link) {
+                      <button
+                        type="button"
+                        class="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors text-left"
+                        [class.bg-secondary]="isItemActive(sub)"
+                        [class.text-primary]="isItemActive(sub)"
+                        [class.text-muted-foreground]="!isItemActive(sub)"
+                        [class.hover:text-foreground]="!isItemActive(sub)"
+                        (click)="onItemClick(sub)"
+                      >
+                        @if (sub.icon) {
+                          <ng-icon [name]="sub.icon" class="text-xs shrink-0"></ng-icon>
+                        }
+                        <span class="truncate">{{ sub.label }}</span>
+                      </button>
+                    } @else if (sub.children) {
+                      <div class="py-1">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80 px-2 block mb-1">{{ sub.label }}</span>
+                        <div class="space-y-0.5">
+                          @for (leaf of sub.children; track leaf.label) {
+                            <button
+                              type="button"
+                              class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors text-left"
+                              [class.bg-secondary]="isItemActive(leaf)"
+                              [class.text-primary]="isItemActive(leaf)"
+                              [class.text-muted-foreground]="!isItemActive(leaf)"
+                              [class.hover:text-foreground]="!isItemActive(leaf)"
+                              (click)="onItemClick(leaf)"
+                            >
+                              <span class="truncate">{{ leaf.label }}</span>
+                            </button>
+                          }
+                        </div>
+                      </div>
+                    }
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Mobile Drawer Footer -->
+    <div class="pt-3 border-t border-border mt-auto flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <hlm-avatar class="size-8 border border-border">
+          <span hlmAvatarFallback class="bg-muted text-foreground font-semibold text-xs">{{ userInitials() }}</span>
+        </hlm-avatar>
+        <div class="truncate max-w-[140px]">
+          <p class="text-xs font-semibold text-foreground truncate">{{ userName() }}</p>
+          <p class="text-[10px] text-muted-foreground uppercase">{{ userRole() }}</p>
+        </div>
+      </div>
+      <button
+        hlmBtn
+        variant="ghost"
+        size="icon"
+        class="h-8 w-8 text-destructive hover:bg-destructive/10 rounded-lg"
+        (click)="onLogout()"
+        aria-label="Sign out"
+      >
+        <ng-icon name="lucideLogOut" class="size-4 text-destructive"></ng-icon>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Desktop Single Collapsible Sidebar (Fixed Width 72px) -->
+  <aside class="single-sidebar hidden lg:flex h-full w-[72px] flex-col border-r border-border bg-card px-3 py-4 select-none shrink-0">
     <!-- Menu Scroller -->
     <div class="menu-scroller flex-grow w-full flex flex-col items-center">
       <nav class="menu-items-list flex flex-col gap-3 w-full">
@@ -151,7 +347,7 @@
   </aside>
 
   <!-- Main View Area -->
-  <main class="app-main-viewport flex-1 h-full overflow-y-auto">
+  <main class="app-main-viewport flex-1 h-full overflow-y-auto min-w-0">
     <ng-content></ng-content>
   </main>
 </div>

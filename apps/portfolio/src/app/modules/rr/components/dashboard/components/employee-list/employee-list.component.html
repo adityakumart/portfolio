@@ -16,40 +16,41 @@
     <table hlmTable class="w-full text-xs">
       <thead hlmTHead class="sticky top-0 z-10 bg-card backdrop-blur-md">
         <tr hlmTr>
-          <th hlmTh>Employee ID</th>
+          <th hlmTh class="hidden sm:table-cell">Employee ID</th>
           <th hlmTh>Staff Full Name</th>
           <th hlmTh>Assigned Role</th>
-          <th hlmTh>Date of Birth</th>
+          <th hlmTh class="hidden lg:table-cell">Date of Birth</th>
           <th hlmTh>Contact Phone</th>
-          <th hlmTh>Email Address</th>
-          <th hlmTh>Portal Access</th>
+          <th hlmTh class="hidden md:table-cell">Email Address</th>
+          <th hlmTh class="hidden sm:table-cell">Portal Access</th>
           <th hlmTh class="text-center">Actions</th>
         </tr>
       </thead>
       <tbody hlmTBody>
         @for (e of pagedEmployees(); track e.id) {
           <tr hlmTr>
-            <td hlmTd>
+            <td hlmTd class="hidden sm:table-cell">
               <span class="font-bold font-mono text-primary text-xs bg-muted/50 px-2 py-0.5 rounded border border-border">{{ e.id }}</span>
             </td>
             <td hlmTd>
               <div class="font-bold">{{ e.firstName }} {{ e.lastName }}</div>
+              <div class="text-[11px] text-muted-foreground sm:hidden font-mono mt-0.5">{{ e.id }}</div>
             </td>
             <td hlmTd>
-              <span hlmBadge [variant]="e.role === 'admin' ? 'destructive' : 'secondary'" class="font-bold uppercase">
+              <span hlmBadge [variant]="e.role === 'admin' ? 'destructive' : 'secondary'" class="font-bold uppercase text-[10px]">
                 {{ e.role }}
               </span>
             </td>
-            <td hlmTd>
+            <td hlmTd class="hidden lg:table-cell">
               <span>{{ (e.dob | date:'dd-MM-yyyy') || 'N/A' }}</span>
             </td>
             <td hlmTd>
               <span>{{ e.phone }}</span>
             </td>
-            <td hlmTd class="text-muted-foreground">
+            <td hlmTd class="text-muted-foreground hidden md:table-cell">
               <span>{{ e.email }}</span>
             </td>
-            <td hlmTd>
+            <td hlmTd class="hidden sm:table-cell">
               <span hlmBadge [variant]="e.allowLogin ? 'secondary' : 'destructive'" [class.text-emerald-600]="e.allowLogin" [class.dark:text-emerald-400]="e.allowLogin">
                 {{ e.allowLogin ? 'Active Permitted' : 'Access Revoked' }}
               </span>
