@@ -49,6 +49,12 @@
             <td hlmTd>
               <div class="font-semibold">{{ b.returnDateTime | date:'dd-MM-yyyy' }}</div>
               <div class="text-muted-foreground text-[11px]">{{ b.returnDateTime | date:'shortTime' }}</div>
+              @if (b.lastIntimation) {
+                <div class="inline-flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400 font-semibold mt-0.5 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
+                  <ng-icon name="lucidePhoneCall" class="text-[10px]"></ng-icon>
+                  <span>Intimated: {{ b.lastIntimation.intimationType | titlecase }}</span>
+                </div>
+              }
             </td>
             <td hlmTd class="font-mono font-bold">
               ₹{{ b.finalRentalAmount }}
@@ -68,6 +74,9 @@
               }
             </td>
             <td hlmTd class="text-center whitespace-nowrap space-x-1">
+              <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 rounded-full text-amber-500 hover:text-amber-600 hover:bg-amber-500/10" hlmTooltip="Log Customer Intimation (Call/Delay/Extension)" (click)="openIntimationModal(b)">
+                <ng-icon name="lucidePhoneCall"></ng-icon>
+              </button>
               <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 rounded-full text-emerald-500" hlmTooltip="End Rental" (click)="openEndBookingPopup(b)">
                 <ng-icon name="lucideCalendarX"></ng-icon>
               </button>
@@ -107,3 +116,130 @@
     </div>
   </div>
 </div>
+
+<!-- POPUP: CUSTOMER INTIMATION MODAL -->
+<ng-template #intimationDialog>
+  @if (selectedIntimationBooking()) {
+    <div class="flex flex-col h-full overflow-hidden">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-border">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-500/30">
+            <ng-icon name="lucidePhoneCall" class="text-lg"></ng-icon>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-foreground flex items-center gap-2">
+              <span>Customer Intimation Record</span>
+              <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground border border-border">
+                #{{ selectedIntimationBooking()?.id }}
+              </span>
+            </h3>
+            <p class="text-xs text-muted-foreground">
+              Vehicle: <span class="font-semibold text-foreground">{{ selectedIntimationBooking()?.vehicleManufacturer }} {{ selectedIntimationBooking()?.vehicleName }}</span>
+              ({{ selectedIntimationBooking()?.vehicleRegNo }})
+            </p>
+          </div>
+        </div>
+        <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 text-muted-foreground hover:text-foreground" (click)="closeIntimationModal()">
+          <ng-icon name="lucideX"></ng-icon>
+        </button>
+      </div>
+
+      <!-- Intimation Form -->
+      <form [formGroup]="intimationFormGroup" (ngSubmit)="submitCustomerIntimation()" class="flex-1 overflow-y-auto py-4 space-y-4 text-xs">
+        <!-- Customer Details Readonly Card -->
+        <div class="p-3 rounded-xl border border-border bg-muted/20 flex items-center justify-between">
+          <div>
+            <span class="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">Customer / Renter</span>
+            <span class="font-bold text-sm text-foreground">
+              {{ selectedIntimationBooking()?.renterFirstName }} {{ selectedIntimationBooking()?.renterSecondName }}
+            </span>
+          </div>
+          <div class="text-right">
+            <span class="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">Contact Number</span>
+            <span class="font-mono font-bold text-sm text-foreground">{{ selectedIntimationBooking()?.renterPhone }}</span>
+          </div>
+        </div>
+
+        <!-- Intimation Type -->
+        <div class="space-y-1.5">
+          <label hlmLabel class="font-semibold text-foreground">Intimation Reason / Type <span class="text-rose-500">*</span></label>
+          <select hlmInput formControlName="intimationType" class="w-full text-xs h-9 bg-card">
+            <option value="delay">Return Delay / Traffic Traffic Intimation</option>
+            <option value="extension">Trip Extension Request</option>
+            <option value="route_change">Route / Destination Change</option>
+            <option value="early_return">Early Vehicle Return</option>
+            <option value="emergency">Breakdown / Emergency Assistance</option>
+            <option value="other">Other Customer Intimation</option>
+          </select>
+          <p class="text-[11px] text-muted-foreground">Recording customer delay intimation prevents unwarranted delay surcharges upon rental closing.</p>
+        </div>
+
+        <!-- Revised Expected Return Date/Time (Optional) -->
+        <div class="space-y-1.5">
+          <label hlmLabel class="font-semibold text-foreground">Revised Expected Return Time (Optional)</label>
+          <input
+            hlmInput
+            type="datetime-local"
+            formControlName="expectedReturnDateTime"
+            class="w-full text-xs h-9 bg-card"
+          />
+        </div>
+
+        <!-- Notes / Staff Log -->
+        <div class="space-y-1.5">
+          <label hlmLabel class="font-semibold text-foreground">Detailed Remarks / Intimation Note <span class="text-rose-500">*</span></label>
+          <textarea
+            hlmInput
+            formControlName="notes"
+            rows="3"
+            placeholder="e.g. Customer called at 4:30 PM informing a 2-hour delay due to toll gate jam on NH16. Confirmed return by 7:30 PM."
+            class="w-full text-xs p-2.5 bg-card rounded-lg resize-none"
+          ></textarea>
+        </div>
+
+        <!-- Previous intimations history if any -->
+        @if (selectedIntimationBooking()?.intimations?.length) {
+          <div class="space-y-2 pt-2 border-t border-border">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+              Prior Intimations Logged ({{ selectedIntimationBooking()?.intimations?.length }})
+            </span>
+            <div class="space-y-1.5 max-h-32 overflow-y-auto">
+              @for (item of selectedIntimationBooking()?.intimations; track item.id) {
+                <div class="p-2 rounded-lg bg-muted/40 border border-border/50 text-[11px]">
+                  <div class="flex items-center justify-between text-muted-foreground text-[10px]">
+                    <span class="font-bold text-foreground uppercase">{{ item.intimationType }}</span>
+                    <span>{{ item.recordedAt | date:'dd MMM yyyy, hh:mm a' }}</span>
+                  </div>
+                  <p class="text-foreground mt-1">{{ item.notes }}</p>
+                  @if (item.expectedReturnDateTime) {
+                    <div class="text-[10px] text-muted-foreground mt-0.5 font-mono">
+                      Extended Return: {{ item.expectedReturnDateTime | date:'dd MMM yyyy, hh:mm a' }}
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Dialog Footer Actions -->
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-border mt-2">
+          <button type="button" hlmBtn variant="outline" size="sm" (click)="closeIntimationModal()">
+            Cancel
+          </button>
+          <button
+            type="submit"
+            hlmBtn
+            size="sm"
+            class="action-btn success flex items-center gap-1.5 font-bold shadow-sm"
+            [disabled]="intimationFormGroup.invalid || isSubmittingIntimation()"
+          >
+            <ng-icon name="lucideSave"></ng-icon>
+            <span>{{ isSubmittingIntimation() ? 'Logging...' : 'Save Intimation & Audit' }}</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+</ng-template>

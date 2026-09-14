@@ -41,6 +41,8 @@ import {
   lucideSearch,
   lucideCheck,
   lucideChevronDown,
+  lucidePhoneCall,
+  lucideShieldCheck,
 } from '@ng-icons/lucide';
 import { RRInvoicePdfService } from '../../../../services/rr-invoice-pdf.service';
 
@@ -75,6 +77,8 @@ import { RRInvoicePdfService } from '../../../../services/rr-invoice-pdf.service
       lucideSearch,
       lucideCheck,
       lucideChevronDown,
+      lucidePhoneCall,
+      lucideShieldCheck,
     }),
   ],
   templateUrl: './history.component.html',

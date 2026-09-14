@@ -184,6 +184,21 @@ export interface IBooking {
   nonIntimationFine?: string;
   recalculateSlabMode?: boolean;
   totalAdditionalFees?: string;
+
+  // Customer intimation audit tracking
+  intimations?: ICustomerIntimation[];
+  lastIntimation?: ICustomerIntimation;
+}
+
+export interface ICustomerIntimation {
+  id: string;
+  intimationType: 'delay' | 'extension' | 'route_change' | 'early_return' | 'emergency' | 'other' | string;
+  notes: string;
+  expectedReturnDateTime?: string;
+  recordedBy: string;
+  recordedByName?: string;
+  recordedByRole?: string;
+  recordedAt: string;
 }
 
 export interface ILog {

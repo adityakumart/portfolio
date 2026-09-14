@@ -1,9 +1,9 @@
 import { Collection, Db } from 'mongodb';
 import { connectToRRDatabase } from '../../utils/DB/mongodb';
 import * as bcrypt from 'bcrypt';
-import { IEmployee, IVehicle, IBooking, ILog } from '@portfolio/shared-types';
+import { IEmployee, IVehicle, IBooking, ILog, ICustomerIntimation } from '@portfolio/shared-types';
 
-export { IEmployee, IVehicle, IBooking, ILog };
+export { IEmployee, IVehicle, IBooking, ILog, ICustomerIntimation };
 
 export class RRService {
   private static async getDb(): Promise<Db> {

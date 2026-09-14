@@ -16,6 +16,7 @@ import {
   IRRVehicleAvailability,
   IRRLoginRequest,
   IRRLoginResponse,
+  ICustomerIntimation,
 } from '@portfolio/shared-types';
 
 export {
@@ -29,6 +30,9 @@ export {
   IBookingsResponse,
   IRRDashboardStats,
   IRRVehicleAvailability,
+  IRRLoginRequest,
+  IRRLoginResponse,
+  ICustomerIntimation,
 };
 
 @Injectable({
@@ -113,9 +117,19 @@ export class RRApiService {
   }
 
   // Auth Logout
-  logout() {
-    this.clearSession();
-    this.router.navigate(['/user/rr/login']);
+  async logout(): Promise<void> {
+    try {
+      if (this.getToken()) {
+        await firstValueFrom(
+          this.http.post(`${this.baseUrl}/auth/logout`, {}, { headers: this.getHeaders() })
+        );
+      }
+    } catch (e) {
+      console.warn('Logout notification error:', e);
+    } finally {
+      this.clearSession();
+      this.router.navigate(['/user/rr/login']);
+    }
   }
 
   // Vehicles
@@ -228,6 +242,19 @@ export class RRApiService {
     );
   }
 
+  async recordCustomerIntimation(
+    id: string,
+    data: { intimationType: string; notes: string; expectedReturnDateTime?: string }
+  ): Promise<{ success: boolean; message: string; intimation: ICustomerIntimation; booking: IBooking }> {
+    return firstValueFrom(
+      this.http.post<{ success: boolean; message: string; intimation: ICustomerIntimation; booking: IBooking }>(
+        `${this.baseUrl}/bookings/${id}/customer-intimation`,
+        data,
+        { headers: this.getHeaders() }
+      )
+    );
+  }
+
   // Employees
   async getEmployees(): Promise<IEmployee[]> {
     return firstValueFrom(
@@ -244,6 +271,12 @@ export class RRApiService {
   async updateEmployee(id: string, data: Partial<IEmployee>): Promise<IEmployee> {
     return firstValueFrom(
       this.http.put<IEmployee>(`${this.baseUrl}/employees/${id}`, data, { headers: this.getHeaders() })
+    );
+  }
+
+  async deleteEmployee(id: string): Promise<{ message: string }> {
+    return firstValueFrom(
+      this.http.delete<{ message: string }>(`${this.baseUrl}/employees/${id}`, { headers: this.getHeaders() })
     );
   }
 

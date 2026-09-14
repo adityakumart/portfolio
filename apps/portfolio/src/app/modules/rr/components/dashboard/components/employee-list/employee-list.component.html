@@ -54,9 +54,12 @@
                 {{ e.allowLogin ? 'Active Permitted' : 'Access Revoked' }}
               </span>
             </td>
-            <td hlmTd class="text-center">
+            <td hlmTd class="text-center whitespace-nowrap space-x-1">
               <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 rounded-full" hlmTooltip="Modify Staff Information" (click)="openEditEmployeeModal(e)">
                 <ng-icon name="lucidePencil"></ng-icon>
+              </button>
+              <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 rounded-full text-destructive hover:bg-destructive/10" hlmTooltip="Delete Staff Member" (click)="deleteEmployee(e)">
+                <ng-icon name="lucideTrash2"></ng-icon>
               </button>
             </td>
           </tr>

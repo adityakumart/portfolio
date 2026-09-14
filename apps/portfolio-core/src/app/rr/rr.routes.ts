@@ -3,7 +3,7 @@ import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcrypt';
 import multer from 'multer';
 import { authenticateRRToken, requireAdmin } from './rr.middleware';
-import { RRService, IEmployee, IVehicle, IBooking } from './rr.service';
+import { RRService, IEmployee, IVehicle, IBooking, ICustomerIntimation } from './rr.service';
 import { handleVehicleImageUpload } from './r2-storage.controller';
 
 const rrRouter = Router();
@@ -53,7 +53,12 @@ rrRouter.post('/auth/login', async (req: Request, res: Response) => {
       }
 
       const token = jwt.sign({ id: emp.id, role: emp.role }, JWT_SECRET, { expiresIn: '24h' });
-      await RRService.logActivity('Logged in', emp.id, emp.role);
+      await RRService.logActivity(
+        'Logged in',
+        emp.id,
+        emp.role,
+        `User session authenticated (${emp.firstName} ${emp.lastName}, Role: ${emp.role.toUpperCase()})`
+      );
 
       res.json({
         access_token: token,
@@ -87,7 +92,12 @@ rrRouter.post('/auth/login', async (req: Request, res: Response) => {
       }
 
       const token = jwt.sign({ id: emp.id, role: emp.role }, JWT_SECRET, { expiresIn: '24h' });
-      await RRService.logActivity('Logged in', emp.id, emp.role);
+      await RRService.logActivity(
+        'Logged in',
+        emp.id,
+        emp.role,
+        `Employee badge authenticated (${emp.firstName} ${emp.lastName}, ID: ${emp.id})`
+      );
 
       res.json({
         access_token: token,
@@ -105,6 +115,25 @@ rrRouter.post('/auth/login', async (req: Request, res: Response) => {
     res.status(400).json({ error: 'Bad Request', message: 'Please provide credentials' });
   } catch (err: any) {
     console.error('Login router error:', err);
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+// POST logout (Authenticated)
+rrRouter.post('/auth/logout', authenticateRRToken, async (req: any, res: Response) => {
+  try {
+    const empCol = await RRService.getEmployeesCol();
+    const emp = await empCol.findOne({ id: req.userId });
+    const empName = emp ? `${emp.firstName} ${emp.lastName}` : (req.userId || 'Staff');
+    await RRService.logActivity(
+      'Logged out',
+      req.userId || 'Unknown',
+      req.userRole || 'employee',
+      `User session ended (${empName}, Role: ${(req.userRole || 'employee').toUpperCase()})`
+    );
+    res.json({ success: true, message: 'Logged out successfully' });
+  } catch (err: any) {
+    console.error('Logout router error:', err);
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }
 });
@@ -250,7 +279,12 @@ rrRouter.post('/vehicles', authenticateRRToken, requireAdmin, async (req: any, r
     };
 
     await col.insertOne(newVehicle);
-    await RRService.logActivity(`Added vehicle ${newVehicle.manufacturer} ${newVehicle.name} (${newVehicle.regNo})`, req.userId, req.userRole);
+    await RRService.logActivity(
+      `Added vehicle ${newVehicle.regNo}`,
+      req.userId,
+      req.userRole,
+      `Vehicle added: ${newVehicle.manufacturer} ${newVehicle.name} (${newVehicle.model}, ${newVehicle.fuelType}, Odometer: ${newVehicle.odometer} km)`
+    );
 
     res.status(201).json(newVehicle);
   } catch (err: any) {
@@ -276,6 +310,8 @@ rrRouter.put('/vehicles/:id', authenticateRRToken, async (req: any, res: Respons
     delete updateData.regNo;
     delete updateData.createdAt;
 
+    const modifiedFields = Object.keys(updateData).filter(k => k !== 'updatedAt');
+
     await col.updateOne(
       { regNo },
       {
@@ -287,7 +323,12 @@ rrRouter.put('/vehicles/:id', authenticateRRToken, async (req: any, res: Respons
     );
 
     const updated = await col.findOne({ regNo });
-    await RRService.logActivity(`Updated vehicle ${regNo} details`, req.userId, req.userRole);
+    await RRService.logActivity(
+      `Modified vehicle ${regNo}`,
+      req.userId,
+      req.userRole,
+      `Vehicle ${vehicle.manufacturer} ${vehicle.name} updated: [${modifiedFields.join(', ') || 'details modified'}]`
+    );
 
     res.json(updated);
   } catch (err: any) {
@@ -301,13 +342,24 @@ rrRouter.delete('/vehicles/:id', authenticateRRToken, requireAdmin, async (req: 
     const regNo = req.params.id;
     const col = await RRService.getVehiclesCol();
 
+    const vehicle = await col.findOne({ regNo });
+    if (!vehicle) {
+      res.status(404).json({ error: 'Not Found', message: 'Vehicle not found' });
+      return;
+    }
+
     const result = await col.deleteOne({ regNo });
     if (result.deletedCount === 0) {
       res.status(404).json({ error: 'Not Found', message: 'Vehicle not found' });
       return;
     }
 
-    await RRService.logActivity(`Deleted vehicle ${regNo}`, req.userId, req.userRole);
+    await RRService.logActivity(
+      `Deleted vehicle ${regNo}`,
+      req.userId,
+      req.userRole,
+      `Vehicle removed from fleet: ${vehicle.manufacturer} ${vehicle.name} (${vehicle.model})`
+    );
     res.json({ message: `Vehicle ${regNo} deleted successfully.` });
   } catch (err: any) {
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
@@ -513,7 +565,12 @@ rrRouter.post('/bookings', authenticateRRToken, async (req: any, res: Response) 
       }
     );
 
-    await RRService.logActivity(`Created booking ${bookingId} for ${bookingData.vehicleRegNo}`, req.userId, req.userRole);
+    await RRService.logActivity(
+      `Started booking ${bookingId}`,
+      req.userId,
+      req.userRole,
+      `Booking started for customer ${newBooking.renterFirstName} ${newBooking.renterSecondName} (${newBooking.renterPhone}) | Vehicle: ${newBooking.vehicleRegNo} (${selectedVehicle.manufacturer} ${selectedVehicle.name}) | Pickup: ${newBooking.pickupDateTime} | Return: ${newBooking.returnDateTime} | Total: ₹${newBooking.finalRentalAmount}`
+    );
 
     res.status(201).json(newBooking);
   } catch (err: any) {
@@ -599,15 +656,115 @@ rrRouter.put('/bookings/:id', authenticateRRToken, async (req: any, res: Respons
     }
 
     const updated = await bookingCol.findOne({ id: bookingId });
-    await RRService.logActivity(
-      `Updated booking ${bookingId} status to ${updateData.status || booking.status}` +
-      (updateData.status === 'completed' && updateData.vehicleOdometerEnd ? ` (Vehicle: ${booking.vehicleRegNo} odometer updated to ${updateData.vehicleOdometerEnd})` : ''),
-      req.userId,
-      req.userRole
-    );
+
+    if (updateData.status === 'completed') {
+      const damagesNote = Number(updateData.damagesTotal || 0) > 0 ? ` | Damages: ₹${updateData.damagesTotal}` : '';
+      const fineNote = Number(updateData.nonIntimationFine || 0) > 0 ? ` | Late/Non-intimation Fine: ₹${updateData.nonIntimationFine}` : '';
+      const odoNote = updateData.vehicleOdometerEnd ? ` | Final Odo: ${updateData.vehicleOdometerEnd} km` : '';
+      await RRService.logActivity(
+        `Ended booking ${bookingId}`,
+        req.userId,
+        req.userRole,
+        `Booking completed for vehicle ${booking.vehicleRegNo}${odoNote} | Final Settlement: ₹${updateData.finalRentalAmount || booking.finalRentalAmount} | Paid: ₹${updateData.amountPaid || booking.amountPaid}${damagesNote}${fineNote}`
+      );
+    } else if (updateData.status === 'cancelled') {
+      await RRService.logActivity(
+        `Cancelled booking ${bookingId}`,
+        req.userId,
+        req.userRole,
+        `Booking cancelled for vehicle ${booking.vehicleRegNo}. Customer: ${booking.renterFirstName} ${booking.renterSecondName}`
+      );
+    } else {
+      const modifiedFields = [
+        updateData.returnDateTime && updateData.returnDateTime !== booking.returnDateTime ? `Return: ${updateData.returnDateTime}` : null,
+        updateData.durationDays !== undefined ? `Days: ${updateData.durationDays}` : null,
+        updateData.durationHours !== undefined ? `Hours: ${updateData.durationHours}` : null,
+        updateData.finalRentalAmount !== undefined ? `Final: ₹${updateData.finalRentalAmount}` : null,
+        updateData.amountPaid !== undefined ? `Paid: ₹${updateData.amountPaid}` : null,
+        updateData.pendingAmount !== undefined ? `Pending: ₹${updateData.pendingAmount}` : null,
+        updateData.totalKmLimit !== undefined ? `Limit: ${updateData.totalKmLimit} km` : null
+      ].filter(Boolean).join(', ');
+
+      await RRService.logActivity(
+        `Modified booking ${bookingId}`,
+        req.userId,
+        req.userRole,
+        `Booking modified for vehicle ${booking.vehicleRegNo}: [${modifiedFields || 'Details updated'}]`
+      );
+    }
 
     res.json(updated);
   } catch (err: any) {
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+// POST record customer intimation for a booking (Authenticated)
+rrRouter.post('/bookings/:id/customer-intimation', authenticateRRToken, async (req: any, res: Response) => {
+  try {
+    const bookingId = req.params.id;
+    const { intimationType, notes, expectedReturnDateTime } = req.body;
+
+    if (!intimationType || !notes) {
+      res.status(400).json({ error: 'Bad Request', message: 'intimationType and notes are required.' });
+      return;
+    }
+
+    const bookingCol = await RRService.getBookingsCol();
+    const empCol = await RRService.getEmployeesCol();
+
+    const booking = await bookingCol.findOne({ id: bookingId });
+    if (!booking) {
+      res.status(404).json({ error: 'Not Found', message: 'Booking not found' });
+      return;
+    }
+
+    const staff = await empCol.findOne({ id: req.userId });
+    const staffName = staff ? `${staff.firstName} ${staff.lastName}`.trim() : (req.userId || 'Staff');
+
+    const intimationRecord: ICustomerIntimation = {
+      id: 'INT-' + Date.now(),
+      intimationType,
+      notes,
+      expectedReturnDateTime: expectedReturnDateTime || undefined,
+      recordedBy: req.userId,
+      recordedByName: staffName,
+      recordedByRole: req.userRole || 'employee',
+      recordedAt: new Date().toISOString()
+    };
+
+    const updateDoc: any = {
+      $push: { intimations: intimationRecord },
+      $set: {
+        lastIntimation: intimationRecord,
+        updatedAt: new Date().toISOString()
+      }
+    };
+
+    if (expectedReturnDateTime) {
+      updateDoc.$set.returnDateTime = expectedReturnDateTime;
+    }
+
+    await bookingCol.updateOne({ id: bookingId }, updateDoc);
+
+    // Audit Log for Customer Intimation
+    const logDetails = `Booking ${bookingId} (${booking.vehicleRegNo}) | Customer: ${booking.renterFirstName} ${booking.renterSecondName} (${booking.renterPhone}) | Reason: ${intimationType.toUpperCase()} | Note: "${notes}"${expectedReturnDateTime ? ` | New Expected Return: ${expectedReturnDateTime}` : ''}`;
+    await RRService.logActivity(
+      `Customer Intimation: ${bookingId}`,
+      req.userId,
+      req.userRole,
+      logDetails
+    );
+
+    const updated = await bookingCol.findOne({ id: bookingId });
+    res.json({
+      success: true,
+      message: 'Customer intimation recorded successfully',
+      intimation: intimationRecord,
+      booking: updated
+    });
+  } catch (err: any) {
+    console.error('Error recording customer intimation:', err);
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }
 });
@@ -669,7 +826,12 @@ rrRouter.post('/employees', authenticateRRToken, requireAdmin, async (req: any, 
     };
 
     await col.insertOne(newEmp);
-    await RRService.logActivity(`Created employee ${newEmp.firstName} ${newEmp.lastName} (${newEmp.id})`, req.userId, req.userRole);
+    await RRService.logActivity(
+      `Added employee ${newEmp.id}`,
+      req.userId,
+      req.userRole,
+      `Employee registered: ${newEmp.firstName} ${newEmp.lastName} (Role: ${newEmp.role.toUpperCase()}, Phone: ${newEmp.phone})`
+    );
 
     res.status(201).json(newEmp);
   } catch (err: any) {
@@ -697,10 +859,59 @@ rrRouter.put('/employees/:id', authenticateRRToken, requireAdmin, async (req: an
     await col.updateOne({ id: empId }, { $set: updateData });
 
     const updated = await col.findOne({ id: empId });
-    await RRService.logActivity(`Updated employee ${empId} details`, req.userId, req.userRole);
+    const modDetails = [
+      updateData.role ? `Role: ${updateData.role}` : null,
+      updateData.allowLogin !== undefined ? `Login: ${updateData.allowLogin ? 'Allowed' : 'Disabled'}` : null,
+      updateData.phone ? `Phone: ${updateData.phone}` : null,
+      updateData.email ? `Email: ${updateData.email}` : null
+    ].filter(Boolean).join(', ');
+
+    await RRService.logActivity(
+      `Modified employee ${empId}`,
+      req.userId,
+      req.userRole,
+      `Updated staff ${emp.firstName} ${emp.lastName}: [${modDetails || 'profile modified'}]`
+    );
 
     res.json(updated);
   } catch (err: any) {
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+// DELETE employee (Admin only)
+rrRouter.delete('/employees/:id', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
+  try {
+    const empId = req.params.id;
+    const col = await RRService.getEmployeesCol();
+
+    if (req.userId === empId) {
+      res.status(400).json({ error: 'Bad Request', message: 'You cannot delete your own administrative account.' });
+      return;
+    }
+
+    const emp = await col.findOne({ id: empId });
+    if (!emp) {
+      res.status(404).json({ error: 'Not Found', message: 'Employee not found' });
+      return;
+    }
+
+    const result = await col.deleteOne({ id: empId });
+    if (result.deletedCount === 0) {
+      res.status(404).json({ error: 'Not Found', message: 'Employee not found' });
+      return;
+    }
+
+    await RRService.logActivity(
+      `Deleted employee ${empId}`,
+      req.userId,
+      req.userRole,
+      `Employee removed: ${emp.firstName} ${emp.lastName} (Role: ${emp.role.toUpperCase()}, Phone: ${emp.phone})`
+    );
+
+    res.json({ message: `Employee ${empId} deleted successfully.` });
+  } catch (err: any) {
+    console.error('Error deleting employee:', err);
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }
 });
