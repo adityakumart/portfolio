@@ -705,7 +705,9 @@ export class RRInvoicePdfService {
 
     if (damagesTotal > 0) {
       const descList = damages
-        .map((d: any) => `${d.desc || 'Repair'} (Rs.${d.amount})`)
+        .map(
+          (d: any) => `${d.description || d.desc || 'Repair'} (Rs.${d.amount})`,
+        )
         .join(', ');
       lineItems.push({
         desc: `Vehicle Damage & Repair Assessments`,

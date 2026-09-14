@@ -6,10 +6,12 @@ import { environment } from '../../../../environments/environment';
 import {
   IRRUser,
   IVehicle,
+  IVehicleAutocompleteItem,
   IBooking,
   IEmployee,
   ILog,
   ILogsResponse,
+  IBookingsResponse,
   IRRDashboardStats,
   IRRVehicleAvailability,
   IRRLoginRequest,
@@ -19,10 +21,12 @@ import {
 export {
   IRRUser,
   IVehicle,
+  IVehicleAutocompleteItem,
   IBooking,
   IEmployee,
   ILog,
   ILogsResponse,
+  IBookingsResponse,
   IRRDashboardStats,
   IRRVehicleAvailability,
 };
@@ -114,9 +118,29 @@ export class RRApiService {
   }
 
   // Vehicles
-  async getVehicles(): Promise<IVehicle[]> {
+  async getVehicles(params?: { search?: string; limit?: number }): Promise<IVehicle[]> {
+    let httpParams = new HttpParams();
+    if (params?.search) httpParams = httpParams.set('search', params.search);
+    if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
+
     return firstValueFrom(
-      this.http.get<IVehicle[]>(`${this.baseUrl}/vehicles`, { headers: this.getHeaders() })
+      this.http.get<IVehicle[]>(`${this.baseUrl}/vehicles`, {
+        headers: this.getHeaders(),
+        params: httpParams,
+      })
+    );
+  }
+
+  async getVehiclesAutocomplete(params?: { search?: string; limit?: number }): Promise<IVehicleAutocompleteItem[]> {
+    let httpParams = new HttpParams();
+    if (params?.search) httpParams = httpParams.set('search', params.search);
+    if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
+
+    return firstValueFrom(
+      this.http.get<IVehicleAutocompleteItem[]>(`${this.baseUrl}/vehicles/autocomplete`, {
+        headers: this.getHeaders(),
+        params: httpParams,
+      })
     );
   }
 
@@ -139,9 +163,55 @@ export class RRApiService {
   }
 
   // Bookings
-  async getBookings(): Promise<IBooking[]> {
+  async getBookings(params?: {
+    status?: string;
+    vehicle?: string;
+    customer?: string;
+    from?: string;
+    to?: string;
+    search?: string;
+  }): Promise<IBooking[]> {
+    let httpParams = new HttpParams();
+    if (params?.status) httpParams = httpParams.set('status', params.status);
+    if (params?.vehicle) httpParams = httpParams.set('vehicle', params.vehicle);
+    if (params?.customer) httpParams = httpParams.set('customer', params.customer);
+    if (params?.from) httpParams = httpParams.set('from', params.from);
+    if (params?.to) httpParams = httpParams.set('to', params.to);
+    if (params?.search) httpParams = httpParams.set('search', params.search);
+
     return firstValueFrom(
-      this.http.get<IBooking[]>(`${this.baseUrl}/bookings`, { headers: this.getHeaders() })
+      this.http.get<IBooking[]>(`${this.baseUrl}/bookings`, {
+        headers: this.getHeaders(),
+        params: httpParams,
+      })
+    );
+  }
+
+  async getBookingsPaginated(params?: {
+    status?: string;
+    vehicle?: string;
+    customer?: string;
+    from?: string;
+    to?: string;
+    search?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<IBookingsResponse> {
+    let httpParams = new HttpParams().set('paginate', 'true');
+    if (params?.status) httpParams = httpParams.set('status', params.status);
+    if (params?.vehicle) httpParams = httpParams.set('vehicle', params.vehicle);
+    if (params?.customer) httpParams = httpParams.set('customer', params.customer);
+    if (params?.from) httpParams = httpParams.set('from', params.from);
+    if (params?.to) httpParams = httpParams.set('to', params.to);
+    if (params?.search) httpParams = httpParams.set('search', params.search);
+    if (params?.page) httpParams = httpParams.set('page', params.page.toString());
+    if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
+
+    return firstValueFrom(
+      this.http.get<IBookingsResponse>(`${this.baseUrl}/bookings`, {
+        headers: this.getHeaders(),
+        params: httpParams,
+      })
     );
   }
 

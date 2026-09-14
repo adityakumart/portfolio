@@ -80,6 +80,13 @@ export interface IVehicle {
   updatedAt?: string | null;
 }
 
+export interface IVehicleAutocompleteItem {
+  regNo: string;
+  name: string;
+  manufacturer: string;
+  type?: string;
+}
+
 export type BookingStatus = 'active' | 'completed' | 'cancelled';
 export type DepositType = 'bike' | 'cash' | 'other' | 'none' | string;
 export type DiscountType = 'percentage' | 'rupee' | string;
@@ -184,6 +191,14 @@ export interface ILog {
 
 export interface ILogsResponse {
   logs: ILog[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface IBookingsResponse {
+  bookings: IBooking[];
   total: number;
   page: number;
   limit: number;

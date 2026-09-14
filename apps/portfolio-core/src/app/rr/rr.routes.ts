@@ -144,12 +144,89 @@ rrRouter.post(
   handleVehicleImageUpload
 );
 
-// GET all vehicles (public so homepage can show them)
+// GET all vehicles (public so homepage can show them; supports ?search=, ?limit=, ?autocomplete=true, ?fields=...)
 rrRouter.get('/vehicles', async (req: Request, res: Response) => {
   try {
     const col = await RRService.getVehiclesCol();
-    const list = await col.find().toArray();
+    const { search, limit, autocomplete, fields } = req.query;
+    const filter: any = {};
+    if (search && typeof search === 'string' && search.trim()) {
+      const searchRegex = new RegExp(search.trim(), 'i');
+      filter.$or = [
+        { name: { $regex: searchRegex } },
+        { manufacturer: { $regex: searchRegex } },
+        { regNo: { $regex: searchRegex } }
+      ];
+    }
+
+    const isAutocomplete = autocomplete === 'true' || fields === 'autocomplete';
+    const projection = isAutocomplete
+      ? { regNo: 1, name: 1, manufacturer: 1, _id: 0 }
+      : undefined;
+
+    let cursor = col.find(filter, projection ? { projection } : {}).sort({ manufacturer: 1, name: 1 });
+    if (limit) {
+      const limitNum = parseInt(limit as string, 10);
+      if (!isNaN(limitNum) && limitNum > 0) {
+        cursor = cursor.limit(limitNum);
+      }
+    }
+    const list = await cursor.toArray();
+
+    if (isAutocomplete) {
+      const mapped = list.map((v: any) => ({
+        regNo: v.regNo,
+        name: v.name,
+        manufacturer: v.manufacturer,
+        vehicleRegNo: v.regNo,
+        vehicleName: v.name,
+        vehicleManufacturer: v.manufacturer,
+      }));
+      res.json(mapped);
+      return;
+    }
+
     res.json(list);
+  } catch (err: any) {
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+// GET minimal vehicles list for autocomplete (strictly regNo/name/manufacturer, no heavy vehicle details)
+rrRouter.get('/vehicles/autocomplete', async (req: Request, res: Response) => {
+  try {
+    const col = await RRService.getVehiclesCol();
+    const { search, limit } = req.query;
+    const filter: any = {};
+    if (search && typeof search === 'string' && search.trim()) {
+      const searchRegex = new RegExp(search.trim(), 'i');
+      filter.$or = [
+        { name: { $regex: searchRegex } },
+        { manufacturer: { $regex: searchRegex } },
+        { regNo: { $regex: searchRegex } }
+      ];
+    }
+
+    let cursor = col
+      .find(filter, { projection: { regNo: 1, name: 1, manufacturer: 1, _id: 0 } })
+      .sort({ manufacturer: 1, name: 1 });
+
+    if (limit) {
+      const limitNum = parseInt(limit as string, 10);
+      if (!isNaN(limitNum) && limitNum > 0) {
+        cursor = cursor.limit(limitNum);
+      }
+    }
+    const list = await cursor.toArray();
+    const mapped = list.map((v: any) => ({
+      regNo: v.regNo,
+      name: v.name,
+      manufacturer: v.manufacturer,
+      vehicleRegNo: v.regNo,
+      vehicleName: v.name,
+      vehicleManufacturer: v.manufacturer,
+    }));
+    res.json(mapped);
   } catch (err: any) {
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }
@@ -241,12 +318,121 @@ rrRouter.delete('/vehicles/:id', authenticateRRToken, requireAdmin, async (req: 
    BOOKINGS
 ============================================================ */
 
-// GET all bookings (Authenticated)
+// GET bookings (Authenticated; supports filtering & pagination from API side)
 rrRouter.get('/bookings', authenticateRRToken, async (req: any, res: Response) => {
   try {
     const col = await RRService.getBookingsCol();
-    const list = await col.find().sort({ createdAt: -1 }).toArray();
-    res.json(list);
+    const {
+      status,
+      vehicle,
+      customer,
+      from,
+      to,
+      search,
+      page,
+      limit,
+      paginate,
+      all
+    } = req.query;
+
+    const andConditions: any[] = [];
+
+    // Status filter (single or comma-separated, e.g. "completed,cancelled")
+    if (status && typeof status === 'string' && status.trim()) {
+      const statuses = status.split(',').map((s: string) => s.trim()).filter(Boolean);
+      if (statuses.length === 1) {
+        andConditions.push({ status: statuses[0] });
+      } else if (statuses.length > 1) {
+        andConditions.push({ status: { $in: statuses } });
+      }
+    }
+
+    // Vehicle filter (regNo, name, manufacturer)
+    if (vehicle && typeof vehicle === 'string' && vehicle.trim()) {
+      const vRegex = new RegExp(vehicle.trim(), 'i');
+      andConditions.push({
+        $or: [
+          { vehicleRegNo: { $regex: vRegex } },
+          { vehicleName: { $regex: vRegex } },
+          { vehicleManufacturer: { $regex: vRegex } }
+        ]
+      });
+    }
+
+    // Customer filter (first name, second name, phone)
+    if (customer && typeof customer === 'string' && customer.trim()) {
+      const cRegex = new RegExp(customer.trim(), 'i');
+      andConditions.push({
+        $or: [
+          { renterFirstName: { $regex: cRegex } },
+          { renterSecondName: { $regex: cRegex } },
+          { renterPhone: { $regex: cRegex } }
+        ]
+      });
+    }
+
+    // Date range filter (from and/or to) on createdAt or pickupDateTime
+    if (from || to) {
+      const dateOrClauses: any[] = [];
+      const fromStr = typeof from === 'string' && from.trim() ? from.trim() : null;
+      const toStr = typeof to === 'string' && to.trim() ? to.trim() : null;
+
+      // Filter for createdAt
+      const createdCond: any = {};
+      if (fromStr) createdCond.$gte = `${fromStr}T00:00:00.000Z`;
+      if (toStr) createdCond.$lte = `${toStr}T23:59:59.999Z`;
+      dateOrClauses.push({ createdAt: createdCond });
+
+      // Filter for pickupDateTime
+      const pickupCond: any = {};
+      if (fromStr) pickupCond.$gte = fromStr;
+      if (toStr) pickupCond.$lte = `${toStr}T23:59:59.999Z`;
+      dateOrClauses.push({ pickupDateTime: pickupCond });
+
+      andConditions.push({ $or: dateOrClauses });
+    }
+
+    // General search filter if provided
+    if (search && typeof search === 'string' && search.trim()) {
+      const sRegex = new RegExp(search.trim(), 'i');
+      andConditions.push({
+        $or: [
+          { id: { $regex: sRegex } },
+          { vehicleRegNo: { $regex: sRegex } },
+          { vehicleName: { $regex: sRegex } },
+          { renterFirstName: { $regex: sRegex } },
+          { renterSecondName: { $regex: sRegex } },
+          { renterPhone: { $regex: sRegex } }
+        ]
+      });
+    }
+
+    const query = andConditions.length > 0 ? { $and: andConditions } : {};
+
+    const isPaginated = paginate === 'true' || page !== undefined || limit !== undefined;
+
+    if (!isPaginated || all === 'true') {
+      const list = await col.find(query).sort({ createdAt: -1, _id: -1 }).toArray();
+      res.json(list);
+      return;
+    }
+
+    const pageNum = Math.max(1, parseInt(page as string, 10) || 1);
+    const limitNum = Math.max(1, Math.min(100, parseInt(limit as string, 10) || 10));
+    const skip = (pageNum - 1) * limitNum;
+
+    const [bookings, total] = await Promise.all([
+      col.find(query).sort({ createdAt: -1, _id: -1 }).skip(skip).limit(limitNum).toArray(),
+      col.countDocuments(query)
+    ]);
+
+    res.json({
+      bookings,
+      total,
+      page: pageNum,
+      limit: limitNum,
+      totalPages: Math.ceil(total / limitNum) || 1
+    });
   } catch (err: any) {
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }
