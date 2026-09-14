@@ -82,19 +82,19 @@ export class RREndBookingDialogComponent implements OnInit {
     odometerEnd: '',
     returnDateTimeActual: '',
 
-    // [1] Cleanliness Fee
+    // Cleanliness Fee
     cleanlinessChoice: 'none' as 'none' | '500' | '1000' | 'custom',
-    customCleanlinessAmount: 0,
-    cleanlinessFee: 0, // [1]
+    customCleanlinessAmount: '' as number | '',
+    cleanlinessFee: 0,
 
-    // [2] & [3] Extra KMs and Extra Hrs
-    extraKmRate: 0, // [C]
-    extraHourRate: 0, // [D]
+    // Extra KMs and Extra Hrs
+    extraKmRate: 0,
+    extraHourRate: 0,
     actualDistanceDriven: 0,
     extraKms: 0,
-    extraKmFee: 0, // [2]
+    extraKmFee: 0,
     extraHours: 0,
-    extraHourFee: 0, // [3]
+    extraHourFee: 0,
 
     // Case 4.2 Extension / Slab Recalculation
     recalculateSlabMode: false,
@@ -102,25 +102,25 @@ export class RREndBookingDialogComponent implements OnInit {
     slabExtraRent: 0,
     effectiveKmLimit: 0,
 
-    // [4] Damages
-    damagesTotal: 0, // [4]
+    // Damages
+    damagesTotal: 0,
 
-    // [5] Challana / Toll / Fines
-    challanaAmount: 0, // A1
-    tollAmount: 0, // A2
-    finesAmount: 0, // A3
-    challanaTollFinesTotal: 0, // [5] = A1 + A2 + A3
+    // Challana / Toll
+    challanaAmount: '' as number | '',
+    tollAmount: '' as number | '',
+    finesAmount: '' as number | '',
+    challanaTollFinesTotal: 0,
 
-    // [6] Rent & Balance Pending
+    // Rent & Balance Pending
     totalRentAmount: 0,
     discountAmount: 0,
     finalRentAmount: 0,
     paidAmount: 0,
-    basePendingAmount: 0, // [6] initial or [6(new)]
+    basePendingAmount: 0,
 
-    // [7] Late / Non-Intimation Fine (varies by vehicle, max 1000, optional)
+    // Late / Non-Intimation Fine (only when both KMs & hours exceeded, default 1000, no cap)
     applyNonIntimationFine: false,
-    nonIntimationFine: 0, // [7]
+    nonIntimationFine: 1000 as number | '',
 
     // Summary totals
     totalAdditionalFees: 0,
@@ -132,8 +132,62 @@ export class RREndBookingDialogComponent implements OnInit {
     paymentMode: 'Cash' as 'Cash' | 'UPI' | 'Card' | 'Net Banking',
   };
 
-  // Dynamic Damages list [4]
+  // Dynamic Damages list
   damages: IDamageItem[] = [];
+
+  isOdometerEndInvalid(): boolean {
+    if (
+      this.endBookingFields.odometerEnd === '' ||
+      this.endBookingFields.odometerEnd === null ||
+      this.endBookingFields.odometerEnd === undefined
+    ) {
+      return false;
+    }
+    const endOdo = Number(this.endBookingFields.odometerEnd);
+    const startOdo = Number(this.booking()?.vehicleOdometerStart) || 0;
+    return isNaN(endOdo) || endOdo < startOdo;
+  }
+
+  getActualDurationText(): string {
+    const startStr = this.booking()?.pickupDateTime || this.booking()?.createdAt;
+    const endStr = this.endBookingFields.returnDateTimeActual;
+    if (!startStr || !endStr) return '';
+
+    const start = new Date(startStr);
+    const end = new Date(endStr);
+    let diffMs = end.getTime() - start.getTime();
+
+    if (isNaN(diffMs) || diffMs <= 0) {
+      return '0 mins';
+    }
+
+    const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    diffMs -= days * (1000 * 60 * 60 * 24);
+
+    const hours = Math.floor(diffMs / (1000 * 60 * 60));
+    diffMs -= hours * (1000 * 60 * 60);
+
+    const mins = Math.floor(diffMs / (1000 * 60));
+
+    const parts: string[] = [];
+    if (days > 0) {
+      parts.push(`${days} ${days === 1 ? 'day' : 'days'}`);
+    }
+    if (hours > 0) {
+      parts.push(`${hours} ${hours === 1 ? 'hour' : 'hours'}`);
+    }
+    if (mins > 0 || parts.length === 0) {
+      parts.push(`${mins} ${mins === 1 ? 'min' : 'mins'}`);
+    }
+
+    if (parts.length === 1) {
+      return parts[0];
+    }
+    if (parts.length === 2) {
+      return `${parts[0]} and ${parts[1]}`;
+    }
+    return `${parts[0]} ${parts[1]} and ${parts[2]}`;
+  }
 
   ngOnInit() {
     if (this.data?.booking) {
@@ -198,12 +252,12 @@ export class RREndBookingDialogComponent implements OnInit {
     }
   }
 
-  // --- Damages Handlers [4] ---
+  // --- Damages Handlers ---
   addDamage() {
     const newDamage: IDamageItem = {
       id: 'dmg_' + Date.now() + '_' + Math.random().toString(36).substring(2, 5),
       description: '',
-      amount: 0,
+      amount: '' as any,
       confirmed: true,
     };
     this.damages.push(newDamage);
@@ -219,23 +273,20 @@ export class RREndBookingDialogComponent implements OnInit {
     damage.confirmed = !damage.confirmed;
   }
 
-  // --- Non-Intimation Fine [7] ---
+  // --- Non-Intimation Fine ---
   onToggleNonIntimationFine() {
     if (this.endBookingFields.applyNonIntimationFine) {
       if (!this.endBookingFields.nonIntimationFine) {
-        this.endBookingFields.nonIntimationFine = 500;
+        this.endBookingFields.nonIntimationFine = 1000;
       }
     } else {
-      this.endBookingFields.nonIntimationFine = 0;
+      this.endBookingFields.nonIntimationFine = '';
     }
     this.calculateEndBookingFees();
   }
 
   onNonIntimationFineInput() {
-    if (this.endBookingFields.nonIntimationFine > 1000) {
-      this.endBookingFields.nonIntimationFine = 1000;
-    }
-    if (this.endBookingFields.nonIntimationFine < 0) {
+    if (Number(this.endBookingFields.nonIntimationFine) < 0) {
       this.endBookingFields.nonIntimationFine = 0;
     }
     this.calculateEndBookingFees();
@@ -348,17 +399,10 @@ export class RREndBookingDialogComponent implements OnInit {
       0
     );
 
-    // [5] Challana / Toll / Fines total
+    // Challana / Toll total (fines merged with challan)
     const challana = Math.max(0, Number(this.endBookingFields.challanaAmount) || 0);
     const toll = Math.max(0, Number(this.endBookingFields.tollAmount) || 0);
-    const fines = Math.max(0, Number(this.endBookingFields.finesAmount) || 0);
-    this.endBookingFields.challanaTollFinesTotal = challana + toll + fines;
-
-    // [7] Non-Intimation Fine
-    const nonIntimationFine = this.endBookingFields.applyNonIntimationFine
-      ? Math.min(1000, Math.max(0, Number(this.endBookingFields.nonIntimationFine) || 0))
-      : 0;
-    this.endBookingFields.nonIntimationFine = nonIntimationFine;
+    this.endBookingFields.challanaTollFinesTotal = challana + toll;
 
     // --- Scenario Logic & Validations ---
     const extraKmPrice = Number(this.endBookingFields.extraKmRate) || 0;
@@ -376,30 +420,30 @@ export class RREndBookingDialogComponent implements OnInit {
     this.endBookingFields.slabExtraRent = 0;
 
     if (!isKmExceeded && !isHrsExceeded) {
-      // 1. Case 1: if Km's and Hrs are in limit (2 & 3 will be zero)
+      // Case 1: if Km's and Hrs are in limit (extra kms & hrs are zero)
       this.activeScenario.set('case1');
       extraKms = 0;
       extraKmFee = 0;
       extraHours = 0;
       extraHourFee = 0;
     } else if (isKmExceeded && !isHrsExceeded) {
-      // 2. Case 2: If Km's exceeded and returned within Hrs (3 will be zero)
+      // Case 2: If Km's exceeded and returned within Hrs (extra hrs is zero)
       this.activeScenario.set('case2');
       extraKms = rawKmsExceeded;
       extraKmFee = extraKms * extraKmPrice;
       extraHours = 0;
       extraHourFee = 0;
     } else if (!isKmExceeded && isHrsExceeded) {
-      // 3. Case 3: If Hr's exceed and returned within Km's (2 will be zero)
+      // Case 3: If Hr's exceed and returned within Km's (extra kms is zero)
       this.activeScenario.set('case3');
       extraKms = 0;
       extraKmFee = 0;
       extraHours = rawHoursExceeded;
       extraHourFee = extraHours * extraHourPrice;
     } else {
-      // 4. Case 4: If both Km's and Hrs exceeded
+      // Case 4: If both Km's and Hrs exceeded
       if (this.endBookingFields.recalculateSlabMode) {
-        // 4.2 Case 4.2: Recalculate extra kms and hrs field (by new time calculate extra time and add its respective kms limit)
+        // Case 4.2: Recalculate extra kms and hrs field (by new time calculate extra time and add its respective kms limit)
         this.activeScenario.set('case4_2');
         const veh = this.vehicle();
         if (veh && veh.pricing) {
@@ -415,7 +459,7 @@ export class RREndBookingDialogComponent implements OnInit {
           extraKms = Math.max(0, distanceDriven - newEffectiveKmLimit);
           extraKmFee = extraKms * extraKmPrice;
 
-          // Rent section [6(new)] changed as new duration and limit gives new renting price
+          // Rent section changed as new duration and limit gives new renting price
           finalRent = (Number(b.finalRentalAmount) || 0) + addedRent;
           basePending = finalRent - (Number(b.amountPaid) || 0);
 
@@ -430,13 +474,22 @@ export class RREndBookingDialogComponent implements OnInit {
           extraHourFee = extraHours * extraHourPrice;
         }
       } else {
-        // 4.1 Case 4.1: Standard mode (all will be added)
+        // Case 4.1: Standard mode (all will be added)
         this.activeScenario.set('case4_1');
         extraKms = rawKmsExceeded;
         extraKmFee = extraKms * extraKmPrice;
         extraHours = rawHoursExceeded;
         extraHourFee = extraHours * extraHourPrice;
       }
+    }
+
+    // Late / Non-Intimation Fine: Only applicable when both KMs and hours are exceeded (Case 4)
+    const isBothExceeded = isKmExceeded && isHrsExceeded;
+    let nonIntimationFine = 0;
+    if (isBothExceeded && this.endBookingFields.applyNonIntimationFine) {
+      nonIntimationFine = Math.max(0, Number(this.endBookingFields.nonIntimationFine) || 0);
+    } else if (!isBothExceeded) {
+      this.endBookingFields.applyNonIntimationFine = false;
     }
 
     this.endBookingFields.extraKms = extraKms;
@@ -446,9 +499,7 @@ export class RREndBookingDialogComponent implements OnInit {
     this.endBookingFields.finalRentAmount = finalRent;
     this.endBookingFields.basePendingAmount = basePending;
 
-    // Total Additional Charges:
-    // Case 1, 2, 3, 4.1: 1 + 2 + 3 + 4 + 5 (+ 7)
-    // Case 4.2: 1 + 2(new) + 3(new) + 4 + 5 + 7
+    // Total Additional Charges
     const totalAdd =
       this.endBookingFields.cleanlinessFee +
       extraKmFee +
@@ -459,14 +510,11 @@ export class RREndBookingDialogComponent implements OnInit {
 
     this.endBookingFields.totalAdditionalFees = totalAdd;
 
-    // Final Total Payable:
-    // In Case 4.2: finalRent is finalRent(new)
+    // Final Total Payable
     const finalTotal = finalRent + totalAdd;
     this.endBookingFields.finalTotalPayable = finalTotal;
 
-    // Pending/Balance Amount:
-    // Net amount still to collect: Total Final Payable - Paid Amount
-    // Matches: [6] + 1 + 2 + 3 + 4 + 5 (+ 7)
+    // Pending/Balance Amount
     const netBalance = finalTotal - (Number(b.amountPaid) || 0);
     this.endBookingFields.balancePending = netBalance;
   }
@@ -493,11 +541,6 @@ export class RREndBookingDialogComponent implements OnInit {
       return;
     }
 
-    if (this.endBookingFields.applyNonIntimationFine && this.endBookingFields.nonIntimationFine > 1000) {
-      toast.error('Non-intimation fine cannot exceed ₹1000.');
-      return;
-    }
-
     try {
       this.isSubmitting.set(true);
 
@@ -508,6 +551,7 @@ export class RREndBookingDialogComponent implements OnInit {
         ? String(this.endBookingFields.finalTotalPayable)
         : String(b.amountPaid || '0');
 
+      const isBothExceeded = this.activeScenario() === 'case4_1' || this.activeScenario() === 'case4_2';
       const patch: Partial<IBooking> = {
         status: 'completed',
         vehicleOdometerEnd: String(endOdo),
@@ -521,9 +565,9 @@ export class RREndBookingDialogComponent implements OnInit {
         damagesTotal: String(this.endBookingFields.damagesTotal),
         challanaAmount: String(this.endBookingFields.challanaAmount || 0),
         tollAmount: String(this.endBookingFields.tollAmount || 0),
-        finesAmount: String(this.endBookingFields.finesAmount || 0),
+        finesAmount: '0',
         challanaTollFinesTotal: String(this.endBookingFields.challanaTollFinesTotal),
-        nonIntimationFine: this.endBookingFields.applyNonIntimationFine ? String(this.endBookingFields.nonIntimationFine) : '0',
+        nonIntimationFine: isBothExceeded && this.endBookingFields.applyNonIntimationFine ? String(this.endBookingFields.nonIntimationFine || 0) : '0',
         recalculateSlabMode: this.endBookingFields.recalculateSlabMode,
         totalAdditionalFees: String(this.endBookingFields.totalAdditionalFees),
         finalRentalAmount: finalRentalAmountToSave,
