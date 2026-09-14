@@ -615,3 +615,18 @@
     .contact { padding: 3rem 1.25rem; }
   }
 }
+
+@media (max-width: 480px) {
+  .rr-wrapper {
+    .about-stats-card {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+    .stat-box {
+      padding: 1.25rem 1rem;
+    }
+    .contact-item {
+      max-width: 100%;
+    }
+  }
+}

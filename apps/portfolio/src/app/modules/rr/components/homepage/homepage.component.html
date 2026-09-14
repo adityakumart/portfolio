@@ -131,8 +131,8 @@
     </div>
 
     <!-- Category Filter Controls -->
-    <div class="flex justify-center mb-8">
-      <hlm-toggle-group type="single" [value]="selectedCategory()" (valueChange)="$event && setCategory($event)">
+    <div class="flex justify-start sm:justify-center mb-8 max-w-full overflow-x-auto touch-scroll-x px-4 pb-1">
+      <hlm-toggle-group class="shrink-0" type="single" [value]="selectedCategory()" (valueChange)="$event && setCategory($event)">
         <button hlmToggleGroupItem value="all" aria-label="All Fleet">
           All Fleet ({{ vehicles().length }})
         </button>
@@ -264,7 +264,7 @@
     >
       <div
         hlmCard
-        class="max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden p-6 shadow-2xl border border-border"
+        class="max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden p-4 sm:p-6 shadow-2xl border border-border"
         (click)="$event.stopPropagation()"
       >
         <!-- Fixed Header -->
