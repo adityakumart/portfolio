@@ -576,14 +576,57 @@
         }
       </div>
 
-      <div class="absolute top-3 right-3">
+      <div class="absolute top-3 right-3 flex items-center gap-1.5 z-20">
         <span class="font-mono text-[10px] font-bold bg-background/85 backdrop-blur-xs px-2 py-0.5 rounded-md border border-border/70 text-foreground">
           #{{ b.id }}
         </span>
+
+        <!-- Touch / Mobile 3-Dots Action Menu Trigger -->
+        <div class="touch-action-trigger">
+          <button
+            hlmBtn
+            size="icon"
+            variant="secondary"
+            class="h-7 w-7 rounded-full shadow-sm bg-background/90 backdrop-blur-xs border border-border/80 text-foreground hover:bg-muted"
+            [hlmDropdownMenuTrigger]="bookingActionMenu"
+            (click)="$event.stopPropagation()"
+            aria-label="Booking actions"
+          >
+            <ng-icon name="lucideMoreVertical" class="text-xs"></ng-icon>
+          </button>
+          <ng-template #bookingActionMenu>
+            <div hlmDropdownMenu class="w-48 p-1 rounded-xl shadow-xl border border-border bg-card/95 backdrop-blur-md">
+              <button
+                hlmDropdownMenuItem
+                class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
+                (click)="modifyBooking(b, $event)"
+              >
+                <ng-icon name="lucidePencil" class="text-xs text-muted-foreground"></ng-icon>
+                <span>Modify Booking</span>
+              </button>
+              <button
+                hlmDropdownMenuItem
+                class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
+                (click)="printAgreement(b, $event)"
+              >
+                <ng-icon name="lucideFileText" class="text-xs text-muted-foreground"></ng-icon>
+                <span>Print Agreement</span>
+              </button>
+              <button
+                hlmDropdownMenuItem
+                class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg text-rose-500 hover:bg-rose-500/10 w-full text-left"
+                (click)="endBooking(b, $event)"
+              >
+                <ng-icon name="lucideCalendarX" class="text-xs text-rose-500"></ng-icon>
+                <span>End Booking</span>
+              </button>
+            </div>
+          </ng-template>
+        </div>
       </div>
 
-      <!-- Hover action overlay: Modify, Print Agreement, End Booking -->
-      <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-xs flex flex-col items-center justify-center gap-2 p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+      <!-- Hover action overlay: Modify, Print Agreement, End Booking (Desktop Mouse) -->
+      <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-xs flex flex-col items-center justify-center gap-2 p-2 hover-overlay-desktop z-10">
         <button
           hlmBtn
           variant="secondary"

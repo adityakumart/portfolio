@@ -17,6 +17,7 @@ import {
   lucideBadgeCheck,
   lucideX,
   lucideActivity,
+  lucideMenu,
 } from '@ng-icons/lucide';
 import { HlmDialogService } from '@spartan-ng/hel/dialog';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
@@ -55,6 +56,7 @@ import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
       lucideBadgeCheck,
       lucideX,
       lucideActivity,
+      lucideMenu,
     }),
   ],
   templateUrl: './dashboard.component.html',
@@ -83,6 +85,7 @@ export class RRDashboardComponent implements OnInit {
   // Shell UI State
   profileDropdownOpen = signal<boolean>(false);
   isSidebarCollapsed = signal<boolean>(true);
+  mobileSidebarOpen = signal<boolean>(false);
 
   ngOnInit() {
     if (!this.rrApi.currentUser()) {
@@ -105,6 +108,14 @@ export class RRDashboardComponent implements OnInit {
     if (typeof window !== 'undefined' && window.localStorage) {
       localStorage.setItem('rr_sidebar_collapsed', String(next));
     }
+  }
+
+  toggleMobileSidebar() {
+    this.mobileSidebarOpen.update((v) => !v);
+  }
+
+  closeMobileSidebar() {
+    this.mobileSidebarOpen.set(false);
   }
 
   toggleProfileDropdown() {

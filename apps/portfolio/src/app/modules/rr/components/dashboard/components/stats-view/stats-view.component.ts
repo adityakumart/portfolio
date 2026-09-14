@@ -6,6 +6,7 @@ import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 
 import { HlmBadgeImports } from '@spartan-ng/hel/badge';
+import { HlmDropdownMenuImports } from '@spartan-ng/hel/dropdown-menu';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideCheckCircle,
@@ -34,6 +35,7 @@ import {
   lucideClock,
   lucidePhoneCall,
   lucideExternalLink,
+  lucideMoreVertical,
 } from '@ng-icons/lucide';
 import { Router, RouterLink } from '@angular/router';
 import { HlmDialogService } from '@spartan-ng/hel/dialog';
@@ -65,6 +67,7 @@ export type SeatingFilter = 'all' | '5' | '7';
     HlmTooltipImports,
     HlmButtonImports,
     HlmBadgeImports,
+    HlmDropdownMenuImports,
     NgIconComponent,
     RRVehicleCardComponent,
   ],
@@ -96,6 +99,7 @@ export type SeatingFilter = 'all' | '5' | '7';
       lucideClock,
       lucidePhoneCall,
       lucideExternalLink,
+      lucideMoreVertical,
     }),
   ],
   templateUrl: './stats-view.component.html',

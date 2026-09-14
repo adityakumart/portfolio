@@ -6,6 +6,7 @@ import { HlmTableImports } from '@spartan-ng/hel/table';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmBadgeImports } from '@spartan-ng/hel/badge';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
+import { HlmDropdownMenuImports } from '@spartan-ng/hel/dropdown-menu';
 import { HlmInputImports } from '@spartan-ng/hel/input';
 import { HlmLabelImports } from '@spartan-ng/hel/label';
 import { HlmDialogService } from '@spartan-ng/hel/dialog';
@@ -24,6 +25,7 @@ import {
   lucideClock,
   lucideX,
   lucideSave,
+  lucideMoreVertical,
 } from '@ng-icons/lucide';
 import { IBooking, IVehicle, ICustomerIntimation } from '@portfolio/shared-types';
 import { RRApiService } from '../../../../services/rr-api.service';
@@ -45,6 +47,7 @@ import {
     HlmButtonImports,
     HlmBadgeImports,
     HlmTooltipImports,
+    HlmDropdownMenuImports,
     HlmInputImports,
     HlmLabelImports,
     NgIconComponent,
@@ -63,6 +66,7 @@ import {
       lucideClock,
       lucideX,
       lucideSave,
+      lucideMoreVertical,
     }),
   ],
   templateUrl: './booking-list.component.html',

@@ -73,19 +73,73 @@
                 </span>
               }
             </td>
-            <td hlmTd class="text-center whitespace-nowrap space-x-1">
-              <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 rounded-full text-amber-500 hover:text-amber-600 hover:bg-amber-500/10" hlmTooltip="Log Customer Intimation (Call/Delay/Extension)" (click)="openIntimationModal(b)">
-                <ng-icon name="lucidePhoneCall"></ng-icon>
-              </button>
-              <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 rounded-full text-emerald-500" hlmTooltip="End Rental" (click)="openEndBookingPopup(b)">
-                <ng-icon name="lucideCalendarX"></ng-icon>
-              </button>
-              <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 rounded-full text-primary" hlmTooltip="Print Agreement PDF" (click)="exportBookingPdf(b)">
-                <ng-icon name="lucideFileText"></ng-icon>
-              </button>
-              <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 rounded-full" hlmTooltip="Modify Details" (click)="openModifyBookingPopup(b)">
-                <ng-icon name="lucidePencil"></ng-icon>
-              </button>
+            <td hlmTd class="text-center whitespace-nowrap">
+              <!-- Desktop Action Buttons (md and up) -->
+              <div class="hidden md:inline-flex items-center space-x-1">
+                <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 rounded-full text-amber-500 hover:text-amber-600 hover:bg-amber-500/10" hlmTooltip="Log Customer Intimation (Call/Delay/Extension)" (click)="openIntimationModal(b)">
+                  <ng-icon name="lucidePhoneCall"></ng-icon>
+                </button>
+                <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 rounded-full text-emerald-500 hover:bg-emerald-500/10" hlmTooltip="End Rental" (click)="openEndBookingPopup(b)">
+                  <ng-icon name="lucideCalendarX"></ng-icon>
+                </button>
+                <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 rounded-full text-primary hover:bg-primary/10" hlmTooltip="Print Agreement PDF" (click)="exportBookingPdf(b)">
+                  <ng-icon name="lucideFileText"></ng-icon>
+                </button>
+                <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 rounded-full hover:bg-muted" hlmTooltip="Modify Details" (click)="openModifyBookingPopup(b)">
+                  <ng-icon name="lucidePencil"></ng-icon>
+                </button>
+              </div>
+
+              <!-- Mobile 3-Dots Dropdown Menu (< md) -->
+              <div class="inline-flex md:hidden">
+                <button
+                  hlmBtn
+                  size="icon"
+                  variant="ghost"
+                  class="h-8 w-8 rounded-full border border-border/60 hover:bg-muted text-foreground"
+                  [hlmDropdownMenuTrigger]="mobileBookingMenu"
+                  aria-label="Booking options"
+                >
+                  <ng-icon name="lucideMoreVertical" class="text-sm"></ng-icon>
+                </button>
+                <ng-template #mobileBookingMenu>
+                  <div hlmDropdownMenu class="w-52 p-1 rounded-xl shadow-xl border border-border bg-card/95 backdrop-blur-md">
+                    <button
+                      hlmDropdownMenuItem
+                      class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
+                      (click)="openModifyBookingPopup(b)"
+                    >
+                      <ng-icon name="lucidePencil" class="text-xs text-muted-foreground"></ng-icon>
+                      <span>Modify Details</span>
+                    </button>
+                    <button
+                      hlmDropdownMenuItem
+                      class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
+                      (click)="exportBookingPdf(b)"
+                    >
+                      <ng-icon name="lucideFileText" class="text-xs text-primary"></ng-icon>
+                      <span>Print Agreement PDF</span>
+                    </button>
+                    <button
+                      hlmDropdownMenuItem
+                      class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
+                      (click)="openIntimationModal(b)"
+                    >
+                      <ng-icon name="lucidePhoneCall" class="text-xs text-amber-500"></ng-icon>
+                      <span>Log Customer Intimation</span>
+                    </button>
+                    <div hlmDropdownMenuSeparator class="my-1 border-t border-border"></div>
+                    <button
+                      hlmDropdownMenuItem
+                      class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 w-full text-left"
+                      (click)="openEndBookingPopup(b)"
+                    >
+                      <ng-icon name="lucideCalendarX" class="text-xs text-emerald-500"></ng-icon>
+                      <span>End Rental</span>
+                    </button>
+                  </div>
+                </ng-template>
+              </div>
             </td>
           </tr>
         } @empty {

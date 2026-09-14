@@ -4,6 +4,7 @@ import { HlmCardImports } from '@spartan-ng/hel/card';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmBadgeImports } from '@spartan-ng/hel/badge';
+import { HlmDropdownMenuImports } from '@spartan-ng/hel/dropdown-menu';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideUsers,
@@ -15,6 +16,7 @@ import {
   lucidePalette,
   lucideArrowRight,
   lucidePhone,
+  lucideMoreVertical,
 } from '@ng-icons/lucide';
 import { IVehicle } from '@portfolio/shared-types';
 
@@ -29,6 +31,7 @@ export type VehicleCardVariant = 'fleet' | 'stats' | 'homepage';
     HlmTooltipImports,
     HlmButtonImports,
     HlmBadgeImports,
+    HlmDropdownMenuImports,
     NgIconComponent,
   ],
   providers: [
@@ -42,6 +45,7 @@ export type VehicleCardVariant = 'fleet' | 'stats' | 'homepage';
       lucidePalette,
       lucideArrowRight,
       lucidePhone,
+      lucideMoreVertical,
     }),
   ],
   templateUrl: './vehicle-card.component.html',
