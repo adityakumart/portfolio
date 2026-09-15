@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
 import { RRApiService } from '../../../../services/rr-api.service';
 import { IEmployee } from '@portfolio/shared-types';
+import { RRAadharInputComponent } from '../../../../shared/components/aadhar-input/aadhar-input.component';
 import { HlmInputImports } from '@spartan-ng/hel/input';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmDialogService } from '@spartan-ng/hel/dialog';
@@ -34,6 +35,7 @@ import {
     HlmTableImports,
     HlmBadgeImports,
     NgIconComponent,
+    RRAadharInputComponent,
   ],
   providers: [
     provideIcons({
