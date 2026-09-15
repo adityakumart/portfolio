@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import jsPDF from 'jspdf';
+import { maskAadhar } from '../shared/utils/aadhar-mask.util';
 
 export function formatToIndianDate(dateStr: string): string {
   if (!dateStr || dateStr === '________' || dateStr === 'N/A') return dateStr;
@@ -48,7 +49,7 @@ export class RRInvoicePdfService {
       b.renterAltPhone !== '________'
         ? b.renterAltPhone
         : '';
-    const renterAadhar = b.renterAadhar || '________';
+    const renterAadhar = maskAadhar(b.renterAadhar) || '________';
     const renterDL = b.renterDL || '________';
 
     const vehicleRegNo = b.vehicleRegNo || '________';
@@ -360,7 +361,7 @@ export class RRInvoicePdfService {
     const renterAltPhone =
       b.renterAltPhone && b.renterAltPhone !== '-' ? b.renterAltPhone : '';
     const renterFatherName = b.renterFatherName || 'N/A';
-    const renterAadhar = b.renterAadhar || 'N/A';
+    const renterAadhar = maskAadhar(b.renterAadhar) || 'N/A';
     const renterDL = b.renterDL || 'N/A';
     const renterAddress = b.renterAddress || 'N/A';
 

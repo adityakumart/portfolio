@@ -166,7 +166,7 @@
 
           <div>
             <label hlmLabel class="text-xs text-muted-foreground block mb-1">Aadhar Number</label>
-            <input hlmInput formControlName="aadhar" maxlength="12" class="w-full text-sm" />
+            <rr-aadhar-input formControlName="aadhar" placeholder="XXXX XXXX 1234"></rr-aadhar-input>
             @if (employeeFormGroup.get('aadhar')?.invalid && employeeFormGroup.get('aadhar')?.touched) {
               <span class="text-xs text-destructive">Must be exactly 12 digits.</span>
             }

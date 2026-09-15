@@ -4,7 +4,7 @@
 @import 'tailwindcss/utilities.css';
 
 @import "@spartan-ng/brain/hlm-tailwind-preset.css";
-@import './styles/touch-hover.scss';
+@import './styles/touch-hover.css';
 
 @theme {
   --color-border: var(--border);

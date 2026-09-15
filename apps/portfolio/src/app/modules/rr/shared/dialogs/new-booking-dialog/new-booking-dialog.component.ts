@@ -22,6 +22,7 @@ import { toast } from '@spartan-ng/hel/sonner';
 import { IVehicle, IVehiclePricing } from '@portfolio/shared-types';
 import { RRApiService } from '../../../services/rr-api.service';
 import { RRInvoicePdfService } from '../../../services/rr-invoice-pdf.service';
+import { RRAadharInputComponent } from '../../components/aadhar-input/aadhar-input.component';
 
 export interface NewBookingDialogContext {
   vehicleRegNo?: string;
@@ -38,6 +39,7 @@ export interface NewBookingDialogContext {
     HlmInputImports,
     HlmLabelImports,
     NgIconComponent,
+    RRAadharInputComponent,
   ],
   providers: [
     provideIcons({
@@ -497,6 +499,8 @@ export class RRNewBookingDialogComponent implements OnInit {
       guarFirstName: val.guarFirstName || '____',
       guarSecondName: val.guarSecondName || '____',
       guarFatherName: val.guarFatherName || '____',
+      guarAadhar: val.guarAadhar || '____',
+      guarPhone: val.guarPhone || '____',
       guarAddress: val.guarAddress || '____',
       depositType: val.depositType,
       bikeManufacturer: val.bikeManufacturer,
