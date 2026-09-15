@@ -1,0 +1,47 @@
+/* -----------------------------------------------------------
+   TOUCH & HOVER RESPONSIVE UTILITIES
+   Provides standard classes for differentiating between
+   desktop hover interactions and mobile touch controls.
+----------------------------------------------------------- */
+
+/* Desktop Mouse Hover Behavior */
+@media (hover: hover) and (pointer: fine) {
+  .hover-overlay-desktop {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+
+  .group:hover .hover-overlay-desktop,
+  .hover-trigger-group:hover .hover-overlay-desktop {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .touch-action-trigger {
+    display: none !important;
+  }
+}
+
+/* Touch Screens & Mobile Viewports */
+@media (hover: none) or (pointer: coarse), (max-width: 1023px) {
+  .hover-overlay-desktop {
+    display: none !important;
+  }
+
+  .touch-action-trigger {
+    display: inline-flex !important;
+  }
+}
+
+/* Smooth Horizontal Scroll without visible scrollbar for Mobile Touch */
+.touch-scroll-x {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

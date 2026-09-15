@@ -1,5 +1,5 @@
-<div [class.min-h-[calc(100vh-160px)]]="!isEmbedded" [class.p-4]="!isEmbedded" [class.sm:p-6]="!isEmbedded" class="flex items-center justify-center w-full h-full">
-  <div hlmCard class="w-full max-w-[900px] h-[720px] max-h-[calc(100vh-180px)] border border-border bg-card shadow-2xl rounded-3xl flex flex-col overflow-hidden">
+<div [class.min-h-[calc(100vh-160px)]]="!isEmbedded" [class.p-2]="!isEmbedded" [class.sm:p-6]="!isEmbedded" class="flex items-center justify-center w-full h-full">
+  <div hlmCard class="w-full max-w-[900px] h-[calc(100dvh-70px)] sm:h-[720px] sm:max-h-[calc(100vh-180px)] border border-border bg-card shadow-2xl rounded-2xl sm:rounded-3xl flex flex-col overflow-hidden">
     
     <!-- Chat Header Panel -->
     <div hlmCardHeader class="flex flex-row justify-between items-center px-6 py-4 border-b border-border bg-card/60 backdrop-blur-md shrink-0 space-y-0">
@@ -149,7 +149,7 @@
           </button>
         </div>
       </div>
-      <div class="text-center text-[11px] text-muted-foreground">
+      <div class="text-center text-[11px] text-muted-foreground hidden sm:block">
         <span><strong>Enter</strong> to Send • <strong>Shift + Enter</strong> for a new line</span>
       </div>
     </div>

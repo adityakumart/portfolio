@@ -207,7 +207,7 @@
     </div>
     
     <!-- Fixed Footer -->
-    <div class="shrink-0 flex items-center justify-end gap-2 pt-3 border-t">
+    <div class="shrink-0 flex flex-wrap sm:flex-nowrap items-center justify-end gap-2 pt-3 border-t">
       @if (isAdmin()) {
         <button hlmBtn size="sm" class="flex items-center gap-1.5" (click)="openEditVehicleModal()">
           <ng-icon name="lucidePencil"></ng-icon> Modify
@@ -506,7 +506,7 @@
       </div>
 
       <!-- Fixed Footer -->
-      <div class="shrink-0 flex items-center justify-end gap-2 pt-3 border-t">
+      <div class="shrink-0 flex flex-wrap sm:flex-nowrap items-center justify-end gap-2 pt-3 border-t">
         <button hlmBtn class="action-btn success flex items-center gap-1.5" [disabled]="vehicleFormGroup.invalid" (click)="saveVehicle($event)">
           <ng-icon name="lucideCheck"></ng-icon>
           <span>{{ editingVehicleMode() ? 'Update Vehicle' : 'Register Vehicle' }}</span>

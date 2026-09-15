@@ -41,9 +41,9 @@
       </div>
     }
 
-    <!-- Hover "Book Now" Overlay (Stats Variant for available vehicles) -->
+    <!-- Hover "Book Now" Overlay (Stats Variant for available vehicles - Desktop) -->
     @if (showBookNowOverlay) {
-      <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+      <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center hover-overlay-desktop z-10">
         <button
           hlmBtn
           size="sm"
@@ -124,32 +124,83 @@
       <div class="font-extrabold text-base text-foreground leading-tight mb-1 truncate">{{ vehicle.manufacturer }} {{ vehicle.name }}</div>
       <div class="font-mono text-xs text-muted-foreground bg-muted/40 px-2 py-0.5 rounded w-fit mb-3">{{ vehicle.regNo }}</div>
 
-      <div class="flex flex-wrap gap-1.5 mt-auto pt-2 border-t border-border/50">
-        <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-md" hlmTooltip="Capacity">
-          <ng-icon name="lucideUsers" class="text-xs"></ng-icon>
-          <span>{{ vehicle.seating }} Seats</span>
-        </span>
-        <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-md" hlmTooltip="Fuel Type">
-          <ng-icon name="lucideFuel" class="text-xs"></ng-icon>
-          <span>{{ vehicle.fuelType | uppercase }}</span>
-        </span>
-        <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-md" hlmTooltip="Odometer">
-          <ng-icon name="lucideGauge" class="text-xs"></ng-icon>
-          <span>{{ vehicle.odometer }} KM</span>
-        </span>
+      <div class="flex items-center justify-between gap-1.5 mt-auto pt-2 border-t border-border/50">
+        <div class="flex flex-wrap gap-1.5">
+          <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-md" hlmTooltip="Capacity">
+            <ng-icon name="lucideUsers" class="text-xs"></ng-icon>
+            <span>{{ vehicle.seating }} Seats</span>
+          </span>
+          <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-md" hlmTooltip="Fuel Type">
+            <ng-icon name="lucideFuel" class="text-xs"></ng-icon>
+            <span>{{ vehicle.fuelType | uppercase }}</span>
+          </span>
+          <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-md" hlmTooltip="Odometer">
+            <ng-icon name="lucideGauge" class="text-xs"></ng-icon>
+            <span>{{ vehicle.odometer }} KM</span>
+          </span>
+        </div>
+
+        <!-- Touch CTA: Book Now for Stats Variant on touch screens -->
+        @if (showBookNowOverlay) {
+          <button
+            hlmBtn
+            size="sm"
+            class="touch-action-trigger bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold rounded-lg shadow-sm text-xs px-3 h-8 shrink-0 flex items-center gap-1 hover:from-cyan-400 hover:to-blue-500 active:scale-95 transition-transform"
+            (click)="onBookNowClick($event)"
+          >
+            <ng-icon name="lucideKey" class="text-xs"></ng-icon>
+            <span>Book</span>
+          </button>
+        }
       </div>
     }
   </div>
 
   <!-- Admin Quick Actions (Fleet Variant) -->
   @if (isAdmin && variant === 'fleet') {
-    <div class="absolute bottom-3 right-3 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+    <!-- Desktop Mouse Hover Actions -->
+    <div class="absolute bottom-3 right-3 flex items-center gap-1.5 z-10 hover-overlay-desktop">
       <button hlmBtn size="icon" variant="secondary" class="h-8 w-8 rounded-full shadow-md" (click)="onEditClick($event)" hlmTooltip="Edit Vehicle">
         <ng-icon name="lucidePencil"></ng-icon>
       </button>
       <button hlmBtn size="icon" variant="destructive" class="h-8 w-8 rounded-full shadow-md" (click)="onDeleteClick($event)" hlmTooltip="Delete Vehicle">
         <ng-icon name="lucideTrash2"></ng-icon>
       </button>
+    </div>
+
+    <!-- Touch / Mobile 3-Dots Action Menu Trigger -->
+    <div class="absolute top-3 right-3 z-20 touch-action-trigger">
+      <button
+        hlmBtn
+        size="icon"
+        variant="secondary"
+        class="h-8 w-8 rounded-full shadow-md bg-background/90 backdrop-blur-xs border border-border/80 text-foreground hover:bg-muted"
+        [hlmDropdownMenuTrigger]="fleetAdminMenu"
+        (click)="$event.stopPropagation()"
+        aria-label="Vehicle admin options"
+      >
+        <ng-icon name="lucideMoreVertical" class="text-sm"></ng-icon>
+      </button>
+      <ng-template #fleetAdminMenu>
+        <div hlmDropdownMenu class="w-44 p-1 rounded-xl shadow-xl border border-border bg-card/95 backdrop-blur-md">
+          <button
+            hlmDropdownMenuItem
+            class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
+            (click)="onEditClick($event)"
+          >
+            <ng-icon name="lucidePencil" class="text-xs text-muted-foreground"></ng-icon>
+            <span>Edit Vehicle</span>
+          </button>
+          <button
+            hlmDropdownMenuItem
+            class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg text-destructive hover:bg-destructive/10 w-full text-left"
+            (click)="onDeleteClick($event)"
+          >
+            <ng-icon name="lucideTrash2" class="text-xs text-destructive"></ng-icon>
+            <span>Delete Vehicle</span>
+          </button>
+        </div>
+      </ng-template>
     </div>
   }
 </div>

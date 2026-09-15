@@ -1,9 +1,23 @@
 <div class="dashboard-wrapper">
   <!-- Header -->
   <header class="app-header">
-    <div class="header-brand" routerLink="/user/rr/home">
-      <ng-icon class="brand-icon" name="lucideCar"></ng-icon>
-      <h2 class="app-title">RoadReady</h2>
+    <div class="flex items-center gap-2">
+      <!-- Mobile Menu Hamburger Button -->
+      <button
+        hlmBtn
+        variant="ghost"
+        size="icon"
+        class="mobile-hamburger-btn lg:hidden h-9 w-9 rounded-xl border border-border/70 text-foreground hover:bg-muted"
+        (click)="toggleMobileSidebar()"
+        aria-label="Toggle navigation menu"
+      >
+        <ng-icon [name]="mobileSidebarOpen() ? 'lucideX' : 'lucideMenu'" class="text-lg"></ng-icon>
+      </button>
+
+      <div class="header-brand" routerLink="/user/rr/home" (click)="closeMobileSidebar()">
+        <ng-icon class="brand-icon" name="lucideCar"></ng-icon>
+        <h2 class="app-title">RoadReady</h2>
+      </div>
     </div>
 
     <div class="relative">
@@ -80,12 +94,35 @@
   </header>
 
   <div class="admin-layout">
+    <!-- Mobile Backdrop Overlay -->
+    @if (mobileSidebarOpen()) {
+      <div
+        class="mobile-backdrop lg:hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-40 animate-in fade-in duration-200"
+        (click)="closeMobileSidebar()"
+      ></div>
+    }
+
     <!-- Sidebar -->
-    <aside class="sidebar" [class.collapsed]="isSidebarCollapsed()">
+    <aside
+      class="sidebar"
+      [class.collapsed]="isSidebarCollapsed()"
+      [class.mobile-open]="mobileSidebarOpen()"
+    >
       <div class="sidebar-toggle-bar">
+        <div class="lg:hidden flex items-center justify-between w-full px-1">
+          <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Navigation</span>
+          <button
+            type="button"
+            class="h-7 w-7 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-foreground"
+            (click)="closeMobileSidebar()"
+            aria-label="Close sidebar"
+          >
+            <ng-icon name="lucideX" class="text-xs"></ng-icon>
+          </button>
+        </div>
         <button
           type="button"
-          class="sidebar-toggle-btn"
+          class="sidebar-toggle-btn hidden lg:inline-flex"
           (click)="toggleSidebar()"
           [hlmTooltip]="
             isSidebarCollapsed() ? 'Expand sidebar' : 'Collapse sidebar'
@@ -115,6 +152,7 @@
               [hlmTooltip]="'Overview'"
               [tooltipDisabled]="!isSidebarCollapsed()"
               tooltipPosition="right"
+              (click)="closeMobileSidebar()"
             >
               <div class="menu-item-pill"></div>
               <div class="menu-item-content">
@@ -129,6 +167,7 @@
               [hlmTooltip]="'Active Rentals'"
               [tooltipDisabled]="!isSidebarCollapsed()"
               tooltipPosition="right"
+              (click)="closeMobileSidebar()"
             >
               <div class="menu-item-pill"></div>
               <div class="menu-item-content">
@@ -143,6 +182,7 @@
               [hlmTooltip]="'Vehicles Inventory'"
               [tooltipDisabled]="!isSidebarCollapsed()"
               tooltipPosition="right"
+              (click)="closeMobileSidebar()"
             >
               <div class="menu-item-pill"></div>
               <div class="menu-item-content">
@@ -160,6 +200,7 @@
                 [hlmTooltip]="'Staff Registry'"
                 [tooltipDisabled]="!isSidebarCollapsed()"
                 tooltipPosition="right"
+                (click)="closeMobileSidebar()"
               >
                 <div class="menu-item-pill"></div>
                 <div class="menu-item-content">
@@ -174,6 +215,7 @@
                 [hlmTooltip]="'Audit Logs'"
                 [tooltipDisabled]="!isSidebarCollapsed()"
                 tooltipPosition="right"
+                (click)="closeMobileSidebar()"
               >
                 <div class="menu-item-pill"></div>
                 <div class="menu-item-content">
@@ -190,6 +232,7 @@
               [hlmTooltip]="'Historical Logs'"
               [tooltipDisabled]="!isSidebarCollapsed()"
               tooltipPosition="right"
+              (click)="closeMobileSidebar()"
             >
               <div class="menu-item-pill"></div>
               <div class="menu-item-content">

@@ -1019,7 +1019,7 @@
 
   <!-- Fixed Footer -->
   <div
-    class="shrink-0 flex items-center justify-between py-3 border-t border-border"
+    class="shrink-0 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 py-3 border-t border-border"
   >
     <div class="text-xs font-mono">
       <span class="text-muted-foreground"
@@ -1028,7 +1028,7 @@
       <span class="font-bold text-emerald-600">AVAILABLE</span>
     </div>
 
-    <div class="flex items-center gap-2">
+    <div class="flex items-center justify-end gap-2">
       <button hlmBtn variant="outline" (click)="closeDialog()">Cancel</button>
       <button
         hlmBtn
@@ -1038,7 +1038,7 @@
       >
         <ng-icon name="lucideReceipt"></ng-icon>
         <span>{{
-          isSubmitting() ? 'Finalizing & Generating Invoice...' : 'End Booking & Generate Invoice'
+          isSubmitting() ? 'Finalizing...' : 'End Booking & Generate Invoice'
         }}</span>
       </button>
     </div>

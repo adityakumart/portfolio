@@ -19,14 +19,14 @@ import { UserExperienceRecord } from '@portfolio/shared-types';
   ],
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `
-    <div class="p-6">
+    <div class="p-4 sm:p-6">
       <h2 class="text-xl font-bold tracking-tight mb-4">Saved Experiences</h2>
-      <div class="border rounded-xl overflow-hidden mb-4">
+      <div class="border rounded-xl overflow-x-auto touch-scroll-x mb-4">
         <table class="w-full text-xs text-left">
           <thead class="bg-muted/40 uppercase font-semibold text-muted-foreground">
             <tr>
               <th class="p-3">Name</th>
-              <th class="p-3">Email</th>
+              <th class="p-3 hidden sm:table-cell">Email</th>
               <th class="p-3">Total Experience</th>
               <th class="p-3 text-right">Action</th>
             </tr>
@@ -34,10 +34,13 @@ import { UserExperienceRecord } from '@portfolio/shared-types';
           <tbody class="divide-y">
             @for (element of context.records; track element.id || $index) {
               <tr class="hover:bg-muted/10 transition-colors">
-                <td class="p-3 font-medium">{{ element.name }}</td>
-                <td class="p-3 text-muted-foreground">{{ element.email }}</td>
-                <td class="p-3">{{ element.displayYears }} Y, {{ element.displayMonths }} M, {{ element.displayDays }} D</td>
-                <td class="p-3 text-right space-x-1">
+                <td class="p-3 font-medium">
+                  <div>{{ element.name }}</div>
+                  <div class="text-[10px] text-muted-foreground sm:hidden">{{ element.email }}</div>
+                </td>
+                <td class="p-3 text-muted-foreground hidden sm:table-cell">{{ element.email }}</td>
+                <td class="p-3 whitespace-nowrap">{{ element.displayYears }} Y, {{ element.displayMonths }} M, {{ element.displayDays }} D</td>
+                <td class="p-3 text-right space-x-1 whitespace-nowrap">
                   <button
                     hlmBtn
                     size="icon"

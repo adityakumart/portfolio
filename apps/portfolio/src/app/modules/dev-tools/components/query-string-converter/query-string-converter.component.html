@@ -21,9 +21,9 @@
     <!-- Left Panel: Input & Tools -->
     <div class="panel-column">
       <div hlmCard class="editor-card p-5 rounded-2xl border shadow-sm flex flex-col h-full">
-        <div class="panel-header flex items-center justify-between mb-4">
+        <div class="panel-header flex flex-wrap items-center justify-between gap-2 mb-4">
           <h3 class="text-base font-semibold">Input Source</h3>
-          <div class="header-actions flex items-center gap-2">
+          <div class="header-actions flex flex-wrap items-center gap-2">
             <button hlmBtn variant="ghost" size="sm" type="button" (click)="loadSampleUrl()" hlmTooltip="Load a standard URL with multiple parameters" class="text-xs">
               <ng-icon name="lucideLink" class="mr-1"></ng-icon>
               Sample URL
@@ -137,21 +137,21 @@
                 @for (param of paramsList(); track $index) {
                   <div class="param-item-row grid grid-cols-2 p-3 items-center hover:bg-muted/10 transition-colors text-xs">
                     <!-- Key column -->
-                    <div class="col-key flex items-center justify-between pr-3">
-                      <code class="key-badge font-mono font-semibold text-primary truncate max-w-[140px] cursor-pointer" (click)="copyText(param.key, 'Key')" hlmTooltip="Click to copy Key">
+                    <div class="col-key flex items-center justify-between pr-3 min-w-0">
+                      <code class="key-badge font-mono font-semibold text-primary truncate min-w-0 flex-1 cursor-pointer" (click)="copyText(param.key, 'Key')" hlmTooltip="Click to copy Key">
                         {{ param.key }}
                       </code>
-                      <button hlmBtn size="icon" variant="ghost" class="mini-copy-btn h-6 w-6 text-muted-foreground" (click)="copyText(param.key, 'Key')" hlmTooltip="Copy Key">
+                      <button hlmBtn size="icon" variant="ghost" class="mini-copy-btn h-6 w-6 text-muted-foreground shrink-0" (click)="copyText(param.key, 'Key')" hlmTooltip="Copy Key">
                         <ng-icon name="lucideCopy" class="text-xs"></ng-icon>
                       </button>
                     </div>
 
                     <!-- Value column -->
-                    <div class="col-val flex items-center justify-between pl-3 border-l">
-                      <span class="val-text font-mono truncate max-w-[140px] cursor-pointer" [class.text-muted-foreground]="!param.value" (click)="copyText(param.value, 'Value')" hlmTooltip="Click to copy Value">
+                    <div class="col-val flex items-center justify-between pl-3 border-l min-w-0">
+                      <span class="val-text font-mono truncate min-w-0 flex-1 cursor-pointer" [class.text-muted-foreground]="!param.value" (click)="copyText(param.value, 'Value')" hlmTooltip="Click to copy Value">
                         {{ param.value || '(empty)' }}
                       </span>
-                      <button hlmBtn size="icon" variant="ghost" class="mini-copy-btn h-6 w-6 text-muted-foreground" (click)="copyText(param.value, 'Value')" hlmTooltip="Copy Value">
+                      <button hlmBtn size="icon" variant="ghost" class="mini-copy-btn h-6 w-6 text-muted-foreground shrink-0" (click)="copyText(param.value, 'Value')" hlmTooltip="Copy Value">
                         <ng-icon name="lucideCopy" class="text-xs"></ng-icon>
                       </button>
                     </div>

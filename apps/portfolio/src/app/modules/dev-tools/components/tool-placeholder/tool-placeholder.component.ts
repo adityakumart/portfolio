@@ -12,7 +12,7 @@ import { lucideHammer } from '@ng-icons/lucide';
   providers: [provideIcons({ lucideHammer })],
   template: `
     <div class="p-4 flex justify-center items-center min-h-[70vh]">
-      <div hlmCard class="max-w-[600px] w-full p-8 text-center rounded-2xl border shadow-sm flex flex-col items-center">
+      <div hlmCard class="max-w-[600px] w-full p-6 sm:p-8 text-center rounded-2xl border shadow-sm flex flex-col items-center">
         <div class="mb-5 bg-primary/10 p-5 rounded-full flex items-center justify-center">
           <ng-icon name="lucideHammer" class="text-4xl text-primary flex items-center justify-center"></ng-icon>
         </div>

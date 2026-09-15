@@ -35,6 +35,8 @@ import {
   lucideMoon,
   lucideLogOut,
   lucideZap,
+  lucideMenu,
+  lucideX,
 } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
@@ -86,6 +88,8 @@ export interface SidebarItem {
       lucideMoon,
       lucideLogOut,
       lucideZap,
+      lucideMenu,
+      lucideX,
     }),
   ],
   templateUrl: './sidebar.component.html',
@@ -102,6 +106,36 @@ export class SidebarComponent implements OnDestroy {
   // Active hover tracking signals for fly-out panel visibility control
   activeLevel0Item = signal<SidebarItem | null>(null);
   activeLevel1Item = signal<SidebarItem | null>(null);
+
+  // Mobile drawer and accordion signals
+  isMobileDrawerOpen = signal<boolean>(false);
+  expandedMobileItems = signal<Set<string>>(new Set());
+
+  toggleMobileDrawer(): void {
+    this.isMobileDrawerOpen.update((v) => !v);
+  }
+
+  closeMobileDrawer(): void {
+    this.isMobileDrawerOpen.set(false);
+    this.activeLevel0Item.set(null);
+    this.activeLevel1Item.set(null);
+  }
+
+  toggleMobileAccordion(label: string): void {
+    this.expandedMobileItems.update((current) => {
+      const updated = new Set(current);
+      if (updated.has(label)) {
+        updated.delete(label);
+      } else {
+        updated.add(label);
+      }
+      return updated;
+    });
+  }
+
+  isMobileAccordionExpanded(label: string): boolean {
+    return this.expandedMobileItems().has(label);
+  }
 
   // Timers to provide a smooth grace period when moving cursor between icon and fly-out panels
   private closeLevel0Timer: ReturnType<typeof setTimeout> | null = null;
@@ -317,6 +351,7 @@ export class SidebarComponent implements OnDestroy {
   // Handle clicking items
   onItemClick(item: SidebarItem): void {
     if (item.link) {
+      this.closeMobileDrawer();
       this.router.navigateByUrl(item.link);
       // Close all submenus immediately on click
       if (this.closeLevel0Timer) {
