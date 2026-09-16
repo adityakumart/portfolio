@@ -1,4 +1,4 @@
-<div class="app-layout flex flex-col lg:flex-row h-screen w-screen overflow-hidden bg-background text-foreground">
+<div class="app-layout flex flex-col lg:flex-row h-[100dvh] w-full max-w-full overflow-hidden bg-background text-foreground">
   <!-- Mobile Top Header (Screens < 1024px) -->
   <header class="lg:hidden flex items-center justify-between px-4 py-2.5 border-b border-border bg-card/95 backdrop-blur-md z-30 shrink-0">
     <div class="flex items-center gap-3">
@@ -63,14 +63,14 @@
   <!-- Mobile Backdrop Overlay -->
   @if (isMobileDrawerOpen()) {
     <div
-      class="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-40 animate-in fade-in duration-200"
+      class="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-xs z-[90] animate-in fade-in duration-200"
       (click)="closeMobileDrawer()"
     ></div>
   }
 
   <!-- Mobile Off-Canvas Drawer (Screens < 1024px) -->
   <aside
-    class="lg:hidden fixed inset-y-0 left-0 w-[280px] bg-card border-r border-border z-50 flex flex-col p-4 shadow-2xl transition-transform duration-300 ease-out"
+    class="lg:hidden fixed inset-y-0 left-0 h-[100dvh] w-[280px] max-w-[85vw] bg-card border-r border-border z-[100] flex flex-col p-4 shadow-2xl transition-transform duration-300 ease-out"
     [class.-translate-x-full]="!isMobileDrawerOpen()"
     [class.translate-x-0]="isMobileDrawerOpen()"
   >

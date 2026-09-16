@@ -1,13 +1,13 @@
-<div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 16px;">
+<div class="page-header flex items-center justify-between mb-6 sm:mb-8 flex-wrap gap-3 sm:gap-4">
   <div>
-    <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--color-cyan-500); font-weight: 800; margin-bottom: 6px; display: inline-flex; align-items: center; gap: 6px;">
-      <ng-icon style="font-size: 14px; width: 14px; height: 14px;" name="lucideCalendarDays"></ng-icon>
+    <div class="text-[11px] sm:text-xs uppercase tracking-wider text-cyan-500 font-extrabold mb-1 inline-flex items-center gap-1.5">
+      <ng-icon class="size-3.5" name="lucideCalendarDays"></ng-icon>
       <span>Bookings &bull; Active Rentals Desk</span>
     </div>
-    <h2 style="margin: 0; font-size: 1.85rem; font-weight: 800; color: var(--foreground);">Active Rentals</h2>
+    <h2 class="m-0 text-xl sm:text-2xl lg:text-3xl font-extrabold text-foreground tracking-tight">Active Rentals</h2>
   </div>
-  <button hlmBtn class="action-btn success flex items-center gap-1.5" (click)="openNewBookingModal()">
-    <ng-icon name="lucidePlus"></ng-icon> Create New Booking
+  <button hlmBtn class="action-btn success flex items-center gap-1.5 shadow-sm" (click)="openNewBookingModal()">
+    <ng-icon name="lucidePlus"></ng-icon> <span>Create New Booking</span>
   </button>
 </div>
 
@@ -155,7 +155,7 @@
   </div>
 
   <!-- Pagination footer -->
-  <div class="p-4 border-t flex items-center justify-between text-xs text-muted-foreground">
+  <div class="p-4 border-t flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
     <div>
       Showing {{ pagedBookings().length }} of {{ activeBookings().length }} bookings
     </div>
