@@ -1,28 +1,14 @@
-<div
-  class="page-header"
-  style="
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 28px;
-    flex-wrap: wrap;
-    gap: 16px;
-  "
->
+<div class="page-header flex items-center justify-between mb-6 sm:mb-8 flex-wrap gap-3 sm:gap-4">
   <div>
-    <h2
-      style="
-        margin: 0;
-        font-size: 1.85rem;
-        font-weight: 800;
-        color: var(--foreground);
-      "
-    >
+    <div class="text-[11px] sm:text-xs uppercase tracking-wider text-cyan-500 font-extrabold mb-1 inline-flex items-center gap-1.5">
+      <ng-icon class="size-3.5" name="lucideHistory"></ng-icon>
+      <span>Audit Trail &bull; System Activity</span>
+    </div>
+    <h2 class="m-0 text-xl sm:text-2xl lg:text-3xl font-extrabold text-foreground tracking-tight">
       System Activity Logs
     </h2>
     <p class="text-xs text-muted-foreground mt-1">
-      Real-time audit log of system operations, vehicle updates, and
-      administrator actions.
+      Real-time audit log of system operations, vehicle updates, and administrator actions.
     </p>
   </div>
 
@@ -374,14 +360,14 @@
   <div
     class="p-3.5 border-t border-border flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground bg-card/60"
   >
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-3 flex-wrap">
       <span>
         Showing <strong class="text-foreground">{{ showingStart() }}</strong> to
         <strong class="text-foreground">{{ showingEnd() }}</strong> of
         <strong class="text-foreground">{{ totalLogs() }}</strong> logs
       </span>
 
-      <div class="flex items-center gap-1.5 pl-3 border-l border-border">
+      <div class="flex items-center gap-1.5 pl-0 sm:pl-3 sm:border-l border-border">
         <span>Show</span>
         <select
           hlmInput

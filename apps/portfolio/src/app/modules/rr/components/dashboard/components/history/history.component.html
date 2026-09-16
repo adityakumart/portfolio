@@ -1,11 +1,11 @@
-<div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+<div class="page-header flex items-center justify-between mb-6 flex-wrap gap-3">
   <div>
-    <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--color-cyan-500); font-weight: 800; margin-bottom: 6px; display: inline-flex; align-items: center; gap: 6px;">
-      <ng-icon style="font-size: 14px; width: 14px; height: 14px;" name="lucideHistory"></ng-icon>
+    <div class="text-[11px] sm:text-xs uppercase tracking-wider text-cyan-500 font-extrabold mb-1 inline-flex items-center gap-1.5">
+      <ng-icon class="size-3.5" name="lucideHistory"></ng-icon>
       <span>History &bull; Finished & Cancelled Bookings</span>
     </div>
-    <div class="flex items-center gap-3 flex-wrap">
-      <h2 style="margin: 0; font-size: 1.85rem; font-weight: 800; color: var(--foreground);">Rental History Logs</h2>
+    <div class="flex items-center gap-2.5 flex-wrap">
+      <h2 class="m-0 text-xl sm:text-2xl lg:text-3xl font-extrabold text-foreground tracking-tight">Rental History Logs</h2>
       @if (isAdmin()) {
         <span hlmBadge variant="outline" class="text-xs font-semibold px-2.5 py-0.5 rounded-full border-primary/30 text-primary bg-primary/10">
           All Records (Admin View)
