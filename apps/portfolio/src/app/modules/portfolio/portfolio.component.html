@@ -1,31 +1,34 @@
 <main class="portfolio-page-wrapper min-h-screen overflow-x-hidden pb-20 text-foreground" role="main" aria-label="Aditya Kumar T Portfolio">
-  <button
-    hlmBtn
-    variant="ghost"
-    size="icon"
-    class="group fixed top-4 right-16 sm:top-6 sm:right-[76px] z-50 size-9 sm:size-10 rounded-full border border-white/25 bg-white/15 text-primary shadow-lg backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:border-transparent hover:bg-gradient-to-br hover:from-primary hover:to-sky-500 hover:text-white hover:shadow-[0_0_20px_rgba(147,51,234,0.4)] active:translate-y-0"
-    (click)="toggleTheme()"
-    [hlmTooltip]="isDarkMode() ? 'Switch to Light Theme' : 'Switch to Dark Theme'"
-    position="left"
-    aria-label="Toggle color theme"
-  >
-    <ng-icon class="size-4.5 sm:size-5 transition-transform duration-500 group-hover:rotate-[360deg] group-hover:scale-110" [name]="isDarkMode() ? 'lucideSun' : 'lucideMoon'"></ng-icon>
-  </button>
-
-  <button
-    hlmBtn
-    variant="ghost"
-    size="icon"
-    class="group fixed top-4 right-4 sm:top-6 sm:right-6 z-50 size-9 sm:size-10 rounded-full border border-white/25 bg-white/15 text-primary shadow-lg backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:border-transparent hover:bg-gradient-to-br hover:from-primary hover:to-sky-500 hover:text-white hover:shadow-[0_0_20px_rgba(147,51,234,0.4)] active:translate-y-0"
-    routerLink="/user"
-    hlmTooltip="Enter Dashboard"
-    position="left"
-    aria-label="Enter Dashboard"
-  >
-    <ng-icon class="size-4.5 sm:size-5 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110" name="lucideZap"></ng-icon>
-  </button>
+  <!-- Top Floating Controls Pill -->
+  <div class="fixed top-3 right-3 sm:top-5 sm:right-6 z-50 flex items-center gap-1 p-1 rounded-full border border-border/70 bg-card/80 backdrop-blur-md shadow-lg shadow-black/5 dark:shadow-black/20">
+    <button
+      hlmBtn
+      variant="ghost"
+      size="icon"
+      class="group size-8 sm:size-9 rounded-full text-foreground/80 hover:text-foreground hover:bg-muted transition-all duration-200"
+      (click)="toggleTheme()"
+      [hlmTooltip]="isDarkMode() ? 'Switch to Light Theme' : 'Switch to Dark Theme'"
+      position="left"
+      aria-label="Toggle color theme"
+    >
+      <ng-icon class="size-4 sm:size-4.5 transition-transform duration-500 group-hover:rotate-[360deg]" [name]="isDarkMode() ? 'lucideSun' : 'lucideMoon'"></ng-icon>
+    </button>
+    <div class="h-4 w-px bg-border/60"></div>
+    <button
+      hlmBtn
+      variant="ghost"
+      size="icon"
+      class="group size-8 sm:size-9 rounded-full text-primary hover:bg-primary/10 transition-all duration-200"
+      routerLink="/user"
+      hlmTooltip="Enter Dashboard"
+      position="left"
+      aria-label="Enter Dashboard"
+    >
+      <ng-icon class="size-4 sm:size-4.5 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110" name="lucideZap"></ng-icon>
+    </button>
+  </div>
   
-  <div class="mx-auto max-w-[1120px] px-4 py-[22px] sm:px-6 sm:py-8">
+  <div class="mx-auto max-w-[1120px] px-4 pt-16 pb-6 sm:px-6 sm:py-8">
     <!-- Immediate / Above-the-fold Critical Path -->
     <app-hero [resume]="resume()" />
     <app-summary [resume]="resume()" />

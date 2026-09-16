@@ -9,26 +9,25 @@
     </div>
 
     <!-- Spartan UI Tabs Category Selector -->
-    <hlm-tabs [tab]="selectedCategory()" (tabActivated)="selectedCategory.set($any($event))" class="shrink-0">
-      <hlm-tabs-list class="flex flex-wrap gap-1 p-1 bg-muted/60 rounded-xl h-auto">
-        @for (cat of categories; track cat.id) {
-          <button
-            [hlmTabsTrigger]="cat.id"
-            type="button"
-            (click)="selectedCategory.set(cat.id)"
-            class="rounded-lg text-xs font-semibold px-3 py-1.5 transition-all cursor-pointer"
-          >
-            {{ cat.label }}
-          </button>
-        }
-      </hlm-tabs-list>
-    </hlm-tabs>
+    <div class="w-full md:w-auto max-w-full overflow-x-auto touch-scroll-x pb-1 scrollbar-none shrink-0">
+      <hlm-tabs [tab]="selectedCategory()" (tabActivated)="selectedCategory.set($any($event))" class="block w-max sm:w-auto">
+        <hlm-tabs-list class="flex flex-nowrap sm:flex-wrap gap-1 p-1 bg-muted/60 rounded-xl h-auto min-w-max sm:min-w-0">
+          @for (cat of categories; track cat.id) {
+            <button
+              [hlmTabsTrigger]="cat.id"
+              type="button"
+              (click)="selectedCategory.set(cat.id)"
+              class="rounded-lg text-xs font-semibold px-3 py-1.5 transition-all cursor-pointer shrink-0 whitespace-nowrap"
+            >
+              {{ cat.label }}
+            </button>
+          }
+        </hlm-tabs-list>
+      </hlm-tabs>
+    </div>
   </div>
 
-  <div
-    class="grid gap-4.5 transition-all duration-300"
-    [style.grid-template-columns]="'repeat(' + gridColumns() + ', 1fr)'"
-  >
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4.5 transition-all duration-300">
     @for (skill of filteredSkills(); track skill.name) {
       <div class="reveal-on-scroll">
         <div hlmCard class="skill-card-with-accent relative min-h-[210px] overflow-hidden rounded-2xl border border-border bg-card p-4 pl-6 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-sky-500 hover:bg-secondary">
