@@ -153,7 +153,7 @@
 
     <!-- Car Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl mx-auto px-4 mb-14">
-      @for (v of filteredVehicles(); track v.regNo) {
+      @for (v of filteredVehicles(); track (v._id || v.regNo || $index)) {
         <app-rr-vehicle-card
           [vehicle]="v"
           variant="homepage"
@@ -306,9 +306,6 @@
             </span>
             <span class="inline-flex items-center gap-1 font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 px-2.5 py-1 rounded-md border border-cyan-500/20 uppercase font-mono">
               {{ vehicle.type || 'Sedan' }}
-            </span>
-            <span class="inline-flex items-center gap-1 font-mono text-[11px] text-muted-foreground bg-muted/40 px-2 py-1 rounded-md border border-border">
-              {{ vehicle.regNo }}
             </span>
           </div>
 

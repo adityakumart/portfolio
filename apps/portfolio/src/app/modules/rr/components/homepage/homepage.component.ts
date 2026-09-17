@@ -117,6 +117,10 @@ export class RRHomepageComponent implements OnInit, OnDestroy {
     const query = this.searchQuery().toLowerCase().trim();
 
     return list.filter((v) => {
+      // Exclude vehicles not allowed for booking or in maintenance/contract
+      if (v.allowBooking === false) return false;
+      if (v.status === 'maintenance' || v.status === 'contract' || v.status === 'in_contract') return false;
+
       // Category filter
       let matchCat = true;
       if (cat === '5') matchCat = v.seating === '5';
@@ -271,7 +275,7 @@ export class RRHomepageComponent implements OnInit, OnDestroy {
 
   // Reserve Actions
   redirectToWhatsApp(vehicle: IVehicle) {
-    const text = `Hello RoadReady Rentals, I would like to reserve ${vehicle.manufacturer} ${vehicle.name} (${vehicle.regNo}). Please share availability and booking details.`;
+    const text = `Hello RoadReady Rentals, I would like to reserve ${vehicle.manufacturer} ${vehicle.name}. Please share availability and booking details.`;
     const url = `https://wa.me/91${this.primaryPhoneRaw}?text=${encodeURIComponent(text)}`;
     if (typeof window !== 'undefined') {
       window.open(url, '_blank');

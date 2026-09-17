@@ -188,6 +188,27 @@ rrRouter.get('/vehicles', async (req: Request, res: Response) => {
       ];
     }
 
+    // Check if requester has a valid auth token
+    let isAuthenticated = false;
+    const authHeader = req.headers['authorization'];
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      try {
+        const token = authHeader.split(' ')[1];
+        if (token) {
+          jwt.verify(token, JWT_SECRET);
+          isAuthenticated = true;
+        }
+      } catch {
+        isAuthenticated = false;
+      }
+    }
+
+    // For public (unauthenticated) requests, only return active/rentable vehicles
+    if (!isAuthenticated) {
+      filter.allowBooking = { $ne: false };
+      filter.status = { $nin: ['maintenance', 'contract', 'in_contract'] };
+    }
+
     const isAutocomplete = autocomplete === 'true' || fields === 'autocomplete';
     const projection = isAutocomplete
       ? { regNo: 1, name: 1, manufacturer: 1, _id: 0 }
@@ -203,6 +224,10 @@ rrRouter.get('/vehicles', async (req: Request, res: Response) => {
     const list = await cursor.toArray();
 
     if (isAutocomplete) {
+      if (!isAuthenticated) {
+        res.status(401).json({ error: 'Unauthorized', message: 'Authentication required' });
+        return;
+      }
       const mapped = list.map((v: any) => ({
         regNo: v.regNo,
         name: v.name,
@@ -215,6 +240,25 @@ rrRouter.get('/vehicles', async (req: Request, res: Response) => {
       return;
     }
 
+    // For public (unauthenticated) requests, sanitize sensitive fields
+    if (!isAuthenticated) {
+      const sanitized = list.map((v: any) => ({
+        _id: v._id,
+        name: v.name,
+        manufacturer: v.manufacturer,
+        model: v.model,
+        type: v.type,
+        color: v.color,
+        seating: v.seating,
+        fuelType: v.fuelType,
+        images: v.images,
+        status: v.status,
+        allowBooking: v.allowBooking,
+      }));
+      res.json(sanitized);
+      return;
+    }
+
     res.json(list);
   } catch (err: any) {
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
@@ -222,7 +266,7 @@ rrRouter.get('/vehicles', async (req: Request, res: Response) => {
 });
 
 // GET minimal vehicles list for autocomplete (strictly regNo/name/manufacturer, no heavy vehicle details)
-rrRouter.get('/vehicles/autocomplete', async (req: Request, res: Response) => {
+rrRouter.get('/vehicles/autocomplete', authenticateRRToken, async (req: Request, res: Response) => {
   try {
     const col = await RRService.getVehiclesCol();
     const { search, limit } = req.query;
