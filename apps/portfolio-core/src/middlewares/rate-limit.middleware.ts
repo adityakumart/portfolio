@@ -32,7 +32,7 @@ export const apiRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: process.env['API_RATE_LIMIT_MAX']
     ? Number(process.env['API_RATE_LIMIT_MAX'])
-    : 100,
+    : 600,
   standardHeaders: 'draft-8',
   legacyHeaders: false,
   skip: (req) => req.method === 'OPTIONS' || req.path === '/ping' || req.originalUrl.includes('/api/ping'),

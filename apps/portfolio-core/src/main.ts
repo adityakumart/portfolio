@@ -5,11 +5,7 @@ import { authRouter } from './routes/auth.routes';
 import { chatRouter } from './routes/chat.routes';
 import { filesRouter } from './routes/files.routes';
 import { rrRouter } from './app/rr/rr.routes';
-import {
-  apiRateLimiter,
-  authRateLimiter,
-  chatRateLimiter,
-} from './middlewares/rate-limit.middleware';
+import { apiRateLimiter } from './middlewares/rate-limit.middleware';
 
 const host = process.env['HOST'] ?? 'localhost';
 const port = process.env['PORT'] ? Number(process.env['PORT']) : 3000;
@@ -47,9 +43,8 @@ app.use(express.urlencoded({ extended: true }));
 // Global rate limiter on all /api routes (skips /api/ping and OPTIONS)
 app.use('/api', apiRateLimiter);
 
-// Specific stricter limiters for sensitive endpoints
-app.use('/api/auth', authRateLimiter, authRouter);
-app.use('/api/chat', chatRateLimiter, chatRouter);
+app.use('/api/auth', authRouter);
+app.use('/api/chat', chatRouter);
 app.use('/api/files', filesRouter);
 app.use('/api/rr', rrRouter);
 
