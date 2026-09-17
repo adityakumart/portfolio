@@ -80,6 +80,20 @@ export interface IVehicle {
   updatedAt?: string | null;
 }
 
+export interface IPublicVehicle {
+  _id?: ObjectId | string;
+  name: string;
+  manufacturer: string;
+  model?: string;
+  seating: string;
+  type: string;
+  color: string;
+  fuelType: string;
+  images: string[];
+  status?: VehicleStatus;
+  allowBooking?: boolean;
+}
+
 export interface IVehicleAutocompleteItem {
   regNo: string;
   name: string;

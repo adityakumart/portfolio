@@ -5,9 +5,13 @@ import multer from 'multer';
 import { authenticateRRToken, requireAdmin } from './rr.middleware';
 import { RRService, IEmployee, IVehicle, IBooking, ICustomerIntimation } from './rr.service';
 import { handleVehicleImageUpload } from './r2-storage.controller';
+import { rrPublicRouter } from './rr-public.routes';
 
 const rrRouter = Router();
 const JWT_SECRET = process.env['JWT_SECRET'] || 'supersecretlocaljwtkey1234567890!';
+
+// Mount public routes for unauthenticated customer portal / homepage
+rrRouter.use('/public', rrPublicRouter);
 
 // Seed database on router initialization
 RRService.seedInitialData();
@@ -173,8 +177,8 @@ rrRouter.post(
   handleVehicleImageUpload
 );
 
-// GET all vehicles (public so homepage can show them; supports ?search=, ?limit=, ?autocomplete=true, ?fields=...)
-rrRouter.get('/vehicles', async (req: Request, res: Response) => {
+// GET all vehicles (Command Desk / Staff - Authenticated)
+rrRouter.get('/vehicles', authenticateRRToken, async (req: Request, res: Response) => {
   try {
     const col = await RRService.getVehiclesCol();
     const { search, limit, autocomplete, fields } = req.query;
@@ -186,27 +190,6 @@ rrRouter.get('/vehicles', async (req: Request, res: Response) => {
         { manufacturer: { $regex: searchRegex } },
         { regNo: { $regex: searchRegex } }
       ];
-    }
-
-    // Check if requester has a valid auth token
-    let isAuthenticated = false;
-    const authHeader = req.headers['authorization'];
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      try {
-        const token = authHeader.split(' ')[1];
-        if (token) {
-          jwt.verify(token, JWT_SECRET);
-          isAuthenticated = true;
-        }
-      } catch {
-        isAuthenticated = false;
-      }
-    }
-
-    // For public (unauthenticated) requests, only return active/rentable vehicles
-    if (!isAuthenticated) {
-      filter.allowBooking = { $ne: false };
-      filter.status = { $nin: ['maintenance', 'contract', 'in_contract'] };
     }
 
     const isAutocomplete = autocomplete === 'true' || fields === 'autocomplete';
@@ -224,10 +207,6 @@ rrRouter.get('/vehicles', async (req: Request, res: Response) => {
     const list = await cursor.toArray();
 
     if (isAutocomplete) {
-      if (!isAuthenticated) {
-        res.status(401).json({ error: 'Unauthorized', message: 'Authentication required' });
-        return;
-      }
       const mapped = list.map((v: any) => ({
         regNo: v.regNo,
         name: v.name,
@@ -237,25 +216,6 @@ rrRouter.get('/vehicles', async (req: Request, res: Response) => {
         vehicleManufacturer: v.manufacturer,
       }));
       res.json(mapped);
-      return;
-    }
-
-    // For public (unauthenticated) requests, sanitize sensitive fields
-    if (!isAuthenticated) {
-      const sanitized = list.map((v: any) => ({
-        _id: v._id,
-        name: v.name,
-        manufacturer: v.manufacturer,
-        model: v.model,
-        type: v.type,
-        color: v.color,
-        seating: v.seating,
-        fuelType: v.fuelType,
-        images: v.images,
-        status: v.status,
-        allowBooking: v.allowBooking,
-      }));
-      res.json(sanitized);
       return;
     }
 

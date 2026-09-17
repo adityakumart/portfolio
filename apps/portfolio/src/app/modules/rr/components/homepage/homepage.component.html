@@ -153,7 +153,7 @@
 
     <!-- Car Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl mx-auto px-4 mb-14">
-      @for (v of filteredVehicles(); track (v._id || v.regNo || $index)) {
+      @for (v of filteredVehicles(); track (v._id || $index)) {
         <app-rr-vehicle-card
           [vehicle]="v"
           variant="homepage"
