@@ -5,6 +5,11 @@ import { authRouter } from './routes/auth.routes';
 import { chatRouter } from './routes/chat.routes';
 import { filesRouter } from './routes/files.routes';
 import { rrRouter } from './app/rr/rr.routes';
+import {
+  apiRateLimiter,
+  authRateLimiter,
+  chatRateLimiter,
+} from './middlewares/rate-limit.middleware';
 
 const host = process.env['HOST'] ?? 'localhost';
 const port = process.env['PORT'] ? Number(process.env['PORT']) : 3000;
@@ -22,17 +27,29 @@ const allowedOrigins = process.env['CORS_ORIGIN']
 
 const app = express();
 
+// Trust reverse proxy (Vercel, Render) for accurate client IP resolution in rate-limiting
+app.set('trust proxy', 1);
+
 app.use(
   cors({
     origin: allowedOrigins,
-    exposedHeaders: ['authToken'],
+    exposedHeaders: [
+      'authToken',
+      'RateLimit',
+      'RateLimit-Policy',
+      'Retry-After',
+    ],
   }),
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use('/api/auth', authRouter);
-app.use('/api/chat', chatRouter);
+// Global rate limiter on all /api routes (skips /api/ping and OPTIONS)
+app.use('/api', apiRateLimiter);
+
+// Specific stricter limiters for sensitive endpoints
+app.use('/api/auth', authRateLimiter, authRouter);
+app.use('/api/chat', chatRateLimiter, chatRouter);
 app.use('/api/files', filesRouter);
 app.use('/api/rr', rrRouter);
 
