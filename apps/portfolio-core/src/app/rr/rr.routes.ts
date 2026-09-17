@@ -6,6 +6,7 @@ import { authenticateRRToken, requireAdmin } from './rr.middleware';
 import { RRService, IEmployee, IVehicle, IBooking, ICustomerIntimation } from './rr.service';
 import { handleVehicleImageUpload } from './r2-storage.controller';
 import { rrPublicRouter } from './rr-public.routes';
+import { authRateLimiter } from '../../middlewares/rate-limit.middleware';
 
 const rrRouter = Router();
 const JWT_SECRET = process.env['JWT_SECRET'] || 'supersecretlocaljwtkey1234567890!';
@@ -19,7 +20,7 @@ RRService.seedInitialData();
 /* ============================================================
    AUTHENTICATION
 ============================================================ */
-rrRouter.post('/auth/login', async (req: Request, res: Response) => {
+rrRouter.post('/auth/login', authRateLimiter, async (req: Request, res: Response) => {
   try {
     const { username, password, empId, dob } = req.body;
 

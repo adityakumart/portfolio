@@ -26,5 +26,33 @@ export class ToastrService {
         break;
     }
   }
+
+  warning(
+    message: string,
+    options?: { description?: string; duration?: number; id?: string },
+  ) {
+    toast.warning(message, options);
+  }
+
+  error(
+    message: string,
+    options?: { description?: string; duration?: number; id?: string },
+  ) {
+    toast.error(message, options);
+  }
+
+  info(
+    message: string,
+    options?: { description?: string; duration?: number; id?: string },
+  ) {
+    toast.info(message, options);
+  }
+
+  success(
+    message: string,
+    options?: { description?: string; duration?: number; id?: string },
+  ) {
+    toast.success(message, options);
+  }
 }
 
