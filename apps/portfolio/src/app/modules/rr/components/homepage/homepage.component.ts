@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { RRApiService } from '../../services/rr-api.service';
+import { RRPublicApiService } from '../../services/rr-public-api.service';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideCar,
@@ -35,7 +36,7 @@ import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
 import { HlmToggleGroupImports } from '@spartan-ng/hel/toggle-group';
 import { HlmEmptyImports } from '@spartan-ng/hel/empty';
 import { toast } from '@spartan-ng/hel/sonner';
-import { IVehicle } from '@portfolio/shared-types';
+import { IPublicVehicle } from '@portfolio/shared-types';
 import { RRVehicleCardComponent, RRCarLoaderComponent } from '../../shared';
 
 @Component({
@@ -86,6 +87,7 @@ import { RRVehicleCardComponent, RRCarLoaderComponent } from '../../shared';
 })
 export class RRHomepageComponent implements OnInit, OnDestroy {
   private rrApi = inject(RRApiService);
+  private rrPublicApi = inject(RRPublicApiService);
   private router = inject(Router);
 
   // Desk Phone Info
@@ -95,11 +97,11 @@ export class RRHomepageComponent implements OnInit, OnDestroy {
   readonly secondaryPhoneRaw = '9494893336';
 
   // State Signals
-  vehicles = signal<IVehicle[]>([]);
+  vehicles = signal<IPublicVehicle[]>([]);
   mobileMenuOpen = signal<boolean>(false);
   selectedCategory = signal<string>('all');
   searchQuery = signal<string>('');
-  selectedVehicleForModal = signal<IVehicle | null>(null);
+  selectedVehicleForModal = signal<IPublicVehicle | null>(null);
   copiedPhone = signal<string | null>(null);
   isMobileDevice = signal<boolean>(false);
 
@@ -117,6 +119,10 @@ export class RRHomepageComponent implements OnInit, OnDestroy {
     const query = this.searchQuery().toLowerCase().trim();
 
     return list.filter((v) => {
+      // Exclude vehicles not allowed for booking or in maintenance/contract
+      if (v.allowBooking === false) return false;
+      if (v.status === 'maintenance' || v.status === 'contract' || v.status === 'in_contract') return false;
+
       // Category filter
       let matchCat = true;
       if (cat === '5') matchCat = v.seating === '5';
@@ -225,7 +231,7 @@ export class RRHomepageComponent implements OnInit, OnDestroy {
 
   async loadVehicles() {
     try {
-      const data = await this.rrApi.getVehicles();
+      const data = await this.rrPublicApi.getVehicles();
       this.vehicles.set(data);
     } catch (e) {
       console.error('Error fetching vehicles for homepage:', e);
@@ -244,14 +250,14 @@ export class RRHomepageComponent implements OnInit, OnDestroy {
     this.mobileMenuOpen.set(!this.mobileMenuOpen());
   }
 
-  getVehicleImage(v: IVehicle): string {
+  getVehicleImage(v: IPublicVehicle): string {
     if (v.images && v.images.length > 0) {
       return v.images[0];
     }
     return 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=600&auto=format&fit=crop&q=80';
   }
 
-  openVehicleModal(v: IVehicle) {
+  openVehicleModal(v: IPublicVehicle) {
     this.selectedVehicleForModal.set(v);
   }
 
@@ -259,19 +265,17 @@ export class RRHomepageComponent implements OnInit, OnDestroy {
     this.selectedVehicleForModal.set(null);
   }
 
-  onBookNow(v: IVehicle) {
+  onBookNow(v: IPublicVehicle) {
     if (this.currentUser()) {
-      this.router.navigate(['/user/rr/booking/list'], {
-        queryParams: { vehicleRegNo: v.regNo },
-      });
+      this.router.navigate(['/user/rr/booking/list']);
     } else {
       this.openVehicleModal(v);
     }
   }
 
   // Reserve Actions
-  redirectToWhatsApp(vehicle: IVehicle) {
-    const text = `Hello RoadReady Rentals, I would like to reserve ${vehicle.manufacturer} ${vehicle.name} (${vehicle.regNo}). Please share availability and booking details.`;
+  redirectToWhatsApp(vehicle: IPublicVehicle) {
+    const text = `Hello RoadReady Rentals, I would like to reserve ${vehicle.manufacturer} ${vehicle.name}. Please share availability and booking details.`;
     const url = `https://wa.me/91${this.primaryPhoneRaw}?text=${encodeURIComponent(text)}`;
     if (typeof window !== 'undefined') {
       window.open(url, '_blank');
@@ -284,7 +288,7 @@ export class RRHomepageComponent implements OnInit, OnDestroy {
     }
   }
 
-  handleCardPhoneClick(vehicle: IVehicle) {
+  handleCardPhoneClick(vehicle: IPublicVehicle) {
     if (this.isMobileDevice()) {
       this.makeDirectCall(this.primaryPhoneRaw);
     } else {

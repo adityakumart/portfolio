@@ -18,7 +18,7 @@ import {
   lucidePhone,
   lucideMoreVertical,
 } from '@ng-icons/lucide';
-import { IVehicle } from '@portfolio/shared-types';
+import { IVehicle, IPublicVehicle } from '@portfolio/shared-types';
 
 export type VehicleCardVariant = 'fleet' | 'stats' | 'homepage';
 
@@ -52,17 +52,17 @@ export type VehicleCardVariant = 'fleet' | 'stats' | 'homepage';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RRVehicleCardComponent {
-  @Input({ required: true }) vehicle!: IVehicle;
+  @Input({ required: true }) vehicle!: IVehicle | IPublicVehicle | any;
   @Input() variant: VehicleCardVariant = 'fleet';
   @Input() isAdmin = false;
 
-  @Output() cardClick = new EventEmitter<IVehicle>();
+  @Output() cardClick = new EventEmitter<any>();
   @Output() bookNow = new EventEmitter<IVehicle>();
   @Output() editClick = new EventEmitter<IVehicle>();
   @Output() deleteClick = new EventEmitter<string>();
-  @Output() reserveClick = new EventEmitter<IVehicle>();
-  @Output() whatsappClick = new EventEmitter<IVehicle>();
-  @Output() phoneClick = new EventEmitter<IVehicle>();
+  @Output() reserveClick = new EventEmitter<any>();
+  @Output() whatsappClick = new EventEmitter<any>();
+  @Output() phoneClick = new EventEmitter<any>();
 
   get showBookNowOverlay(): boolean {
     return this.variant === 'stats' && this.vehicle?.status === 'available';

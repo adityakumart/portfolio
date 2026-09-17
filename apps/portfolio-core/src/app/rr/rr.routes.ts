@@ -5,9 +5,13 @@ import multer from 'multer';
 import { authenticateRRToken, requireAdmin } from './rr.middleware';
 import { RRService, IEmployee, IVehicle, IBooking, ICustomerIntimation } from './rr.service';
 import { handleVehicleImageUpload } from './r2-storage.controller';
+import { rrPublicRouter } from './rr-public.routes';
 
 const rrRouter = Router();
 const JWT_SECRET = process.env['JWT_SECRET'] || 'supersecretlocaljwtkey1234567890!';
+
+// Mount public routes for unauthenticated customer portal / homepage
+rrRouter.use('/public', rrPublicRouter);
 
 // Seed database on router initialization
 RRService.seedInitialData();
@@ -173,8 +177,8 @@ rrRouter.post(
   handleVehicleImageUpload
 );
 
-// GET all vehicles (public so homepage can show them; supports ?search=, ?limit=, ?autocomplete=true, ?fields=...)
-rrRouter.get('/vehicles', async (req: Request, res: Response) => {
+// GET all vehicles (Command Desk / Staff - Authenticated)
+rrRouter.get('/vehicles', authenticateRRToken, async (req: Request, res: Response) => {
   try {
     const col = await RRService.getVehiclesCol();
     const { search, limit, autocomplete, fields } = req.query;
@@ -222,7 +226,7 @@ rrRouter.get('/vehicles', async (req: Request, res: Response) => {
 });
 
 // GET minimal vehicles list for autocomplete (strictly regNo/name/manufacturer, no heavy vehicle details)
-rrRouter.get('/vehicles/autocomplete', async (req: Request, res: Response) => {
+rrRouter.get('/vehicles/autocomplete', authenticateRRToken, async (req: Request, res: Response) => {
   try {
     const col = await RRService.getVehiclesCol();
     const { search, limit } = req.query;
