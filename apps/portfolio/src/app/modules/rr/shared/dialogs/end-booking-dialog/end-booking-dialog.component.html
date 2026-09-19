@@ -91,48 +91,64 @@
     </div>
 
     <!-- Active Validation Scenario Status Badge -->
-    <div
-      class="p-2.5 rounded-lg border text-xs flex items-center justify-between gap-2"
-      [ngClass]="{
-        'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300':
-          activeScenario() === 'case1',
-        'bg-blue-500/10 border-blue-500/30 text-blue-700 dark:text-blue-300':
-          activeScenario() === 'case2',
-        'bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-300':
-          activeScenario() === 'case3',
-        'bg-purple-500/10 border-purple-500/30 text-purple-700 dark:text-purple-300':
-          activeScenario() === 'case4_1',
-        'bg-indigo-500/10 border-indigo-500/30 text-indigo-700 dark:text-indigo-300':
-          activeScenario() === 'case4_2',
-      }"
-    >
-      <div class="flex items-center gap-2">
-        <ng-icon name="lucideInfo" class="text-sm shrink-0"></ng-icon>
-        <div>
-          @if (activeScenario() === 'case1') {
-            <span class="font-bold">Case 1 Applied:</span> KMs & Hours are
-            within limit. No extra KMs or extra hours charges.
-          } @else if (activeScenario() === 'case2') {
-            <span class="font-bold">Case 2 Applied:</span> KMs exceeded &
-            returned within Hours. Extra hours charge is ₹0.
-          } @else if (activeScenario() === 'case3') {
-            <span class="font-bold">Case 3 Applied:</span> Hours exceeded &
-            returned within KMs limit. Extra KMs charge is ₹0.
-          } @else if (activeScenario() === 'case4_1') {
-            <span class="font-bold">Case 4.1 Applied:</span> Both KMs & Hours
-            exceeded (Standard mode: all charges added).
-          } @else if (activeScenario() === 'case4_2') {
-            <span class="font-bold">Case 4.2 Applied:</span> Extension / Slab
-            Recalculation Mode (New limit & renting price applied).
-          }
-        </div>
-      </div>
-      <span
-        class="text-[10px] font-mono uppercase px-2 py-0.5 rounded font-bold bg-background/50 border shrink-0"
+    @if (!hasReturnDetailsEntered()) {
+      <div
+        class="p-2.5 rounded-lg border border-border bg-muted/20 text-xs flex items-center justify-between gap-2 text-muted-foreground"
       >
-        {{ activeScenario().toUpperCase() }}
-      </span>
-    </div>
+        <div class="flex items-center gap-2">
+          <ng-icon name="lucideInfo" class="text-sm shrink-0 text-primary"></ng-icon>
+          <span>Enter return odometer reading and return date & time to calculate rental scenario and extra charges.</span>
+        </div>
+        <span
+          class="text-[10px] font-mono uppercase px-2 py-0.5 rounded font-bold bg-background/80 border shrink-0"
+        >
+          Awaiting Details
+        </span>
+      </div>
+    } @else {
+      <div
+        class="p-2.5 rounded-lg border text-xs flex items-center justify-between gap-2"
+        [ngClass]="{
+          'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300':
+            activeScenario() === 'case1',
+          'bg-blue-500/10 border-blue-500/30 text-blue-700 dark:text-blue-300':
+            activeScenario() === 'case2',
+          'bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-300':
+            activeScenario() === 'case3',
+          'bg-purple-500/10 border-purple-500/30 text-purple-700 dark:text-purple-300':
+            activeScenario() === 'case4_1',
+          'bg-indigo-500/10 border-indigo-500/30 text-indigo-700 dark:text-indigo-300':
+            activeScenario() === 'case4_2',
+        }"
+      >
+        <div class="flex items-center gap-2">
+          <ng-icon name="lucideInfo" class="text-sm shrink-0"></ng-icon>
+          <div>
+            @if (activeScenario() === 'case1') {
+              <span class="font-bold">Case 1 Applied:</span> KMs & Hours are
+              within limit. No extra KMs or extra hours charges.
+            } @else if (activeScenario() === 'case2') {
+              <span class="font-bold">Case 2 Applied:</span> KMs exceeded &
+              returned within Hours. Extra hours charge is ₹0.
+            } @else if (activeScenario() === 'case3') {
+              <span class="font-bold">Case 3 Applied:</span> Hours exceeded &
+              returned within KMs limit. Extra KMs charge is ₹0.
+            } @else if (activeScenario() === 'case4_1') {
+              <span class="font-bold">Case 4.1 Applied:</span> Both KMs & Hours
+              exceeded (Standard mode: all charges added).
+            } @else if (activeScenario() === 'case4_2') {
+              <span class="font-bold">Case 4.2 Applied:</span> Extension / Slab
+              Recalculation Mode (New limit & renting price applied).
+            }
+          </div>
+        </div>
+        <span
+          class="text-[10px] font-mono uppercase px-2 py-0.5 rounded font-bold bg-background/50 border shrink-0"
+        >
+          {{ activeScenario().toUpperCase() }}
+        </span>
+      </div>
+    }
 
     <!-- TOP SECTION: Final Odometer & Return Date/Time -->
     <div
@@ -205,8 +221,18 @@
           (input)="calculateEndBookingFees()"
           (change)="calculateEndBookingFees()"
           class="w-full text-sm font-mono"
+          [class.border-destructive]="isReturnDateInvalid()"
+          [class.text-destructive]="isReturnDateInvalid()"
+          [class.bg-destructive/5]="isReturnDateInvalid()"
+          [class.focus-visible:ring-destructive]="isReturnDateInvalid()"
           required
         />
+        @if (isReturnDateInvalid()) {
+          <p class="text-[11px] text-destructive flex items-center gap-1 font-medium mt-1">
+            <ng-icon name="lucideAlertCircle" class="text-xs shrink-0"></ng-icon>
+            Return date/time cannot be before pickup ({{ (booking()?.pickupDateTime || booking()?.createdAt) | date: 'dd/MM/yyyy, hh:mm a' }})
+          </p>
+        }
         <div class="flex flex-col gap-0.5 mt-1 text-[11px] text-muted-foreground">
           <p>
             Scheduled:
@@ -227,7 +253,11 @@
     </div>
 
     <!-- SECTION 1: Cleanliness Fee/Charges -->
-    <div class="rounded-xl border border-amber-500/30 overflow-hidden bg-card">
+    <div
+      class="rounded-xl border overflow-hidden bg-card transition-all"
+      [class.border-amber-500/30]="!!endBookingFields.cleanlinessChoice"
+      [class.border-border]="!endBookingFields.cleanlinessChoice"
+    >
       <div
         class="bg-amber-500/15 dark:bg-amber-500/20 border-b border-amber-500/30 px-3 py-2 flex items-center justify-between"
       >
@@ -235,12 +265,20 @@
           class="font-bold text-xs text-amber-900 dark:text-amber-200 uppercase tracking-wide flex items-center gap-1.5"
         >
           <ng-icon name="lucideSparkles" class="text-sm"></ng-icon>
-          <span>Cleanliness Fee/Charges</span>
+          <span>Cleanliness Fee/Charges *</span>
         </h4>
         <span
-          class="font-mono font-bold text-xs text-amber-900 dark:text-amber-200"
+          class="font-mono font-bold text-xs"
+          [class.text-amber-900]="!!endBookingFields.cleanlinessChoice"
+          [class.dark:text-amber-200]="!!endBookingFields.cleanlinessChoice"
+          [class.text-rose-600]="!endBookingFields.cleanlinessChoice"
+          [class.dark:text-rose-400]="!endBookingFields.cleanlinessChoice"
         >
-          Cleanliness Fee: ₹{{ endBookingFields.cleanlinessFee }}
+          @if (!endBookingFields.cleanlinessChoice) {
+            <span class="font-semibold text-[11px]">* Required: Not Selected</span>
+          } @else {
+            Cleanliness Fee: ₹{{ endBookingFields.cleanlinessFee }}
+          }
         </span>
       </div>
       <div class="p-3 space-y-2">
@@ -314,10 +352,17 @@
           </button>
         </div>
 
+        @if (!endBookingFields.cleanlinessChoice) {
+          <p class="text-[11px] text-amber-600 dark:text-amber-400 flex items-center gap-1 pt-1">
+            <ng-icon name="lucideAlertCircle" class="text-xs shrink-0"></ng-icon>
+            Please select vehicle cleanliness (choose "No Cleanliness Fee" if vehicle was returned clean)
+          </p>
+        }
+
         @if (endBookingFields.cleanlinessChoice === 'custom') {
           <div class="pt-2 border-t border-border/50 flex items-center gap-2">
             <label class="text-xs text-muted-foreground whitespace-nowrap"
-              >Enter Custom Amount:</label
+              >Enter Custom Amount: *</label
             >
             <div class="relative w-48">
               <span
@@ -334,6 +379,9 @@
                 min="0"
               />
             </div>
+            @if (endBookingFields.customCleanlinessAmount === '' || Number(endBookingFields.customCleanlinessAmount) < 0) {
+              <span class="text-[11px] text-destructive font-medium">* Amount required</span>
+            }
           </div>
         }
       </div>
@@ -431,7 +479,8 @@
             <div class="col-span-4 font-medium text-foreground">
               Extra KMs travelled
               @if (
-                activeScenario() === 'case1' || activeScenario() === 'case3'
+                hasReturnDetailsEntered() &&
+                (activeScenario() === 'case1' || activeScenario() === 'case3')
               ) {
                 <span class="text-[10px] text-emerald-600 block"
                   >(Within Limit)</span
@@ -458,7 +507,8 @@
             <div class="col-span-4 font-medium text-foreground">
               Extra Hrs taken
               @if (
-                activeScenario() === 'case1' || activeScenario() === 'case2'
+                hasReturnDetailsEntered() &&
+                (activeScenario() === 'case1' || activeScenario() === 'case2')
               ) {
                 <span class="text-[10px] text-emerald-600 block"
                   >(Within Limit)</span
@@ -901,7 +951,11 @@
 
         <div class="flex items-center justify-between py-1 border-b border-border/40 text-muted-foreground">
           <span>Cleanliness Fee</span>
-          <span class="font-bold text-foreground">₹{{ endBookingFields.cleanlinessFee }}</span>
+          @if (!endBookingFields.cleanlinessChoice) {
+            <span class="font-bold text-amber-600 dark:text-amber-400 text-[11px]">Not Selected</span>
+          } @else {
+            <span class="font-bold text-foreground">₹{{ endBookingFields.cleanlinessFee }}</span>
+          }
         </div>
 
         <div class="flex items-center justify-between py-1 border-b border-border/40 text-muted-foreground">
@@ -1031,12 +1085,18 @@
       <span class="font-bold text-emerald-600">AVAILABLE</span>
     </div>
 
-    <div class="flex items-center justify-end gap-2">
+    <div class="flex items-center justify-end gap-3 flex-wrap">
+      @if (!isFormValid() && !isSubmitting()) {
+        <div class="text-[11px] text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1">
+          <ng-icon name="lucideAlertCircle" class="text-xs shrink-0"></ng-icon>
+          <span>{{ getMissingFieldsHint() }}</span>
+        </div>
+      }
       <button hlmBtn variant="outline" (click)="closeDialog()">Cancel</button>
       <button
         hlmBtn
         class="action-btn success flex items-center gap-1.5 font-bold shadow-md"
-        [disabled]="!endBookingFields.odometerEnd || isOdometerEndInvalid() || isSubmitting()"
+        [disabled]="!isFormValid() || isSubmitting()"
         (click)="submitEndBooking()"
       >
         <ng-icon name="lucideReceipt"></ng-icon>

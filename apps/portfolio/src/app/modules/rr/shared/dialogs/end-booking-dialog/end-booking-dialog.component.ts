@@ -100,7 +100,7 @@ export class RREndBookingDialogComponent implements OnInit {
     returnDateTimeActual: '',
 
     // Cleanliness Fee
-    cleanlinessChoice: 'none' as 'none' | '500' | '1000' | 'custom',
+    cleanlinessChoice: '' as '' | 'none' | '500' | '1000' | 'custom',
     customCleanlinessAmount: '' as number | '',
     cleanlinessFee: 0,
 
@@ -163,6 +163,162 @@ export class RREndBookingDialogComponent implements OnInit {
     const endOdo = Number(this.endBookingFields.odometerEnd);
     const startOdo = Number(this.booking()?.vehicleOdometerStart) || 0;
     return isNaN(endOdo) || endOdo < startOdo;
+  }
+
+  isReturnDateInvalid(): boolean {
+    if (!this.endBookingFields.returnDateTimeActual) return false;
+    const startStr =
+      this.booking()?.pickupDateTime || this.booking()?.createdAt;
+    if (!startStr) return false;
+    const pickupTime = new Date(startStr).getTime();
+    const returnTime = new Date(
+      this.endBookingFields.returnDateTimeActual,
+    ).getTime();
+    return !isNaN(pickupTime) && !isNaN(returnTime) && returnTime < pickupTime;
+  }
+
+  hasReturnDetailsEntered(): boolean {
+    return (
+      !!this.endBookingFields.odometerEnd &&
+      !this.isOdometerEndInvalid() &&
+      !!this.endBookingFields.returnDateTimeActual &&
+      !this.isReturnDateInvalid()
+    );
+  }
+
+  hasInvalidDamages(): boolean {
+    if (this.damages.length === 0) return false;
+    return this.damages.some(
+      (d) =>
+        !d.description ||
+        d.description.trim() === '' ||
+        (d.amount as any) === '' ||
+        d.amount === null ||
+        d.amount === undefined ||
+        isNaN(Number(d.amount)) ||
+        Number(d.amount) < 0,
+    );
+  }
+
+  hasInvalidChallanaOrToll(): boolean {
+    if (
+      this.endBookingFields.challanaAmount !== '' &&
+      (isNaN(Number(this.endBookingFields.challanaAmount)) ||
+        Number(this.endBookingFields.challanaAmount) < 0)
+    ) {
+      return true;
+    }
+    if (
+      this.endBookingFields.tollAmount !== '' &&
+      (isNaN(Number(this.endBookingFields.tollAmount)) ||
+        Number(this.endBookingFields.tollAmount) < 0)
+    ) {
+      return true;
+    }
+    return false;
+  }
+
+  isFormValid(): boolean {
+    // 1. Odometer end reading must be filled and valid (>= start odometer)
+    if (
+      this.endBookingFields.odometerEnd === '' ||
+      this.endBookingFields.odometerEnd === null ||
+      this.endBookingFields.odometerEnd === undefined ||
+      this.isOdometerEndInvalid()
+    ) {
+      return false;
+    }
+
+    // 2. Return date and time must be entered and valid (not earlier than pickup)
+    if (
+      !this.endBookingFields.returnDateTimeActual ||
+      this.endBookingFields.returnDateTimeActual.trim() === '' ||
+      isNaN(new Date(this.endBookingFields.returnDateTimeActual).getTime()) ||
+      this.isReturnDateInvalid()
+    ) {
+      return false;
+    }
+
+    // 3. Cleanliness fee must be explicitly addressed (cannot be blank)
+    if (
+      !this.endBookingFields.cleanlinessChoice ||
+      this.endBookingFields.cleanlinessChoice.trim() === ''
+    ) {
+      return false;
+    }
+
+    // If custom cleanliness is selected, amount must be valid and non-negative
+    if (this.endBookingFields.cleanlinessChoice === 'custom') {
+      if (
+        this.endBookingFields.customCleanlinessAmount === '' ||
+        this.endBookingFields.customCleanlinessAmount === null ||
+        isNaN(Number(this.endBookingFields.customCleanlinessAmount)) ||
+        Number(this.endBookingFields.customCleanlinessAmount) < 0
+      ) {
+        return false;
+      }
+    }
+
+    // 4. Any added damage items must have both description and non-negative amount
+    if (this.hasInvalidDamages()) {
+      return false;
+    }
+
+    // 5. Challan / Toll amounts if entered must be non-negative
+    if (this.hasInvalidChallanaOrToll()) {
+      return false;
+    }
+
+    // 6. Non-intimation fine if applied must be non-negative
+    if (
+      this.endBookingFields.applyNonIntimationFine &&
+      (this.endBookingFields.nonIntimationFine === '' ||
+        isNaN(Number(this.endBookingFields.nonIntimationFine)) ||
+        Number(this.endBookingFields.nonIntimationFine) < 0)
+    ) {
+      return false;
+    }
+
+    return true;
+  }
+
+  getMissingFieldsHint(): string {
+    if (!this.endBookingFields.odometerEnd) {
+      return 'Enter return odometer reading';
+    }
+    if (this.isOdometerEndInvalid()) {
+      return 'Return odometer cannot be less than pickup odometer';
+    }
+    if (!this.endBookingFields.returnDateTimeActual) {
+      return 'Select return date & time';
+    }
+    if (this.isReturnDateInvalid()) {
+      return 'Return date/time cannot be earlier than pickup';
+    }
+    if (!this.endBookingFields.cleanlinessChoice) {
+      return 'Select cleanliness fee status';
+    }
+    if (
+      this.endBookingFields.cleanlinessChoice === 'custom' &&
+      (this.endBookingFields.customCleanlinessAmount === '' ||
+        Number(this.endBookingFields.customCleanlinessAmount) < 0)
+    ) {
+      return 'Enter custom cleanliness amount';
+    }
+    if (this.hasInvalidDamages()) {
+      return 'Complete description and amount for all damages';
+    }
+    if (this.hasInvalidChallanaOrToll()) {
+      return 'Enter valid challan / toll amounts';
+    }
+    if (
+      this.endBookingFields.applyNonIntimationFine &&
+      (this.endBookingFields.nonIntimationFine === '' ||
+        Number(this.endBookingFields.nonIntimationFine) < 0)
+    ) {
+      return 'Enter valid non-intimation fine amount';
+    }
+    return '';
   }
 
   getActualDurationText(): string {
@@ -232,10 +388,14 @@ export class RREndBookingDialogComponent implements OnInit {
         (this.vehicle() ? Number(this.vehicle()?.extraHourPrice) : 0) ||
         0;
 
-      // Initialize default return time to current local time
-      this.endBookingFields.returnDateTimeActual = this.formatDateTimeLocal(
-        new Date(),
-      );
+      // Initialize return details as blank (all details must be filled by user)
+      this.endBookingFields.odometerEnd = '';
+      this.endBookingFields.returnDateTimeActual = '';
+      this.endBookingFields.cleanlinessChoice = '';
+      this.endBookingFields.cleanlinessFee = 0;
+      this.endBookingFields.customCleanlinessAmount = '';
+      this.endBookingFields.challanaAmount = '';
+      this.endBookingFields.tollAmount = '';
 
       // Base rent values
       this.endBookingFields.totalRentAmount = Number(b.totalRentalAmount) || 0;
@@ -577,24 +737,13 @@ export class RREndBookingDialogComponent implements OnInit {
     const b = this.booking();
     if (!b) return;
 
-    if (!this.endBookingFields.odometerEnd) {
-      toast.error('Please enter return odometer reading.');
+    if (!this.isFormValid()) {
+      const hint = this.getMissingFieldsHint();
+      toast.error(hint || 'Please fill in all required fields before ending booking.');
       return;
     }
 
     const endOdo = Number(this.endBookingFields.odometerEnd);
-    const startOdo = Number(b.vehicleOdometerStart) || 0;
-    if (endOdo < startOdo) {
-      toast.error(
-        `Return odometer (${endOdo} KM) cannot be less than pickup odometer (${startOdo} KM).`,
-      );
-      return;
-    }
-
-    if (!this.endBookingFields.returnDateTimeActual) {
-      toast.error('Please select actual return date and time.');
-      return;
-    }
 
     try {
       this.isSubmitting.set(true);
