@@ -147,7 +147,7 @@ export class RRNewBookingDialogComponent implements OnInit {
       pickupDateTime: ['', Validators.required],
       durationDays: ['0', Validators.required],
       durationHours: ['0', Validators.required],
-      returnDateTime: [''],
+      returnDateTime: ['', Validators.required],
       totalKmLimit: ['0'],
       travelPurpose: [''],
       travelFrom: [''],

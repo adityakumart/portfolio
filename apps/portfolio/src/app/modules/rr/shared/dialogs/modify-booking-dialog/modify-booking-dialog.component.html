@@ -44,9 +44,8 @@
           <label hlmLabel class="text-xs text-muted-foreground block mb-1">Duration Hours</label>
           <select hlmInput formControlName="durationHours" (change)="calculateModifyReturnDate()" class="w-full text-sm">
             <option value="0">0 hours</option>
-            @for (hour of [1,2,3,4,5,6,7,8,9,10,11,12]; track hour) {
-              <option [value]="'' + hour">{{ hour }} hour{{ hour > 1 ? 's' : '' }}</option>
-            }
+            <option value="4">4 hours</option>
+            <option value="12">12 hours</option>
           </select>
         </div>
 

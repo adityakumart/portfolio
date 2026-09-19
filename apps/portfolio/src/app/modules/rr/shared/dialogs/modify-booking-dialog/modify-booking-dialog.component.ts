@@ -77,7 +77,7 @@ export class RRModifyBookingDialogComponent implements OnInit {
       pickupDateTime: ['', Validators.required],
       durationDays: ['0', Validators.required],
       durationHours: ['0', Validators.required],
-      returnDateTime: [''],
+      returnDateTime: ['', Validators.required],
       totalRentalAmount: ['0'],
       discount: ['0'],
       discountType: ['none'],
