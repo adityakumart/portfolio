@@ -18,6 +18,8 @@ import { IBooking, IVehicle, IVehiclePricing } from '@portfolio/shared-types';
 import { RRApiService } from '../../../services/rr-api.service';
 import { RRInvoicePdfService } from '../../../services/rr-invoice-pdf.service';
 
+import { AadharVisiblePipe } from '../../utils/aadhar-mask.util';
+
 export interface ModifyBookingDialogContext {
   booking: IBooking;
   vehicles?: IVehicle[];
@@ -33,6 +35,7 @@ export interface ModifyBookingDialogContext {
     HlmInputImports,
     HlmLabelImports,
     NgIconComponent,
+    AadharVisiblePipe,
   ],
   providers: [
     provideIcons({
@@ -77,7 +80,7 @@ export class RRModifyBookingDialogComponent implements OnInit {
       pickupDateTime: ['', Validators.required],
       durationDays: ['0', Validators.required],
       durationHours: ['0', Validators.required],
-      returnDateTime: [''],
+      returnDateTime: ['', Validators.required],
       totalRentalAmount: ['0'],
       discount: ['0'],
       discountType: ['none'],
@@ -113,6 +116,36 @@ export class RRModifyBookingDialogComponent implements OnInit {
     } catch (e) {
       console.error('Error loading vehicles for modify booking dialog:', e);
     }
+  }
+
+  onModifyDurationDaysChange() {
+    const days =
+      parseInt(
+        this.modifyBookingFormGroup.get('durationDays')?.value || '0',
+        10
+      ) || 0;
+    if (days > 0) {
+      this.modifyBookingFormGroup.patchValue(
+        { durationHours: '0' },
+        { emitEvent: false }
+      );
+    }
+    this.calculateModifyReturnDate();
+  }
+
+  onModifyDurationHoursChange() {
+    const hours =
+      parseInt(
+        this.modifyBookingFormGroup.get('durationHours')?.value || '0',
+        10
+      ) || 0;
+    if (hours > 0) {
+      this.modifyBookingFormGroup.patchValue(
+        { durationDays: '0' },
+        { emitEvent: false }
+      );
+    }
+    this.calculateModifyReturnDate();
   }
 
   calculateModifyReturnDate() {
@@ -187,7 +220,6 @@ export class RRModifyBookingDialogComponent implements OnInit {
     const p23 = Number(pricing.h23?.price || 0);
     const p11 = Number(pricing.h11?.price || 0);
     const p3 = Number(pricing.h3?.price || 0);
-    const p1 = Number(pricing.h1?.price || 0);
 
     if (remaining >= 24) {
       const count = Math.floor(remaining / 24);
@@ -203,9 +235,6 @@ export class RRModifyBookingDialogComponent implements OnInit {
       const count = Math.floor(remaining / 4);
       totalRent += count * p3;
       remaining -= count * 4;
-    }
-    if (remaining > 0) {
-      totalRent += remaining * p1;
     }
 
     return totalRent;
@@ -233,9 +262,6 @@ export class RRModifyBookingDialogComponent implements OnInit {
       const count = Math.floor(remaining / 4);
       totalKm += count * km3;
       remaining -= count * 4;
-    }
-    if (remaining > 0) {
-      totalKm += km3;
     }
 
     return totalKm;

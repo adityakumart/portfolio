@@ -2,6 +2,7 @@ import {
   Component,
   ElementRef,
   Input,
+  OnInit,
   ViewChild,
   forwardRef,
 } from '@angular/core';
@@ -68,16 +69,23 @@ import { formatAadharVisible, maskAadhar } from '../../utils/aadhar-mask.util';
     </div>
   `,
 })
-export class RRAadharInputComponent implements ControlValueAccessor {
+export class RRAadharInputComponent implements ControlValueAccessor, OnInit {
   @ViewChild('inputRef') inputRef?: ElementRef<HTMLInputElement>;
 
-  @Input() placeholder = 'XXXX XXXX 1234';
+  @Input() placeholder = '1234 5678 9012';
   @Input() customClass = '';
+  @Input() defaultVisible = true;
 
   disabled = false;
-  showRaw = false;
+  showRaw = true;
   rawValue = '';
   displayValue = '';
+
+  ngOnInit(): void {
+    this.showRaw = this.defaultVisible;
+    this.updateDisplayValue();
+  }
+
 
   private onChange: (val: string) => void = () => {
     // noop

@@ -45,7 +45,7 @@
 
           <div>
             <label hlmLabel class="text-xs text-muted-foreground block mb-1">Duration Days</label>
-            <select hlmInput formControlName="durationDays" (change)="calculateReturnDate()" class="w-full text-sm">
+            <select hlmInput formControlName="durationDays" (change)="onDurationDaysChange()" class="w-full text-sm">
               <option value="0">0 days</option>
               @for (day of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]; track day) {
                 <option [value]="'' + day">{{ day }} day{{ day > 1 ? 's' : '' }}</option>
@@ -55,11 +55,10 @@
 
           <div>
             <label hlmLabel class="text-xs text-muted-foreground block mb-1">Duration Hours</label>
-            <select hlmInput formControlName="durationHours" (change)="calculateReturnDate()" class="w-full text-sm">
-              <option value="0">0 hours</option>
-              @for (hour of [1,2,3,4,5,6,7,8,9,10,11,12]; track hour) {
-                <option [value]="'' + hour">{{ hour }} hour{{ hour > 1 ? 's' : '' }}</option>
-              }
+            <select hlmInput formControlName="durationHours" (change)="onDurationHoursChange()" class="w-full text-sm">
+              <option value="0">0 hrs</option>
+              <option value="4">4 hrs</option>
+              <option value="12">12 hrs</option>
             </select>
           </div>
 
@@ -131,7 +130,7 @@
             </div>
             <div>
               <label hlmLabel class="text-xs text-muted-foreground block mb-1">Aadhar Number</label>
-              <rr-aadhar-input formControlName="renterAadhar" placeholder="XXXX XXXX 1234"></rr-aadhar-input>
+              <rr-aadhar-input formControlName="renterAadhar" placeholder="1234 5678 9012"></rr-aadhar-input>
               @if (bookingFormGroup.get('renterAadhar')?.invalid && bookingFormGroup.get('renterAadhar')?.touched) {
                 <span class="text-xs text-destructive">Must be 12 digits.</span>
               }
@@ -194,7 +193,7 @@
             </div>
             <div>
               <label hlmLabel class="text-xs text-muted-foreground block mb-1">Aadhar Number (optional)</label>
-              <rr-aadhar-input formControlName="guarAadhar" placeholder="XXXX XXXX 1234 (optional)"></rr-aadhar-input>
+              <rr-aadhar-input formControlName="guarAadhar" placeholder="1234 5678 9012 (optional)"></rr-aadhar-input>
             </div>
             <div>
               <label hlmLabel class="text-xs text-muted-foreground block mb-1">Driving License (optional)</label>

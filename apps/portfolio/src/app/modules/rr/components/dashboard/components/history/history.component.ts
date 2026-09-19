@@ -43,8 +43,11 @@ import {
   lucideChevronDown,
   lucidePhoneCall,
   lucideShieldCheck,
+  lucideAlertCircle,
 } from '@ng-icons/lucide';
+import { toast } from '@spartan-ng/hel/sonner';
 import { RRInvoicePdfService } from '../../../../services/rr-invoice-pdf.service';
+import { AadharMaskPipe } from '../../../../shared';
 
 @Component({
   selector: 'app-rr-history',
@@ -59,6 +62,7 @@ import { RRInvoicePdfService } from '../../../../services/rr-invoice-pdf.service
     HlmTooltipImports,
     HlmInputImports,
     HlmLabelImports,
+    AadharMaskPipe,
   ],
   providers: [
     provideIcons({
@@ -79,6 +83,7 @@ import { RRInvoicePdfService } from '../../../../services/rr-invoice-pdf.service
       lucideChevronDown,
       lucidePhoneCall,
       lucideShieldCheck,
+      lucideAlertCircle,
     }),
   ],
   templateUrl: './history.component.html',
@@ -151,6 +156,23 @@ export class RRHistoryComponent implements OnInit {
       !!this.customerFilter().trim(),
   );
 
+  today = new Date().toISOString().split('T')[0];
+
+  dateError = computed(() => {
+    const from = this.fromDateFilter();
+    const to = this.toDateFilter();
+    if (from && to && from > to) {
+      return 'From date cannot be after To date.';
+    }
+    if (from && from > this.today) {
+      return 'From date cannot be in the future.';
+    }
+    if (to && to > this.today) {
+      return 'To date cannot be in the future.';
+    }
+    return null;
+  });
+
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {
     const target = event.target as HTMLElement;
@@ -218,6 +240,7 @@ export class RRHistoryComponent implements OnInit {
     // Setting the plate number or model name matches the vehicle in API
     this.vehicleFilter.set(v.regNo);
     this.isVehicleDropdownOpen.set(false);
+    this.applyFilters();
   }
 
   onVehicleInput(value: string) {
@@ -228,6 +251,35 @@ export class RRHistoryComponent implements OnInit {
   clearVehicleFilter() {
     this.vehicleFilter.set('');
     this.isVehicleDropdownOpen.set(false);
+    this.applyFilters();
+  }
+
+  onFromDateChange(value: string) {
+    this.fromDateFilter.set(value || '');
+    if (!this.dateError()) {
+      this.applyFilters();
+    }
+  }
+
+  onToDateChange(value: string) {
+    this.toDateFilter.set(value || '');
+    if (!this.dateError()) {
+      this.applyFilters();
+    }
+  }
+
+  clearFromDate() {
+    this.fromDateFilter.set('');
+    if (!this.dateError()) {
+      this.applyFilters();
+    }
+  }
+
+  clearToDate() {
+    this.toDateFilter.set('');
+    if (!this.dateError()) {
+      this.applyFilters();
+    }
   }
 
   onCustomerInput(value: string) {
@@ -236,10 +288,15 @@ export class RRHistoryComponent implements OnInit {
 
   clearCustomerFilter() {
     this.customerFilter.set('');
+    this.applyFilters();
   }
 
   // Explicit Search Trigger
   applyFilters() {
+    if (this.dateError()) {
+      toast.error(this.dateError()!);
+      return;
+    }
     this.isVehicleDropdownOpen.set(false);
     this.currentPage.set(0);
     this.fetchHistoryFromApi();

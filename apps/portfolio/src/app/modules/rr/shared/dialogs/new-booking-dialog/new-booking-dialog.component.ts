@@ -147,7 +147,7 @@ export class RRNewBookingDialogComponent implements OnInit {
       pickupDateTime: ['', Validators.required],
       durationDays: ['0', Validators.required],
       durationHours: ['0', Validators.required],
-      returnDateTime: [''],
+      returnDateTime: ['', Validators.required],
       totalKmLimit: ['0'],
       travelPurpose: [''],
       travelFrom: [''],
@@ -270,6 +270,30 @@ export class RRNewBookingDialogComponent implements OnInit {
     this.calculateReturnDate();
   }
 
+  onDurationDaysChange() {
+    const days =
+      parseInt(this.bookingFormGroup.get('durationDays')?.value || '0', 10) || 0;
+    if (days > 0) {
+      this.bookingFormGroup.patchValue(
+        { durationHours: '0' },
+        { emitEvent: false }
+      );
+    }
+    this.calculateReturnDate();
+  }
+
+  onDurationHoursChange() {
+    const hours =
+      parseInt(this.bookingFormGroup.get('durationHours')?.value || '0', 10) || 0;
+    if (hours > 0) {
+      this.bookingFormGroup.patchValue(
+        { durationDays: '0' },
+        { emitEvent: false }
+      );
+    }
+    this.calculateReturnDate();
+  }
+
   calculateReturnDate() {
     const pickupVal = this.bookingFormGroup.get('pickupDateTime')?.value;
     const days =
@@ -331,7 +355,6 @@ export class RRNewBookingDialogComponent implements OnInit {
     const p23 = Number(pricing.h23?.price || 0);
     const p11 = Number(pricing.h11?.price || 0);
     const p3 = Number(pricing.h3?.price || 0);
-    const p1 = Number(pricing.h1?.price || 0);
 
     if (remaining >= 24) {
       const count = Math.floor(remaining / 24);
@@ -347,9 +370,6 @@ export class RRNewBookingDialogComponent implements OnInit {
       const count = Math.floor(remaining / 4);
       totalRent += count * p3;
       remaining -= count * 4;
-    }
-    if (remaining > 0) {
-      totalRent += remaining * p1;
     }
 
     return totalRent;
@@ -377,9 +397,6 @@ export class RRNewBookingDialogComponent implements OnInit {
       const count = Math.floor(remaining / 4);
       totalKm += count * km3;
       remaining -= count * 4;
-    }
-    if (remaining > 0) {
-      totalKm += km3;
     }
 
     return totalKm;

@@ -46,6 +46,7 @@ import {
   RRNewBookingDialogComponent,
   RRModifyBookingDialogComponent,
   RREndBookingDialogComponent,
+  AadharVisiblePipe,
 } from '../../../../shared';
 
 export type StatCategory =
@@ -70,6 +71,7 @@ export type SeatingFilter = 'all' | '5' | '7';
     HlmDropdownMenuImports,
     NgIconComponent,
     RRVehicleCardComponent,
+    AadharVisiblePipe,
   ],
   providers: [
     provideIcons({
