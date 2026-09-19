@@ -126,7 +126,7 @@ export class RRInvoicePdfService {
     doc.setFontSize(13);
     const title2 = 'AGREEMENT';
     doc.text(title2, (pageWidth - doc.getTextWidth(title2)) / 2, y);
-    y += 9;
+    y += 8.5;
 
     doc.setFontSize(11);
     doc.setFont('Helvetica', 'bold');
@@ -214,11 +214,12 @@ export class RRInvoicePdfService {
       for (let i = 0; i < lineCount; i++) {
         if (leftWrapped[i]) doc.text(leftWrapped[i], leftX, y);
         if (rightWrapped[i]) doc.text(rightWrapped[i], rightX, y);
-        y += 5.2;
+        y += 5.6;
       }
+      y += 1.0;
     });
 
-    y += 4;
+    y += 3;
 
     doc.setFontSize(11);
     doc.setFont('Helvetica', 'bold');
@@ -233,21 +234,21 @@ export class RRInvoicePdfService {
       y,
     );
     doc.text(`Father Name: ${guarFatherName}`, rightX, y);
-    y += 5.2;
+    y += 5.8;
 
     if (guarAadhar) {
       doc.text(`Aadhar No: ${guarAadhar}`, leftX, y);
-      y += 5.2;
+      y += 5.8;
     }
 
     const guarAddressText = `Address: ${guarAddress}`;
     const guarAddressWrapped = doc.splitTextToSize(guarAddressText, 185);
     guarAddressWrapped.forEach((line: string) => {
       doc.text(line, leftX, y);
-      y += 5.2;
+      y += 5.8;
     });
 
-    y += 5;
+    y += 3;
 
     const pickupDate =
       rawPickupDateTime !== '________'
@@ -264,9 +265,9 @@ export class RRInvoicePdfService {
 
     const fullParagraph = `For my (Renter) need I hired your above-mentioned Vehicle for Self-Drive/Driver Assisted Car/Vehicle with bearing registered number ${vehicleRegNo} from Dt. ${pickupDate} To Dt. ${returnDate} to travel from ${travelFrom} to ${travelTo}.`;
 
-    doc.text(fullParagraph, 15, y, { maxWidth: 185, lineHeightFactor: 1.35 });
+    doc.text(fullParagraph, 15, y, { maxWidth: 185, lineHeightFactor: 1.5 });
     const splitParagraph = doc.splitTextToSize(fullParagraph, 185);
-    y += splitParagraph.length * 5.2 + 3.5;
+    y += splitParagraph.length * 5.4 + 4;
 
     const paraRest =
       'On my own assurance I will use the above-mentioned vehicle, I shall not use the vehicle for any illegal activities and also solely responsible for causing accidents or causing any damage to the vehicle. ' +
@@ -274,14 +275,14 @@ export class RRInvoicePdfService {
       "I can resolve them at my own expense. If any damage occurred to the vehicle, I'm responsible for that and I can resolve with my own expenses. Neither you (Owner of vehicle) nor your vehicle has any responsibility for the Illegal activities as stated above. " +
       'If any of my actions cause damage to you or your vehicle for that I am agreeing to compensate for the damage.';
 
-    doc.text(paraRest, 15, y, { maxWidth: 185, lineHeightFactor: 1.35 });
+    doc.text(paraRest, 15, y, { maxWidth: 185, lineHeightFactor: 1.5 });
     const splitRest = doc.splitTextToSize(paraRest, 185);
-    y += splitRest.length * 5.2 + 5.5;
+    y += splitRest.length * 5.4 + 5;
 
     doc.setFontSize(11);
     doc.setFont('Helvetica', 'bold');
     doc.text('Terms & Conditions:', 15, y);
-    y += 5.5;
+    y += 6;
 
     doc.setFontSize(10);
     doc.setFont('Helvetica', 'normal');
@@ -290,7 +291,7 @@ export class RRInvoicePdfService {
       15,
       y,
     );
-    y += 5.2;
+    y += 5.8;
 
     const terms = [
       'No Insurance is claimed or paid, in case of any damage to vehicle I (Renter) bear the complete amount.',
@@ -304,17 +305,17 @@ export class RRInvoicePdfService {
 
     terms.forEach((t) => {
       const itemText = '• ' + t;
-      doc.text(itemText, 18, y, { maxWidth: 182, lineHeightFactor: 1.3 });
+      doc.text(itemText, 18, y, { maxWidth: 182, lineHeightFactor: 1.45 });
       const splitT = doc.splitTextToSize(itemText, 182);
-      y += splitT.length * 5.0;
+      y += splitT.length * 5.2 + 1.6;
     });
 
-    y += 4;
+    y += 2;
 
     doc.setFontSize(11);
     doc.setFont('Helvetica', 'bold');
     doc.text('Important Notice & Extra Fee Charged:', 15, y);
-    y += 5.5;
+    y += 6;
 
     doc.setFontSize(10);
     doc.setFont('Helvetica', 'normal');
@@ -331,10 +332,10 @@ export class RRInvoicePdfService {
 
     feeBullets.forEach((f) => {
       doc.text(f, 18, y);
-      y += 5.0;
+      y += 5.6;
     });
 
-    y += 5.5;
+    y += 3;
 
     const declarations = [
       'I agree to keep my bike or item as Security Deposit until the complete settlement of the Rent or any damage after returning the rented Vehicle/Car.',
@@ -344,13 +345,14 @@ export class RRInvoicePdfService {
     ];
 
     declarations.forEach((d) => {
-      doc.text(d, 15, y, { maxWidth: 185, lineHeightFactor: 1.35 });
+      doc.text(d, 15, y, { maxWidth: 185, lineHeightFactor: 1.45 });
       const splitD = doc.splitTextToSize(d, 185);
-      y += splitD.length * 5.0 + 2.5;
+      y += splitD.length * 5.2 + 2.0;
     });
 
-    y += 12;
+    y += 8;
 
+    doc.setFont('Helvetica', 'bold');
     doc.text('Renter Signature', 130, y);
 
     doc.save(`Agreement_${id}.pdf`);
@@ -532,7 +534,7 @@ export class RRInvoicePdfService {
 
     // Two Information Panels (Billed To vs Vehicle & Trip)
     const cardWidth = 88;
-    const cardHeight = 44;
+    const cardHeight = 48;
     const cardRadius = 2.5;
 
     // Left Card: Customer Details
@@ -573,24 +575,24 @@ export class RRInvoicePdfService {
       cY,
     );
 
-    cY += 4.5;
+    cY += 4.8;
     doc.text(`Father Name: ${renterFatherName}`, leftMargin + 4, cY);
 
-    cY += 4.5;
+    cY += 4.8;
     doc.text(
       `Aadhar No: ${renterAadhar}  |  DL No: ${renterDL}`,
       leftMargin + 4,
       cY,
     );
 
-    cY += 4.5;
+    cY += 4.8;
     const addrLines = doc.splitTextToSize(
       `Address: ${renterAddress}`,
       cardWidth - 8,
     );
     addrLines.slice(0, 2).forEach((l: string) => {
       doc.text(l, leftMargin + 4, cY);
-      cY += 4;
+      cY += 4.4;
     });
 
     // Right Card: Vehicle & Trip Telemetry
@@ -628,17 +630,17 @@ export class RRInvoicePdfService {
     doc.setTextColor(71, 85, 105);
     doc.text(`Reg No: ${vehicleRegNo}`, rightCardX + 4, vY);
 
-    vY += 4.5;
+    vY += 4.8;
     doc.text(`Pickup: ${pickupDateTime} (${odoStart} KM)`, rightCardX + 4, vY);
 
-    vY += 4.5;
+    vY += 4.8;
     doc.text(
       `Return: ${returnDateTimeActual} (${odoEnd} KM)`,
       rightCardX + 4,
       vY,
     );
 
-    vY += 4.5;
+    vY += 4.8;
     doc.setFont('Helvetica', 'bold');
     doc.setTextColor(15, 23, 42);
     doc.text(`Total Distance: ${totalKmsDriven} KM`, rightCardX + 4, vY);
@@ -646,7 +648,7 @@ export class RRInvoicePdfService {
     doc.setTextColor(71, 85, 105);
     doc.text(`(Allotted Limit: ${kmLimit} KM)`, rightCardX + 50, vY);
 
-    y += cardHeight + 7;
+    y += cardHeight + 6;
 
     // Itemized Table Header
     doc.setFillColor(15, 23, 42); // slate-900
@@ -755,16 +757,16 @@ export class RRInvoicePdfService {
         isEven ? 255 : 250,
         isEven ? 255 : 252,
       );
-      doc.rect(leftMargin, y, contentWidth, 7, 'F');
+      doc.rect(leftMargin, y, contentWidth, 7.5, 'F');
 
       doc.setTextColor(100, 116, 139);
-      doc.text(String(index + 1), leftMargin + 3, y + 4.8);
+      doc.text(String(index + 1), leftMargin + 3, y + 5.1);
 
       doc.setTextColor(30, 41, 59);
-      doc.text(item.desc, leftMargin + 12, y + 4.8);
+      doc.text(item.desc, leftMargin + 12, y + 5.1);
 
       doc.setTextColor(100, 116, 139);
-      doc.text(item.basis, leftMargin + 105, y + 4.8);
+      doc.text(item.basis, leftMargin + 105, y + 5.1);
 
       doc.setFont('Helvetica', 'bold');
       if (item.isDeduction) {
@@ -772,7 +774,7 @@ export class RRInvoicePdfService {
         doc.text(
           `- Rs. ${item.amount.toLocaleString('en-IN')}`,
           rightMargin - 4,
-          y + 4.8,
+          y + 5.1,
           { align: 'right' },
         );
       } else {
@@ -780,7 +782,7 @@ export class RRInvoicePdfService {
         doc.text(
           `Rs. ${item.amount.toLocaleString('en-IN')}`,
           rightMargin - 4,
-          y + 4.8,
+          y + 5.1,
           { align: 'right' },
         );
       }
@@ -788,9 +790,9 @@ export class RRInvoicePdfService {
 
       // Subtle bottom line
       doc.setDrawColor(241, 245, 249);
-      doc.line(leftMargin, y + 7, rightMargin, y + 7);
+      doc.line(leftMargin, y + 7.5, rightMargin, y + 7.5);
 
-      y += 7;
+      y += 7.5;
     });
 
     y += 4;
@@ -798,7 +800,7 @@ export class RRInvoicePdfService {
     // Bottom Section: Left (Security Deposit & Notes) + Right (Financial Summary Box)
     const summaryWidth = 85;
     const summaryX = rightMargin - summaryWidth; // 196 - 85 = 111
-    const summaryHeight = 46;
+    const summaryHeight = 48;
 
     // Left: Security Deposit & Handover Note Box
     const noteWidth = summaryX - leftMargin - 6; // 111 - 14 - 6 = 91
@@ -841,7 +843,7 @@ export class RRInvoicePdfService {
     const splitDep = doc.splitTextToSize(depText, noteWidth - 8);
     splitDep.forEach((l: string) => {
       doc.text(l, leftMargin + 4, depY);
-      depY += 4.5;
+      depY += 4.8;
     });
 
     depY += 2;
@@ -854,7 +856,7 @@ export class RRInvoicePdfService {
     doc.setDrawColor(226, 232, 240);
     doc.roundedRect(summaryX, y, summaryWidth, summaryHeight, 2, 2, 'FD');
 
-    let sY = y + 6;
+    let sY = y + 6.5;
     doc.setFont('Helvetica', 'normal');
     doc.setFontSize(8);
     doc.setTextColor(100, 116, 139);
@@ -871,7 +873,7 @@ export class RRInvoicePdfService {
     );
 
     if (discount > 0) {
-      sY += 5;
+      sY += 5.2;
       doc.setFont('Helvetica', 'normal');
       doc.setTextColor(22, 163, 74);
       doc.text('Discount Applied:', summaryX + 4, sY);
@@ -884,11 +886,11 @@ export class RRInvoicePdfService {
       );
     }
 
-    sY += 5;
+    sY += 5.2;
     doc.setDrawColor(226, 232, 240);
     doc.line(summaryX + 4, sY, rightMargin - 4, sY);
 
-    sY += 5;
+    sY += 5.2;
     doc.setFont('Helvetica', 'bold');
     doc.setFontSize(9.5);
     doc.setTextColor(15, 23, 42);
@@ -897,7 +899,7 @@ export class RRInvoicePdfService {
       align: 'right',
     });
 
-    sY += 5;
+    sY += 5.2;
     doc.setFont('Helvetica', 'normal');
     doc.setFontSize(8);
     doc.setTextColor(100, 116, 139);
@@ -908,7 +910,7 @@ export class RRInvoicePdfService {
       align: 'right',
     });
 
-    sY += 5;
+    sY += 5.2;
     doc.setDrawColor(226, 232, 240);
     doc.line(summaryX + 4, sY, rightMargin - 4, sY);
 
@@ -932,7 +934,7 @@ export class RRInvoicePdfService {
       );
     }
 
-    sY += 4.5;
+    sY += 4.8;
     doc.setFont('Helvetica', 'normal');
     doc.setFontSize(7.5);
     doc.setTextColor(100, 116, 139);
