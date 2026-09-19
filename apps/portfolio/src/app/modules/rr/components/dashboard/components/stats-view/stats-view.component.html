@@ -668,13 +668,19 @@
         <span class="truncate">{{ b.renterFirstName }} {{ b.renterSecondName }}</span>
       </div>
       <div class="font-extrabold text-base text-foreground leading-tight mb-1 truncate">{{ b.vehicleManufacturer }} {{ b.vehicleName }}</div>
-      <div class="flex items-center justify-between gap-2 mb-3">
+      <div class="flex items-center justify-between gap-2 mb-1.5">
         <span class="font-mono text-xs text-muted-foreground bg-muted/40 px-2 py-0.5 rounded">{{ b.vehicleRegNo }}</span>
         <span class="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground" hlmTooltip="Renter Contact">
           <ng-icon name="lucidePhone" class="text-xs text-cyan-500"></ng-icon>
           <span>{{ b.renterPhone }}</span>
         </span>
       </div>
+      @if (b.renterAadhar) {
+        <div class="text-[11px] font-mono text-muted-foreground flex items-center gap-1 mb-2">
+          <span class="text-[10px] uppercase font-semibold text-foreground/60">Aadhaar:</span>
+          <span>{{ b.renterAadhar | aadharVisible }}</span>
+        </div>
+      }
 
       @if (b.lastIntimation) {
         <div class="inline-flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400 font-semibold mb-2 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">

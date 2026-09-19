@@ -54,6 +54,9 @@
             {{ booking()?.renterSecondName }}</span
           >
           ({{ booking()?.renterPhone }})
+          @if (booking()?.renterAadhar) {
+            &bull; <span class="font-mono font-medium text-foreground/80">Aadhaar: {{ booking()?.renterAadhar | aadharVisible }}</span>
+          }
         </p>
       </div>
       <div class="flex items-center gap-3 text-right">

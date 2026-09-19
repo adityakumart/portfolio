@@ -65,3 +65,14 @@ export class AadharMaskPipe implements PipeTransform {
     return maskAadhar(value, maskChar);
   }
 }
+
+@Pipe({
+  name: 'aadharVisible',
+  standalone: true,
+})
+export class AadharVisiblePipe implements PipeTransform {
+  transform(value: string | number | null | undefined): string {
+    return formatAadharVisible(value);
+  }
+}
+

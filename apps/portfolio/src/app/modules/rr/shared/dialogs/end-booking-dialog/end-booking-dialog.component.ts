@@ -32,6 +32,8 @@ import {
 import { RRApiService } from '../../../services/rr-api.service';
 import { RRInvoicePdfService } from '../../../services/rr-invoice-pdf.service';
 
+import { AadharVisiblePipe } from '../../utils/aadhar-mask.util';
+
 export interface EndBookingDialogContext {
   booking: IBooking;
   vehicles?: IVehicle[];
@@ -54,6 +56,7 @@ export type EndBookingScenario =
     HlmInputImports,
     HlmLabelImports,
     NgIconComponent,
+    AadharVisiblePipe,
   ],
   providers: [
     provideIcons({

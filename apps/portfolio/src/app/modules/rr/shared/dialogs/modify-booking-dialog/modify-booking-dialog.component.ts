@@ -18,6 +18,8 @@ import { IBooking, IVehicle, IVehiclePricing } from '@portfolio/shared-types';
 import { RRApiService } from '../../../services/rr-api.service';
 import { RRInvoicePdfService } from '../../../services/rr-invoice-pdf.service';
 
+import { AadharVisiblePipe } from '../../utils/aadhar-mask.util';
+
 export interface ModifyBookingDialogContext {
   booking: IBooking;
   vehicles?: IVehicle[];
@@ -33,6 +35,7 @@ export interface ModifyBookingDialogContext {
     HlmInputImports,
     HlmLabelImports,
     NgIconComponent,
+    AadharVisiblePipe,
   ],
   providers: [
     provideIcons({

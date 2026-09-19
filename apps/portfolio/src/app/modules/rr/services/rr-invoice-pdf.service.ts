@@ -105,6 +105,7 @@ export class RRInvoicePdfService {
     const guarSecondName = b.guarSecondName || '';
     const guarFatherName = b.guarFatherName || '________';
     const guarAddress = b.guarAddress || '________';
+    const guarAadhar = b.guarAadhar ? maskAadhar(b.guarAadhar) : '';
 
     const depositType = b.depositType || 'none';
 
@@ -233,6 +234,11 @@ export class RRInvoicePdfService {
     );
     doc.text(`Father Name: ${guarFatherName}`, rightX, y);
     y += 5.2;
+
+    if (guarAadhar) {
+      doc.text(`Aadhar No: ${guarAadhar}`, leftX, y);
+      y += 5.2;
+    }
 
     const guarAddressText = `Address: ${guarAddress}`;
     const guarAddressWrapped = doc.splitTextToSize(guarAddressText, 185);

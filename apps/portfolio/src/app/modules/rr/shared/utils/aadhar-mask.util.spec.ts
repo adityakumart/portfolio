@@ -3,6 +3,7 @@ import {
   maskAadhar,
   formatAadharVisible,
   AadharMaskPipe,
+  AadharVisiblePipe,
 } from './aadhar-mask.util';
 
 describe('Aadhaar Masking Utility', () => {
@@ -32,4 +33,12 @@ describe('Aadhaar Masking Utility', () => {
     const pipe = new AadharMaskPipe();
     expect(pipe.transform('123456789012')).toBe('XXXX XXXX 9012');
   });
+
+  it('should format properly via AadharVisiblePipe', () => {
+    const pipe = new AadharVisiblePipe();
+    expect(pipe.transform('123456789012')).toBe('1234 5678 9012');
+    expect(pipe.transform('')).toBe('');
+    expect(pipe.transform(null)).toBe('');
+  });
 });
+

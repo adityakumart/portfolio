@@ -15,6 +15,9 @@
     <div class="flex-1 min-h-0 overflow-y-auto py-3 pr-1 space-y-4">
       <div class="p-3 rounded-xl border border-border bg-muted/20 text-xs space-y-1">
         <p><strong>Customer:</strong> {{ selectedBooking()?.renterFirstName }} {{ selectedBooking()?.renterSecondName }} ({{ selectedBooking()?.renterPhone }})</p>
+        @if (selectedBooking()?.renterAadhar) {
+          <p><strong>Aadhaar:</strong> <span class="font-mono">{{ selectedBooking()?.renterAadhar | aadharVisible }}</span></p>
+        }
         <p><strong>Vehicle:</strong> {{ selectedBooking()?.vehicleManufacturer }} {{ selectedBooking()?.vehicleName }} ({{ selectedBooking()?.vehicleRegNo }})</p>
         @if (selectedBooking()?.lastIntimation) {
           <div class="pt-1.5 mt-1 border-t border-border/60 flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-medium">

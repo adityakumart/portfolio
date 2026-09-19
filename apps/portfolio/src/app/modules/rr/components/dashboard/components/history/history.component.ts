@@ -45,6 +45,7 @@ import {
   lucideShieldCheck,
 } from '@ng-icons/lucide';
 import { RRInvoicePdfService } from '../../../../services/rr-invoice-pdf.service';
+import { AadharMaskPipe } from '../../../../shared';
 
 @Component({
   selector: 'app-rr-history',
@@ -59,6 +60,7 @@ import { RRInvoicePdfService } from '../../../../services/rr-invoice-pdf.service
     HlmTooltipImports,
     HlmInputImports,
     HlmLabelImports,
+    AadharMaskPipe,
   ],
   providers: [
     provideIcons({

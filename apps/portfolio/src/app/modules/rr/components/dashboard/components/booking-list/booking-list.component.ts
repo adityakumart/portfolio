@@ -34,6 +34,7 @@ import {
   RRNewBookingDialogComponent,
   RREndBookingDialogComponent,
   RRModifyBookingDialogComponent,
+  AadharVisiblePipe,
 } from '../../../../shared';
 
 @Component({
@@ -51,6 +52,7 @@ import {
     HlmInputImports,
     HlmLabelImports,
     NgIconComponent,
+    AadharVisiblePipe,
   ],
   providers: [
     provideIcons({
