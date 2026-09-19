@@ -115,6 +115,36 @@ export class RRModifyBookingDialogComponent implements OnInit {
     }
   }
 
+  onModifyDurationDaysChange() {
+    const days =
+      parseInt(
+        this.modifyBookingFormGroup.get('durationDays')?.value || '0',
+        10
+      ) || 0;
+    if (days > 0) {
+      this.modifyBookingFormGroup.patchValue(
+        { durationHours: '0' },
+        { emitEvent: false }
+      );
+    }
+    this.calculateModifyReturnDate();
+  }
+
+  onModifyDurationHoursChange() {
+    const hours =
+      parseInt(
+        this.modifyBookingFormGroup.get('durationHours')?.value || '0',
+        10
+      ) || 0;
+    if (hours > 0) {
+      this.modifyBookingFormGroup.patchValue(
+        { durationDays: '0' },
+        { emitEvent: false }
+      );
+    }
+    this.calculateModifyReturnDate();
+  }
+
   calculateModifyReturnDate() {
     const pickupVal = this.modifyBookingFormGroup.get('pickupDateTime')?.value;
     const days =
@@ -187,7 +217,6 @@ export class RRModifyBookingDialogComponent implements OnInit {
     const p23 = Number(pricing.h23?.price || 0);
     const p11 = Number(pricing.h11?.price || 0);
     const p3 = Number(pricing.h3?.price || 0);
-    const p1 = Number(pricing.h1?.price || 0);
 
     if (remaining >= 24) {
       const count = Math.floor(remaining / 24);
@@ -203,9 +232,6 @@ export class RRModifyBookingDialogComponent implements OnInit {
       const count = Math.floor(remaining / 4);
       totalRent += count * p3;
       remaining -= count * 4;
-    }
-    if (remaining > 0) {
-      totalRent += remaining * p1;
     }
 
     return totalRent;
@@ -233,9 +259,6 @@ export class RRModifyBookingDialogComponent implements OnInit {
       const count = Math.floor(remaining / 4);
       totalKm += count * km3;
       remaining -= count * 4;
-    }
-    if (remaining > 0) {
-      totalKm += km3;
     }
 
     return totalKm;
