@@ -33,7 +33,11 @@ import {
   lucideCheckCircle,
   lucideAlertCircle,
   lucideCheck,
+  lucideSearchX,
+  lucideX,
 } from '@ng-icons/lucide';
+
+export type SeatingFilter = 'all' | '5' | '7';
 
 @Component({
   selector: 'app-rr-vehicle-list',
@@ -72,6 +76,8 @@ import {
       lucideCheckCircle,
       lucideAlertCircle,
       lucideCheck,
+      lucideSearchX,
+      lucideX,
     }),
   ],
   templateUrl: './vehicle-list.component.html',
@@ -87,6 +93,23 @@ export class RRVehicleListComponent implements OnInit {
 
   // Collections data
   vehicles = signal<IVehicle[]>([]);
+
+  // Seating filter: 'all', '5', or '7'
+  selectedSeating = signal<SeatingFilter>('all');
+
+  // Filtered lists for seating capacities
+  vehicles5Seater = computed(() => this.vehicles().filter((v) => !v.seating || String(v.seating) === '5'));
+  vehicles7Seater = computed(() => this.vehicles().filter((v) => String(v.seating) === '7'));
+  vehiclesOtherSeater = computed(() => this.vehicles().filter((v) => v.seating && String(v.seating) !== '5' && String(v.seating) !== '7'));
+
+  // Counts
+  totalCount = computed(() => this.vehicles().length);
+  count5Seater = computed(() => this.vehicles5Seater().length);
+  count7Seater = computed(() => this.vehicles7Seater().length);
+
+  setSeatingFilter(filter: SeatingFilter) {
+    this.selectedSeating.set(filter);
+  }
 
   // User details & checks
   currentUser = computed(() => this.rrApi.currentUser());

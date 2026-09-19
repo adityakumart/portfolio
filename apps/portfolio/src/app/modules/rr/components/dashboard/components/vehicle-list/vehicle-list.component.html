@@ -1,4 +1,4 @@
-<div class="page-header flex items-center justify-between mb-6 sm:mb-8 flex-wrap gap-3 sm:gap-4">
+<div class="page-header flex items-center justify-between mb-6 sm:mb-8 flex-wrap gap-4">
   <div>
     <div class="text-[11px] sm:text-xs uppercase tracking-wider text-cyan-500 font-extrabold mb-1 inline-flex items-center gap-1.5">
       <ng-icon class="size-3.5" name="lucideCar"></ng-icon>
@@ -6,38 +6,219 @@
     </div>
     <h2 class="m-0 text-xl sm:text-2xl lg:text-3xl font-extrabold text-foreground tracking-tight">Fleet Registry</h2>
   </div>
-  @if (isAdmin()) {
-    <button hlmBtn class="action-btn success flex items-center gap-1.5 shadow-sm" (click)="openAddVehicleModal()">
-      <ng-icon name="lucidePlus"></ng-icon> <span>Register New Vehicle</span>
-    </button>
-  }
+
+  <div class="flex items-center gap-3 flex-wrap">
+    <!-- Seating Filter Tabs -->
+    <div class="inline-flex items-center p-1 bg-muted/60 border border-border rounded-xl text-xs font-semibold shadow-xs">
+      <button
+        type="button"
+        class="px-3 py-1.5 rounded-lg transition-colors duration-150 cursor-pointer"
+        [class.bg-background]="selectedSeating() === 'all'"
+        [class.text-foreground]="selectedSeating() === 'all'"
+        [class.shadow-xs]="selectedSeating() === 'all'"
+        [class.text-muted-foreground]="selectedSeating() !== 'all'"
+        (click)="setSeatingFilter('all')"
+      >
+        All ({{ totalCount() }})
+      </button>
+      <button
+        type="button"
+        class="px-3 py-1.5 rounded-lg transition-colors duration-150 flex items-center gap-1 cursor-pointer"
+        [class.bg-background]="selectedSeating() === '5'"
+        [class.text-foreground]="selectedSeating() === '5'"
+        [class.shadow-xs]="selectedSeating() === '5'"
+        [class.text-muted-foreground]="selectedSeating() !== '5'"
+        (click)="setSeatingFilter('5')"
+      >
+        <span>5 Seater</span>
+        <span class="text-[10px] opacity-75 font-mono">({{ count5Seater() }})</span>
+      </button>
+      <button
+        type="button"
+        class="px-3 py-1.5 rounded-lg transition-colors duration-150 flex items-center gap-1 cursor-pointer"
+        [class.bg-background]="selectedSeating() === '7'"
+        [class.text-foreground]="selectedSeating() === '7'"
+        [class.shadow-xs]="selectedSeating() === '7'"
+        [class.text-muted-foreground]="selectedSeating() !== '7'"
+        (click)="setSeatingFilter('7')"
+      >
+        <span>7 Seater</span>
+        <span class="text-[10px] opacity-75 font-mono">({{ count7Seater() }})</span>
+      </button>
+    </div>
+
+    @if (isAdmin()) {
+      <button hlmBtn class="action-btn success flex items-center gap-1.5 shadow-sm" (click)="openAddVehicleModal()">
+        <ng-icon name="lucidePlus"></ng-icon> <span>Register New Vehicle</span>
+      </button>
+    }
+  </div>
 </div>
 
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-10">
-  @for (v of vehicles(); track v.regNo) {
-    <app-rr-vehicle-card
-      [vehicle]="v"
-      variant="fleet"
-      [isAdmin]="isAdmin()"
-      (cardClick)="viewVehicleDetails(v)"
-      (editClick)="onEditVehicle(v)"
-      (deleteClick)="deleteVehicle($event)"
-    />
-  } @empty {
-    <div class="col-span-full flex flex-col items-center justify-center p-12 border border-border rounded-2xl bg-card text-center my-8 shadow-sm">
-      <div class="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-4">
-        <ng-icon name="lucideCar" class="text-3xl text-primary"></ng-icon>
-      </div>
-      <h3 class="text-lg font-bold text-foreground mb-1">No Vehicles Registered</h3>
-      <p class="text-sm text-muted-foreground mb-4">There are currently no vehicles in your fleet registry database.</p>
-      @if (isAdmin()) {
-        <button hlmBtn (click)="openAddVehicleModal()" class="flex items-center gap-1.5 mx-auto">
-          <ng-icon name="lucidePlus"></ng-icon> Register First Vehicle
-        </button>
-      }
+@if (vehicles().length === 0) {
+  <div class="flex flex-col items-center justify-center p-12 border border-border rounded-2xl bg-card text-center my-8 shadow-sm">
+    <div class="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-4">
+      <ng-icon name="lucideCar" class="text-3xl text-primary"></ng-icon>
     </div>
+    <h3 class="text-lg font-bold text-foreground mb-1">No Vehicles Registered</h3>
+    <p class="text-sm text-muted-foreground mb-4">There are currently no vehicles in your fleet registry database.</p>
+    @if (isAdmin()) {
+      <button hlmBtn (click)="openAddVehicleModal()" class="flex items-center gap-1.5 mx-auto">
+        <ng-icon name="lucidePlus"></ng-icon> Register First Vehicle
+      </button>
+    }
+  </div>
+} @else {
+  <!-- 'ALL' FILTER: SHOW 5 & 7 SEATERS SEPARATELY -->
+  @if (selectedSeating() === 'all') {
+    <!-- 5-Seater Fleet Section -->
+    @if (vehicles5Seater().length > 0) {
+      <div class="mb-10">
+        <div class="flex items-center justify-between pb-3 mb-5 border-b border-border/60">
+          <div class="flex items-center gap-2.5">
+            <div class="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-500 font-black text-xs flex items-center justify-center border border-blue-500/20 shadow-xs">
+              5
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-foreground tracking-tight">5-Seater Category</h3>
+              <p class="text-[11px] text-muted-foreground">Standard & compact 5-passenger fleet</p>
+            </div>
+          </div>
+          <span hlmBadge variant="secondary" class="font-bold text-xs bg-muted/60 px-2.5 py-0.5">
+            {{ vehicles5Seater().length }} {{ vehicles5Seater().length === 1 ? 'Vehicle' : 'Vehicles' }}
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          @for (v of vehicles5Seater(); track v.regNo) {
+            <app-rr-vehicle-card
+              [vehicle]="v"
+              variant="fleet"
+              [isAdmin]="isAdmin()"
+              (cardClick)="viewVehicleDetails(v)"
+              (editClick)="onEditVehicle(v)"
+              (deleteClick)="deleteVehicle($event)"
+            />
+          }
+        </div>
+      </div>
+    }
+
+    <!-- 7-Seater Fleet Section -->
+    @if (vehicles7Seater().length > 0) {
+      <div class="mb-10" [class.mt-8]="vehicles5Seater().length > 0">
+        <div class="flex items-center justify-between pb-3 mb-5 border-b border-border/60">
+          <div class="flex items-center gap-2.5">
+            <div class="w-7 h-7 rounded-lg bg-indigo-500/10 text-indigo-500 font-black text-xs flex items-center justify-center border border-indigo-500/20 shadow-xs">
+              7
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-foreground tracking-tight">7-Seater Category</h3>
+              <p class="text-[11px] text-muted-foreground">Spacious SUV & multi-utility 7-passenger fleet</p>
+            </div>
+          </div>
+          <span hlmBadge variant="secondary" class="font-bold text-xs bg-muted/60 px-2.5 py-0.5">
+            {{ vehicles7Seater().length }} {{ vehicles7Seater().length === 1 ? 'Vehicle' : 'Vehicles' }}
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          @for (v of vehicles7Seater(); track v.regNo) {
+            <app-rr-vehicle-card
+              [vehicle]="v"
+              variant="fleet"
+              [isAdmin]="isAdmin()"
+              (cardClick)="viewVehicleDetails(v)"
+              (editClick)="onEditVehicle(v)"
+              (deleteClick)="deleteVehicle($event)"
+            />
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Fallback for other seating capacities if present -->
+    @if (vehiclesOtherSeater().length > 0) {
+      <div class="mb-10" [class.mt-8]="vehicles5Seater().length > 0 || vehicles7Seater().length > 0">
+        <div class="flex items-center justify-between pb-3 mb-5 border-b border-border/60">
+          <div class="flex items-center gap-2.5">
+            <div class="w-7 h-7 rounded-lg bg-purple-500/10 text-purple-500 font-black text-xs flex items-center justify-center border border-purple-500/20 shadow-xs">
+              +
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-foreground tracking-tight">Other Seating Capacity</h3>
+              <p class="text-[11px] text-muted-foreground">Specialized multi-passenger fleet</p>
+            </div>
+          </div>
+          <span hlmBadge variant="secondary" class="font-bold text-xs bg-muted/60 px-2.5 py-0.5">
+            {{ vehiclesOtherSeater().length }} {{ vehiclesOtherSeater().length === 1 ? 'Vehicle' : 'Vehicles' }}
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          @for (v of vehiclesOtherSeater(); track v.regNo) {
+            <app-rr-vehicle-card
+              [vehicle]="v"
+              variant="fleet"
+              [isAdmin]="isAdmin()"
+              (cardClick)="viewVehicleDetails(v)"
+              (editClick)="onEditVehicle(v)"
+              (deleteClick)="deleteVehicle($event)"
+            />
+          }
+        </div>
+      </div>
+    }
   }
-</div>
+
+  <!-- '5' FILTER: ONLY 5-SEATERS -->
+  @if (selectedSeating() === '5') {
+    @if (vehicles5Seater().length > 0) {
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-10">
+        @for (v of vehicles5Seater(); track v.regNo) {
+          <app-rr-vehicle-card
+            [vehicle]="v"
+            variant="fleet"
+            [isAdmin]="isAdmin()"
+            (cardClick)="viewVehicleDetails(v)"
+            (editClick)="onEditVehicle(v)"
+            (deleteClick)="deleteVehicle($event)"
+          />
+        }
+      </div>
+    } @else {
+      <div class="flex flex-col items-center justify-center p-12 border border-border rounded-2xl bg-card text-center my-8 shadow-xs">
+        <ng-icon class="text-4xl mx-auto mb-3 text-muted-foreground" name="lucideSearchX"></ng-icon>
+        <h4 class="text-base font-bold text-foreground mb-1">No 5-Seater Vehicles</h4>
+        <p class="text-sm text-muted-foreground max-w-md">There are currently no 5-seater vehicles registered in the fleet registry.</p>
+      </div>
+    }
+  }
+
+  <!-- '7' FILTER: ONLY 7-SEATERS -->
+  @if (selectedSeating() === '7') {
+    @if (vehicles7Seater().length > 0) {
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-10">
+        @for (v of vehicles7Seater(); track v.regNo) {
+          <app-rr-vehicle-card
+            [vehicle]="v"
+            variant="fleet"
+            [isAdmin]="isAdmin()"
+            (cardClick)="viewVehicleDetails(v)"
+            (editClick)="onEditVehicle(v)"
+            (deleteClick)="deleteVehicle($event)"
+          />
+        }
+      </div>
+    } @else {
+      <div class="flex flex-col items-center justify-center p-12 border border-border rounded-2xl bg-card text-center my-8 shadow-xs">
+        <ng-icon class="text-4xl mx-auto mb-3 text-muted-foreground" name="lucideSearchX"></ng-icon>
+        <h4 class="text-base font-bold text-foreground mb-1">No 7-Seater Vehicles</h4>
+        <p class="text-sm text-muted-foreground max-w-md">There are currently no 7-seater vehicles registered in the fleet registry.</p>
+      </div>
+    }
+  }
+}
 
 <!-- POPUP 1: VEHICLE DETAILS DIALOG TEMPLATE -->
 <ng-template #vehicleDetailsDialog>
