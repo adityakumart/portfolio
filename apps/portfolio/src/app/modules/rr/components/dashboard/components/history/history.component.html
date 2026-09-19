@@ -36,12 +36,6 @@
           <span>Loading ...</span>
         </span>
       }
-      @if (hasActiveFilters()) {
-        <button hlmBtn variant="ghost" size="sm" class="h-7 text-xs flex items-center gap-1 text-muted-foreground hover:text-foreground" (click)="resetFilters()">
-          <ng-icon name="lucideRotateCcw" class="text-xs"></ng-icon>
-          <span>Reset Filters</span>
-        </button>
-      }
     </div>
   </div>
 
@@ -172,6 +166,7 @@
         <ng-icon name="lucideSearch" class="text-sm"></ng-icon>
         <span>Search</span>
       </button>
+      @if (hasActiveFilters()) {
       <button
         hlmBtn
         type="button"
@@ -183,6 +178,7 @@
         <ng-icon name="lucideRotateCcw" class="text-xs"></ng-icon>
         <span class="sm:hidden">Reset</span>
       </button>
+      }
     </div>
   </div>
 </div>
