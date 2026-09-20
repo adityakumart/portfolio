@@ -30,7 +30,8 @@ rrRouter.post('/auth/login', authRateLimiter, async (req: Request, res: Response
     if (username && password) {
       // Find employee by email, id, or check if it matches AdminUN/AdminPD directly if DB is empty
       const emp = await empCol.findOne({
-        $or: [{ id: username }, { email: username.toLowerCase() }]
+        $or: [{ id: username }, { email: username.toLowerCase() }],
+        isDeleted: { $ne: true }
       });
 
       if (!emp) {
@@ -80,7 +81,7 @@ rrRouter.post('/auth/login', authRateLimiter, async (req: Request, res: Response
 
     // 2. Employee Login (empId & dob)
     if (empId && dob) {
-      const emp = await empCol.findOne({ id: empId });
+      const emp = await empCol.findOne({ id: empId, isDeleted: { $ne: true } });
       if (!emp) {
         res.status(401).json({ error: 'Unauthorized', message: 'No employee found with this ID.' });
         return;
@@ -182,8 +183,11 @@ rrRouter.post(
 rrRouter.get('/vehicles', authenticateRRToken, async (req: Request, res: Response) => {
   try {
     const col = await RRService.getVehiclesCol();
-    const { search, limit, autocomplete, fields } = req.query;
+    const { search, limit, autocomplete, fields, includeDeleted } = req.query;
     const filter: any = {};
+    if (includeDeleted !== 'true') {
+      filter.isDeleted = { $ne: true };
+    }
     if (search && typeof search === 'string' && search.trim()) {
       const searchRegex = new RegExp(search.trim(), 'i');
       filter.$or = [
@@ -233,7 +237,8 @@ const handleBookingVehiclesAutocomplete = async (req: Request, res: Response) =>
     const { search, limit, status } = req.query;
 
     const match: any = {
-      vehicleRegNo: { $exists: true, $nin: [null, ''] }
+      vehicleRegNo: { $exists: true, $nin: [null, ''] },
+      isDeleted: { $ne: true }
     };
 
     if (search && typeof search === 'string' && search.trim()) {
@@ -307,6 +312,31 @@ rrRouter.post('/vehicles', authenticateRRToken, requireAdmin, async (req: any, r
 
     const existing = await col.findOne({ regNo: { $regex: new RegExp(`^${data.regNo}$`, 'i') } });
     if (existing) {
+      if (existing.isDeleted) {
+        // Vehicle was previously soft-deleted; restore and update with new details
+        await col.updateOne(
+          { _id: existing._id },
+          {
+            $set: {
+              ...data,
+              regNo: data.regNo.toUpperCase().trim(),
+              isDeleted: false,
+              deletedAt: null,
+              deletedBy: null,
+              updatedAt: new Date().toISOString()
+            }
+          }
+        );
+        const restored = await col.findOne({ _id: existing._id });
+        await RRService.logActivity(
+          `Restored vehicle ${data.regNo}`,
+          req.userId,
+          req.userRole,
+          `Previously soft-deleted vehicle ${data.regNo} restored and updated.`
+        );
+        res.status(201).json(restored);
+        return;
+      }
       res.status(409).json({ error: 'Conflict', message: `Vehicle with plate ${data.regNo} already exists.` });
       return;
     }
@@ -338,8 +368,8 @@ rrRouter.put('/vehicles/:id', authenticateRRToken, async (req: any, res: Respons
     const col = await RRService.getVehiclesCol();
 
     const vehicle = await col.findOne({ regNo });
-    if (!vehicle) {
-      res.status(404).json({ error: 'Not Found', message: 'Vehicle not found' });
+    if (!vehicle || vehicle.isDeleted) {
+      res.status(404).json({ error: 'Not Found', message: 'Vehicle not found or has been deleted' });
       return;
     }
 
@@ -374,29 +404,45 @@ rrRouter.put('/vehicles/:id', authenticateRRToken, async (req: any, res: Respons
   }
 });
 
-// DELETE vehicle (Admin only)
+// DELETE vehicle (Admin only - Soft delete)
 rrRouter.delete('/vehicles/:id', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
   try {
     const regNo = req.params.id;
     const col = await RRService.getVehiclesCol();
 
     const vehicle = await col.findOne({ regNo });
-    if (!vehicle) {
+    if (!vehicle || vehicle.isDeleted) {
       res.status(404).json({ error: 'Not Found', message: 'Vehicle not found' });
       return;
     }
 
-    const result = await col.deleteOne({ regNo });
-    if (result.deletedCount === 0) {
-      res.status(404).json({ error: 'Not Found', message: 'Vehicle not found' });
+    // Safety guard: Cannot delete a vehicle that is currently in an active booking
+    if (['in_booking', 'rented'].includes(vehicle.status) || vehicle.bookingId) {
+      res.status(400).json({
+        error: 'Bad Request',
+        message: 'Cannot delete vehicle while it is currently in an active booking or rented.'
+      });
       return;
     }
+
+    await col.updateOne(
+      { regNo },
+      {
+        $set: {
+          isDeleted: true,
+          deletedAt: new Date().toISOString(),
+          deletedBy: req.userId || 'admin',
+          allowBooking: false,
+          updatedAt: new Date().toISOString()
+        }
+      }
+    );
 
     await RRService.logActivity(
-      `Deleted vehicle ${regNo}`,
+      `Soft-deleted vehicle ${regNo}`,
       req.userId,
       req.userRole,
-      `Vehicle removed from fleet: ${vehicle.manufacturer} ${vehicle.name} (${vehicle.model})`
+      `Vehicle soft-deleted from fleet: ${vehicle.manufacturer} ${vehicle.name} (${vehicle.model})`
     );
     res.json({ message: `Vehicle ${regNo} deleted successfully.` });
   } catch (err: any) {
@@ -426,6 +472,11 @@ rrRouter.get('/bookings', authenticateRRToken, async (req: any, res: Response) =
     } = req.query;
 
     const andConditions: any[] = [];
+
+    // Filter out soft-deleted bookings by default
+    if (req.query.includeDeleted !== 'true') {
+      andConditions.push({ isDeleted: { $ne: true } });
+    }
 
     // Status filter (single or comma-separated, e.g. "completed,cancelled")
     if (status && typeof status === 'string' && status.trim()) {
@@ -560,9 +611,9 @@ rrRouter.post('/bookings', authenticateRRToken, async (req: any, res: Response) 
     const vehCol = await RRService.getVehiclesCol();
     const empCol = await RRService.getEmployeesCol();
 
-    const selectedVehicle = await vehCol.findOne({ regNo: bookingData.vehicleRegNo });
+    const selectedVehicle = await vehCol.findOne({ regNo: bookingData.vehicleRegNo, isDeleted: { $ne: true } });
     if (!selectedVehicle) {
-      res.status(404).json({ error: 'Not Found', message: 'Vehicle not found' });
+      res.status(404).json({ error: 'Not Found', message: 'Vehicle not found or no longer active' });
       return;
     }
 
@@ -616,6 +667,63 @@ rrRouter.post('/bookings', authenticateRRToken, async (req: any, res: Response) 
   }
 });
 
+// DELETE booking (Admin only - Soft delete)
+rrRouter.delete('/bookings/:id', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
+  try {
+    const bookingId = req.params.id;
+    const bookingCol = await RRService.getBookingsCol();
+    const vehCol = await RRService.getVehiclesCol();
+
+    const booking = await bookingCol.findOne({ id: bookingId });
+    if (!booking || booking.isDeleted) {
+      res.status(404).json({ error: 'Not Found', message: 'Booking not found' });
+      return;
+    }
+
+    // Soft delete booking
+    await bookingCol.updateOne(
+      { id: bookingId },
+      {
+        $set: {
+          isDeleted: true,
+          deletedAt: new Date().toISOString(),
+          deletedBy: req.userId || 'admin',
+          status: 'cancelled',
+          updatedAt: new Date().toISOString()
+        }
+      }
+    );
+
+    // If the vehicle was in_booking for this booking, release it to available
+    if (booking.vehicleRegNo) {
+      const veh = await vehCol.findOne({ regNo: booking.vehicleRegNo });
+      if (veh && veh.bookingId === bookingId) {
+        await vehCol.updateOne(
+          { regNo: booking.vehicleRegNo },
+          {
+            $set: {
+              status: 'available',
+              bookingId: null,
+              updatedAt: new Date().toISOString()
+            }
+          }
+        );
+      }
+    }
+
+    await RRService.logActivity(
+      `Soft-deleted booking ${bookingId}`,
+      req.userId,
+      req.userRole,
+      `Booking ${bookingId} soft-deleted. Customer: ${booking.renterFirstName} ${booking.renterSecondName} | Vehicle: ${booking.vehicleRegNo}`
+    );
+
+    res.json({ message: `Booking ${bookingId} deleted successfully.` });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
 // PUT update booking / end booking (Authenticated - records who ended)
 rrRouter.put('/bookings/:id', authenticateRRToken, async (req: any, res: Response) => {
   try {
@@ -626,8 +734,8 @@ rrRouter.put('/bookings/:id', authenticateRRToken, async (req: any, res: Respons
     const empCol = await RRService.getEmployeesCol();
 
     const booking = await bookingCol.findOne({ id: bookingId });
-    if (!booking) {
-      res.status(404).json({ error: 'Not Found', message: 'Booking not found' });
+    if (!booking || booking.isDeleted) {
+      res.status(404).json({ error: 'Not Found', message: 'Booking not found or has been deleted' });
       return;
     }
 
@@ -752,8 +860,8 @@ rrRouter.post('/bookings/:id/customer-intimation', authenticateRRToken, async (r
     const empCol = await RRService.getEmployeesCol();
 
     const booking = await bookingCol.findOne({ id: bookingId });
-    if (!booking) {
-      res.status(404).json({ error: 'Not Found', message: 'Booking not found' });
+    if (!booking || booking.isDeleted) {
+      res.status(404).json({ error: 'Not Found', message: 'Booking not found or has been deleted' });
       return;
     }
 
@@ -815,7 +923,11 @@ rrRouter.post('/bookings/:id/customer-intimation', authenticateRRToken, async (r
 rrRouter.get('/employees', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
   try {
     const col = await RRService.getEmployeesCol();
-    const list = await col.find().toArray();
+    const filter: any = {};
+    if (req.query.includeDeleted !== 'true') {
+      filter.isDeleted = { $ne: true };
+    }
+    const list = await col.find(filter).toArray();
     res.json(list);
   } catch (err: any) {
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
@@ -832,7 +944,8 @@ rrRouter.post('/employees', authenticateRRToken, requireAdmin, async (req: any, 
     const duplicate = await col.findOne({
       firstName: { $regex: new RegExp(`^${data.firstName}$`, 'i') },
       lastName: { $regex: new RegExp(`^${data.lastName}$`, 'i') },
-      dob: data.dob
+      dob: data.dob,
+      isDeleted: { $ne: true }
     });
 
     if (duplicate) {
@@ -885,8 +998,8 @@ rrRouter.put('/employees/:id', authenticateRRToken, requireAdmin, async (req: an
     const col = await RRService.getEmployeesCol();
 
     const emp = await col.findOne({ id: empId });
-    if (!emp) {
-      res.status(404).json({ error: 'Not Found', message: 'Employee not found' });
+    if (!emp || emp.isDeleted) {
+      res.status(404).json({ error: 'Not Found', message: 'Employee not found or has been deleted' });
       return;
     }
 
@@ -917,7 +1030,7 @@ rrRouter.put('/employees/:id', authenticateRRToken, requireAdmin, async (req: an
   }
 });
 
-// DELETE employee (Admin only)
+// DELETE employee (Admin only - Soft delete)
 rrRouter.delete('/employees/:id', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
   try {
     const empId = req.params.id;
@@ -929,22 +1042,29 @@ rrRouter.delete('/employees/:id', authenticateRRToken, requireAdmin, async (req:
     }
 
     const emp = await col.findOne({ id: empId });
-    if (!emp) {
+    if (!emp || emp.isDeleted) {
       res.status(404).json({ error: 'Not Found', message: 'Employee not found' });
       return;
     }
 
-    const result = await col.deleteOne({ id: empId });
-    if (result.deletedCount === 0) {
-      res.status(404).json({ error: 'Not Found', message: 'Employee not found' });
-      return;
-    }
+    await col.updateOne(
+      { id: empId },
+      {
+        $set: {
+          allowLogin: false,
+          isDeleted: true,
+          deletedAt: new Date().toISOString(),
+          deletedBy: req.userId || 'admin',
+          updatedAt: new Date().toISOString()
+        }
+      }
+    );
 
     await RRService.logActivity(
-      `Deleted employee ${empId}`,
+      `Soft-deleted employee ${empId}`,
       req.userId,
       req.userRole,
-      `Employee removed: ${emp.firstName} ${emp.lastName} (Role: ${emp.role.toUpperCase()}, Phone: ${emp.phone})`
+      `Employee soft-deleted: ${emp.firstName} ${emp.lastName} (Role: ${emp.role.toUpperCase()}, Phone: ${emp.phone})`
     );
 
     res.json({ message: `Employee ${empId} deleted successfully.` });
@@ -1022,12 +1142,12 @@ rrRouter.get('/dashboard/stats', authenticateRRToken, async (req: any, res: Resp
     const bookingCol = await RRService.getBookingsCol();
 
     const [totalFleet, maintenance, available, contract, activeBookings, pendingPayments] = await Promise.all([
-      vehCol.countDocuments({}),
-      vehCol.countDocuments({ status: 'maintenance' }),
-      vehCol.countDocuments({ status: 'available' }),
-      vehCol.countDocuments({ status: { $in: ['contract', 'in_contract'] } }),
-      bookingCol.countDocuments({ status: 'active' }),
-      bookingCol.countDocuments({ status: 'active', pendingAmount: { $nin: ['0', '', null] } } as any)
+      vehCol.countDocuments({ isDeleted: { $ne: true } }),
+      vehCol.countDocuments({ status: 'maintenance', isDeleted: { $ne: true } }),
+      vehCol.countDocuments({ status: 'available', isDeleted: { $ne: true } }),
+      vehCol.countDocuments({ status: { $in: ['contract', 'in_contract'] }, isDeleted: { $ne: true } }),
+      bookingCol.countDocuments({ status: 'active', isDeleted: { $ne: true } }),
+      bookingCol.countDocuments({ status: 'active', isDeleted: { $ne: true }, pendingAmount: { $nin: ['0', '', null] } } as any)
     ]);
 
     res.json({
@@ -1047,7 +1167,7 @@ rrRouter.get('/vehicles/:id/availability', authenticateRRToken, async (req: any,
   try {
     const regNo = req.params.id;
     const col = await RRService.getVehiclesCol();
-    const vehicle = await col.findOne({ regNo });
+    const vehicle = await col.findOne({ regNo, isDeleted: { $ne: true } });
     if (!vehicle) {
       res.status(404).json({ error: 'Not Found', message: 'Vehicle not found' });
       return;

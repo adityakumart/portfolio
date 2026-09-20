@@ -38,6 +38,9 @@ export interface IEmployee {
   role: RRRole;
   passwordHash?: string; // Only for admin
   createdAt: string;
+  isDeleted?: boolean;
+  deletedAt?: string | null;
+  deletedBy?: string | null;
 }
 
 export interface IVehiclePricingTier {
@@ -78,6 +81,9 @@ export interface IVehicle {
   bookingId?: string | null;
   createdAt: string;
   updatedAt?: string | null;
+  isDeleted?: boolean;
+  deletedAt?: string | null;
+  deletedBy?: string | null;
 }
 
 export interface IPublicVehicle {
@@ -202,6 +208,11 @@ export interface IBooking {
   // Customer intimation audit tracking
   intimations?: ICustomerIntimation[];
   lastIntimation?: ICustomerIntimation;
+
+  // Soft delete audit tracking
+  isDeleted?: boolean;
+  deletedAt?: string | null;
+  deletedBy?: string | null;
 }
 
 export interface ICustomerIntimation {

@@ -247,6 +247,12 @@ export class RRApiService {
     );
   }
 
+  async deleteBooking(id: string): Promise<{ message: string }> {
+    return firstValueFrom(
+      this.http.delete<{ message: string }>(`${this.baseUrl}/bookings/${id}`, { headers: this.getHeaders() })
+    );
+  }
+
   async recordCustomerIntimation(
     id: string,
     data: { intimationType: string; notes: string; expectedReturnDateTime?: string }
