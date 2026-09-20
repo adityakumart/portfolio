@@ -226,45 +226,78 @@ rrRouter.get('/vehicles', authenticateRRToken, async (req: Request, res: Respons
   }
 });
 
-// GET minimal vehicles list for autocomplete (strictly regNo/name/manufacturer, no heavy vehicle details)
-rrRouter.get('/vehicles/autocomplete', authenticateRRToken, async (req: Request, res: Response) => {
+// GET distinct booked vehicles list for autocomplete (retrieves strictly from Bookings collection)
+const handleBookingVehiclesAutocomplete = async (req: Request, res: Response) => {
   try {
-    const col = await RRService.getVehiclesCol();
-    const { search, limit } = req.query;
-    const filter: any = {};
+    const col = await RRService.getBookingsCol();
+    const { search, limit, status } = req.query;
+
+    const match: any = {
+      vehicleRegNo: { $exists: true, $nin: [null, ''] }
+    };
+
     if (search && typeof search === 'string' && search.trim()) {
       const searchRegex = new RegExp(search.trim(), 'i');
-      filter.$or = [
-        { name: { $regex: searchRegex } },
-        { manufacturer: { $regex: searchRegex } },
-        { regNo: { $regex: searchRegex } }
+      match.$or = [
+        { vehicleRegNo: { $regex: searchRegex } },
+        { vehicleName: { $regex: searchRegex } },
+        { vehicleManufacturer: { $regex: searchRegex } }
       ];
     }
 
-    let cursor = col
-      .find(filter, { projection: { regNo: 1, name: 1, manufacturer: 1, _id: 0 } })
-      .sort({ manufacturer: 1, name: 1 });
+    if (status && typeof status === 'string' && status.trim()) {
+      const statuses = status.split(',').map((s: string) => s.trim()).filter(Boolean);
+      if (statuses.length === 1) {
+        match.status = statuses[0];
+      } else if (statuses.length > 1) {
+        match.status = { $in: statuses };
+      }
+    }
+
+    const pipeline: any[] = [
+      { $match: match },
+      {
+        $group: {
+          _id: { $toUpper: '$vehicleRegNo' },
+          regNo: { $first: '$vehicleRegNo' },
+          name: { $first: '$vehicleName' },
+          manufacturer: { $first: '$vehicleManufacturer' }
+        }
+      },
+      {
+        $sort: { manufacturer: 1, name: 1, regNo: 1 }
+      },
+      {
+        $project: {
+          _id: 0,
+          regNo: 1,
+          name: { $ifNull: ['$name', ''] },
+          manufacturer: { $ifNull: ['$manufacturer', ''] },
+          vehicleRegNo: '$regNo',
+          vehicleName: { $ifNull: ['$name', ''] },
+          vehicleManufacturer: { $ifNull: ['$manufacturer', ''] }
+        }
+      }
+    ];
 
     if (limit) {
       const limitNum = parseInt(limit as string, 10);
       if (!isNaN(limitNum) && limitNum > 0) {
-        cursor = cursor.limit(limitNum);
+        pipeline.push({ $limit: limitNum });
       }
     }
-    const list = await cursor.toArray();
-    const mapped = list.map((v: any) => ({
-      regNo: v.regNo,
-      name: v.name,
-      manufacturer: v.manufacturer,
-      vehicleRegNo: v.regNo,
-      vehicleName: v.name,
-      vehicleManufacturer: v.manufacturer,
-    }));
-    res.json(mapped);
+
+    const list = await col.aggregate(pipeline).toArray();
+    res.json(list);
   } catch (err: any) {
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }
-});
+};
+
+rrRouter.get('/bookings/vehicles/autocomplete', authenticateRRToken, handleBookingVehiclesAutocomplete);
+rrRouter.get('/bookings/vehicles', authenticateRRToken, handleBookingVehiclesAutocomplete);
+rrRouter.get('/vehicles/autocomplete', authenticateRRToken, handleBookingVehiclesAutocomplete);
+
 
 // POST new vehicle (Admin only)
 rrRouter.post('/vehicles', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
