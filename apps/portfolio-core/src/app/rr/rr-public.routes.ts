@@ -17,6 +17,7 @@ rrPublicRouter.get('/vehicles', async (req: Request, res: Response) => {
     const { search, limit } = req.query;
 
     const filter: any = {
+      isDeleted: { $ne: true },
       allowBooking: { $ne: false },
       status: { $nin: ['maintenance', 'contract', 'in_contract'] },
     };

@@ -146,17 +146,22 @@ export class RRApiService {
     );
   }
 
-  async getVehiclesAutocomplete(params?: { search?: string; limit?: number }): Promise<IVehicleAutocompleteItem[]> {
+  async getBookingVehiclesAutocomplete(params?: { search?: string; limit?: number; status?: string }): Promise<IVehicleAutocompleteItem[]> {
     let httpParams = new HttpParams();
     if (params?.search) httpParams = httpParams.set('search', params.search);
     if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
+    if (params?.status) httpParams = httpParams.set('status', params.status);
 
     return firstValueFrom(
-      this.http.get<IVehicleAutocompleteItem[]>(`${this.baseUrl}/vehicles/autocomplete`, {
+      this.http.get<IVehicleAutocompleteItem[]>(`${this.baseUrl}/bookings/vehicles/autocomplete`, {
         headers: this.getHeaders(),
         params: httpParams,
       })
     );
+  }
+
+  async getVehiclesAutocomplete(params?: { search?: string; limit?: number; status?: string }): Promise<IVehicleAutocompleteItem[]> {
+    return this.getBookingVehiclesAutocomplete(params);
   }
 
   async createVehicle(data: Partial<IVehicle>): Promise<IVehicle> {
@@ -239,6 +244,12 @@ export class RRApiService {
   async updateBooking(id: string, data: Partial<IBooking>): Promise<IBooking> {
     return firstValueFrom(
       this.http.put<IBooking>(`${this.baseUrl}/bookings/${id}`, data, { headers: this.getHeaders() })
+    );
+  }
+
+  async deleteBooking(id: string): Promise<{ message: string }> {
+    return firstValueFrom(
+      this.http.delete<{ message: string }>(`${this.baseUrl}/bookings/${id}`, { headers: this.getHeaders() })
     );
   }
 

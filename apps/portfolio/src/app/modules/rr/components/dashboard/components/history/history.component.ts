@@ -192,13 +192,13 @@ export class RRHistoryComponent implements OnInit {
   async loadVehiclesFromApi(search = '') {
     this.isVehiclesLoading.set(true);
     try {
-      const data = await this.rrApi.getVehiclesAutocomplete({
+      const data = await this.rrApi.getBookingVehiclesAutocomplete({
         search: search.trim(),
-        limit: 10,
+        limit: 100,
       });
       this.vehicles.set(data || []);
     } catch (e) {
-      console.error('Error loading vehicles for autocomplete from API:', e);
+      console.error('Error loading booking vehicles for autocomplete from API:', e);
     } finally {
       this.isVehiclesLoading.set(false);
     }

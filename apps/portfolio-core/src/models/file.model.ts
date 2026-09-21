@@ -13,6 +13,8 @@ export interface IFileDocument {
   ownerRole: 'admin' | 'user';
   createdAt: Date;
   updatedAt: Date;
+  isDeleted?: boolean;
+  deletedAt?: Date;
 }
 
 export class FileModel {
@@ -55,17 +57,20 @@ export class FileModel {
 
   static async findByPath(storagePath: string): Promise<IFileDocument | null> {
     const col = await this.getCollection();
-    return col.findOne({ path: storagePath });
+    return col.findOne({ path: storagePath, isDeleted: { $ne: true } });
   }
 
   static async findByOwner(ownerId: string | ObjectId): Promise<IFileDocument[]> {
     const col = await this.getCollection();
-    return col.find({ ownerId }).toArray();
+    return col.find({ ownerId, isDeleted: { $ne: true } }).toArray();
   }
 
   static async deleteByPath(storagePath: string): Promise<boolean> {
     const col = await this.getCollection();
-    const res = await col.deleteOne({ path: storagePath });
-    return (res.deletedCount || 0) > 0;
+    const res = await col.updateOne(
+      { path: storagePath },
+      { $set: { isDeleted: true, deletedAt: new Date(), updatedAt: new Date() } }
+    );
+    return (res.matchedCount || 0) > 0;
   }
 }
