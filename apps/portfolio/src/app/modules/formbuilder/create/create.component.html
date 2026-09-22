@@ -74,13 +74,19 @@
               }
               @if (inputData.inputType === 'date') {
                 <div>
-                  <input hlmInput type="date" class="w-full text-sm" />
+                  <hlm-date-picker>
+                    <hlm-date-picker-input placeholder="DD-MM-YYYY" class="w-full text-sm" />
+                  </hlm-date-picker>
                 </div>
               }
               @if (inputData.inputType === 'dateRange') {
                 <div class="grid grid-cols-2 gap-3">
-                  <input hlmInput type="date" placeholder="Start date" class="text-sm" />
-                  <input hlmInput type="date" placeholder="End date" class="text-sm" />
+                  <hlm-date-picker>
+                    <hlm-date-picker-input placeholder="Start date (DD-MM-YYYY)" class="text-sm" />
+                  </hlm-date-picker>
+                  <hlm-date-picker>
+                    <hlm-date-picker-input placeholder="End date (DD-MM-YYYY)" class="text-sm" />
+                  </hlm-date-picker>
                 </div>
               }
               @if (inputData.inputType === 'checkBox') {
@@ -126,12 +132,18 @@
                 </hlm-radio-group>
               }
               @if (inputData.inputType === 'date') {
-                <input hlmInput type="date" class="w-full text-sm h-8" disabled />
+                <hlm-date-picker disabled>
+                  <hlm-date-picker-input placeholder="DD-MM-YYYY" class="w-full text-sm h-8" disabled />
+                </hlm-date-picker>
               }
               @if (inputData.inputType === 'dateRange') {
                 <div class="grid grid-cols-2 gap-2">
-                  <input hlmInput type="date" class="text-sm h-8" disabled />
-                  <input hlmInput type="date" class="text-sm h-8" disabled />
+                  <hlm-date-picker disabled>
+                    <hlm-date-picker-input placeholder="Start date (DD-MM-YYYY)" class="text-sm h-8" disabled />
+                  </hlm-date-picker>
+                  <hlm-date-picker disabled>
+                    <hlm-date-picker-input placeholder="End date (DD-MM-YYYY)" class="text-sm h-8" disabled />
+                  </hlm-date-picker>
                 </div>
               }
               @if (inputData.inputType === 'checkBox') {

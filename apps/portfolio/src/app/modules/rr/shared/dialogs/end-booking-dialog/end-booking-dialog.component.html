@@ -84,7 +84,7 @@
             >Booked Return</span
           >
           <span class="font-mono font-bold text-foreground text-xs">{{
-            booking()?.returnDateTime | date: 'dd/MM/yyyy, hh:mm a'
+            booking()?.returnDateTime | indianDate:{ includeTime: true }
           }}</span>
         </div>
       </div>
@@ -230,14 +230,14 @@
         @if (isReturnDateInvalid()) {
           <p class="text-[11px] text-destructive flex items-center gap-1 font-medium mt-1">
             <ng-icon name="lucideAlertCircle" class="text-xs shrink-0"></ng-icon>
-            Return date/time cannot be before pickup ({{ (booking()?.pickupDateTime || booking()?.createdAt) | date: 'dd/MM/yyyy, hh:mm a' }})
+            Return date/time cannot be before pickup ({{ (booking()?.pickupDateTime || booking()?.createdAt) | indianDate:{ includeTime: true } }})
           </p>
         }
         <div class="flex flex-col gap-0.5 mt-1 text-[11px] text-muted-foreground">
           <p>
             Scheduled:
             <span class="font-medium text-foreground">{{
-              booking()?.returnDateTime | date: 'dd/MM/yyyy, hh:mm a'
+              booking()?.returnDateTime | indianDate:{ includeTime: true }
             }}</span>
           </p>
           @if (getActualDurationText()) {

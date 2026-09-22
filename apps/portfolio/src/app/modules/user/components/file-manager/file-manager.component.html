@@ -262,7 +262,7 @@
                   {{ node.type === 'folder' ? '—' : formatSize(node.size) }}
                 </td>
                 <td hlmTableCell class="py-3 px-4 text-muted-foreground hidden lg:table-cell">
-                  {{ node.type === 'folder' ? '—' : formatDate(node.lastModified) }}
+                  {{ node.type === 'folder' ? '—' : ((node.lastModified | indianDate:{ includeTime: true }) || '—') }}
                 </td>
                 <td hlmTableCell class="py-3 px-4 text-right" (click)="$event.stopPropagation()">
                   <div class="flex items-center justify-end gap-1">

@@ -94,13 +94,9 @@
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
                 <div>
                   <label hlmLabel class="block mb-1 text-xs text-muted-foreground">Start Date</label>
-                  <input
-                    hlmInput
-                    type="date"
-                    [max]="maxDate"
-                    formControlName="start"
-                    class="w-full text-sm"
-                  />
+                  <hlm-date-picker formControlName="start" [maxDate]="maxDate">
+                    <hlm-date-picker-input placeholder="DD-MM-YYYY" class="w-full text-sm" />
+                  </hlm-date-picker>
                   <app-error-message
                     [control]="control.get('start')"
                     fieldName="Start date"
@@ -109,12 +105,9 @@
 
                 <div>
                   <label hlmLabel class="block mb-1 text-xs text-muted-foreground">End Date</label>
-                  <input
-                    hlmInput
-                    type="date"
-                    formControlName="end"
-                    class="w-full text-sm"
-                  />
+                  <hlm-date-picker formControlName="end">
+                    <hlm-date-picker-input placeholder="DD-MM-YYYY" class="w-full text-sm" />
+                  </hlm-date-picker>
                   <app-error-message
                     [control]="control.get('end')"
                     fieldName="End date"

@@ -10,8 +10,10 @@ import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmSpinnerImports } from '@spartan-ng/hel/spinner';
 import { HlmBadgeImports } from '@spartan-ng/hel/badge';
 import { HlmSeparatorImports } from '@spartan-ng/hel/separator';
+import { HlmDatePickerImports } from '@spartan-ng/hel/date-picker';
 import { toast } from '@spartan-ng/hel/sonner';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import { toISODateString, IndianDateInput } from '../../../../shared/pipes/indian-date.pipe';
 import {
   lucideShieldCheck,
   lucideCar,
@@ -44,6 +46,7 @@ import { RRApiService } from '../../services/rr-api.service';
     HlmSpinnerImports,
     HlmBadgeImports,
     HlmSeparatorImports,
+    HlmDatePickerImports,
     NgIconComponent,
   ],
   providers: [
@@ -73,7 +76,7 @@ export class RRLoginComponent {
   // Form Groups
   employeeFormGroup = new FormGroup({
     empId: new FormControl('', [Validators.required, Validators.pattern(/^RRA[0-9]{3}$/)]),
-    dob: new FormControl('', [Validators.required]),
+    dob: new FormControl<Date | string | null>(null, [Validators.required]),
   });
 
   adminFormGroup = new FormGroup({
@@ -119,7 +122,7 @@ export class RRLoginComponent {
     this.loading.set(true);
 
     const enteredId = this.employeeFormGroup.value.empId || '';
-    const enteredDob = this.employeeFormGroup.value.dob || '';
+    const enteredDob = toISODateString(this.employeeFormGroup.value.dob as IndianDateInput) || '';
 
     try {
       await this.rrApi.login({ empId: enteredId, dob: enteredDob });
@@ -177,7 +180,7 @@ export class RRLoginComponent {
     this.setRole('employee');
     this.employeeFormGroup.patchValue({
       empId: 'RRA002',
-      dob: '1990-05-15',
+      dob: new Date('1990-05-15'),
     });
   }
 }

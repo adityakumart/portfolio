@@ -49,11 +49,11 @@
               }
             </td>
             <td hlmTd>
-              <div class="font-semibold">{{ b.pickupDateTime | date:'dd-MM-yyyy' }}</div>
+              <div class="font-semibold">{{ b.pickupDateTime | indianDate }}</div>
               <div class="text-muted-foreground text-[11px]">{{ b.pickupDateTime | date:'shortTime' }}</div>
             </td>
             <td hlmTd>
-              <div class="font-semibold">{{ b.returnDateTime | date:'dd-MM-yyyy' }}</div>
+              <div class="font-semibold">{{ b.returnDateTime | indianDate }}</div>
               <div class="text-muted-foreground text-[11px]">{{ b.returnDateTime | date:'shortTime' }}</div>
               @if (b.lastIntimation) {
                 <div class="inline-flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400 font-semibold mt-0.5 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
@@ -274,12 +274,12 @@
                 <div class="p-2 rounded-lg bg-muted/40 border border-border/50 text-[11px]">
                   <div class="flex items-center justify-between text-muted-foreground text-[10px]">
                     <span class="font-bold text-foreground uppercase">{{ item.intimationType }}</span>
-                    <span>{{ item.recordedAt | date:'dd MMM yyyy, hh:mm a' }}</span>
+                    <span>{{ item.recordedAt | indianDate:{ includeTime: true } }}</span>
                   </div>
                   <p class="text-foreground mt-1">{{ item.notes }}</p>
                   @if (item.expectedReturnDateTime) {
                     <div class="text-[10px] text-muted-foreground mt-0.5 font-mono">
-                      Extended Return: {{ item.expectedReturnDateTime | date:'dd MMM yyyy, hh:mm a' }}
+                      Extended Return: {{ item.expectedReturnDateTime | indianDate:{ includeTime: true } }}
                     </div>
                   }
                 </div>

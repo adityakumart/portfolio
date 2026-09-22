@@ -21,6 +21,7 @@ import { HlmSelectImports } from '@spartan-ng/hel/select';
 import { HlmCheckboxImports } from '@spartan-ng/hel/checkbox';
 import { HlmRadioGroupImports } from '@spartan-ng/hel/radio-group';
 import { HlmTextareaImports } from '@spartan-ng/hel/textarea';
+import { HlmDatePickerImports } from '@spartan-ng/hel/date-picker';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideType,
@@ -50,6 +51,7 @@ import {
     HlmCheckboxImports,
     HlmRadioGroupImports,
     HlmTextareaImports,
+    HlmDatePickerImports,
     NgIconComponent,
   ],
   providers: [

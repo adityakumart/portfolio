@@ -10,8 +10,10 @@ import { HlmDialogService } from '@spartan-ng/hel/dialog';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
 import { HlmTableImports } from '@spartan-ng/hel/table';
 import { HlmBadgeImports } from '@spartan-ng/hel/badge';
+import { HlmDatePickerImports } from '@spartan-ng/hel/date-picker';
 import { toast } from '@spartan-ng/hel/sonner';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import { IndianDatePipe, toISODateString, IndianDateInput } from '../../../../../../shared/pipes/indian-date.pipe';
 import {
   lucideUsers,
   lucidePlus,
@@ -34,6 +36,8 @@ import {
     HlmTooltipImports,
     HlmTableImports,
     HlmBadgeImports,
+    HlmDatePickerImports,
+    IndianDatePipe,
     NgIconComponent,
     RRAadharInputComponent,
   ],
@@ -128,7 +132,7 @@ export class RREmployeeListComponent implements OnInit {
       id: e.id,
       firstName: e.firstName,
       lastName: e.lastName,
-      dob: e.dob ? new Date(e.dob).toISOString().split('T')[0] : '',
+      dob: e.dob ? new Date(e.dob) : null,
       phone: e.phone,
       altPhone: e.altPhone,
       email: e.email,
@@ -151,7 +155,11 @@ export class RREmployeeListComponent implements OnInit {
     e.preventDefault();
     if (this.employeeFormGroup.invalid) return;
 
-    const payload = this.employeeFormGroup.value;
+    const formVal = this.employeeFormGroup.value;
+    const payload = {
+      ...formVal,
+      dob: toISODateString(formVal.dob as IndianDateInput),
+    };
 
     try {
       if (this.editingEmployeeMode()) {

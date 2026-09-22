@@ -1,33 +1,8 @@
 import { Injectable } from '@angular/core';
 import jsPDF from 'jspdf';
 import { maskAadhar } from '../shared/utils/aadhar-mask.util';
-
-export function formatToIndianDate(dateStr: string): string {
-  if (!dateStr || dateStr === '________' || dateStr === 'N/A') return dateStr;
-
-  const separator = dateStr.includes('T')
-    ? 'T'
-    : dateStr.includes(' ')
-      ? ' '
-      : null;
-  if (separator) {
-    const parts = dateStr.split(separator);
-    const datePart = parts[0];
-    const timePart = parts[1] || '';
-    const dateParts = datePart.split('-');
-    if (dateParts.length === 3 && dateParts[0].length === 4) {
-      const formattedDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
-      return timePart ? `${formattedDate} ${timePart}` : formattedDate;
-    }
-    return dateStr;
-  }
-
-  const parts = dateStr.split('-');
-  if (parts.length === 3 && parts[0].length === 4) {
-    return `${parts[2]}-${parts[1]}-${parts[0]}`;
-  }
-  return dateStr;
-}
+import { formatToIndianDate } from '../../../shared/pipes/indian-date.pipe';
+export { formatToIndianDate };
 
 @Injectable({
   providedIn: 'root',
@@ -414,10 +389,7 @@ export class RRInvoicePdfService {
     const damages = Array.isArray(b.damages) ? b.damages : [];
     const damagesTotal =
       Number(b.damagesTotal) ||
-      damages.reduce(
-        (acc: number, d: any) => acc + (Number(d.amount) || 0),
-        0,
-      );
+      damages.reduce((acc: number, d: any) => acc + (Number(d.amount) || 0), 0);
 
     const discount = Number(b.discount) || 0;
     const finalTotal = Number(b.finalRentalAmount) || 0;
@@ -864,9 +836,9 @@ export class RRInvoicePdfService {
     doc.setFont('Helvetica', 'bold');
     doc.setTextColor(30, 41, 59);
     doc.text(
-      `Rs. ${(
-        baseRent + Number(b.totalAdditionalFees || 0)
-      ).toLocaleString('en-IN')}`,
+      `Rs. ${(baseRent + Number(b.totalAdditionalFees || 0)).toLocaleString(
+        'en-IN',
+      )}`,
       rightMargin - 4,
       sY,
       { align: 'right' },
@@ -968,7 +940,7 @@ export class RRInvoicePdfService {
     doc.setFontSize(7.5);
     doc.setTextColor(148, 163, 184); // slate-400
     doc.text(
-      "Thank you for traveling with Ram & Ram's Car Rentals. Drive responsibly and safely!",
+      "Thank you for traveling with RoadReady Rental's Car Rentals. Drive responsibly and safely!",
       pageWidth / 2,
       y,
       { align: 'center' },

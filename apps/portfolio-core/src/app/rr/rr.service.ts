@@ -1,7 +1,13 @@
 import { Collection, Db } from 'mongodb';
 import { connectToRRDatabase } from '../../utils/DB/mongodb';
 import * as bcrypt from 'bcrypt';
-import { IEmployee, IVehicle, IBooking, ILog, ICustomerIntimation } from '@portfolio/shared-types';
+import {
+  IEmployee,
+  IVehicle,
+  IBooking,
+  ILog,
+  ICustomerIntimation,
+} from '@portfolio/shared-types';
 
 export { IEmployee, IVehicle, IBooking, ILog, ICustomerIntimation };
 
@@ -39,7 +45,7 @@ export class RRService {
       // 1. Seed Employees
       const empCount = await empCol.countDocuments();
       if (empCount === 0) {
-        console.log('Seeding initial employees for Ram & Ram...');
+        console.log('Seeding initial employees for RoadReady Rentals...');
         const saltRounds = 10;
         // Default Admin password is 'AdminPD'
         const adminHash = await bcrypt.hash('AdminPD', saltRounds);
@@ -59,7 +65,7 @@ export class RRService {
             allowLogin: true,
             role: 'admin',
             passwordHash: adminHash,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
           },
           {
             id: 'RRA002',
@@ -74,8 +80,8 @@ export class RRService {
             address: 'Kakinada, AP 533001',
             allowLogin: true,
             role: 'employee',
-            createdAt: new Date().toISOString()
-          }
+            createdAt: new Date().toISOString(),
+          },
         ];
         await empCol.insertMany(defaultEmployees);
         console.log('Seeded employees successfully.');
@@ -84,7 +90,7 @@ export class RRService {
       // 2. Seed Vehicles
       const vehCount = await vehCol.countDocuments();
       if (vehCount === 0) {
-        console.log('Seeding initial vehicles for Ram & Ram...');
+        console.log('Seeding initial vehicles for RoadReady Rentals...');
         const defaultVehicles: IVehicle[] = [
           {
             regNo: 'AP39TE1234',
@@ -103,15 +109,15 @@ export class RRService {
             pricing: {
               h23: { price: '2000', km: '300' },
               h11: { price: '1200', km: '150' },
-              h3:  { price: '500', km: '50' },
-              h1:  { price: '200', km: '20' }
+              h3: { price: '500', km: '50' },
+              h1: { price: '200', km: '20' },
             },
             extraKmPrice: '12',
             extraHourPrice: '150',
             allowBooking: true,
             status: 'available',
             images: ['assets/rr/baleno.png'],
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
           },
           {
             regNo: 'AP39TE5678',
@@ -130,15 +136,15 @@ export class RRService {
             pricing: {
               h23: { price: '3500', km: '300' },
               h11: { price: '2200', km: '150' },
-              h3:  { price: '800', km: '50' },
-              h1:  { price: '300', km: '20' }
+              h3: { price: '800', km: '50' },
+              h1: { price: '300', km: '20' },
             },
             extraKmPrice: '18',
             extraHourPrice: '250',
             allowBooking: true,
             status: 'available',
             images: ['assets/rr/innova.png'],
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
           },
           {
             regNo: 'AP39TE9012',
@@ -157,16 +163,16 @@ export class RRService {
             pricing: {
               h23: { price: '2500', km: '300' },
               h11: { price: '1500', km: '150' },
-              h3:  { price: '600', km: '50' },
-              h1:  { price: '250', km: '20' }
+              h3: { price: '600', km: '50' },
+              h1: { price: '250', km: '20' },
             },
             extraKmPrice: '15',
             extraHourPrice: '180',
             allowBooking: true,
             status: 'available',
             images: ['assets/rr/verna.png'],
-            createdAt: new Date().toISOString()
-          }
+            createdAt: new Date().toISOString(),
+          },
         ];
         await vehCol.insertMany(defaultVehicles);
         console.log('Seeded vehicles successfully.');
@@ -174,9 +180,13 @@ export class RRService {
 
       // 3. Backfill legacy bookings with staff audit info
       const bookingCol = await this.getBookingsCol();
-      const legacyBookings = await bookingCol.find({ bookedBy: { $exists: false } }).toArray();
+      const legacyBookings = await bookingCol
+        .find({ bookedBy: { $exists: false } })
+        .toArray();
       if (legacyBookings.length > 0) {
-        console.log(`Backfilling staff audit info for ${legacyBookings.length} legacy bookings...`);
+        console.log(
+          `Backfilling staff audit info for ${legacyBookings.length} legacy bookings...`,
+        );
         for (let i = 0; i < legacyBookings.length; i++) {
           const b = legacyBookings[i];
           const isKiran = i % 2 === 1;
@@ -199,12 +209,17 @@ export class RRService {
         console.log('Legacy bookings backfill complete.');
       }
     } catch (e) {
-      console.error('Error seeding initial Ram & Ram data:', e);
+      console.error('Error seeding initial RoadReady Rentals data:', e);
     }
   }
 
   // --- LOGGING ---
-  static async logActivity(action: string, performedBy: string, role: string, details?: string): Promise<ILog> {
+  static async logActivity(
+    action: string,
+    performedBy: string,
+    role: string,
+    details?: string,
+  ): Promise<ILog> {
     try {
       const logsCol = await this.getLogsCol();
       const newLog: ILog = {
@@ -214,7 +229,7 @@ export class RRService {
         user: performedBy,
         time: new Date().toLocaleString(),
         timestamp: new Date(),
-        details
+        details,
       };
       await logsCol.insertOne(newLog);
       return newLog;

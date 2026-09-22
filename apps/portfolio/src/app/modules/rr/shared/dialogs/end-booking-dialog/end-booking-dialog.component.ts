@@ -33,6 +33,7 @@ import { RRApiService } from '../../../services/rr-api.service';
 import { RRInvoicePdfService } from '../../../services/rr-invoice-pdf.service';
 
 import { AadharVisiblePipe } from '../../utils/aadhar-mask.util';
+import { IndianDatePipe } from '../../../../../shared/pipes/indian-date.pipe';
 
 export interface EndBookingDialogContext {
   booking: IBooking;
@@ -57,6 +58,7 @@ export type EndBookingScenario =
     HlmLabelImports,
     NgIconComponent,
     AadharVisiblePipe,
+    IndianDatePipe,
   ],
   providers: [
     provideIcons({

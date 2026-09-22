@@ -48,9 +48,19 @@
     <a href="#about" (click)="toggleMobileMenu()">About us</a>
     <a href="#contact" (click)="toggleMobileMenu()">Contact us</a>
     @if (currentUser()) {
-      <a routerLink="/user/rr/dashboard" (click)="toggleMobileMenu()" class="mobile-login-link">Command Desk</a>
+      <a
+        routerLink="/user/rr/dashboard"
+        (click)="toggleMobileMenu()"
+        class="mobile-login-link"
+        >Command Desk</a
+      >
     } @else {
-      <a routerLink="/user/rr/login" (click)="toggleMobileMenu()" class="mobile-login-link">Staff Login</a>
+      <a
+        routerLink="/user/rr/login"
+        (click)="toggleMobileMenu()"
+        class="mobile-login-link"
+        >Staff Login</a
+      >
     }
   </div>
 
@@ -58,13 +68,23 @@
   <section class="hero">
     <div class="hero-container">
       <div class="mb-8">
-        <span hlmBadge variant="outline" class="px-4 py-1 text-xs font-bold tracking-wider rounded-full border-white/20 bg-white/10 text-cyan-300">
-          <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 mr-2 animate-pulse"></span>
+        <span
+          hlmBadge
+          variant="outline"
+          class="px-4 py-1 text-xs font-bold tracking-wider rounded-full border-white/20 bg-white/10 text-cyan-300"
+        >
+          <span
+            class="w-1.5 h-1.5 rounded-full bg-cyan-400 mr-2 animate-pulse"
+          ></span>
           PREMIUM CAR RENTALS & FLEET COMMAND
         </span>
       </div>
       <h1>Uncompromising Comfort for Every Journey</h1>
-      <p>Experience seamless travels with Kakinada's premier car rental fleet. Tailored corporate solutions, local sightseeing, and self-drive luxury with zero hidden charges.</p>
+      <p>
+        Experience seamless travels with Kakinada's premier car rental fleet.
+        Tailored corporate solutions, local sightseeing, and self-drive luxury
+        with zero hidden charges.
+      </p>
       <div class="hero-actions flex gap-4 justify-center flex-wrap">
         <a href="#browse" class="hero-primary-btn">Explore Fleet</a>
         <a href="#contact" class="hero-secondary-btn">Book Consultation</a>
@@ -77,47 +97,84 @@
     <div class="section-header">
       <span class="section-tagline">Capabilities</span>
       <h2>Our Premium Services</h2>
-      <p class="section-desc">Designed to cover all your travel requirements with absolute safety, luxury, and reliability.</p>
+      <p class="section-desc">
+        Designed to cover all your travel requirements with absolute safety,
+        luxury, and reliability.
+      </p>
     </div>
     <div class="service-grid">
-      <div hlmCard class="service-btn" data-text="Drive at your own pace with unlimited control.">
+      <div
+        hlmCard
+        class="service-btn"
+        data-text="Drive at your own pace with unlimited control."
+      >
         <div class="service-icon-wrapper">
           <ng-icon name="lucideKey"></ng-icon>
         </div>
         <h3>Self Drive Cars</h3>
-        <p class="service-card-desc">Flexible self-drive solutions with well-maintained hatchbacks, sedans, and SUVs.</p>
+        <p class="service-card-desc">
+          Flexible self-drive solutions with well-maintained hatchbacks, sedans,
+          and SUVs.
+        </p>
       </div>
 
-      <div hlmCard class="service-btn" data-text="Explore city attractions with professional guides.">
+      <div
+        hlmCard
+        class="service-btn"
+        data-text="Explore city attractions with professional guides."
+      >
         <div class="service-icon-wrapper">
           <ng-icon name="lucideMap"></ng-icon>
         </div>
         <h3>Local Sight Seeing</h3>
-        <p class="service-card-desc">Uncover local treasures with customizable day trips and travel assistance.</p>
+        <p class="service-card-desc">
+          Uncover local treasures with customizable day trips and travel
+          assistance.
+        </p>
       </div>
 
-      <div hlmCard class="service-btn" data-text="Safe and convenient one-way/roundout journeys.">
+      <div
+        hlmCard
+        class="service-btn"
+        data-text="Safe and convenient one-way/roundout journeys."
+      >
         <div class="service-icon-wrapper">
           <ng-icon name="lucidePlane"></ng-icon>
         </div>
         <h3>Outstations Pickups</h3>
-        <p class="service-card-desc">Reliable airport drops, terminal connections, and outstation travels.</p>
+        <p class="service-card-desc">
+          Reliable airport drops, terminal connections, and outstation travels.
+        </p>
       </div>
 
-      <div hlmCard class="service-btn" data-text="Bespoke travel packages for holidays and events.">
+      <div
+        hlmCard
+        class="service-btn"
+        data-text="Bespoke travel packages for holidays and events."
+      >
         <div class="service-icon-wrapper">
           <ng-icon name="lucideGift"></ng-icon>
         </div>
         <h3>Package Tours</h3>
-        <p class="service-card-desc">Enjoy unified hotel pairings, route guides, and custom family tour packages.</p>
+        <p class="service-card-desc">
+          Enjoy unified hotel pairings, route guides, and custom family tour
+          packages.
+        </p>
       </div>
 
-      <div hlmCard class="service-btn" data-text="Long-term corporate contracts and executive transit.">
+      <div
+        hlmCard
+        class="service-btn"
+        data-text="Long-term corporate contracts and executive transit."
+      >
         <div class="service-icon-wrapper">
           <ng-icon name="lucideBuilding"></ng-icon>
         </div>
         <h3>Corporate Transits</h3>
-        <p class="service-card-desc">Elevated employee transit, client commute solutions, and executive leasing.</p>
+        <p class="service-card-desc">
+          Elevated employee transit, client commute solutions, and executive
+          leasing.
+        </p>
       </div>
     </div>
   </section>
@@ -127,12 +184,22 @@
     <div class="section-header">
       <span class="section-tagline">Our Fleet</span>
       <h2>Browse by Category</h2>
-      <p class="section-desc">Select from our wide selection of fully inspected, cleaned, and road-ready vehicles.</p>
+      <p class="section-desc">
+        Select from our wide selection of fully inspected, cleaned, and
+        road-ready vehicles.
+      </p>
     </div>
 
     <!-- Category Filter Controls -->
-    <div class="flex justify-start sm:justify-center mb-8 max-w-full overflow-x-auto touch-scroll-x px-4 pb-1">
-      <hlm-toggle-group class="shrink-0" type="single" [value]="selectedCategory()" (valueChange)="$event && setCategory($event)">
+    <div
+      class="flex justify-start sm:justify-center mb-8 max-w-full overflow-x-auto touch-scroll-x px-4 pb-1"
+    >
+      <hlm-toggle-group
+        class="shrink-0"
+        type="single"
+        [value]="selectedCategory()"
+        (valueChange)="$event && setCategory($event)"
+      >
         <button hlmToggleGroupItem value="all" aria-label="All Fleet">
           All Fleet ({{ vehicles().length }})
         </button>
@@ -142,9 +209,7 @@
         <button hlmToggleGroupItem value="7" aria-label="7 Seaters">
           7-Seaters
         </button>
-        <button hlmToggleGroupItem value="suv" aria-label="SUVs">
-          SUVs
-        </button>
+        <button hlmToggleGroupItem value="suv" aria-label="SUVs">SUVs</button>
         <button hlmToggleGroupItem value="sedan" aria-label="Sedans">
           Sedans
         </button>
@@ -152,8 +217,10 @@
     </div>
 
     <!-- Car Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl mx-auto px-4 mb-14">
-      @for (v of filteredVehicles(); track (v._id || $index)) {
+    <div
+      class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl mx-auto px-4 mb-14"
+    >
+      @for (v of filteredVehicles(); track v._id || $index) {
         <app-rr-vehicle-card
           [vehicle]="v"
           variant="homepage"
@@ -168,8 +235,12 @@
             <ng-icon name="lucideSearchX"></ng-icon>
           </div>
           <div hlmEmptyHeader>
-            <h3 hlmEmptyTitle class="text-sm font-semibold">No vehicles found</h3>
-            <p hlmEmptyDescription class="text-xs">No vehicles match the selected filter criteria.</p>
+            <h3 hlmEmptyTitle class="text-sm font-semibold">
+              No vehicles found
+            </h3>
+            <p hlmEmptyDescription class="text-xs">
+              No vehicles match the selected filter criteria.
+            </p>
           </div>
         </div>
       }
@@ -182,8 +253,17 @@
       <div class="about-text">
         <span class="section-tagline">Who We Are</span>
         <h2>Over a Decade of Travel Excellence</h2>
-        <p>RoadReady Rentals (Sri Ram & Ram's Automotives) has been Suryanarayana Puram's most trusted travel facilitator for over ten years. We bridge the gap between premium passenger fleet availability and pocket-friendly consumer bookings.</p>
-        <p>Our commitment remains absolute: well-maintained models, verified professional drivers, punctual pickups, and complete billing transparency. From quick commutes to outstation holidays, we make every trip an experience in comfort.</p>
+        <p>
+          RoadReady Rentals has been Suryanarayana Puram's most trusted travel
+          facilitator for over ten years. We bridge the gap between premium
+          passenger fleet availability and pocket-friendly consumer bookings.
+        </p>
+        <p>
+          Our commitment remains absolute: well-maintained models, verified
+          professional drivers, punctual pickups, and complete billing
+          transparency. From quick commutes to outstation holidays, we make
+          every trip an experience in comfort.
+        </p>
       </div>
       <div class="about-stats-card">
         <div hlmCard class="stat-box">
@@ -211,7 +291,10 @@
     <div class="section-header">
       <span class="section-tagline">Get In Touch</span>
       <h2>Connect With Our Desk</h2>
-      <p class="section-desc">Our booking desk is open 24/7. Reach out to schedule a custom trip or lease a vehicle.</p>
+      <p class="section-desc">
+        Our booking desk is open 24/7. Reach out to schedule a custom trip or
+        lease a vehicle.
+      </p>
     </div>
 
     <div class="contact-grid">
@@ -220,7 +303,10 @@
           <ng-icon name="lucideMapPin"></ng-icon>
         </div>
         <strong>Office Address</strong>
-        <p>Sri Ram & Ram's Automotives<br>Cinema road, Suryanarayana puram, Kakinada, AP 533001</p>
+        <p>
+          RoadReady Rentals Automotives<br />Cinema road, Suryanarayana puram,
+          Kakinada, AP 533001
+        </p>
       </div>
 
       <div hlmCard class="contact-item">
@@ -228,7 +314,7 @@
           <ng-icon name="lucidePhone"></ng-icon>
         </div>
         <strong>Phone Desk</strong>
-        <p>+91 9494873336<br>+91 9494893336</p>
+        <p>+91 9494873336<br />+91 9494893336</p>
       </div>
 
       <div hlmCard class="contact-item">
@@ -236,7 +322,7 @@
           <ng-icon name="lucideMail"></ng-icon>
         </div>
         <strong>Email Enquiries</strong>
-        <p>support&#64;roadready.com<br>info&#64;rams-cars.com</p>
+        <p>support&#64;roadready.com<br />info&#64;rams-cars.com</p>
       </div>
 
       <div hlmCard class="contact-item">
@@ -252,7 +338,7 @@
   <!-- Footer -->
   <footer>
     <div class="footer-container">
-      <p>© 2026 Sri Ram & Ram's RoadReady Rentals — Built for Ultimate Comfort and Speed</p>
+      <p>© 2026 RoadReady Rentals — Built for Ultimate Comfort and Speed</p>
     </div>
   </footer>
 
@@ -270,7 +356,10 @@
         <!-- Fixed Header -->
         <div class="shrink-0 flex justify-between items-center mb-4">
           <div>
-            <span class="text-[11px] font-bold uppercase tracking-wider text-cyan-500">Reserve Vehicle</span>
+            <span
+              class="text-[11px] font-bold uppercase tracking-wider text-cyan-500"
+              >Reserve Vehicle</span
+            >
             <h3 class="m-0 text-xl font-bold leading-tight">
               {{ vehicle.manufacturer }} {{ vehicle.name }}
             </h3>
@@ -289,45 +378,72 @@
         <!-- Scrollable Body -->
         <div class="flex-1 min-h-0 overflow-y-auto pr-1 space-y-4">
           <!-- Vehicle Image -->
-          <div class="rounded-xl overflow-hidden max-h-48 border border-border bg-muted/20 flex items-center justify-center">
-            <img [src]="getVehicleImage(vehicle)" alt="Vehicle" class="w-full h-48 object-cover" />
+          <div
+            class="rounded-xl overflow-hidden max-h-48 border border-border bg-muted/20 flex items-center justify-center"
+          >
+            <img
+              [src]="getVehicleImage(vehicle)"
+              alt="Vehicle"
+              class="w-full h-48 object-cover"
+            />
           </div>
 
           <!-- Vehicle Specs (Status and Pricing removed) -->
           <div class="flex flex-wrap gap-2 text-xs">
-            <span class="inline-flex items-center gap-1 font-semibold text-muted-foreground bg-muted/40 px-2.5 py-1 rounded-md border border-border">
+            <span
+              class="inline-flex items-center gap-1 font-semibold text-muted-foreground bg-muted/40 px-2.5 py-1 rounded-md border border-border"
+            >
               <ng-icon name="lucideUsers"></ng-icon> {{ vehicle.seating }} Seats
             </span>
-            <span class="inline-flex items-center gap-1 font-semibold text-muted-foreground bg-muted/40 px-2.5 py-1 rounded-md border border-border">
-              <ng-icon name="lucideFuel"></ng-icon> {{ vehicle.fuelType || 'Petrol' }}
+            <span
+              class="inline-flex items-center gap-1 font-semibold text-muted-foreground bg-muted/40 px-2.5 py-1 rounded-md border border-border"
+            >
+              <ng-icon name="lucideFuel"></ng-icon>
+              {{ vehicle.fuelType || 'Petrol' }}
             </span>
-            <span class="inline-flex items-center gap-1 font-semibold text-muted-foreground bg-muted/40 px-2.5 py-1 rounded-md border border-border">
-              <ng-icon name="lucidePalette"></ng-icon> {{ vehicle.color || 'Premium' }}
+            <span
+              class="inline-flex items-center gap-1 font-semibold text-muted-foreground bg-muted/40 px-2.5 py-1 rounded-md border border-border"
+            >
+              <ng-icon name="lucidePalette"></ng-icon>
+              {{ vehicle.color || 'Premium' }}
             </span>
-            <span class="inline-flex items-center gap-1 font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 px-2.5 py-1 rounded-md border border-cyan-500/20 uppercase font-mono">
+            <span
+              class="inline-flex items-center gap-1 font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 px-2.5 py-1 rounded-md border border-cyan-500/20 uppercase font-mono"
+            >
               {{ vehicle.type || 'Sedan' }}
             </span>
           </div>
 
           <!-- Reservation Channel Options -->
           <div class="space-y-3 pt-1">
-            <div class="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            <div
+              class="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+            >
               Select Reservation Channel:
             </div>
 
             <!-- WhatsApp Reservation Option -->
-            <div class="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 space-y-2.5">
+            <div
+              class="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 space-y-2.5"
+            >
               <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                <div
+                  class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400"
+                >
                   <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
+                    <path
+                      d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"
+                    />
                   </svg>
                   <span>WhatsApp Booking</span>
                 </div>
-                <span class="text-[11px] text-muted-foreground">Pre-filled Chat</span>
+                <span class="text-[11px] text-muted-foreground"
+                  >Pre-filled Chat</span
+                >
               </div>
               <p class="text-xs text-muted-foreground m-0">
-                Directly redirects to WhatsApp with vehicle name and details pre-filled for immediate confirmation.
+                Directly redirects to WhatsApp with vehicle name and details
+                pre-filled for immediate confirmation.
               </p>
               <button
                 hlmBtn
@@ -336,7 +452,9 @@
                 (click)="redirectToWhatsApp(vehicle)"
               >
                 <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                  <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
+                  <path
+                    d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"
+                  />
                 </svg>
                 <span>Reserve via WhatsApp</span>
                 <ng-icon name="lucideExternalLink" class="text-sm"></ng-icon>
@@ -344,13 +462,19 @@
             </div>
 
             <!-- Phone Reservation Option -->
-            <div class="rounded-xl border border-cyan-500/30 bg-cyan-500/5 p-4 space-y-3">
+            <div
+              class="rounded-xl border border-cyan-500/30 bg-cyan-500/5 p-4 space-y-3"
+            >
               <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-cyan-600 dark:text-cyan-400">
+                <div
+                  class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-cyan-600 dark:text-cyan-400"
+                >
                   <ng-icon name="lucidePhone"></ng-icon>
                   <span>Phone Desk (24/7 Available)</span>
                 </div>
-                <span class="text-[11px] text-muted-foreground">Direct Desk Call</span>
+                <span class="text-[11px] text-muted-foreground"
+                  >Direct Desk Call</span
+                >
               </div>
 
               <!-- Mobile Direct Call View -->
@@ -360,14 +484,20 @@
                     [href]="'tel:+91' + primaryPhoneRaw"
                     class="w-full flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold shadow-md shadow-cyan-500/20 active:scale-[0.98] transition-all"
                   >
-                    <ng-icon name="lucidePhone" class="text-lg animate-pulse"></ng-icon>
+                    <ng-icon
+                      name="lucidePhone"
+                      class="text-lg animate-pulse"
+                    ></ng-icon>
                     <span>Direct Call Desk ({{ primaryPhone }})</span>
                   </a>
                   <a
                     [href]="'tel:+91' + secondaryPhoneRaw"
                     class="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border border-border bg-card/60 hover:bg-card text-xs font-semibold text-foreground transition-colors"
                   >
-                    <ng-icon name="lucidePhone" class="text-xs text-muted-foreground"></ng-icon>
+                    <ng-icon
+                      name="lucidePhone"
+                      class="text-xs text-muted-foreground"
+                    ></ng-icon>
                     <span>Alternate Line: {{ secondaryPhone }}</span>
                   </a>
                 </div>
@@ -375,15 +505,26 @@
                 <!-- Laptop / Desktop Display View -->
                 <div class="space-y-2.5">
                   <p class="text-xs text-muted-foreground m-0">
-                    Desk numbers displayed below. Dial directly or click to copy:
+                    Desk numbers displayed below. Dial directly or click to
+                    copy:
                   </p>
 
                   <!-- Primary Line -->
-                  <div class="flex items-center justify-between p-2.5 rounded-lg bg-card border border-border">
+                  <div
+                    class="flex items-center justify-between p-2.5 rounded-lg bg-card border border-border"
+                  >
                     <div class="flex items-center gap-2">
-                      <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                      <span class="font-mono font-bold text-sm sm:text-base text-foreground">{{ primaryPhone }}</span>
-                      <span class="text-[10px] font-semibold text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded">Primary</span>
+                      <span
+                        class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"
+                      ></span>
+                      <span
+                        class="font-mono font-bold text-sm sm:text-base text-foreground"
+                        >{{ primaryPhone }}</span
+                      >
+                      <span
+                        class="text-[10px] font-semibold text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded"
+                        >Primary</span
+                      >
                     </div>
                     <div class="flex items-center gap-1.5">
                       <button
@@ -394,8 +535,16 @@
                         (click)="copyPhoneNumber(primaryPhone)"
                         [title]="'Copy ' + primaryPhone"
                       >
-                        <ng-icon [name]="copiedPhone() === primaryPhone ? 'lucideCheck' : 'lucideCopy'"></ng-icon>
-                        <span>{{ copiedPhone() === primaryPhone ? 'Copied' : 'Copy' }}</span>
+                        <ng-icon
+                          [name]="
+                            copiedPhone() === primaryPhone
+                              ? 'lucideCheck'
+                              : 'lucideCopy'
+                          "
+                        ></ng-icon>
+                        <span>{{
+                          copiedPhone() === primaryPhone ? 'Copied' : 'Copy'
+                        }}</span>
                       </button>
                       <a
                         [href]="'tel:+91' + primaryPhoneRaw"
@@ -411,11 +560,19 @@
                   </div>
 
                   <!-- Alternate Line -->
-                  <div class="flex items-center justify-between p-2.5 rounded-lg bg-card border border-border">
+                  <div
+                    class="flex items-center justify-between p-2.5 rounded-lg bg-card border border-border"
+                  >
                     <div class="flex items-center gap-2">
                       <span class="w-2 h-2 rounded-full bg-slate-400"></span>
-                      <span class="font-mono font-bold text-sm sm:text-base text-foreground">{{ secondaryPhone }}</span>
-                      <span class="text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">Alternate</span>
+                      <span
+                        class="font-mono font-bold text-sm sm:text-base text-foreground"
+                        >{{ secondaryPhone }}</span
+                      >
+                      <span
+                        class="text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded"
+                        >Alternate</span
+                      >
                     </div>
                     <div class="flex items-center gap-1.5">
                       <button
@@ -426,8 +583,16 @@
                         (click)="copyPhoneNumber(secondaryPhone)"
                         [title]="'Copy ' + secondaryPhone"
                       >
-                        <ng-icon [name]="copiedPhone() === secondaryPhone ? 'lucideCheck' : 'lucideCopy'"></ng-icon>
-                        <span>{{ copiedPhone() === secondaryPhone ? 'Copied' : 'Copy' }}</span>
+                        <ng-icon
+                          [name]="
+                            copiedPhone() === secondaryPhone
+                              ? 'lucideCheck'
+                              : 'lucideCopy'
+                          "
+                        ></ng-icon>
+                        <span>{{
+                          copiedPhone() === secondaryPhone ? 'Copied' : 'Copy'
+                        }}</span>
                       </button>
                       <a
                         [href]="'tel:+91' + secondaryPhoneRaw"

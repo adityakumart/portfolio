@@ -25,6 +25,8 @@ import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
 import { HlmInputImports } from '@spartan-ng/hel/input';
 import { HlmLabelImports } from '@spartan-ng/hel/label';
 import { HlmDialogService } from '@spartan-ng/hel/dialog';
+import { HlmDatePickerImports } from '@spartan-ng/hel/date-picker';
+import { IndianDatePipe, toISODateString, IndianDateInput } from '../../../../../../shared/pipes/indian-date.pipe';
 import {
   lucideHistory,
   lucideInbox,
@@ -62,6 +64,8 @@ import { AadharMaskPipe } from '../../../../shared';
     HlmTooltipImports,
     HlmInputImports,
     HlmLabelImports,
+    HlmDatePickerImports,
+    IndianDatePipe,
     AadharMaskPipe,
   ],
   providers: [
@@ -114,8 +118,8 @@ export class RRHistoryComponent implements OnInit {
 
   // Filter signals
   vehicleFilter = signal<string>('');
-  fromDateFilter = signal<string>('');
-  toDateFilter = signal<string>('');
+  fromDateFilter = signal<IndianDateInput>(null);
+  toDateFilter = signal<IndianDateInput>(null);
   customerFilter = signal<string>('');
 
   // Autocomplete dropdown visibility
@@ -156,18 +160,22 @@ export class RRHistoryComponent implements OnInit {
       !!this.customerFilter().trim(),
   );
 
-  today = new Date().toISOString().split('T')[0];
+  today = new Date();
 
   dateError = computed(() => {
     const from = this.fromDateFilter();
     const to = this.toDateFilter();
-    if (from && to && from > to) {
+    const fromIso = toISODateString(from);
+    const toIso = toISODateString(to);
+    const todayIso = toISODateString(this.today);
+
+    if (fromIso && toIso && fromIso > toIso) {
       return 'From date cannot be after To date.';
     }
-    if (from && from > this.today) {
+    if (fromIso && fromIso > todayIso) {
       return 'From date cannot be in the future.';
     }
-    if (to && to > this.today) {
+    if (toIso && toIso > todayIso) {
       return 'To date cannot be in the future.';
     }
     return null;
@@ -207,12 +215,15 @@ export class RRHistoryComponent implements OnInit {
   async fetchHistoryFromApi() {
     this.isLoading.set(true);
     try {
+      const fromIso = toISODateString(this.fromDateFilter());
+      const toIso = toISODateString(this.toDateFilter());
+
       const res = await this.rrApi.getBookingsPaginated({
         status: 'completed,cancelled',
         vehicle: this.vehicleFilter().trim(),
         customer: this.customerFilter().trim(),
-        from: this.fromDateFilter(),
-        to: this.toDateFilter(),
+        from: fromIso || undefined,
+        to: toIso || undefined,
         page: this.currentPage() + 1,
         limit: this.pageSize(),
       });
@@ -254,29 +265,29 @@ export class RRHistoryComponent implements OnInit {
     this.applyFilters();
   }
 
-  onFromDateChange(value: string) {
-    this.fromDateFilter.set(value || '');
+  onFromDateChange(value: IndianDateInput) {
+    this.fromDateFilter.set(value);
     if (!this.dateError()) {
       this.applyFilters();
     }
   }
 
-  onToDateChange(value: string) {
-    this.toDateFilter.set(value || '');
+  onToDateChange(value: IndianDateInput) {
+    this.toDateFilter.set(value);
     if (!this.dateError()) {
       this.applyFilters();
     }
   }
 
   clearFromDate() {
-    this.fromDateFilter.set('');
+    this.fromDateFilter.set(null);
     if (!this.dateError()) {
       this.applyFilters();
     }
   }
 
   clearToDate() {
-    this.toDateFilter.set('');
+    this.toDateFilter.set(null);
     if (!this.dateError()) {
       this.applyFilters();
     }

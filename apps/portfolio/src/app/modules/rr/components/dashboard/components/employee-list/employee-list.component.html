@@ -42,7 +42,7 @@
               </span>
             </td>
             <td hlmTd class="hidden lg:table-cell">
-              <span>{{ (e.dob | date:'dd-MM-yyyy') || 'N/A' }}</span>
+              <span>{{ (e.dob | indianDate) || 'N/A' }}</span>
             </td>
             <td hlmTd>
               <span>{{ e.phone }}</span>
@@ -134,7 +134,9 @@
 
           <div>
             <label hlmLabel class="text-xs text-muted-foreground block mb-1">Date of Birth</label>
-            <input hlmInput type="date" formControlName="dob" class="w-full text-sm" />
+            <hlm-date-picker formControlName="dob">
+              <hlm-date-picker-input placeholder="DD-MM-YYYY" class="w-full text-sm" />
+            </hlm-date-picker>
             @if (employeeFormGroup.get('dob')?.invalid && employeeFormGroup.get('dob')?.touched) {
               <span class="text-xs text-destructive">Required.</span>
             }

@@ -36,6 +36,7 @@ import {
   RRModifyBookingDialogComponent,
   AadharVisiblePipe,
 } from '../../../../shared';
+import { IndianDatePipe } from '../../../../../../shared/pipes/indian-date.pipe';
 
 @Component({
   selector: 'app-rr-booking-list',
@@ -53,6 +54,7 @@ import {
     HlmLabelImports,
     NgIconComponent,
     AadharVisiblePipe,
+    IndianDatePipe,
   ],
   providers: [
     provideIcons({

@@ -21,8 +21,10 @@ import { HlmCardImports } from '@spartan-ng/hel/card';
 import { HlmInputImports } from '@spartan-ng/hel/input';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmSeparatorImports } from '@spartan-ng/hel/separator';
+import { HlmDatePickerImports } from '@spartan-ng/hel/date-picker';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { lucideClock } from '@ng-icons/lucide';
+import { toISODateString } from '../../../../../shared/pipes/indian-date.pipe';
 
 @Component({
   selector: 'app-timezone-converter',
@@ -34,6 +36,7 @@ import { lucideClock } from '@ng-icons/lucide';
     HlmInputImports,
     HlmButtonImports,
     HlmSeparatorImports,
+    HlmDatePickerImports,
     NgIconComponent,
   ],
   providers: [
@@ -47,7 +50,7 @@ export class TimezoneConverterComponent implements OnInit {
   formattedDate = signal('');
 
   timeForm = new FormGroup({
-    fromDate: new FormControl<string>(new Date().toISOString().split('T')[0]),
+    fromDate: new FormControl<Date | string | null>(new Date()),
     fromTime: new FormControl<string>(new Date().toTimeString().substring(0, 5)),
     fromTimeZone: new FormControl<string>(''),
     toTimeZone: new FormControl<string>(''),
@@ -81,7 +84,8 @@ export class TimezoneConverterComponent implements OnInit {
         zone.abbr + ' - ' + zone.text === this.timeForm.value.toTimeZone,
     )?.utc[0];
 
-    if (!this.timeForm.value.fromDate) {
+    const isoDateStr = toISODateString(this.timeForm.value.fromDate);
+    if (!isoDateStr) {
       toast.error('Please enter From Date.');
       return;
     }
@@ -101,7 +105,7 @@ export class TimezoneConverterComponent implements OnInit {
     const [hour, minute] = (this.timeForm.value.fromTime || '00:00')
       .split(':')
       .map(Number);
-    const fromDate = DateTime.fromISO(this.timeForm.value.fromDate as string, {
+    const fromDate = DateTime.fromISO(isoDateStr, {
       zone: fromZone,
     }).set({
       hour,
