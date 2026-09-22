@@ -94,3 +94,10 @@ export interface ICustomerListResponse {
   limit: number;
   totalPages: number;
 }
+
+export interface ICustomerAutocompleteItem {
+  _id: string;
+  membershipId: string;
+  name: string;
+}
+

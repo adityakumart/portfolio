@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
 import { BrnDialogRef, injectBrnDialogContext } from '@spartan-ng/brain/dialog';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmInputImports } from '@spartan-ng/hel/input';
@@ -18,9 +18,22 @@ import {
   lucideFileText,
   lucideAlertTriangle,
   lucideCrown,
+  lucideSearch,
+  lucideRefreshCw,
+  lucideEye,
+  lucideEyeOff,
+  lucidePhone,
+  lucideMail,
+  lucideMapPin,
 } from '@ng-icons/lucide';
 import { toast } from '@spartan-ng/hel/sonner';
-import { IVehicle, IVehiclePricing, ICustomerMembershipDiscount } from '@portfolio/shared-types';
+import {
+  IVehicle,
+  IVehiclePricing,
+  ICustomerMembershipDiscount,
+  ICustomerAutocompleteItem,
+  IRegularCustomerMasked,
+} from '@portfolio/shared-types';
 import { RRApiService } from '../../../services/rr-api.service';
 import { RRInvoicePdfService } from '../../../services/rr-invoice-pdf.service';
 import { RRCustomerApiService } from '../../../services/rr-customer-api.service';
@@ -37,6 +50,7 @@ export interface NewBookingDialogContext {
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    FormsModule,
     HlmButtonImports,
     HlmInputImports,
     HlmLabelImports,
@@ -56,6 +70,13 @@ export interface NewBookingDialogContext {
       lucideFileText,
       lucideAlertTriangle,
       lucideCrown,
+      lucideSearch,
+      lucideRefreshCw,
+      lucideEye,
+      lucideEyeOff,
+      lucidePhone,
+      lucideMail,
+      lucideMapPin,
     }),
   ],
   templateUrl: './new-booking-dialog.component.html',
@@ -74,6 +95,15 @@ export class RRNewBookingDialogComponent implements OnInit {
   overrideOdometer = false;
   isSubmitting = signal(false);
   membershipDiscount = signal<ICustomerMembershipDiscount | null>(null);
+
+  // Autocomplete & Regular Member Mode State
+  isRegularMemberMode = signal<boolean>(false);
+  autocompleteQuery = signal<string>('');
+  autocompleteResults = signal<ICustomerAutocompleteItem[]>([]);
+  isSearchingCustomers = signal<boolean>(false);
+  selectedRegularCustomer = signal<IRegularCustomerMasked | null>(null);
+  showManualFieldsInMemberMode = signal<boolean>(false);
+  isLoadingCustomerDetails = signal<boolean>(false);
 
   bookingFormGroup!: FormGroup;
 
@@ -233,6 +263,140 @@ export class RRNewBookingDialogComponent implements OnInit {
     } catch (err: unknown) {
       console.warn('Membership discount check failed:', (err as Error).message);
     }
+  }
+
+  /**
+   * Toggle between manual renter details entry and regular member autocomplete mode.
+   */
+  toggleRegularMemberMode(event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    this.isRegularMemberMode.set(checked);
+
+    if (checked) {
+      // Adjust Aadhaar & DL validators to accept masked format tokens from verified members
+      this.bookingFormGroup.get('renterAadhar')?.setValidators([
+        Validators.required,
+        Validators.pattern(/^([0-9]{12}|[X\d-]{12,16}|\[Aadhaar Redacted\])$/),
+      ]);
+      this.bookingFormGroup.get('renterDL')?.setValidators([
+        Validators.required,
+        Validators.pattern(/^([A-Za-z0-9]{15,16}|[X\w-]{12,18}|\[DL Redacted\])$/),
+      ]);
+      this.loadAutocompleteResults('');
+    } else {
+      // Restore standard manual entry validators
+      this.bookingFormGroup.get('renterAadhar')?.setValidators([
+        Validators.required,
+        Validators.pattern(/^[0-9]{12}$/),
+      ]);
+      this.bookingFormGroup.get('renterDL')?.setValidators([
+        Validators.required,
+        Validators.pattern(/^[A-Za-z0-9]{16}$/),
+      ]);
+      this.selectedRegularCustomer.set(null);
+      this.membershipDiscount.set(null);
+      this.showManualFieldsInMemberMode.set(false);
+    }
+
+    this.bookingFormGroup.get('renterAadhar')?.updateValueAndValidity();
+    this.bookingFormGroup.get('renterDL')?.updateValueAndValidity();
+  }
+
+  /**
+   * Queries lightweight customer autocomplete endpoint (returns ONLY id and name).
+   */
+  async loadAutocompleteResults(query: string): Promise<void> {
+    this.autocompleteQuery.set(query);
+    this.isSearchingCustomers.set(true);
+    try {
+      const results = await this.customerApi.getAutocomplete(query);
+      this.autocompleteResults.set(results);
+    } catch {
+      this.autocompleteResults.set([]);
+    } finally {
+      this.isSearchingCustomers.set(false);
+    }
+  }
+
+  /**
+   * When an item is selected from autocomplete:
+   * 1. Fetches full member details via GET /api/rr/customers/:id
+   * 2. Prefills all booking form controls (Name, Father, Phone, Address, KYC)
+   * 3. Auto-applies membership tier discount to financials step
+   */
+  async selectRegularCustomer(item: ICustomerAutocompleteItem): Promise<void> {
+    this.isLoadingCustomerDetails.set(true);
+    try {
+      const fullCustomer = await this.customerApi.getCustomerById(
+        item._id || item.membershipId
+      );
+      this.selectedRegularCustomer.set(fullCustomer);
+
+      // Prefill all booking form controls
+      this.bookingFormGroup.patchValue({
+        renterFirstName: fullCustomer.firstName,
+        renterSecondName: fullCustomer.lastName,
+        renterFatherName: fullCustomer.fatherName,
+        renterPhone: fullCustomer.phone,
+        renterAltPhone: fullCustomer.altPhone || '',
+        renterAddress: fullCustomer.address,
+        renterAadhar: fullCustomer.aadhar,
+        renterDL: fullCustomer.dl,
+      });
+
+      // Calculate and auto-apply tier discount
+      const totalAmount =
+        Number(this.bookingFormGroup.get('totalRentalAmount')?.value) || 0;
+      const rate = fullCustomer.discountRate || 0;
+      const discountAmount = Math.round((totalAmount * rate) / 100);
+      const finalRentalAmount = Math.max(0, totalAmount - discountAmount);
+
+      this.membershipDiscount.set({
+        isRegularCustomer: true,
+        customerId: fullCustomer._id,
+        membershipId: fullCustomer.membershipId,
+        customerName: `${fullCustomer.firstName} ${fullCustomer.lastName}`,
+        phone: fullCustomer.phone,
+        email: fullCustomer.email,
+        membershipTier: fullCustomer.membershipTier,
+        discountRate: rate,
+        discountAmount,
+        originalAmount: totalAmount,
+        finalRentalAmount,
+        message: `${fullCustomer.membershipTier.toUpperCase()} Member (${rate}% discount active)`,
+      });
+
+      this.bookingFormGroup.patchValue({
+        discountType: 'percentage',
+        discount: String(rate),
+      });
+      this.recalculateFinalAmount();
+
+      toast.success(
+        `Pre-filled profile for ${fullCustomer.firstName} ${fullCustomer.lastName} (${fullCustomer.membershipId})! ${rate}% discount applied.`
+      );
+    } catch (err: unknown) {
+      toast.error('Failed to retrieve full member details.');
+    } finally {
+      this.isLoadingCustomerDetails.set(false);
+    }
+  }
+
+  /**
+   * Resets regular customer selection to pick another member.
+   */
+  clearSelectedRegularCustomer(): void {
+    this.selectedRegularCustomer.set(null);
+    this.membershipDiscount.set(null);
+    this.autocompleteQuery.set('');
+    this.loadAutocompleteResults('');
+  }
+
+  /**
+   * Toggles visibility of manual input fields while in member mode.
+   */
+  toggleManualFieldsView(): void {
+    this.showManualFieldsInMemberMode.update((v) => !v);
   }
 
   private updateDepositValidators(type: string) {
