@@ -1,5 +1,9 @@
 import { MongoClient, Db } from 'mongodb';
-import { MONGODB_USERNAME, MONGODB_PASSWORD, MONGODB_URI } from '../../config/mongodb';
+import {
+  MONGODB_USERNAME,
+  MONGODB_PASSWORD,
+  MONGODB_URI,
+} from '../../config/mongodb';
 
 let connectionString = MONGODB_URI;
 
@@ -22,10 +26,13 @@ export async function connectToDatabase(): Promise<Db> {
   return db;
 }
 
-// Secondary connection for Ram & Ram (RR) module
+// Secondary connection for RoadReady Rentals (RR) module
 let rrDb: Db | null = null;
 const rrConnectionString = process.env['MONGODB_RR_URI'] || connectionString;
-const rrClient = rrConnectionString === connectionString ? client : new MongoClient(rrConnectionString);
+const rrClient =
+  rrConnectionString === connectionString
+    ? client
+    : new MongoClient(rrConnectionString);
 
 export async function connectToRRDatabase(): Promise<Db> {
   if (rrDb) return rrDb;
@@ -40,4 +47,3 @@ export async function connectToRRDatabase(): Promise<Db> {
 }
 
 export { client, rrClient };
-

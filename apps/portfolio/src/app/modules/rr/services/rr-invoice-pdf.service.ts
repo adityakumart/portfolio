@@ -414,10 +414,7 @@ export class RRInvoicePdfService {
     const damages = Array.isArray(b.damages) ? b.damages : [];
     const damagesTotal =
       Number(b.damagesTotal) ||
-      damages.reduce(
-        (acc: number, d: any) => acc + (Number(d.amount) || 0),
-        0,
-      );
+      damages.reduce((acc: number, d: any) => acc + (Number(d.amount) || 0), 0);
 
     const discount = Number(b.discount) || 0;
     const finalTotal = Number(b.finalRentalAmount) || 0;
@@ -864,9 +861,9 @@ export class RRInvoicePdfService {
     doc.setFont('Helvetica', 'bold');
     doc.setTextColor(30, 41, 59);
     doc.text(
-      `Rs. ${(
-        baseRent + Number(b.totalAdditionalFees || 0)
-      ).toLocaleString('en-IN')}`,
+      `Rs. ${(baseRent + Number(b.totalAdditionalFees || 0)).toLocaleString(
+        'en-IN',
+      )}`,
       rightMargin - 4,
       sY,
       { align: 'right' },
@@ -968,7 +965,7 @@ export class RRInvoicePdfService {
     doc.setFontSize(7.5);
     doc.setTextColor(148, 163, 184); // slate-400
     doc.text(
-      "Thank you for traveling with Ram & Ram's Car Rentals. Drive responsibly and safely!",
+      "Thank you for traveling with RoadReady Rental's Car Rentals. Drive responsibly and safely!",
       pageWidth / 2,
       y,
       { align: 'center' },
