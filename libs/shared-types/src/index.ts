@@ -4,3 +4,4 @@ export * from './lib/user';
 export * from './lib/resume';
 export * from './lib/file-manager';
 export * from './lib/rr';
+export * from './lib/regular-customer';

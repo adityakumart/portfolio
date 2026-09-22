@@ -11,6 +11,7 @@ import { RRVehicleListComponent } from './components/dashboard/components/vehicl
 import { RREmployeeListComponent } from './components/dashboard/components/employee-list/employee-list.component';
 import { RRHistoryComponent } from './components/dashboard/components/history/history.component';
 import { RRActivityLogsComponent } from './components/dashboard/components/activity-logs/activity-logs.component';
+import { RRCustomerListComponent } from './components/dashboard/components/customer-list/customer-list.component';
 
 const routes: Routes = [
   { path: '', component: RRHomepageComponent },
@@ -23,6 +24,7 @@ const routes: Routes = [
       { path: 'dashboard', component: RRStatsViewComponent },
       { path: 'booking/list', component: RRBookingListComponent },
       { path: 'vehicle/list', component: RRVehicleListComponent },
+      { path: 'customer/list', component: RRCustomerListComponent },
       { path: 'employee/list', component: RREmployeeListComponent },
       { path: 'history', component: RRHistoryComponent },
       { path: 'activity-logs', component: RRActivityLogsComponent },

@@ -18,6 +18,7 @@ import {
   lucideX,
   lucideActivity,
   lucideMenu,
+  lucideCrown,
 } from '@ng-icons/lucide';
 import { HlmDialogService } from '@spartan-ng/hel/dialog';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
@@ -57,6 +58,7 @@ import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
       lucideX,
       lucideActivity,
       lucideMenu,
+      lucideCrown,
     }),
   ],
   templateUrl: './dashboard.component.html',

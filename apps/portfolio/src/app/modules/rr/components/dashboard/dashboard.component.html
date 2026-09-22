@@ -190,6 +190,21 @@
                 <span>Vehicles Inventory</span>
               </div>
             </li>
+            <li
+              class="menu-item"
+              [routerLink]="['/user/rr/customer/list']"
+              routerLinkActive="active-menu"
+              [hlmTooltip]="'Regular Customers'"
+              [tooltipDisabled]="!isSidebarCollapsed()"
+              tooltipPosition="right"
+              (click)="closeMobileSidebar()"
+            >
+              <div class="menu-item-pill"></div>
+              <div class="menu-item-content">
+                <ng-icon name="lucideCrown"></ng-icon>
+                <span>Regular Customers</span>
+              </div>
+            </li>
 
             <!-- Section: Administrative (Admin Only) -->
             @if (isAdmin()) {
