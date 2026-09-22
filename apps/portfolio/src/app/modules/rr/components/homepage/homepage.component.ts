@@ -37,7 +37,7 @@ import { HlmToggleGroupImports } from '@spartan-ng/hel/toggle-group';
 import { HlmEmptyImports } from '@spartan-ng/hel/empty';
 import { toast } from '@spartan-ng/hel/sonner';
 import { IPublicVehicle } from '@portfolio/shared-types';
-import { RRVehicleCardComponent, RRCarLoaderComponent } from '../../shared';
+import { RRVehicleCardComponent, RRCarLoaderComponent, RRVehicleImageCarouselComponent } from '../../shared';
 
 @Component({
   selector: 'app-rr-homepage',
@@ -56,6 +56,7 @@ import { RRVehicleCardComponent, RRCarLoaderComponent } from '../../shared';
     NgIconComponent,
     RRVehicleCardComponent,
     RRCarLoaderComponent,
+    RRVehicleImageCarouselComponent,
   ],
   providers: [
     provideIcons({

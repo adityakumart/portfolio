@@ -41,6 +41,18 @@
       </div>
     }
 
+    <!-- Multi-photo count pill -->
+    @if (hasMultipleImages) {
+      <div class="absolute bottom-2.5 right-2.5 z-10 pointer-events-none">
+        <span
+          class="inline-flex items-center gap-1 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-background/85 text-foreground border border-border/70 shadow-xs backdrop-blur-md"
+        >
+          <ng-icon name="lucideImage" class="text-xs text-primary"></ng-icon>
+          <span>{{ imageCount }}</span>
+        </span>
+      </div>
+    }
+
     <!-- Hover "Book Now" Overlay (Stats Variant for available vehicles - Desktop) -->
     @if (showBookNowOverlay) {
       <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center hover-overlay-desktop z-10">

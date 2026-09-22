@@ -17,6 +17,7 @@ import {
   lucideArrowRight,
   lucidePhone,
   lucideMoreVertical,
+  lucideImage,
 } from '@ng-icons/lucide';
 import { IVehicle, IPublicVehicle } from '@portfolio/shared-types';
 
@@ -46,6 +47,7 @@ export type VehicleCardVariant = 'fleet' | 'stats' | 'homepage';
       lucideArrowRight,
       lucidePhone,
       lucideMoreVertical,
+      lucideImage,
     }),
   ],
   templateUrl: './vehicle-card.component.html',
@@ -97,6 +99,14 @@ export class RRVehicleCardComponent {
       return this.vehicle.images[0];
     }
     return 'https://via.placeholder.com/150';
+  }
+
+  get imageCount(): number {
+    return this.vehicle?.images?.length || 0;
+  }
+
+  get hasMultipleImages(): boolean {
+    return this.imageCount > 1;
   }
 
   onImageError(event: Event) {

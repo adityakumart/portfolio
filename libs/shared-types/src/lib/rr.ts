@@ -100,6 +100,20 @@ export interface IPublicVehicle {
   allowBooking?: boolean;
 }
 
+export interface IVehicleUploadedAsset {
+  key: string;
+  url: string;
+  originalName?: string;
+}
+
+export interface IVehicleImageUploadResponse {
+  success: boolean;
+  message: string;
+  images: IVehicleUploadedAsset[];
+  key?: string;
+  url?: string;
+}
+
 export interface IVehicleAutocompleteItem {
   regNo: string;
   name: string;

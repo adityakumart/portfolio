@@ -17,6 +17,8 @@ import {
   IRRLoginRequest,
   IRRLoginResponse,
   ICustomerIntimation,
+  IVehicleImageUploadResponse,
+  IVehicleUploadedAsset,
 } from '@portfolio/shared-types';
 
 export {
@@ -33,6 +35,8 @@ export {
   IRRLoginRequest,
   IRRLoginResponse,
   ICustomerIntimation,
+  IVehicleImageUploadResponse,
+  IVehicleUploadedAsset,
 };
 
 @Injectable({
@@ -328,7 +332,34 @@ export class RRApiService {
 
   async uploadVehicleImage(file: File): Promise<{ key: string; url: string }> {
     const formData = new FormData();
-    formData.append('image', file);
+    formData.append('images', file);
+
+    const token = this.getToken();
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    const res = await firstValueFrom(
+      this.http.post<IVehicleImageUploadResponse>(
+        `${this.baseUrl}/vehicles/upload`,
+        formData,
+        { headers }
+      )
+    );
+
+    const first = res.images && res.images.length > 0 ? res.images[0] : null;
+    return {
+      key: first?.key || res.key || '',
+      url: first?.url || res.url || '',
+    };
+  }
+
+  async uploadVehicleImages(files: File[]): Promise<IVehicleImageUploadResponse> {
+    const formData = new FormData();
+    for (const file of files) {
+      formData.append('images', file);
+    }
 
     const token = this.getToken();
     let headers = new HttpHeaders();
@@ -337,7 +368,7 @@ export class RRApiService {
     }
 
     return firstValueFrom(
-      this.http.post<{ key: string; url: string }>(
+      this.http.post<IVehicleImageUploadResponse>(
         `${this.baseUrl}/vehicles/upload`,
         formData,
         { headers }
