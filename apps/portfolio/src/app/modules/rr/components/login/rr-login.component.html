@@ -296,17 +296,9 @@
                     Date of Birth
                   </label>
                   <div class="relative flex items-center">
-                    <ng-icon
-                      name="lucideCalendar"
-                      class="absolute left-3 text-muted-foreground pointer-events-none text-base"
-                    ></ng-icon>
-                    <input
-                      hlmInput
-                      id="dob"
-                      type="date"
-                      formControlName="dob"
-                      class="pl-10 w-full"
-                    />
+                    <hlm-date-picker formControlName="dob" class="w-full">
+                      <hlm-date-picker-input placeholder="DD-MM-YYYY" class="w-full" inputId="dob" />
+                    </hlm-date-picker>
                   </div>
                   @if (
                     employeeFormGroup.get('dob')?.touched &&

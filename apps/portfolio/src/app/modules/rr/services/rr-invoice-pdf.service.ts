@@ -1,33 +1,8 @@
 import { Injectable } from '@angular/core';
 import jsPDF from 'jspdf';
 import { maskAadhar } from '../shared/utils/aadhar-mask.util';
-
-export function formatToIndianDate(dateStr: string): string {
-  if (!dateStr || dateStr === '________' || dateStr === 'N/A') return dateStr;
-
-  const separator = dateStr.includes('T')
-    ? 'T'
-    : dateStr.includes(' ')
-      ? ' '
-      : null;
-  if (separator) {
-    const parts = dateStr.split(separator);
-    const datePart = parts[0];
-    const timePart = parts[1] || '';
-    const dateParts = datePart.split('-');
-    if (dateParts.length === 3 && dateParts[0].length === 4) {
-      const formattedDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
-      return timePart ? `${formattedDate} ${timePart}` : formattedDate;
-    }
-    return dateStr;
-  }
-
-  const parts = dateStr.split('-');
-  if (parts.length === 3 && parts[0].length === 4) {
-    return `${parts[2]}-${parts[1]}-${parts[0]}`;
-  }
-  return dateStr;
-}
+import { formatToIndianDate } from '../../../shared/pipes/indian-date.pipe';
+export { formatToIndianDate };
 
 @Injectable({
   providedIn: 'root',

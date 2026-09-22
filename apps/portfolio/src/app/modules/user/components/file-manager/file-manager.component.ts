@@ -53,6 +53,7 @@ import { FileManagerService } from '../../services/file-manager.service';
 import { AuthService } from '../../services/auth';
 import { FileNode } from '@portfolio/shared-types';
 import { FilePreviewDialogComponent } from './file-preview-dialog.component';
+import { IndianDatePipe } from '../../../../shared/pipes/indian-date.pipe';
 
 @Component({
   selector: 'app-file-manager',
@@ -73,6 +74,7 @@ import { FilePreviewDialogComponent } from './file-preview-dialog.component';
     HlmBreadcrumbImports,
     HlmTableImports,
     HlmTextareaImports,
+    IndianDatePipe,
   ],
   providers: [
     provideIcons({
@@ -329,24 +331,5 @@ export class FileManagerComponent implements OnInit {
     const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-  }
-
-  /**
-   * Utility helper to format date strings
-   */
-  formatDate(dateStr?: string): string {
-    if (!dateStr) return '—';
-    try {
-      const date = new Date(dateStr);
-      return date.toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } catch {
-      return dateStr;
-    }
   }
 }

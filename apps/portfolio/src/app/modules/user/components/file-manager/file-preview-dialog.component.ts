@@ -18,6 +18,7 @@ import {
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { HttpClient } from '@angular/common/http';
 import { FileNode } from '@portfolio/shared-types';
+import { IndianDatePipe } from '../../../../shared/pipes/indian-date.pipe';
 
 @Component({
   selector: 'app-file-preview-dialog',
@@ -27,6 +28,7 @@ import { FileNode } from '@portfolio/shared-types';
     HlmButtonDirective,
     NgIconComponent,
     HlmSpinnerComponent,
+    IndianDatePipe,
   ],
   providers: [
     provideIcons({
@@ -168,21 +170,5 @@ export class FilePreviewDialogComponent implements OnInit {
     const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-  }
-
-  formatDate(dateStr?: string): string {
-    if (!dateStr) return '—';
-    try {
-      const date = new Date(dateStr);
-      return date.toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } catch {
-      return dateStr;
-    }
   }
 }

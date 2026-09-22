@@ -8,10 +8,12 @@ import { HlmInputImports } from '@spartan-ng/hel/input';
 import { HlmDialogService } from '@spartan-ng/hel/dialog';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
 import { HlmBadgeImports } from '@spartan-ng/hel/badge';
+import { HlmDatePickerImports } from '@spartan-ng/hel/date-picker';
 import { toast } from '@spartan-ng/hel/sonner';
 import { IVehicle } from '@portfolio/shared-types';
 import { RRVehicleCardComponent } from '../../../../shared';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import { IndianDatePipe, toISODateString, IndianDateInput } from '../../../../../../shared/pipes/indian-date.pipe';
 import {
   lucideCar,
   lucidePlus,
@@ -51,6 +53,8 @@ export type SeatingFilter = 'all' | '5' | '7';
     HlmButtonImports,
     HlmTooltipImports,
     HlmBadgeImports,
+    HlmDatePickerImports,
+    IndianDatePipe,
     NgIconComponent,
     RRVehicleCardComponent,
   ],
@@ -242,8 +246,8 @@ export class RRVehicleListComponent implements OnInit {
       fuelType: v.fuelType || 'Petrol',
       engineNo: v.engineNo,
       chassisNo: v.chassisNo,
-      insuranceExpiry: v.insuranceExpiry,
-      pollutionExpiry: v.pollutionExpiry,
+      insuranceExpiry: v.insuranceExpiry ? new Date(v.insuranceExpiry) : null,
+      pollutionExpiry: v.pollutionExpiry ? new Date(v.pollutionExpiry) : null,
       status: v.status || 'available',
       extraKmPrice: v.extraKmPrice,
       extraHourPrice: v.extraHourPrice
@@ -276,11 +280,14 @@ export class RRVehicleListComponent implements OnInit {
     e.preventDefault();
     if (this.vehicleFormGroup.invalid) return;
 
+    const formVal = this.vehicleFormGroup.value;
     const payload = {
-      ...this.vehicleFormGroup.value,
+      ...formVal,
+      insuranceExpiry: toISODateString(formVal.insuranceExpiry as IndianDateInput),
+      pollutionExpiry: toISODateString(formVal.pollutionExpiry as IndianDateInput),
       images: this.vehicleImageInputUrl.trim() 
         ? [this.vehicleImageInputUrl.trim()] 
-        : [`assets/rr/${this.vehicleFormGroup.value.name.toLowerCase()}.png`]
+        : [`assets/rr/${formVal.name?.toLowerCase()}.png`]
     };
 
     try {

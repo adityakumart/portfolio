@@ -328,11 +328,11 @@
             </div>
             <div>
               <span class="text-muted-foreground block">Insurance Expiry</span>
-              <span class="font-medium">{{ (selectedVehicleDetails()?.insuranceExpiry | date:'dd-MM-yyyy':'UTC') || 'N/A' }}</span>
+              <span class="font-medium">{{ (selectedVehicleDetails()?.insuranceExpiry | indianDate) || 'N/A' }}</span>
             </div>
             <div>
               <span class="text-muted-foreground block">Pollution Expiry</span>
-              <span class="font-medium">{{ (selectedVehicleDetails()?.pollutionExpiry | date:'dd-MM-yyyy':'UTC') || 'N/A' }}</span>
+              <span class="font-medium">{{ (selectedVehicleDetails()?.pollutionExpiry | indianDate) || 'N/A' }}</span>
             </div>
           </div>
         </div>
@@ -518,7 +518,9 @@
 
           <div>
             <label hlmLabel class="text-xs text-muted-foreground block mb-1">Insurance Expiry Date</label>
-            <input hlmInput type="date" formControlName="insuranceExpiry" class="w-full text-sm" />
+            <hlm-date-picker formControlName="insuranceExpiry">
+              <hlm-date-picker-input placeholder="DD-MM-YYYY" class="w-full text-sm" />
+            </hlm-date-picker>
             @if (vehicleFormGroup.get('insuranceExpiry')?.invalid && vehicleFormGroup.get('insuranceExpiry')?.touched) {
               <span class="text-xs text-destructive">Required.</span>
             }
@@ -526,7 +528,9 @@
 
           <div>
             <label hlmLabel class="text-xs text-muted-foreground block mb-1">Pollution Expiry Date</label>
-            <input hlmInput type="date" formControlName="pollutionExpiry" class="w-full text-sm" />
+            <hlm-date-picker formControlName="pollutionExpiry">
+              <hlm-date-picker-input placeholder="DD-MM-YYYY" class="w-full text-sm" />
+            </hlm-date-picker>
             @if (vehicleFormGroup.get('pollutionExpiry')?.invalid && vehicleFormGroup.get('pollutionExpiry')?.touched) {
               <span class="text-xs text-destructive">Required.</span>
             }

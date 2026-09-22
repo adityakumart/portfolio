@@ -75,26 +75,18 @@
             class="text-[11px] font-semibold text-muted-foreground uppercase pl-1"
             >From</span
           >
-          <input
-            hlmInput
-            type="date"
-            [(ngModel)]="logFilterFrom"
-            (change)="applyCustomRange()"
-            class="h-8 text-xs w-32 sm:w-36 bg-card"
-          />
+          <hlm-date-picker [(ngModel)]="logFilterFrom" (dateChange)="applyCustomRange()">
+            <hlm-date-picker-input placeholder="DD-MM-YYYY" class="h-8 text-xs w-32 sm:w-36 bg-card" />
+          </hlm-date-picker>
         </div>
         <div class="flex items-center gap-1.5">
           <span
             class="text-[11px] font-semibold text-muted-foreground uppercase"
             >To</span
           >
-          <input
-            hlmInput
-            type="date"
-            [(ngModel)]="logFilterTo"
-            (change)="applyCustomRange()"
-            class="h-8 text-xs w-32 sm:w-36 bg-card"
-          />
+          <hlm-date-picker [(ngModel)]="logFilterTo" (dateChange)="applyCustomRange()">
+            <hlm-date-picker-input placeholder="DD-MM-YYYY" class="h-8 text-xs w-32 sm:w-36 bg-card" />
+          </hlm-date-picker>
         </div>
         <button
           hlmBtn
@@ -257,7 +249,7 @@
                     class="text-muted-foreground text-xs"
                   ></ng-icon>
                   <span>{{
-                    log.timestamp || log.time | date: 'dd MMM yyyy, hh:mm a'
+                    log.timestamp || log.time | indianDate:{ includeTime: true }
                   }}</span>
                 </div>
               </td>

@@ -8,6 +8,8 @@ import { HlmBadgeImports } from '@spartan-ng/hel/badge';
 import { HlmTableImports } from '@spartan-ng/hel/table';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
 import { HlmSelectImports } from '@spartan-ng/hel/select';
+import { HlmDatePickerImports } from '@spartan-ng/hel/date-picker';
+import { IndianDatePipe, toISODateString, IndianDateInput } from '../../../../../../shared/pipes/indian-date.pipe';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideSearch,
@@ -44,6 +46,8 @@ export type LogRangePreset = 'last_week' | 'last_month' | 'last_quarter' | 'last
     HlmTableImports,
     HlmTooltipImports,
     HlmSelectImports,
+    HlmDatePickerImports,
+    IndianDatePipe,
     NgIconComponent,
   ],
   providers: [
@@ -90,8 +94,8 @@ export class RRActivityLogsComponent implements OnInit {
   };
   readonly rangeItemToString = (value: LogRangePreset) =>
     (value && this.rangeLabelMap[value]) ? this.rangeLabelMap[value] : (value ?? '');
-  logFilterFrom = '';
-  logFilterTo = '';
+  logFilterFrom: IndianDateInput = null;
+  logFilterTo: IndianDateInput = null;
   searchQuery = '';
 
   showingStart = computed(() => {
@@ -108,29 +112,22 @@ export class RRActivityLogsComponent implements OnInit {
     this.loadActivityLogs();
   }
 
-  private formatDate(d: Date): string {
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }
-
   applyPresetDates(preset: LogRangePreset) {
     const now = new Date();
-    this.logFilterTo = this.formatDate(now);
+    this.logFilterTo = now;
 
     if (preset === 'last_week') {
       const past = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      this.logFilterFrom = this.formatDate(past);
+      this.logFilterFrom = past;
     } else if (preset === 'last_month') {
       const past = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-      this.logFilterFrom = this.formatDate(past);
+      this.logFilterFrom = past;
     } else if (preset === 'last_quarter') {
       const past = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
-      this.logFilterFrom = this.formatDate(past);
+      this.logFilterFrom = past;
     } else if (preset === 'last_year') {
       const past = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
-      this.logFilterFrom = this.formatDate(past);
+      this.logFilterFrom = past;
     }
   }
 
@@ -222,9 +219,12 @@ export class RRActivityLogsComponent implements OnInit {
         combinedSearch = combinedSearch ? `${combinedSearch} employee` : 'employee';
       }
 
+      const fromIso = toISODateString(this.logFilterFrom);
+      const toIso = toISODateString(this.logFilterTo);
+
       const res = await this.rrApi.getLogs({
-        from: this.logFilterFrom || undefined,
-        to: this.logFilterTo || undefined,
+        from: fromIso || undefined,
+        to: toIso || undefined,
         page: this.currentPage(),
         limit: this.pageSize(),
         search: combinedSearch || undefined,

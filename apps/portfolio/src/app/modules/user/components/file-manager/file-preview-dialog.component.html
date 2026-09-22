@@ -7,7 +7,7 @@
       </div>
       <div class="space-y-0.5 truncate">
         <h2 class="text-base font-bold text-foreground truncate">{{ data.node.name }}</h2>
-        <p class="text-xs text-muted-foreground">{{ formatSize(data.node.size) }} • {{ formatDate(data.node.lastModified) }}</p>
+        <p class="text-xs text-muted-foreground">{{ formatSize(data.node.size) }} • {{ ((data.node.lastModified | indianDate:{ includeTime: true }) || '—') }}</p>
       </div>
     </div>
     <button hlmBtn size="icon" variant="ghost" (click)="dialogRef?.close()" class="h-8 w-8 text-muted-foreground" aria-label="Close dialog">

@@ -18,12 +18,14 @@ import { HlmInputImports } from '@spartan-ng/hel/input';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
 import { HlmDialogService } from '@spartan-ng/hel/dialog';
+import { HlmDatePickerImports } from '@spartan-ng/hel/date-picker';
 import { ExperienceService } from './experience.service';
 import { UserExperienceRecord } from '@portfolio/shared-types';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { lucideList, lucidePlus, lucideTrash2 } from '@ng-icons/lucide';
 import { ErrorMessageComponent } from '../../../../../shared/components/error-message.component';
 import { ExperienceListDialogComponent } from './experience-list-dialog.component';
+import { toISODateString, IndianDateInput } from '../../../../../shared/pipes/indian-date.pipe';
 
 @Component({
   selector: 'app-experience',
@@ -39,6 +41,7 @@ import { ExperienceListDialogComponent } from './experience-list-dialog.componen
     HlmInputImports,
     HlmButtonImports,
     HlmTooltipImports,
+    HlmDatePickerImports,
     NgIconComponent,
     ErrorMessageComponent,
   ],
@@ -50,7 +53,7 @@ export class ExperienceComponent implements OnInit {
   private dialogService = inject(HlmDialogService);
   private cdr = inject(ChangeDetectorRef);
 
-  maxDate = new Date().toISOString().split('T')[0];
+  maxDate = new Date();
 
   experienceForm: FormGroup = this.fb.group({
     id: [null],
@@ -69,8 +72,8 @@ export class ExperienceComponent implements OnInit {
 
   createDateRangeGroup(): FormGroup {
     return this.fb.group({
-      start: ['', Validators.required],
-      end: ['', Validators.required],
+      start: [null, Validators.required],
+      end: [null, Validators.required],
     });
   }
 
@@ -93,10 +96,16 @@ export class ExperienceComponent implements OnInit {
 
     const formValue = this.experienceForm.value;
 
-    // Calculate total experience details before saving
-    const calculatedExp = this.expService.calculateTotalExperience(
-      formValue.experience,
+    // Convert dates to standard ISO strings for backend / storage compatibility
+    const serializedExp = formValue.experience.map(
+      (e: { start: IndianDateInput; end: IndianDateInput }) => ({
+        start: toISODateString(e.start),
+        end: toISODateString(e.end),
+      })
     );
+
+    // Calculate total experience details before saving
+    const calculatedExp = this.expService.calculateTotalExperience(serializedExp);
     const totalDays =
       calculatedExp.years * 365 +
       calculatedExp.months * 30 +
@@ -110,7 +119,7 @@ export class ExperienceComponent implements OnInit {
       displayYears: calculatedExp.years,
       displayMonths: calculatedExp.months,
       displayDays: calculatedExp.days,
-      experience: formValue.experience,
+      experience: serializedExp,
     };
 
     const saveObs = formValue.id
@@ -151,8 +160,8 @@ export class ExperienceComponent implements OnInit {
     record.experience.forEach((exp) => {
       const group = this.createDateRangeGroup();
       group.patchValue({
-        start: exp.start ? new Date(exp.start).toISOString().split('T')[0] : '',
-        end: exp.end ? new Date(exp.end).toISOString().split('T')[0] : '',
+        start: exp.start ? new Date(exp.start) : null,
+        end: exp.end ? new Date(exp.end) : null,
       });
       this.experienceFormArray.push(group);
     });
@@ -168,9 +177,12 @@ export class ExperienceComponent implements OnInit {
     const expArray = this.experienceForm.get('experience')?.value;
     if (!expArray || expArray.length === 0) return '';
 
-    const validExp = expArray.filter(
-      (e: { start: string; end: string }) => e.start && e.end,
-    );
+    const validExp = expArray
+      .filter((e: { start: IndianDateInput; end: IndianDateInput }) => e.start && e.end)
+      .map((e: { start: IndianDateInput; end: IndianDateInput }) => ({
+        start: toISODateString(e.start),
+        end: toISODateString(e.end),
+      }));
     if (validExp.length === 0) return '';
 
     const result = this.expService.calculateTotalExperience(validExp);

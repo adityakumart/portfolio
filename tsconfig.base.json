@@ -124,6 +124,18 @@
       ],
       "@spartan-ng/hel/accordion": [
         "./libs/styles/accordion/src/index.ts"
+      ],
+      "@spartan-ng/hel/date-picker": [
+        "./libs/styles/date-picker/src/index.ts"
+      ],
+      "@spartan-ng/hel/calendar": [
+        "./libs/styles/calendar/src/index.ts"
+      ],
+      "@spartan-ng/hel/popover": [
+        "./libs/styles/popover/src/index.ts"
+      ],
+      "@spartan-ng/hel/input-group": [
+        "./libs/styles/input-group/src/index.ts"
       ]
     },
     "forceConsistentCasingInFileNames": true,

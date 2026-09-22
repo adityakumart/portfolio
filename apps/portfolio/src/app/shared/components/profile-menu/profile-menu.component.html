@@ -27,7 +27,7 @@
       <div class="truncate">
         <span class="block text-[10px] uppercase font-semibold text-muted-foreground/80">Last Logged In</span>
         <span class="font-medium text-foreground">
-          {{ currentUser()?.['user_logged_in_at'] ? (currentUser()?.['user_logged_in_at'] | date:'medium') : 'Just now' }}
+          {{ currentUser()?.['user_logged_in_at'] ? (currentUser()?.['user_logged_in_at'] | indianDate:{ includeTime: true }) : 'Just now' }}
         </span>
       </div>
     </div>

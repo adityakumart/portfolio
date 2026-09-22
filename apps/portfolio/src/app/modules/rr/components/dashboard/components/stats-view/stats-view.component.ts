@@ -48,6 +48,7 @@ import {
   RREndBookingDialogComponent,
   AadharVisiblePipe,
 } from '../../../../shared';
+import { IndianDatePipe } from '../../../../../../shared/pipes/indian-date.pipe';
 
 export type StatCategory =
   | 'fleet'
@@ -72,6 +73,7 @@ export type SeatingFilter = 'all' | '5' | '7';
     NgIconComponent,
     RRVehicleCardComponent,
     AadharVisiblePipe,
+    IndianDatePipe,
   ],
   providers: [
     provideIcons({

@@ -111,18 +111,19 @@
         }
       </div>
       <div class="relative">
-        <input
-          hlmInput
-          type="date"
-          [ngModel]="fromDateFilter()"
-          (ngModelChange)="onFromDateChange($event)"
-          [max]="toDateFilter() || today"
-          (keyup.enter)="applyFilters()"
-          class="w-full text-xs pl-8 h-9"
-          [class.border-destructive]="dateError()"
-          [class.focus-visible:ring-destructive]="dateError()"
-        />
-        <ng-icon name="lucideCalendar" class="absolute left-2.5 top-2.5 text-muted-foreground text-sm pointer-events-none"></ng-icon>
+        <hlm-date-picker
+          [date]="fromDateFilter()"
+          (dateChange)="onFromDateChange($event)"
+          [maxDate]="toDateFilter() || today"
+          class="w-full"
+        >
+          <hlm-date-picker-input
+            placeholder="DD-MM-YYYY"
+            class="w-full text-xs h-9"
+            [class.border-destructive]="dateError()"
+            [class.focus-visible:ring-destructive]="dateError()"
+          />
+        </hlm-date-picker>
       </div>
     </div>
 
@@ -137,19 +138,20 @@
         }
       </div>
       <div class="relative">
-        <input
-          hlmInput
-          type="date"
-          [ngModel]="toDateFilter()"
-          (ngModelChange)="onToDateChange($event)"
-          [min]="fromDateFilter() || null"
-          [max]="today"
-          (keyup.enter)="applyFilters()"
-          class="w-full text-xs pl-8 h-9"
-          [class.border-destructive]="dateError()"
-          [class.focus-visible:ring-destructive]="dateError()"
-        />
-        <ng-icon name="lucideCalendar" class="absolute left-2.5 top-2.5 text-muted-foreground text-sm pointer-events-none"></ng-icon>
+        <hlm-date-picker
+          [date]="toDateFilter()"
+          (dateChange)="onToDateChange($event)"
+          [minDate]="fromDateFilter() || null"
+          [maxDate]="today"
+          class="w-full"
+        >
+          <hlm-date-picker-input
+            placeholder="DD-MM-YYYY"
+            class="w-full text-xs h-9"
+            [class.border-destructive]="dateError()"
+            [class.focus-visible:ring-destructive]="dateError()"
+          />
+        </hlm-date-picker>
       </div>
     </div>
 
@@ -279,7 +281,7 @@
 
               <!-- Creation Date -->
               <td hlmTd class="hidden md:table-cell">
-                <div class="font-medium">{{ b.createdAt | date:'dd-MM-yyyy' }}</div>
+                <div class="font-medium">{{ b.createdAt | indianDate }}</div>
                 <div class="text-muted-foreground text-xs">{{ b.createdAt | date:'shortTime' }}</div>
               </td>
 
@@ -672,7 +674,7 @@
               <span class="text-muted-foreground block text-[10px] uppercase font-bold tracking-wider">Booking Started By</span>
               <span class="font-bold text-foreground">{{ selectedBooking()?.bookedByName || selectedBooking()?.bookedBy || 'Admin Desk' }}</span>
               <span class="text-[10px] text-muted-foreground block font-mono">
-                Role: {{ (selectedBooking()?.bookedByRole || 'Admin') | uppercase }} &bull; {{ selectedBooking()?.createdAt | date:'dd MMM yyyy, hh:mm a' }}
+                Role: {{ (selectedBooking()?.bookedByRole || 'Admin') | uppercase }} &bull; {{ selectedBooking()?.createdAt | indianDate:{ includeTime: true } }}
               </span>
             </div>
 
@@ -680,7 +682,7 @@
               <span class="text-muted-foreground block text-[10px] uppercase font-bold tracking-wider">Booking Closed By</span>
               <span class="font-bold text-foreground">{{ selectedBooking()?.endedByName || selectedBooking()?.endedBy || 'Admin Desk' }}</span>
               <span class="text-[10px] text-muted-foreground block font-mono">
-                Role: {{ (selectedBooking()?.endedByRole || 'Staff') | uppercase }} &bull; {{ (selectedBooking()?.endedAt || selectedBooking()?.returnDateTimeActual) | date:'dd MMM yyyy, hh:mm a' }}
+                Role: {{ (selectedBooking()?.endedByRole || 'Staff') | uppercase }} &bull; {{ (selectedBooking()?.endedAt || selectedBooking()?.returnDateTimeActual) | indianDate:{ includeTime: true } }}
               </span>
             </div>
           </div>
@@ -697,12 +699,12 @@
                   <div class="p-2 rounded bg-amber-500/5 border border-amber-500/20 text-[11px]">
                     <div class="flex items-center justify-between text-muted-foreground text-[10px]">
                       <span class="font-bold text-foreground uppercase">{{ intm.intimationType }}</span>
-                      <span>{{ intm.recordedAt | date:'dd MMM yyyy, hh:mm a' }} (Logged by: {{ intm.recordedByName || intm.recordedBy }})</span>
+                      <span>{{ intm.recordedAt | indianDate:{ includeTime: true } }} (Logged by: {{ intm.recordedByName || intm.recordedBy }})</span>
                     </div>
                     <p class="text-foreground mt-0.5">{{ intm.notes }}</p>
                     @if (intm.expectedReturnDateTime) {
                       <div class="text-[10px] text-muted-foreground font-mono mt-0.5">
-                        New Intimated Return: {{ intm.expectedReturnDateTime | date:'dd MMM yyyy, hh:mm a' }}
+                        New Intimated Return: {{ intm.expectedReturnDateTime | indianDate:{ includeTime: true } }}
                       </div>
                     }
                   </div>

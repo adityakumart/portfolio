@@ -13,6 +13,7 @@ import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { lucideHistory, lucideHome, lucideLogOut, lucideUser } from '@ng-icons/lucide';
 import { AuthService } from '../../../modules/user/services/auth';
 import { InitialsPipe } from '../../pipes/initials.pipe';
+import { IndianDatePipe } from '../../pipes/indian-date.pipe';
 
 @Component({
   selector: 'app-profile-menu',
@@ -25,6 +26,7 @@ import { InitialsPipe } from '../../pipes/initials.pipe';
     HlmAvatarImports,
     NgIconComponent,
     InitialsPipe,
+    IndianDatePipe,
   ],
   providers: [
     provideIcons({ lucideHistory, lucideHome, lucideLogOut, lucideUser }),

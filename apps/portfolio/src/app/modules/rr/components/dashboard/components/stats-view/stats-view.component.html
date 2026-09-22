@@ -540,7 +540,7 @@
               </span>
               <span class="flex items-center gap-1 font-mono text-[10px]">
                 <ng-icon name="lucideClock" class="text-xs"></ng-icon>
-                {{ log.timestamp || log.time | date:'hh:mm a, dd MMM' }}
+                {{ log.timestamp || log.time | indianDate:{ includeTime: true } }}
               </span>
             </div>
           </div>
