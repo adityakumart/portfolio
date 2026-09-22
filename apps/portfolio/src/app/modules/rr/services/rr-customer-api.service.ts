@@ -8,6 +8,7 @@ import {
   IUpdateCustomerDTO,
   ICustomerMembershipDiscount,
   ICustomerListResponse,
+  ICustomerAutocompleteItem,
 } from '@portfolio/shared-types';
 
 /**
@@ -85,6 +86,28 @@ export class RRCustomerApiService {
       return res;
     } finally {
       this.isLoading.set(false);
+    }
+  }
+
+  /**
+   * Fast autocomplete lookup returning only ID and Name.
+   */
+  async getAutocomplete(query?: string): Promise<ICustomerAutocompleteItem[]> {
+    let httpParams = new HttpParams();
+    if (query?.trim()) {
+      httpParams = httpParams.set('q', query.trim());
+    }
+
+    try {
+      const res = await firstValueFrom(
+        this.http.get<ICustomerAutocompleteItem[]>(`${this.baseUrl}/autocomplete`, {
+          headers: this.getHeaders(),
+          params: httpParams,
+        })
+      );
+      return res || [];
+    } catch {
+      return [];
     }
   }
 

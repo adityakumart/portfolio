@@ -10,6 +10,9 @@ customerRouter.use(authenticateRRToken);
 // Billing membership discount check (must precede :id param)
 customerRouter.get('/billing/discount', CustomerController.checkDiscount);
 
+// Autocomplete lookup returning only id and name (must precede :id param)
+customerRouter.get('/autocomplete', CustomerController.getCustomersAutocomplete);
+
 // Customer CRUD operations
 customerRouter.post('/', CustomerController.createCustomer);
 customerRouter.get('/', CustomerController.getCustomers);

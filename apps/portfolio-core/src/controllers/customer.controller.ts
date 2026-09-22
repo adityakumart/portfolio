@@ -8,6 +8,7 @@ import {
   ICreateCustomerDTO,
   IUpdateCustomerDTO,
   ICustomerListResponse,
+  ICustomerAutocompleteItem,
 } from '@portfolio/shared-types';
 
 /**
@@ -179,6 +180,51 @@ export class CustomerController {
       res.status(200).json(responsePayload);
     } catch (err: unknown) {
       console.error('CustomerController.getCustomers error:', err);
+      res.status(500).json({ error: 'Internal Server Error', message: (err as Error).message });
+    }
+  }
+
+  /**
+   * GET /api/rr/customers/autocomplete
+   * Lightweight endpoint returning strictly ID and Name for fast dropdown selection.
+   */
+  static async getCustomersAutocomplete(req: IRRRequest, res: Response): Promise<void> {
+    try {
+      await connectMongoose();
+      const q = typeof req.query['q'] === 'string' ? req.query['q'].trim() : '';
+
+      const filter: Record<string, unknown> = {
+        isDeleted: { $ne: true },
+        isActive: { $ne: false },
+      };
+
+      if (q) {
+        const regex = new RegExp(q, 'i');
+        filter['$or'] = [
+          { membershipId: regex },
+          { firstName: regex },
+          { lastName: regex },
+        ];
+      }
+
+      const docs = await RegularCustomer.find(filter)
+        .select('_id membershipId firstName lastName')
+        .sort({ firstName: 1, membershipId: 1 })
+        .limit(20)
+        .lean()
+        .exec();
+
+      const items: ICustomerAutocompleteItem[] = (
+        docs as Array<{ _id: unknown; membershipId: string; firstName: string; lastName: string }>
+      ).map((d) => ({
+        _id: String(d._id),
+        membershipId: d.membershipId,
+        name: `${d.firstName} ${d.lastName}`.trim(),
+      }));
+
+      res.status(200).json(items);
+    } catch (err: unknown) {
+      console.error('CustomerController.getCustomersAutocomplete error:', err);
       res.status(500).json({ error: 'Internal Server Error', message: (err as Error).message });
     }
   }

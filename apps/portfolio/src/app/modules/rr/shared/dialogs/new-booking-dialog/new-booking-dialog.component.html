@@ -102,82 +102,275 @@
       <fieldset [disabled]="!isTravelDetailsConfigured" class="space-y-4 disabled:opacity-50">
         <!-- 2. Renter Details -->
         <div class="p-4 rounded-xl border border-border bg-card/60 space-y-4">
-          <h4 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-            <ng-icon name="lucideUser"></ng-icon>
-            <span>Renter Person Details (Step 2)</span>
-          </h4>
-          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            <div>
-              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Renter First Name</label>
-              <input hlmInput formControlName="renterFirstName" class="w-full text-sm" />
-              @if (bookingFormGroup.get('renterFirstName')?.invalid && bookingFormGroup.get('renterFirstName')?.touched) {
-                <span class="text-xs text-destructive">Required (letters only).</span>
-              }
-            </div>
-            <div>
-              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Renter Second Name</label>
-              <input hlmInput formControlName="renterSecondName" class="w-full text-sm" />
-              @if (bookingFormGroup.get('renterSecondName')?.invalid && bookingFormGroup.get('renterSecondName')?.touched) {
-                <span class="text-xs text-destructive">Required (letters only).</span>
-              }
-            </div>
-            <div>
-              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Father Name</label>
-              <input hlmInput formControlName="renterFatherName" class="w-full text-sm" />
-              @if (bookingFormGroup.get('renterFatherName')?.invalid && bookingFormGroup.get('renterFatherName')?.touched) {
-                <span class="text-xs text-destructive">Required (letters only).</span>
-              }
-            </div>
-            <div>
-              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Aadhar Number</label>
-              <rr-aadhar-input formControlName="renterAadhar" placeholder="1234 5678 9012"></rr-aadhar-input>
-              @if (bookingFormGroup.get('renterAadhar')?.invalid && bookingFormGroup.get('renterAadhar')?.touched) {
-                <span class="text-xs text-destructive">Must be 12 digits.</span>
-              }
-            </div>
-            <div>
-              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Driving License Number</label>
-              <input hlmInput formControlName="renterDL" maxlength="16" class="w-full text-sm" />
-              @if (bookingFormGroup.get('renterDL')?.invalid && bookingFormGroup.get('renterDL')?.touched) {
-                <span class="text-xs text-destructive">Must be 16 chars.</span>
-              }
-            </div>
-            <div>
-              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Phone Number</label>
-              <input hlmInput formControlName="renterPhone" maxlength="10" class="w-full text-sm" />
-              @if (bookingFormGroup.get('renterPhone')?.invalid && bookingFormGroup.get('renterPhone')?.touched) {
-                <span class="text-xs text-destructive">Must be 10 digits.</span>
-              }
-            </div>
-            <div>
-              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Alternative Phone Number</label>
-              <input hlmInput formControlName="renterAltPhone" maxlength="10" class="w-full text-sm" />
-            </div>
-            <div class="sm:col-span-2">
-              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Address</label>
-              <textarea hlmInput formControlName="renterAddress" rows="2" class="w-full text-sm"></textarea>
-              @if (bookingFormGroup.get('renterAddress')?.invalid && bookingFormGroup.get('renterAddress')?.touched) {
-                <span class="text-xs text-destructive">Required.</span>
-              }
-            </div>
+          <div class="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-border/40">
+            <h4 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <ng-icon name="lucideUser"></ng-icon>
+              <span>Renter Person Details (Step 2)</span>
+            </h4>
 
-            @if (membershipDiscount(); as m) {
-              @if (m.isRegularCustomer) {
-                <div class="sm:col-span-2 p-3 rounded-xl border border-amber-500/30 bg-amber-500/10 flex items-center justify-between text-xs">
-                  <div class="flex items-center gap-2">
-                    <ng-icon name="lucideCrown" class="text-amber-500 text-lg shrink-0"></ng-icon>
-                    <div>
-                      <span class="font-bold text-foreground">Verified {{ m.membershipTier | uppercase }} Member ({{ m.membershipId }})</span>
-                      <span class="text-muted-foreground block text-[11px]">{{ m.message }}</span>
+            <!-- Checkbox for Regular Customer Mode -->
+            <label class="inline-flex items-center gap-2 cursor-pointer bg-amber-500/10 hover:bg-amber-500/15 border border-amber-500/30 px-3 py-1 rounded-lg transition-colors select-none">
+              <input
+                type="checkbox"
+                [checked]="isRegularMemberMode()"
+                (change)="toggleRegularMemberMode($event)"
+                class="rounded accent-amber-500 h-4 w-4 cursor-pointer"
+              />
+              <span class="text-xs font-bold text-amber-600 dark:text-amber-400 inline-flex items-center gap-1.5">
+                <ng-icon name="lucideCrown" class="size-3.5"></ng-icon>
+                <span>Existing Regular Member?</span>
+              </span>
+            </label>
+          </div>
+
+          <!-- When Checked: Show Select Tag Autocomplete -->
+          @if (isRegularMemberMode()) {
+            @if (!selectedRegularCustomer()) {
+              <div class="space-y-1.5">
+                <label hlmLabel class="text-xs font-semibold text-muted-foreground block">
+                  Search & Select Member
+                </label>
+
+                <!-- Select Tag Style Autocomplete Combobox -->
+                <div class="relative">
+                  <div class="relative flex items-center">
+                    <ng-icon
+                      name="lucideSearch"
+                      class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground size-4 pointer-events-none"
+                    ></ng-icon>
+                    
+                    <input
+                      hlmInput
+                      type="text"
+                      role="combobox"
+                      aria-autocomplete="list"
+                      [attr.aria-expanded]="isMemberDropdownOpen()"
+                      placeholder="Select member or type to search..."
+                      [ngModel]="autocompleteQuery()"
+                      (ngModelChange)="onMemberSearchInput($event)"
+                      (focus)="openMemberDropdown()"
+                      (blur)="onBlurMemberDropdown()"
+                      [ngModelOptions]="{ standalone: true }"
+                      class="w-full pl-9 pr-16 text-sm h-10 bg-background cursor-pointer"
+                    />
+
+                    <!-- Actions on the right (Clear + Select Arrow) -->
+                    <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
+                      @if (autocompleteQuery()) {
+                        <button
+                          type="button"
+                          (mousedown)="autocompleteQuery.set(''); loadAutocompleteResults(''); $event.preventDefault()"
+                          class="p-1 text-muted-foreground hover:text-foreground rounded-full hover:bg-muted/80 transition-colors"
+                          title="Clear search"
+                        >
+                          <ng-icon name="lucideX" class="size-3.5"></ng-icon>
+                        </button>
+                      }
+                      <button
+                        type="button"
+                        (mousedown)="toggleMemberDropdown(); $event.preventDefault()"
+                        class="p-1.5 text-muted-foreground hover:text-foreground rounded transition-transform duration-200"
+                        [class.rotate-180]="isMemberDropdownOpen()"
+                        title="Toggle list"
+                      >
+                        <ng-icon name="lucideChevronDown" class="size-4"></ng-icon>
+                      </button>
                     </div>
                   </div>
-                  <span class="font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20 text-[11px]">
-                    {{ m.discountRate }}% Discount Active
-                  </span>
+
+                  <!-- Floating Dropdown (Only shown when clicked/opened, does NOT push content) -->
+                  @if (isMemberDropdownOpen()) {
+                    <div
+                      class="absolute left-0 right-0 top-full mt-1.5 z-50 border border-border rounded-xl bg-card text-card-foreground shadow-2xl overflow-hidden max-h-60 overflow-y-auto divide-y divide-border/40 backdrop-blur-md"
+                    >
+                      @if (isSearchingCustomers()) {
+                        <div class="p-4 text-xs text-muted-foreground text-center flex items-center justify-center gap-2">
+                          <ng-icon name="lucideRefreshCw" class="size-3.5 animate-spin"></ng-icon>
+                          <span>Searching members...</span>
+                        </div>
+                      } @else if (autocompleteResults().length > 0) {
+                        @for (item of autocompleteResults(); track item._id) {
+                          <div
+                            (mousedown)="selectRegularCustomer(item); $event.preventDefault()"
+                            class="px-3.5 py-2.5 hover:bg-accent/80 hover:text-accent-foreground flex items-center justify-between text-xs transition-colors cursor-pointer group"
+                          >
+                            <!-- Only ID and Name displayed as requested -->
+                            <div class="flex items-center gap-2.5">
+                              <span class="font-mono font-bold text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded text-[11px]">
+                                {{ item.membershipId }}
+                              </span>
+                              <span class="font-semibold text-foreground group-hover:text-primary transition-colors text-sm">
+                                {{ item.name }}
+                              </span>
+                            </div>
+                            <span class="text-[11px] text-muted-foreground group-hover:text-foreground flex items-center gap-1 font-medium">
+                              <span>Select & Prefill</span>
+                              <span>&rarr;</span>
+                            </span>
+                          </div>
+                        }
+                      } @else {
+                        <div class="p-4 text-center text-xs text-muted-foreground">
+                          No active regular members found{{ autocompleteQuery() ? ' matching "' + autocompleteQuery() + '"' : '' }}.
+                        </div>
+                      }
+                    </div>
+                  }
                 </div>
-              }
+              </div>
+            } @else if (selectedRegularCustomer(); as cust) {
+              <!-- Selected Customer Card -->
+              <div class="p-4 rounded-xl border border-amber-500/30 bg-amber-500/5 space-y-3">
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                  <div class="flex items-center gap-2.5">
+                    <div class="h-9 w-9 rounded-xl bg-amber-500/20 text-amber-500 flex items-center justify-center shrink-0">
+                      <ng-icon name="lucideCrown" class="size-5"></ng-icon>
+                    </div>
+                    <div>
+                      <div class="font-bold text-foreground text-sm flex items-center gap-2">
+                        <span>{{ cust.firstName }} {{ cust.lastName }}</span>
+                        <span class="font-mono text-xs px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
+                          {{ cust.membershipId }}
+                        </span>
+                      </div>
+                      <div class="text-[11px] text-muted-foreground flex items-center gap-2 mt-0.5">
+                        <span>s/o, d/o: <strong>{{ cust.fatherName }}</strong></span>
+                        <span>&bull;</span>
+                        <span class="capitalize font-semibold text-amber-600 dark:text-amber-400">
+                          {{ cust.membershipTier }} Tier ({{ cust.discountRate }}% Off Auto-Applied)
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-2">
+                    <button
+                      type="button"
+                      hlmBtn
+                      size="sm"
+                      variant="outline"
+                      (click)="toggleManualFieldsView()"
+                      class="h-7 text-xs flex items-center gap-1"
+                    >
+                      <ng-icon [name]="showManualFieldsInMemberMode() ? 'lucideEyeOff' : 'lucideEye'" class="size-3.5"></ng-icon>
+                      <span>{{ showManualFieldsInMemberMode() ? 'Hide Form Fields' : 'View / Edit Fields' }}</span>
+                    </button>
+                    <button
+                      type="button"
+                      hlmBtn
+                      size="sm"
+                      variant="ghost"
+                      (click)="clearSelectedRegularCustomer()"
+                      class="h-7 text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
+                    >
+                      <ng-icon name="lucideRefreshCw" class="size-3"></ng-icon>
+                      <span>Change Member</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Verified Details Quick Summary -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-xs pt-2 border-t border-amber-500/20">
+                  <div class="flex items-center gap-1.5 text-muted-foreground">
+                    <ng-icon name="lucidePhone" class="size-3.5 text-primary"></ng-icon>
+                    <span>Phone: <strong class="text-foreground">{{ cust.phone }}</strong></span>
+                  </div>
+                  <div class="flex items-center gap-1.5 text-muted-foreground truncate">
+                    <ng-icon name="lucideMail" class="size-3.5 text-primary"></ng-icon>
+                    <span class="truncate">Email: <strong class="text-foreground">{{ cust.email }}</strong></span>
+                  </div>
+                  <div class="flex items-center gap-1.5 text-muted-foreground">
+                    <ng-icon name="lucideShieldCheck" class="size-3.5 text-emerald-500"></ng-icon>
+                    <span>KYC Aadhaar: <strong class="text-foreground font-mono">{{ cust.aadhar }}</strong></span>
+                  </div>
+                  <div class="sm:col-span-2 lg:col-span-3 text-muted-foreground flex items-start gap-1.5 pt-0.5">
+                    <ng-icon name="lucideMapPin" class="size-3.5 text-primary mt-0.5 shrink-0"></ng-icon>
+                    <span class="line-clamp-1">Address: <strong class="text-foreground">{{ cust.address }}</strong></span>
+                  </div>
+                </div>
+              </div>
             }
-          </div>
+          }
+
+          <!-- Manual Input Fields (shown when NOT in member mode OR toggled to view) -->
+          @if (!isRegularMemberMode() || showManualFieldsInMemberMode()) {
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pt-1">
+              <div>
+                <label hlmLabel class="text-xs text-muted-foreground block mb-1">Renter First Name</label>
+                <input hlmInput formControlName="renterFirstName" class="w-full text-sm" />
+                @if (bookingFormGroup.get('renterFirstName')?.invalid && bookingFormGroup.get('renterFirstName')?.touched) {
+                  <span class="text-xs text-destructive">Required (letters only).</span>
+                }
+              </div>
+              <div>
+                <label hlmLabel class="text-xs text-muted-foreground block mb-1">Renter Second Name</label>
+                <input hlmInput formControlName="renterSecondName" class="w-full text-sm" />
+                @if (bookingFormGroup.get('renterSecondName')?.invalid && bookingFormGroup.get('renterSecondName')?.touched) {
+                  <span class="text-xs text-destructive">Required (letters only).</span>
+                }
+              </div>
+              <div>
+                <label hlmLabel class="text-xs text-muted-foreground block mb-1">Father Name</label>
+                <input hlmInput formControlName="renterFatherName" class="w-full text-sm" />
+                @if (bookingFormGroup.get('renterFatherName')?.invalid && bookingFormGroup.get('renterFatherName')?.touched) {
+                  <span class="text-xs text-destructive">Required (letters only).</span>
+                }
+              </div>
+              <div>
+                <label hlmLabel class="text-xs text-muted-foreground block mb-1">Aadhar Number</label>
+                @if (isRegularMemberMode() && selectedRegularCustomer()) {
+                  <input hlmInput formControlName="renterAadhar" readonly class="w-full text-sm font-mono bg-muted/40 cursor-not-allowed" />
+                } @else {
+                  <rr-aadhar-input formControlName="renterAadhar" placeholder="1234 5678 9012"></rr-aadhar-input>
+                }
+                @if (bookingFormGroup.get('renterAadhar')?.invalid && bookingFormGroup.get('renterAadhar')?.touched) {
+                  <span class="text-xs text-destructive">Valid Aadhaar required.</span>
+                }
+              </div>
+              <div>
+                <label hlmLabel class="text-xs text-muted-foreground block mb-1">Driving License Number</label>
+                <input hlmInput formControlName="renterDL" maxlength="18" class="w-full text-sm font-mono uppercase" />
+                @if (bookingFormGroup.get('renterDL')?.invalid && bookingFormGroup.get('renterDL')?.touched) {
+                  <span class="text-xs text-destructive">Valid DL required.</span>
+                }
+              </div>
+              <div>
+                <label hlmLabel class="text-xs text-muted-foreground block mb-1">Phone Number</label>
+                <input hlmInput formControlName="renterPhone" maxlength="10" class="w-full text-sm font-mono" />
+                @if (bookingFormGroup.get('renterPhone')?.invalid && bookingFormGroup.get('renterPhone')?.touched) {
+                  <span class="text-xs text-destructive">Must be 10 digits.</span>
+                }
+              </div>
+              <div>
+                <label hlmLabel class="text-xs text-muted-foreground block mb-1">Alternative Phone Number</label>
+                <input hlmInput formControlName="renterAltPhone" maxlength="10" class="w-full text-sm font-mono" />
+              </div>
+              <div class="sm:col-span-2">
+                <label hlmLabel class="text-xs text-muted-foreground block mb-1">Address</label>
+                <textarea hlmInput formControlName="renterAddress" rows="2" class="w-full text-sm"></textarea>
+                @if (bookingFormGroup.get('renterAddress')?.invalid && bookingFormGroup.get('renterAddress')?.touched) {
+                  <span class="text-xs text-destructive">Required.</span>
+                }
+              </div>
+
+              @if (!isRegularMemberMode() && membershipDiscount(); as m) {
+                @if (m.isRegularCustomer) {
+                  <div class="sm:col-span-2 p-3 rounded-xl border border-amber-500/30 bg-amber-500/10 flex items-center justify-between text-xs">
+                    <div class="flex items-center gap-2">
+                      <ng-icon name="lucideCrown" class="text-amber-500 text-lg shrink-0"></ng-icon>
+                      <div>
+                        <span class="font-bold text-foreground">Verified {{ m.membershipTier | uppercase }} Member ({{ m.membershipId }})</span>
+                        <span class="text-muted-foreground block text-[11px]">{{ m.message }}</span>
+                      </div>
+                    </div>
+                    <span class="font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20 text-[11px]">
+                      {{ m.discountRate }}% Discount Active
+                    </span>
+                  </div>
+                }
+              }
+            </div>
+          }
         </div>
 
         <!-- 3. Guarantee Details -->
