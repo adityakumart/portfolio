@@ -17,11 +17,13 @@ import {
   lucideCheck,
   lucideFileText,
   lucideAlertTriangle,
+  lucideCrown,
 } from '@ng-icons/lucide';
 import { toast } from '@spartan-ng/hel/sonner';
-import { IVehicle, IVehiclePricing } from '@portfolio/shared-types';
+import { IVehicle, IVehiclePricing, ICustomerMembershipDiscount } from '@portfolio/shared-types';
 import { RRApiService } from '../../../services/rr-api.service';
 import { RRInvoicePdfService } from '../../../services/rr-invoice-pdf.service';
+import { RRCustomerApiService } from '../../../services/rr-customer-api.service';
 import { RRAadharInputComponent } from '../../components/aadhar-input/aadhar-input.component';
 
 export interface NewBookingDialogContext {
@@ -53,6 +55,7 @@ export interface NewBookingDialogContext {
       lucideCheck,
       lucideFileText,
       lucideAlertTriangle,
+      lucideCrown,
     }),
   ],
   templateUrl: './new-booking-dialog.component.html',
@@ -62,6 +65,7 @@ export class RRNewBookingDialogComponent implements OnInit {
   context = injectBrnDialogContext<NewBookingDialogContext>({ optional: true });
 
   private rrApi = inject(RRApiService);
+  private customerApi = inject(RRCustomerApiService);
   private fb = inject(FormBuilder);
   private invoicePdf = inject(RRInvoicePdfService);
 
@@ -69,6 +73,7 @@ export class RRNewBookingDialogComponent implements OnInit {
   selectedVehicle = signal<IVehicle | null>(null);
   overrideOdometer = false;
   isSubmitting = signal(false);
+  membershipDiscount = signal<ICustomerMembershipDiscount | null>(null);
 
   bookingFormGroup!: FormGroup;
 
@@ -178,6 +183,56 @@ export class RRNewBookingDialogComponent implements OnInit {
     this.bookingFormGroup.get('depositType')?.valueChanges.subscribe((type) => {
       this.updateDepositValidators(type);
     });
+
+    this.bookingFormGroup.get('renterPhone')?.valueChanges.subscribe(async (phone: string) => {
+      const cleanPhone = phone ? phone.trim() : '';
+      if (cleanPhone.length === 10) {
+        await this.checkCustomerMembership(cleanPhone);
+      } else if (!cleanPhone) {
+        this.membershipDiscount.set(null);
+      }
+    });
+  }
+
+  async checkCustomerMembership(phone: string): Promise<void> {
+    try {
+      const totalAmount = Number(this.bookingFormGroup.get('totalRentalAmount')?.value) || 0;
+      const result = await this.customerApi.checkMembershipDiscount(phone, totalAmount);
+      if (result && result.isRegularCustomer) {
+        this.membershipDiscount.set(result);
+        toast.success(
+          `🌟 Regular Member Identified (${result.membershipTier?.toUpperCase()})! ${result.discountRate}% discount auto-applied.`
+        );
+
+        // Fetch customer profile to autofill if fields are empty
+        try {
+          const list = await this.customerApi.getCustomers({ search: phone });
+          const matched = list.customers.find((c) => c.phone === phone);
+          if (matched) {
+            this.bookingFormGroup.patchValue({
+              renterFirstName: this.bookingFormGroup.get('renterFirstName')?.value || matched.firstName,
+              renterSecondName: this.bookingFormGroup.get('renterSecondName')?.value || matched.lastName,
+              renterFatherName: this.bookingFormGroup.get('renterFatherName')?.value || matched.fatherName,
+              renterAddress: this.bookingFormGroup.get('renterAddress')?.value || matched.address,
+              renterAltPhone: this.bookingFormGroup.get('renterAltPhone')?.value || matched.altPhone || '',
+            });
+          }
+        } catch {
+          // ignore autofill failure
+        }
+
+        // Apply discount to booking form
+        this.bookingFormGroup.patchValue({
+          discountType: 'percentage',
+          discount: String(result.discountRate),
+        });
+        this.recalculateFinalAmount();
+      } else {
+        this.membershipDiscount.set(null);
+      }
+    } catch (err: unknown) {
+      console.warn('Membership discount check failed:', (err as Error).message);
+    }
   }
 
   private updateDepositValidators(type: string) {

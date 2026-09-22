@@ -1,0 +1,435 @@
+<div class="page-header flex items-center justify-between mb-6 sm:mb-8 flex-wrap gap-3 sm:gap-4">
+  <div>
+    <div class="text-[11px] sm:text-xs uppercase tracking-wider text-amber-500 font-extrabold mb-1 inline-flex items-center gap-1.5">
+      <ng-icon class="size-3.5" name="lucideCrown"></ng-icon>
+      <span>Customer Loyalty &bull; Secure KYC Registry</span>
+    </div>
+    <h2 class="m-0 text-xl sm:text-2xl lg:text-3xl font-extrabold text-foreground tracking-tight">Regular Customers</h2>
+  </div>
+  <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+    <div class="relative w-64 sm:w-72">
+      <ng-icon name="lucideSearch" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground size-4"></ng-icon>
+      <input
+        hlmInput
+        type="text"
+        placeholder="Search by name, phone, ID..."
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+        class="w-full pl-9 text-xs h-9"
+      />
+      @if (searchQuery()) {
+        <button
+          type="button"
+          (click)="searchQuery.set('')"
+          class="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+        >
+          <ng-icon name="lucideX" class="size-3.5"></ng-icon>
+        </button>
+      }
+    </div>
+    <button hlmBtn class="action-btn success flex items-center gap-1.5 shadow-sm h-9" (click)="openCreateModal()">
+      <ng-icon name="lucidePlus"></ng-icon> <span>New Member</span>
+    </button>
+  </div>
+</div>
+
+<div class="border border-border rounded-2xl overflow-hidden shadow-sm bg-card mb-10">
+  <div hlmTableContainer class="max-h-[calc(100vh-280px)] overflow-auto">
+    <table hlmTable class="w-full text-xs">
+      <thead hlmTHead class="sticky top-0 z-10 bg-card backdrop-blur-md">
+        <tr hlmTr>
+          <th hlmTh class="w-28">Member ID</th>
+          <th hlmTh>Customer Name</th>
+          <th hlmTh>Contact Details</th>
+          <th hlmTh class="hidden md:table-cell">Address</th>
+          <th hlmTh class="hidden lg:table-cell">KYC Identifiers</th>
+          <th hlmTh>Membership Tier</th>
+          <th hlmTh class="text-center">Status</th>
+          <th hlmTh class="text-center">Actions</th>
+        </tr>
+      </thead>
+      <tbody hlmTBody>
+        @for (c of pagedCustomers(); track c.membershipId) {
+          <tr hlmTr class="hover:bg-muted/40 transition-colors">
+            <td hlmTd>
+              <span class="font-bold font-mono text-primary text-[11px] bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
+                {{ c.membershipId }}
+              </span>
+            </td>
+            <td hlmTd>
+              <div class="font-bold text-foreground">{{ c.firstName }} {{ c.lastName }}</div>
+              <div class="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                <span>s/o, d/o:</span>
+                <span class="font-medium text-foreground/80">{{ c.fatherName }}</span>
+              </div>
+            </td>
+            <td hlmTd>
+              <div class="flex items-center gap-1.5 font-medium">
+                <ng-icon name="lucidePhone" class="size-3 text-muted-foreground"></ng-icon>
+                <span>{{ c.phone }}</span>
+              </div>
+              <div class="text-[11px] text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                <ng-icon name="lucideMail" class="size-3 text-muted-foreground"></ng-icon>
+                <span class="truncate max-w-[150px]">{{ c.email }}</span>
+              </div>
+              @if (c.altPhone) {
+                <div class="text-[10px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                  <span class="text-xs">&bull;</span> Alt: {{ c.altPhone }}
+                </div>
+              }
+            </td>
+            <td hlmTd class="hidden md:table-cell">
+              <span class="text-muted-foreground line-clamp-2 max-w-[200px]" [title]="c.address">
+                {{ c.address }}
+              </span>
+            </td>
+            <td hlmTd class="hidden lg:table-cell">
+              <div class="space-y-1">
+                <div class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-muted/60 text-[11px] font-mono border border-border">
+                  <ng-icon name="lucideShieldCheck" class="size-3 text-emerald-500"></ng-icon>
+                  <span>Aadhaar:</span>
+                  <span class="font-bold">{{ c.aadhar }}</span>
+                </div>
+                <div class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-muted/60 text-[11px] font-mono border border-border">
+                  <ng-icon name="lucideShieldCheck" class="size-3 text-cyan-500"></ng-icon>
+                  <span>DL:</span>
+                  <span class="font-bold">{{ c.dl }}</span>
+                </div>
+              </div>
+            </td>
+            <td hlmTd>
+              <div class="flex items-center gap-1.5">
+                <span
+                  hlmBadge
+                  [variant]="getTierBadgeVariant(c.membershipTier)"
+                  class="font-bold uppercase text-[10px] tracking-wider"
+                >
+                  {{ c.membershipTier }}
+                </span>
+                <span class="font-extrabold text-emerald-600 dark:text-emerald-400 text-xs">
+                  {{ c.discountRate }}% Off
+                </span>
+              </div>
+            </td>
+            <td hlmTd class="text-center">
+              <span
+                hlmBadge
+                [variant]="c.isActive ? 'secondary' : 'destructive'"
+                [class.text-emerald-600]="c.isActive"
+                [class.dark:text-emerald-400]="c.isActive"
+                class="text-[10px] uppercase font-bold"
+              >
+                {{ c.isActive ? 'Active' : 'Disabled' }}
+              </span>
+            </td>
+            <td hlmTd class="text-center whitespace-nowrap space-x-1">
+              <button
+                hlmBtn
+                size="icon"
+                variant="ghost"
+                class="h-7 w-7 rounded-full text-muted-foreground hover:text-foreground"
+                hlmTooltip="View Details"
+                (click)="openViewModal(c)"
+              >
+                <ng-icon name="lucideEye" class="size-3.5"></ng-icon>
+              </button>
+              <button
+                hlmBtn
+                size="icon"
+                variant="ghost"
+                class="h-7 w-7 rounded-full text-muted-foreground hover:text-foreground"
+                hlmTooltip="Edit Member"
+                (click)="openEditModal(c)"
+              >
+                <ng-icon name="lucidePencil" class="size-3.5"></ng-icon>
+              </button>
+              <button
+                hlmBtn
+                size="icon"
+                variant="ghost"
+                class="h-7 w-7 rounded-full text-destructive hover:bg-destructive/10"
+                hlmTooltip="Deactivate Membership"
+                (click)="deleteCustomer(c)"
+              >
+                <ng-icon name="lucideTrash2" class="size-3.5"></ng-icon>
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr hlmTr>
+            <td hlmTd colspan="8" class="text-center text-muted-foreground py-12">
+              <ng-icon name="lucideCrown" class="text-4xl mx-auto block mb-2 text-muted-foreground/60"></ng-icon>
+              <div class="font-semibold text-sm">No regular customers found.</div>
+              <div class="text-xs text-muted-foreground mt-1">Register frequent renters to unlock automatic discounts on future bookings.</div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination footer -->
+  <div class="p-3 border-t flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground bg-muted/20">
+    <div>
+      Showing {{ pagedCustomers().length }} of {{ filteredCustomers().length }} members
+      @if (filteredCustomers().length !== customerApi.customers().length) {
+        <span>(filtered from {{ customerApi.customers().length }} total)</span>
+      }
+    </div>
+    <div class="flex items-center gap-2">
+      <button hlmBtn variant="outline" size="sm" [disabled]="currentPage() === 0" (click)="prevPage()" class="h-7 px-2.5">
+        Previous
+      </button>
+      <span class="font-medium">Page {{ currentPage() + 1 }} of {{ totalPages() }}</span>
+      <button hlmBtn variant="outline" size="sm" [disabled]="currentPage() >= totalPages() - 1" (click)="nextPage()" class="h-7 px-2.5">
+        Next
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Customer Create / Edit / View Modal Dialog -->
+<ng-template #customerModal>
+  <div class="flex flex-col h-full w-full overflow-hidden">
+    <!-- Header -->
+    <div class="shrink-0 flex items-center justify-between pb-4 border-b">
+      <div class="flex items-center gap-2.5">
+        <div class="h-9 w-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 shrink-0">
+          <ng-icon name="lucideCrown" class="size-5"></ng-icon>
+        </div>
+        <div>
+          <h3 class="text-base sm:text-lg font-bold text-foreground leading-tight">
+            @if (activeMode() === 'create') {
+              Register Regular Customer
+            } @else if (activeMode() === 'edit') {
+              Edit Customer Membership <span class="text-primary font-mono text-sm sm:text-base">({{ selectedCustomer()?.membershipId }})</span>
+            } @else {
+              Customer Membership Profile <span class="text-primary font-mono text-sm sm:text-base">({{ selectedCustomer()?.membershipId }})</span>
+            }
+          </h3>
+          <p class="text-[11px] sm:text-xs text-muted-foreground m-0">
+            @if (activeMode() === 'create') {
+              Capture customer profile, encrypted KYC records, and reward tier for automated discounts.
+            } @else if (activeMode() === 'edit') {
+              Update customer contact info, KYC tokens, and membership discount percentage.
+            } @else {
+              Verified customer loyalty details and masked identity tokens.
+            }
+          </p>
+        </div>
+      </div>
+      <button
+        hlmBtn
+        size="icon"
+        variant="ghost"
+        class="h-8 w-8 text-muted-foreground hover:text-foreground rounded-full shrink-0"
+        (click)="closeModal()"
+        aria-label="Close dialog"
+      >
+        <ng-icon name="lucideX" class="size-4"></ng-icon>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <form [formGroup]="customerFormGroup" (ngSubmit)="onFormSubmit()" class="flex flex-col flex-1 min-h-0">
+      <div class="flex-1 min-h-0 overflow-y-auto py-4 pr-1 sm:pr-2 space-y-4 sm:space-y-5">
+        
+        <!-- Section 1: Personal Details -->
+        <div class="p-4 sm:p-5 rounded-xl border bg-card/60 shadow-xs space-y-3.5">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+            <ng-icon name="lucideUsers" class="size-4 text-primary"></ng-icon>
+            <span>Personal Information</span>
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
+            <div>
+              <label hlmLabel class="text-xs font-semibold text-muted-foreground block mb-1">First Name *</label>
+              <input hlmInput formControlName="firstName" placeholder="e.g. Rahul" class="w-full text-xs sm:text-sm h-9" />
+              @if (customerFormGroup.get('firstName')?.invalid && customerFormGroup.get('firstName')?.touched) {
+                <span class="text-[11px] text-destructive block mt-1">Letters only, minimum 2 characters.</span>
+              }
+            </div>
+            <div>
+              <label hlmLabel class="text-xs font-semibold text-muted-foreground block mb-1">Last Name *</label>
+              <input hlmInput formControlName="lastName" placeholder="e.g. Sharma" class="w-full text-xs sm:text-sm h-9" />
+              @if (customerFormGroup.get('lastName')?.invalid && customerFormGroup.get('lastName')?.touched) {
+                <span class="text-[11px] text-destructive block mt-1">Letters only, required.</span>
+              }
+            </div>
+            <div class="sm:col-span-2 lg:col-span-1">
+              <label hlmLabel class="text-xs font-semibold text-muted-foreground block mb-1">Father's / Guardian's Name *</label>
+              <input hlmInput formControlName="fatherName" placeholder="e.g. Ramesh Sharma" class="w-full text-xs sm:text-sm h-9" />
+              @if (customerFormGroup.get('fatherName')?.invalid && customerFormGroup.get('fatherName')?.touched) {
+                <span class="text-[11px] text-destructive block mt-1">Letters only, required.</span>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Contact Information -->
+        <div class="p-4 sm:p-5 rounded-xl border bg-card/60 shadow-xs space-y-3.5">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+            <ng-icon name="lucidePhone" class="size-4 text-primary"></ng-icon>
+            <span>Contact & Address</span>
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
+            <div>
+              <label hlmLabel class="text-xs font-semibold text-muted-foreground block mb-1">Primary Phone (10 digits) *</label>
+              <input hlmInput formControlName="phone" maxlength="10" placeholder="9876543210" class="w-full text-xs sm:text-sm h-9 font-mono" />
+              @if (customerFormGroup.get('phone')?.touched) {
+                @if (customerFormGroup.get('phone')?.hasError('required')) {
+                  <span class="text-[11px] text-destructive block mt-1">Primary phone is required.</span>
+                } @else if (customerFormGroup.get('phone')?.hasError('pattern')) {
+                  <span class="text-[11px] text-destructive block mt-1">Must be 10 digits starting with 6, 7, 8, or 9.</span>
+                } @else if (customerFormGroup.get('phone')?.hasError('duplicatePhone')) {
+                  <span class="text-[11px] text-destructive block mt-1">Phone number is already registered.</span>
+                }
+              }
+            </div>
+            <div>
+              <label hlmLabel class="text-xs font-semibold text-muted-foreground block mb-1">Alternate Phone</label>
+              <input hlmInput formControlName="altPhone" maxlength="10" placeholder="Optional 10-digit number" class="w-full text-xs sm:text-sm h-9 font-mono" />
+              @if (customerFormGroup.get('altPhone')?.invalid && customerFormGroup.get('altPhone')?.touched) {
+                <span class="text-[11px] text-destructive block mt-1">Must be a valid 10-digit number.</span>
+              }
+            </div>
+            <div class="sm:col-span-2 lg:col-span-1">
+              <label hlmLabel class="text-xs font-semibold text-muted-foreground block mb-1">Email Address *</label>
+              <input hlmInput type="email" formControlName="email" placeholder="name@domain.com" class="w-full text-xs sm:text-sm h-9" />
+              @if (customerFormGroup.get('email')?.invalid && customerFormGroup.get('email')?.touched) {
+                <span class="text-[11px] text-destructive block mt-1">Valid email address is required.</span>
+              }
+            </div>
+            <div class="col-span-1 sm:col-span-2 lg:col-span-3">
+              <label hlmLabel class="text-xs font-semibold text-muted-foreground block mb-1">Complete Residential Address *</label>
+              <textarea hlmInput formControlName="address" rows="2" placeholder="Full postal address with city, state, pin code..." class="w-full text-xs sm:text-sm"></textarea>
+              @if (customerFormGroup.get('address')?.invalid && customerFormGroup.get('address')?.touched) {
+                <span class="text-[11px] text-destructive block mt-1">Address is required (min 5 characters).</span>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: Identity & KYC Documents (AES-256 Encrypted) -->
+        <div class="p-4 sm:p-5 rounded-xl border border-primary/25 bg-primary/5 shadow-xs space-y-3.5">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-2">
+              <ng-icon name="lucideShieldCheck" class="size-4 text-primary"></ng-icon>
+              <span>Identity Verification (KYC)</span>
+            </h4>
+            <span class="text-[10px] sm:text-[11px] text-muted-foreground bg-muted/80 px-2.5 py-0.5 rounded-full border border-border inline-flex items-center gap-1">
+              <ng-icon name="lucideShieldCheck" class="size-3 text-emerald-500"></ng-icon>
+              <span>AES-256-GCM Encrypted at rest</span>
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4">
+            <div>
+              <label hlmLabel class="text-xs font-semibold text-muted-foreground block mb-1">
+                Aadhaar Number (12 digits) {{ activeMode() === 'create' ? '*' : '(Leave empty to keep existing)' }}
+              </label>
+              <input
+                hlmInput
+                formControlName="aadhar"
+                maxlength="12"
+                [placeholder]="activeMode() === 'create' ? 'Enter 12-digit Aadhaar' : (selectedCustomer()?.aadhar || 'XXXX-XXXX-XXXX')"
+                class="w-full text-xs sm:text-sm h-9 font-mono"
+              />
+              @if (customerFormGroup.get('aadhar')?.invalid && customerFormGroup.get('aadhar')?.touched) {
+                <span class="text-[11px] text-destructive block mt-1">Must be exactly 12 numeric digits.</span>
+              }
+            </div>
+
+            <div>
+              <label hlmLabel class="text-xs font-semibold text-muted-foreground block mb-1">
+                Driving License Number {{ activeMode() === 'create' ? '*' : '(Leave empty to keep existing)' }}
+              </label>
+              <input
+                hlmInput
+                formControlName="dl"
+                maxlength="16"
+                [placeholder]="activeMode() === 'create' ? '15-16 alphanumeric chars' : (selectedCustomer()?.dl || 'XXXX-XXXX-XXXX')"
+                class="w-full text-xs sm:text-sm h-9 font-mono uppercase"
+              />
+              @if (customerFormGroup.get('dl')?.invalid && customerFormGroup.get('dl')?.touched) {
+                <span class="text-[11px] text-destructive block mt-1">Must be 15 to 16 alphanumeric characters.</span>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 4: Membership Tier & Privilege Settings -->
+        <div class="p-4 sm:p-5 rounded-xl border bg-card/60 shadow-xs space-y-3.5">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+            <ng-icon name="lucideTag" class="size-4 text-primary"></ng-icon>
+            <span>Membership Tier & Privileges</span>
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4 items-center">
+            <div>
+              <label hlmLabel class="text-xs font-semibold text-muted-foreground block mb-1">Membership Tier *</label>
+              <select
+                hlmInput
+                formControlName="membershipTier"
+                class="w-full text-xs sm:text-sm h-9 bg-background border rounded-lg px-2.5"
+              >
+                <option value="regular">Regular (Standard 10%)</option>
+                <option value="silver">Silver Tier (15%)</option>
+                <option value="gold">Gold Tier (20%)</option>
+                <option value="platinum">Platinum VIP (25%)</option>
+              </select>
+            </div>
+            <div>
+              <label hlmLabel class="text-xs font-semibold text-muted-foreground block mb-1">Discount Rate (%) *</label>
+              <input
+                hlmInput
+                type="number"
+                min="0"
+                max="100"
+                formControlName="discountRate"
+                class="w-full text-xs sm:text-sm h-9"
+              />
+              @if (customerFormGroup.get('discountRate')?.invalid && customerFormGroup.get('discountRate')?.touched) {
+                <span class="text-[11px] text-destructive block mt-1">Must be between 0 and 100.</span>
+              }
+            </div>
+            <div class="flex items-center gap-2.5 sm:pt-5">
+              <input
+                type="checkbox"
+                formControlName="isActive"
+                id="custIsActive"
+                class="rounded-md accent-primary h-4 w-4 cursor-pointer"
+              />
+              <label hlmLabel for="custIsActive" class="text-xs sm:text-sm cursor-pointer select-none font-medium">
+                Active Membership Status
+              </label>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <div class="shrink-0 flex items-center justify-end gap-2.5 pt-4 border-t mt-2">
+        <button hlmBtn variant="outline" type="button" (click)="closeModal()" class="h-9 px-4 text-xs sm:text-sm">
+          {{ activeMode() === 'view' ? 'Close' : 'Cancel' }}
+        </button>
+        @if (activeMode() !== 'view') {
+          <button
+            hlmBtn
+            type="submit"
+            class="action-btn success flex items-center gap-2 h-9 px-5 text-xs sm:text-sm shadow-sm"
+            [disabled]="isSubmitting()"
+          >
+            <ng-icon name="lucideCheck" class="size-4"></ng-icon>
+            <span>
+              @if (isSubmitting()) {
+                Saving...
+              } @else {
+                {{ activeMode() === 'create' ? 'Register Customer' : 'Save Changes' }}
+              }
+            </span>
+          </button>
+        }
+      </div>
+    </form>
+  </div>
+</ng-template>

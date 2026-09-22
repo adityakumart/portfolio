@@ -160,6 +160,23 @@
                 <span class="text-xs text-destructive">Required.</span>
               }
             </div>
+
+            @if (membershipDiscount(); as m) {
+              @if (m.isRegularCustomer) {
+                <div class="sm:col-span-2 p-3 rounded-xl border border-amber-500/30 bg-amber-500/10 flex items-center justify-between text-xs">
+                  <div class="flex items-center gap-2">
+                    <ng-icon name="lucideCrown" class="text-amber-500 text-lg shrink-0"></ng-icon>
+                    <div>
+                      <span class="font-bold text-foreground">Verified {{ m.membershipTier | uppercase }} Member ({{ m.membershipId }})</span>
+                      <span class="text-muted-foreground block text-[11px]">{{ m.message }}</span>
+                    </div>
+                  </div>
+                  <span class="font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20 text-[11px]">
+                    {{ m.discountRate }}% Discount Active
+                  </span>
+                </div>
+              }
+            }
           </div>
         </div>
 
@@ -291,6 +308,21 @@
             <ng-icon name="lucideCreditCard"></ng-icon>
             <span>Financial Billings (Step 5)</span>
           </h4>
+
+          @if (membershipDiscount(); as m) {
+            @if (m.isRegularCustomer) {
+              <div class="p-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 flex items-center justify-between text-xs text-emerald-800 dark:text-emerald-300">
+                <span class="inline-flex items-center gap-1.5 font-semibold">
+                  <ng-icon name="lucideCrown" class="text-amber-500 text-sm"></ng-icon>
+                  <span>Regular Member Discount: {{ m.discountRate }}% auto-applied (Saving Rs. {{ m.discountAmount }})</span>
+                </span>
+                <span class="font-mono font-bold uppercase text-[10px] bg-emerald-500/20 px-2 py-0.5 rounded">
+                  {{ m.membershipTier }} Tier
+                </span>
+              </div>
+            }
+          }
+
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <div>
               <label hlmLabel class="text-xs text-muted-foreground block mb-1">Total Rental Amount (Rs. Auto)</label>

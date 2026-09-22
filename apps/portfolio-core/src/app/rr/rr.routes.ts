@@ -7,6 +7,8 @@ import { RRService, IEmployee, IVehicle, IBooking, ICustomerIntimation } from '.
 import { handleVehicleImageUpload } from './r2-storage.controller';
 import { rrPublicRouter } from './rr-public.routes';
 import { authRateLimiter } from '../../middlewares/rate-limit.middleware';
+import { customerRouter } from '../../routes/customer.routes';
+import { BillingService } from '../../services/billing.service';
 
 const rrRouter = Router();
 const JWT_SECRET = process.env['JWT_SECRET'] || 'supersecretlocaljwtkey1234567890!';
@@ -14,8 +16,12 @@ const JWT_SECRET = process.env['JWT_SECRET'] || 'supersecretlocaljwtkey123456789
 // Mount public routes for unauthenticated customer portal / homepage
 rrRouter.use('/public', rrPublicRouter);
 
+// Mount customer membership module
+rrRouter.use('/customers', customerRouter);
+
 // Seed database on router initialization
 RRService.seedInitialData();
+BillingService.seedInitialRegularCustomers();
 
 /* ============================================================
    AUTHENTICATION
@@ -645,6 +651,13 @@ rrRouter.post('/bookings', authenticateRRToken, async (req: any, res: Response) 
     };
 
     await bookingCol.insertOne(newBooking);
+
+    // Record booking in regular customer profile if recognized member
+    if (newBooking.renterPhone) {
+      BillingService.recordCustomerBooking(newBooking.renterPhone).catch((err: unknown) => {
+        console.warn('Could not update customer booking count:', (err as Error).message);
+      });
+    }
 
     // Update main vehicle status to in_booking (odometer remains unchanged until booking is closed)
     await vehCol.updateOne(
