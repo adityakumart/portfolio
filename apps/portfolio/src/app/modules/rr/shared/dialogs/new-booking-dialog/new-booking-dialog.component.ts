@@ -25,6 +25,7 @@ import {
   lucidePhone,
   lucideMail,
   lucideMapPin,
+  lucideChevronDown,
 } from '@ng-icons/lucide';
 import { toast } from '@spartan-ng/hel/sonner';
 import {
@@ -77,6 +78,7 @@ export interface NewBookingDialogContext {
       lucidePhone,
       lucideMail,
       lucideMapPin,
+      lucideChevronDown,
     }),
   ],
   templateUrl: './new-booking-dialog.component.html',
@@ -98,6 +100,7 @@ export class RRNewBookingDialogComponent implements OnInit {
 
   // Autocomplete & Regular Member Mode State
   isRegularMemberMode = signal<boolean>(false);
+  isMemberDropdownOpen = signal<boolean>(false);
   autocompleteQuery = signal<string>('');
   autocompleteResults = signal<ICustomerAutocompleteItem[]>([]);
   isSearchingCustomers = signal<boolean>(false);
@@ -282,6 +285,7 @@ export class RRNewBookingDialogComponent implements OnInit {
         Validators.required,
         Validators.pattern(/^([A-Za-z0-9]{15,16}|[X\w-]{12,18}|\[DL Redacted\])$/),
       ]);
+      this.isMemberDropdownOpen.set(false);
       this.loadAutocompleteResults('');
     } else {
       // Restore standard manual entry validators
@@ -296,10 +300,46 @@ export class RRNewBookingDialogComponent implements OnInit {
       this.selectedRegularCustomer.set(null);
       this.membershipDiscount.set(null);
       this.showManualFieldsInMemberMode.set(false);
+      this.isMemberDropdownOpen.set(false);
     }
 
     this.bookingFormGroup.get('renterAadhar')?.updateValueAndValidity();
     this.bookingFormGroup.get('renterDL')?.updateValueAndValidity();
+  }
+
+  /**
+   * Dropdown open/close & search controllers for select-tag style autocomplete
+   */
+  openMemberDropdown(): void {
+    this.isMemberDropdownOpen.set(true);
+    if (this.autocompleteResults().length === 0) {
+      this.loadAutocompleteResults(this.autocompleteQuery());
+    }
+  }
+
+  closeMemberDropdown(): void {
+    this.isMemberDropdownOpen.set(false);
+  }
+
+  toggleMemberDropdown(): void {
+    if (this.isMemberDropdownOpen()) {
+      this.closeMemberDropdown();
+    } else {
+      this.openMemberDropdown();
+    }
+  }
+
+  onBlurMemberDropdown(): void {
+    // Delay closing so that clicking an option in the dropdown (which causes blur) has time to execute
+    setTimeout(() => {
+      this.isMemberDropdownOpen.set(false);
+    }, 200);
+  }
+
+  onMemberSearchInput(query: string): void {
+    this.autocompleteQuery.set(query);
+    this.isMemberDropdownOpen.set(true);
+    this.loadAutocompleteResults(query);
   }
 
   /**
@@ -325,6 +365,8 @@ export class RRNewBookingDialogComponent implements OnInit {
    * 3. Auto-applies membership tier discount to financials step
    */
   async selectRegularCustomer(item: ICustomerAutocompleteItem): Promise<void> {
+    this.isMemberDropdownOpen.set(false);
+    this.autocompleteQuery.set('');
     this.isLoadingCustomerDetails.set(true);
     try {
       const fullCustomer = await this.customerApi.getCustomerById(
@@ -389,6 +431,7 @@ export class RRNewBookingDialogComponent implements OnInit {
     this.selectedRegularCustomer.set(null);
     this.membershipDiscount.set(null);
     this.autocompleteQuery.set('');
+    this.isMemberDropdownOpen.set(false);
     this.loadAutocompleteResults('');
   }
 
