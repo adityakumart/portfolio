@@ -2,6 +2,8 @@
   hlmCard
   class="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 cursor-pointer flex flex-col h-full"
   (click)="onCardClick($event)"
+  (mouseenter)="stopAutoScroll()"
+  (mouseleave)="startAutoScroll()"
 >
   <!-- Vehicle Image Container -->
   <div class="relative w-full h-40 bg-muted/20 flex items-center justify-center p-3 border-b border-border overflow-hidden">
@@ -9,7 +11,7 @@
       [src]="vehicleImage"
       [alt]="vehicle.manufacturer + ' ' + vehicle.name"
       (error)="onImageError($event)"
-      class="max-w-[90%] max-h-[90%] object-contain group-hover:scale-105 transition-transform duration-300"
+      class="max-w-[90%] max-h-[90%] object-contain group-hover:scale-105 transition-all duration-500 ease-in-out"
     />
 
     <!-- Status Badge (Hidden for public portal homepage) -->
@@ -38,6 +40,31 @@
         >
           {{ statusBadgeLabel }}
         </span>
+      </div>
+    }
+
+    <!-- Multi-photo count pill -->
+    @if (hasMultipleImages) {
+      <div class="absolute bottom-2.5 right-2.5 z-10 pointer-events-none">
+        <span
+          class="inline-flex items-center gap-1 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-background/85 text-foreground border border-border/70 shadow-xs backdrop-blur-md"
+        >
+          <ng-icon name="lucideImage" class="text-xs text-primary"></ng-icon>
+          <span>{{ currentImageIndex() + 1 }}/{{ imageCount }}</span>
+        </span>
+      </div>
+
+      <!-- Multi-image indicator dots -->
+      <div class="absolute bottom-2 inset-x-0 flex items-center justify-center gap-1 z-10 pointer-events-none">
+        @for (img of vehicleImages; track $index) {
+          <span
+            class="h-1 rounded-full transition-all duration-300"
+            [class.w-3.5]="currentImageIndex() === $index"
+            [class.w-1]="currentImageIndex() !== $index"
+            [class.bg-primary]="currentImageIndex() === $index"
+            [class.bg-muted-foreground/40]="currentImageIndex() !== $index"
+          ></span>
+        }
       </div>
     }
 

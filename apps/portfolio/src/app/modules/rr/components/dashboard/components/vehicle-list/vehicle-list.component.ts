@@ -1,6 +1,14 @@
 import { Component, OnInit, inject, signal, computed, ViewChild, TemplateRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
+import {
+  CdkDropList,
+  CdkDrag,
+  CdkDragHandle,
+  CdkDragPlaceholder,
+  CdkDragDrop,
+  moveItemInArray,
+} from '@angular/cdk/drag-drop';
 import { RRApiService } from '../../../../services/rr-api.service';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmCardImports } from '@spartan-ng/hel/card';
@@ -11,7 +19,6 @@ import { HlmBadgeImports } from '@spartan-ng/hel/badge';
 import { HlmDatePickerImports } from '@spartan-ng/hel/date-picker';
 import { toast } from '@spartan-ng/hel/sonner';
 import { IVehicle } from '@portfolio/shared-types';
-import { RRVehicleCardComponent } from '../../../../shared';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { IndianDatePipe, toISODateString, IndianDateInput } from '../../../../../../shared/pipes/indian-date.pipe';
 import {
@@ -37,9 +44,21 @@ import {
   lucideCheck,
   lucideSearchX,
   lucideX,
+  lucideGripVertical,
+  lucideStar,
+  lucideImage,
 } from '@ng-icons/lucide';
+import { RRVehicleCardComponent, RRVehicleImageCarouselComponent } from '../../../../shared';
 
 export type SeatingFilter = 'all' | '5' | '7';
+
+export interface VehicleImageItem {
+  id: string;
+  url: string;
+  isPrimary: boolean;
+  fileName?: string;
+  isUploading?: boolean;
+}
 
 @Component({
   selector: 'app-rr-vehicle-list',
@@ -48,6 +67,10 @@ export type SeatingFilter = 'all' | '5' | '7';
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
+    CdkDropList,
+    CdkDrag,
+    CdkDragHandle,
+    CdkDragPlaceholder,
     HlmCardImports,
     HlmInputImports,
     HlmButtonImports,
@@ -57,6 +80,7 @@ export type SeatingFilter = 'all' | '5' | '7';
     IndianDatePipe,
     NgIconComponent,
     RRVehicleCardComponent,
+    RRVehicleImageCarouselComponent,
   ],
   providers: [
     provideIcons({
@@ -82,6 +106,9 @@ export type SeatingFilter = 'all' | '5' | '7';
       lucideCheck,
       lucideSearchX,
       lucideX,
+      lucideGripVertical,
+      lucideStar,
+      lucideImage,
     }),
   ],
   templateUrl: './vehicle-list.component.html',
@@ -127,21 +154,17 @@ export class RRVehicleListComponent implements OnInit {
 
   // Forms
   vehicleFormGroup!: FormGroup;
-  vehicleImageInputUrl = '';
 
-  // File Upload State
+  // Multi-image state
+  uploadedImages = signal<VehicleImageItem[]>([]);
   isUploading = signal<boolean>(false);
   uploadError = signal<string | null>(null);
-  selectedFileName = signal<string | null>(null);
   uploadProgress = signal<number>(0);
-  previewUrl = signal<string | null>(null);
 
   resetUploadState() {
     this.isUploading.set(false);
     this.uploadError.set(null);
-    this.selectedFileName.set(null);
     this.uploadProgress.set(0);
-    this.previewUrl.set(null);
   }
 
   ngOnInit() {
@@ -176,17 +199,17 @@ export class RRVehicleListComponent implements OnInit {
     });
   }
 
-  // --- RETRIEVALS ---
   async loadVehicles() {
     try {
       const data = await this.rrApi.getVehicles();
-      this.vehicles.set(data);
-    } catch (e) {
-      console.error(e);
+      this.vehicles.set(data || []);
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.error?.message || 'Error loading vehicles.');
     }
   }
 
-  getVehicleImage(v: any): string {
+  getVehicleImage(v: IVehicle | null): string {
     if (v && v.images && v.images.length > 0) {
       return v.images[0];
     }
@@ -209,7 +232,7 @@ export class RRVehicleListComponent implements OnInit {
   // --- ADD/EDIT MODALS ---
   openAddVehicleModal() {
     this.editingVehicleMode.set(false);
-    this.vehicleImageInputUrl = '';
+    this.uploadedImages.set([]);
     this.resetUploadState();
     this.vehicleFormGroup.reset({
       seating: '5',
@@ -261,11 +284,17 @@ export class RRVehicleListComponent implements OnInit {
       h1:  { price: v.pricing?.h1?.price || '',  km: v.pricing?.h1?.km || '' }
     });
 
-    this.vehicleImageInputUrl = v.images && v.images.length > 0 ? v.images[0] : '';
-    if (this.vehicleImageInputUrl && !this.vehicleImageInputUrl.startsWith('assets/')) {
-      this.previewUrl.set(this.vehicleImageInputUrl);
-      this.selectedFileName.set('Current vehicle image');
-    }
+    const existingImages: VehicleImageItem[] = (v.images || [])
+      .filter((img) => typeof img === 'string' && img.trim().length > 0)
+      .map((url, idx) => ({
+        id: `img-${Date.now()}-${idx}-${Math.random().toString(36).substring(2, 7)}`,
+        url,
+        isPrimary: idx === 0,
+        fileName: `Photo ${idx + 1}`
+      }));
+
+    this.uploadedImages.set(existingImages);
+
     this.dialog.open(this.vehicleFormDialog, {
       contentClass: 'max-w-3xl w-full p-6 max-h-[90vh] flex flex-col overflow-hidden',
     });
@@ -274,6 +303,8 @@ export class RRVehicleListComponent implements OnInit {
   closeVehicleFormModal() {
     this.dialog.closeAll();
     this.selectedVehicleDetails.set(null);
+    this.uploadedImages.set([]);
+    this.resetUploadState();
   }
 
   async saveVehicle(e: Event) {
@@ -281,12 +312,13 @@ export class RRVehicleListComponent implements OnInit {
     if (this.vehicleFormGroup.invalid) return;
 
     const formVal = this.vehicleFormGroup.value;
+    const imagesList = this.uploadedImages().map((item) => item.url).filter(Boolean);
     const payload = {
       ...formVal,
       insuranceExpiry: toISODateString(formVal.insuranceExpiry as IndianDateInput),
       pollutionExpiry: toISODateString(formVal.pollutionExpiry as IndianDateInput),
-      images: this.vehicleImageInputUrl.trim() 
-        ? [this.vehicleImageInputUrl.trim()] 
+      images: imagesList.length > 0
+        ? imagesList
         : [`assets/rr/${formVal.name?.toLowerCase()}.png`]
     };
 
@@ -320,62 +352,141 @@ export class RRVehicleListComponent implements OnInit {
     }
   }
 
-  async onFileSelected(event: Event) {
+  // --- REORDERING & IMAGE MANAGEMENT ---
+  onImageReordered(event: CdkDragDrop<VehicleImageItem[]>) {
+    const list = [...this.uploadedImages()];
+    moveItemInArray(list, event.previousIndex, event.currentIndex);
+    const updated = list.map((item, idx) => ({
+      ...item,
+      isPrimary: idx === 0,
+    }));
+    this.uploadedImages.set(updated);
+  }
+
+  setPrimaryImage(index: number) {
+    const list = [...this.uploadedImages()];
+    if (index <= 0 || index >= list.length) return;
+    const [selected] = list.splice(index, 1);
+    list.unshift(selected);
+    const updated = list.map((item, idx) => ({
+      ...item,
+      isPrimary: idx === 0,
+    }));
+    this.uploadedImages.set(updated);
+    toast.success('Image set as primary cover.');
+  }
+
+  removeImage(index: number) {
+    const list = [...this.uploadedImages()];
+    if (index < 0 || index >= list.length) return;
+    list.splice(index, 1);
+    const updated = list.map((item, idx) => ({
+      ...item,
+      isPrimary: idx === 0,
+    }));
+    this.uploadedImages.set(updated);
+  }
+
+  clearAllImages() {
+    this.uploadedImages.set([]);
+    this.resetUploadState();
+  }
+
+  // --- MULTI-FILE UPLOAD PROCESSING ---
+  async onFilesSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
 
-    const file = input.files[0];
-    
-    // File Validation: Limit to images only
-    if (!file.type.startsWith('image/')) {
-      this.uploadError.set('Only image files (PNG, JPG, JPEG, WEBP) are allowed.');
-      return;
-    }
+    const files = Array.from(input.files);
+    input.value = '';
+    await this.processFiles(files);
+  }
 
-    // File Validation: Limit to 5MB
-    const maxSize = 5 * 1024 * 1024;
-    if (file.size > maxSize) {
-      this.uploadError.set('File size exceeds the 5MB limit.');
-      return;
-    }
-
-    this.uploadError.set(null);
-    this.selectedFileName.set(file.name);
-
-    // Create a local object URL for instant preview
-    const reader = new FileReader();
-    reader.onload = () => {
-      this.previewUrl.set(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-
-    // Upload to server
-    try {
-      this.isUploading.set(true);
-      this.uploadProgress.set(20);
-      
-      const response = await this.rrApi.uploadVehicleImage(file);
-      
-      this.uploadProgress.set(100);
-      // Save the permanent URL in vehicleImageInputUrl (which gets sent in form payload)
-      this.vehicleImageInputUrl = response.url;
-      
-      // Update preview to use resolved URL
-      this.previewUrl.set(response.url);
-    } catch (err: any) {
-      console.error(err);
-      this.uploadError.set(err.error?.message || 'Failed to upload image. Please try again.');
-      this.previewUrl.set(null);
-      this.selectedFileName.set(null);
-    } finally {
-      this.isUploading.set(false);
-      // Reset input element value so same file can be selected again if cleared
-      input.value = '';
+  async onFilesDropped(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
+      const files = Array.from(event.dataTransfer.files);
+      await this.processFiles(files);
     }
   }
 
-  clearSelectedImage() {
-    this.resetUploadState();
-    this.vehicleImageInputUrl = '';
+  private async processFiles(files: File[]) {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+    const maxSize = 5 * 1024 * 1024; // 5MB
+
+    const validFiles: File[] = [];
+    const errors: string[] = [];
+
+    for (const file of files) {
+      if (!allowedTypes.includes(file.type.toLowerCase())) {
+        errors.push(`"${file.name}": Only JPEG, PNG, and WebP images are allowed.`);
+        continue;
+      }
+      if (file.size > maxSize) {
+        errors.push(`"${file.name}": Size exceeds the 5MB limit.`);
+        continue;
+      }
+      validFiles.push(file);
+    }
+
+    if (errors.length > 0) {
+      this.uploadError.set(errors.join(' '));
+      toast.error(errors[0]);
+    } else {
+      this.uploadError.set(null);
+    }
+
+    if (validFiles.length === 0) return;
+
+    // Create temporary optimistic items with local object URL preview
+    const startIndex = this.uploadedImages().length;
+    const tempItems: VehicleImageItem[] = validFiles.map((file, i) => ({
+      id: `temp-${Date.now()}-${i}-${Math.random().toString(36).substring(2, 7)}`,
+      url: URL.createObjectURL(file),
+      fileName: file.name,
+      isPrimary: startIndex === 0 && i === 0,
+      isUploading: true,
+    }));
+
+    this.uploadedImages.update((curr) => [...curr, ...tempItems]);
+
+    try {
+      this.isUploading.set(true);
+      this.uploadProgress.set(25);
+
+      const res = await this.rrApi.uploadVehicleImages(validFiles);
+
+      this.uploadProgress.set(100);
+
+      const returnedAssets = res.images || [];
+
+      this.uploadedImages.update((current) => {
+        let uploadedIdx = 0;
+        return current.map((item) => {
+          if (item.isUploading) {
+            const uploadedAsset = returnedAssets[uploadedIdx++];
+            const resolvedUrl = uploadedAsset?.url || item.url;
+            return {
+              ...item,
+              url: resolvedUrl,
+              isUploading: false,
+            };
+          }
+          return item;
+        });
+      });
+
+      toast.success(`${validFiles.length} ${validFiles.length === 1 ? 'image' : 'images'} uploaded successfully.`);
+    } catch (err: any) {
+      console.error(err);
+      this.uploadError.set(err.error?.message || 'Failed to upload images. Please try again.');
+      // Remove temporary items that failed
+      this.uploadedImages.update((current) => current.filter((item) => !item.isUploading));
+      toast.error('Failed to upload image(s).');
+    } finally {
+      this.isUploading.set(false);
+      this.uploadProgress.set(0);
+    }
   }
 }

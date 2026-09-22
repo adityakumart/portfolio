@@ -152,23 +152,27 @@ rrRouter.post('/auth/logout', authenticateRRToken, async (req: any, res: Respons
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
+    fileSize: 5 * 1024 * 1024, // 5MB limit per file
   },
   fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
+    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+    if (allowedMimeTypes.includes(file.mimetype.toLowerCase())) {
       cb(null, true);
     } else {
-      cb(new Error('Only image files are allowed.'));
+      cb(new Error('Only image files (JPEG, PNG, WebP) are allowed.'));
     }
   }
 });
 
-// POST upload vehicle image (Authenticated)
+// POST upload vehicle image(s) (Authenticated)
 rrRouter.post(
   '/vehicles/upload',
   authenticateRRToken,
   (req, res, next) => {
-    upload.single('image')(req, res, (err: any) => {
+    upload.fields([
+      { name: 'images', maxCount: 15 },
+      { name: 'image', maxCount: 1 },
+    ])(req, res, (err: any) => {
       if (err) {
         res.status(400).json({ error: 'Bad Request', message: err.message });
       } else {

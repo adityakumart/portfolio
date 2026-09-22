@@ -242,7 +242,11 @@
         <div class="details-visual-panel">
           <div class="visual-card border rounded-2xl overflow-hidden p-3 bg-muted/10">
             <div class="details-img-container rounded-xl overflow-hidden mb-3">
-              <img [src]="getVehicleImage(selectedVehicleDetails())" alt="Vehicle Image" class="w-full object-cover h-48" />
+              <app-rr-vehicle-image-carousel
+                [images]="selectedVehicleDetails()?.images || []"
+                [alt]="(selectedVehicleDetails()?.manufacturer || '') + ' ' + (selectedVehicleDetails()?.name || '')"
+                containerClass="h-48"
+              />
             </div>
             
             <div class="status-section">
@@ -621,43 +625,138 @@
             <input hlmInput type="number" formControlName="extraHourPrice" class="w-full text-sm" />
           </div>
 
-          <div class="sm:col-span-2">
-            <span class="text-xs text-muted-foreground uppercase font-semibold block mb-2">Vehicle Asset Image</span>
-            
-            <!-- Dropzone / Selector -->
-            @if (!previewUrl()) {
-              <div class="file-upload-dropzone p-6 border-2 border-dashed rounded-xl text-center cursor-pointer hover:border-primary transition-colors" 
-                   (click)="fileInput.click()" 
-                   (dragover)="$event.preventDefault(); $event.stopPropagation();" 
-                   (drop)="$event.preventDefault(); $event.stopPropagation(); onFileSelected($event)">
-                <ng-icon class="upload-icon text-3xl text-muted-foreground mb-1" name="lucideUploadCloud"></ng-icon>
-                <span class="upload-text text-sm font-semibold block">Drag & Drop or Click to Upload Image</span>
-                <span class="upload-hint text-xs text-muted-foreground">PNG, JPG, JPEG, WEBP up to 5MB</span>
+          <div class="sm:col-span-2 space-y-3">
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="text-xs text-muted-foreground uppercase font-semibold block">Vehicle Image Gallery</span>
+                <span class="text-[11px] text-muted-foreground">Drag images to reorder display sequence. The first image (#1) is the Primary Cover.</span>
+              </div>
+              @if (uploadedImages().length > 0) {
+                <button
+                  hlmBtn
+                  variant="ghost"
+                  size="sm"
+                  type="button"
+                  (click)="clearAllImages()"
+                  class="text-xs text-muted-foreground hover:text-destructive h-7 px-2 cursor-pointer"
+                >
+                  Clear All
+                </button>
+              }
+            </div>
+
+            <!-- Upload Dropzone (When No Images Yet) -->
+            @if (uploadedImages().length === 0) {
+              <div
+                class="file-upload-dropzone p-8 border-2 border-dashed rounded-2xl text-center cursor-pointer hover:border-primary transition-all duration-200 bg-muted/10 hover:bg-muted/20"
+                (click)="fileInput.click()"
+                (dragover)="$event.preventDefault(); $event.stopPropagation();"
+                (drop)="onFilesDropped($event)"
+              >
+                <div class="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-2">
+                  <ng-icon class="text-2xl" name="lucideUploadCloud"></ng-icon>
+                </div>
+                <span class="upload-text text-sm font-bold block text-foreground">Click to Upload or Drag & Drop Multiple Photos</span>
+                <span class="upload-hint text-xs text-muted-foreground block mt-1">JPEG, PNG, WebP up to 5MB each &bull; Upload exterior, interior & angle shots</span>
               </div>
             } @else {
-              <!-- Preview & Upload Status Card -->
-              <div class="upload-preview-container p-4 border rounded-xl flex items-center justify-between gap-4">
-                <img [src]="previewUrl()!" alt="Vehicle Preview" class="preview-image h-16 w-16 object-cover rounded-lg" />
-                <div class="file-info flex-1 text-xs">
-                  <span class="file-name font-semibold block">{{ selectedFileName() }}</span>
-                  @if (isUploading()) {
-                    <span class="file-size text-primary font-bold">Uploading file to R2...</span>
-                  } @else {
-                    <span class="file-size text-emerald-500 font-bold inline-flex items-center gap-1">
-                      <ng-icon name="lucideCheckCircle"></ng-icon> Uploaded Successfully
-                    </span>
-                  }
-                </div>
-                
-                <div class="action-buttons flex items-center gap-2">
-                  @if (!isUploading()) {
-                    <button hlmBtn variant="outline" size="sm" type="button" (click)="fileInput.click(); $event.stopPropagation()">
-                      Replace
-                    </button>
-                    <button hlmBtn variant="destructive" size="sm" type="button" (click)="clearSelectedImage(); $event.stopPropagation()">
-                      Clear
-                    </button>
-                  }
+              <!-- Reorderable CDK Drop List -->
+              <div
+                cdkDropList
+                cdkDropListOrientation="mixed"
+                (cdkDropListDropped)="onImageReordered($event)"
+                class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 p-3 rounded-2xl border border-border/80 bg-muted/10 min-h-[140px]"
+              >
+                @for (item of uploadedImages(); track item.id; let idx = $index) {
+                  <div
+                    cdkDrag
+                    class="group relative rounded-xl border overflow-hidden bg-card flex flex-col shadow-xs transition-shadow hover:shadow-md select-none"
+                    [class.border-emerald-500]="idx === 0"
+                    [class.ring-2]="idx === 0"
+                    [class.ring-emerald-500/20]="idx === 0"
+                  >
+                    <!-- Drag Preview Placeholder -->
+                    <div *cdkDragPlaceholder class="rounded-xl border-2 border-dashed border-primary bg-primary/10 w-full h-32"></div>
+
+                    <!-- Image Thumbnail Preview -->
+                    <div class="relative w-full h-28 sm:h-32 bg-muted/20 overflow-hidden flex items-center justify-center">
+                      <img
+                        [src]="item.url"
+                        [alt]="'Image ' + (idx + 1)"
+                        class="w-full h-full object-cover transition-transform group-hover:scale-105"
+                      />
+
+                      <!-- Uploading State Overlay -->
+                      @if (item.isUploading) {
+                        <div class="absolute inset-0 bg-background/80 backdrop-blur-xs flex flex-col items-center justify-center p-2 text-center">
+                          <span class="text-[11px] font-bold text-primary animate-pulse">Uploading...</span>
+                        </div>
+                      }
+
+                      <!-- Drag Handle Overlay Pill -->
+                      <div
+                        cdkDragHandle
+                        class="absolute top-1.5 left-1.5 p-1 rounded-md bg-background/80 hover:bg-background text-muted-foreground hover:text-foreground shadow-xs backdrop-blur-xs cursor-grab active:cursor-grabbing border border-border/60"
+                        title="Drag to reorder"
+                      >
+                        <ng-icon name="lucideGripVertical" class="text-xs block"></ng-icon>
+                      </div>
+
+                      <!-- Position / Primary Badge -->
+                      <div class="absolute top-1.5 right-1.5">
+                        @if (idx === 0) {
+                          <span class="inline-flex items-center gap-1 text-[10px] font-extrabold px-1.5 py-0.5 rounded-md bg-emerald-500 text-white shadow-xs">
+                            <ng-icon name="lucideStar" class="text-[10px]"></ng-icon> Cover
+                          </span>
+                        } @else {
+                          <span class="inline-flex items-center text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-md bg-background/80 text-muted-foreground shadow-xs border border-border/60 backdrop-blur-xs">
+                            #{{ idx + 1 }}
+                          </span>
+                        }
+                      </div>
+                    </div>
+
+                    <!-- Footer Actions -->
+                    <div class="p-1.5 flex items-center justify-between gap-1 border-t border-border/60 bg-card/90">
+                      @if (idx !== 0) {
+                        <button
+                          type="button"
+                          (click)="setPrimaryImage(idx)"
+                          class="text-[10px] font-semibold text-primary hover:underline px-1 py-0.5 rounded cursor-pointer"
+                          title="Promote to Primary Cover"
+                        >
+                          Make Cover
+                        </button>
+                      } @else {
+                        <span class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 px-1">
+                          Primary
+                        </span>
+                      }
+
+                      <button
+                        type="button"
+                        (click)="removeImage(idx)"
+                        class="text-muted-foreground hover:text-destructive p-1 rounded transition-colors cursor-pointer"
+                        title="Delete image"
+                      >
+                        <ng-icon name="lucideTrash2" class="text-xs"></ng-icon>
+                      </button>
+                    </div>
+                  </div>
+                }
+
+                <!-- Add More Photos Tile -->
+                <div
+                  (click)="fileInput.click()"
+                  (dragover)="$event.preventDefault(); $event.stopPropagation();"
+                  (drop)="onFilesDropped($event)"
+                  class="rounded-xl border-2 border-dashed border-border/80 hover:border-primary hover:bg-primary/5 transition-all flex flex-col items-center justify-center p-3 text-center cursor-pointer min-h-[120px] group"
+                >
+                  <div class="w-8 h-8 rounded-full bg-muted/60 group-hover:bg-primary/10 group-hover:text-primary flex items-center justify-center transition-colors mb-1.5">
+                    <ng-icon name="lucidePlus" class="text-base"></ng-icon>
+                  </div>
+                  <span class="text-xs font-semibold text-muted-foreground group-hover:text-foreground">Add Photos</span>
+                  <span class="text-[10px] text-muted-foreground/80">Click or drop</span>
                 </div>
               </div>
             }
@@ -666,25 +765,32 @@
             @if (isUploading()) {
               <div class="upload-progress-container mt-2">
                 <div class="progress-header flex justify-between text-xs text-muted-foreground mb-1">
-                  <span>Uploading...</span>
+                  <span>Uploading photos to cloud...</span>
                   <span>{{ uploadProgress() }}%</span>
                 </div>
-                <div class="progress-bar-bg h-2 rounded-full bg-muted overflow-hidden">
-                  <div class="progress-bar-fill h-full bg-primary" [style.width.%]="uploadProgress()"></div>
+                <div class="progress-bar-bg h-1.5 rounded-full bg-muted overflow-hidden">
+                  <div class="progress-bar-fill h-full bg-primary transition-all duration-300" [style.width.%]="uploadProgress()"></div>
                 </div>
               </div>
             }
 
             <!-- Error Display -->
             @if (uploadError()) {
-              <div class="upload-error-message text-xs text-destructive mt-2 flex items-center gap-1">
+              <div class="upload-error-message text-xs text-destructive mt-1 flex items-center gap-1">
                 <ng-icon name="lucideAlertCircle"></ng-icon>
                 <span>{{ uploadError() }}</span>
               </div>
             }
 
-            <!-- Hidden Input -->
-            <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" style="display: none;" />
+            <!-- Hidden Multi-File Input -->
+            <input
+              type="file"
+              #fileInput
+              (change)="onFilesSelected($event)"
+              accept="image/png,image/jpeg,image/webp"
+              multiple
+              style="display: none;"
+            />
           </div>
         </div>
       </div>

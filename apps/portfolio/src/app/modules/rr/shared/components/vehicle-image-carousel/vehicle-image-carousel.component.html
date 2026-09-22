@@ -1,0 +1,85 @@
+<div class="vehicle-carousel-wrapper flex flex-col gap-2.5 w-full select-none" tabindex="0">
+  <!-- Main Display Stage -->
+  <div
+    class="relative w-full rounded-2xl overflow-hidden border border-border/80 bg-muted/20 flex items-center justify-center group shadow-xs shrink-0"
+    [ngClass]="containerClass"
+  >
+    <!-- Featured Image -->
+    <img
+      [src]="currentImage()"
+      [alt]="alt + ' - View ' + (currentIndex() + 1)"
+      (error)="onImageError($event)"
+      class="w-full h-full object-cover transition-opacity duration-200 pointer-events-none"
+      loading="lazy"
+    />
+
+    <!-- Multi-Image Counter Pill -->
+    @if (hasMultiple()) {
+      <div class="absolute top-3 right-3 z-10 pointer-events-none">
+        <span
+          hlmBadge
+          variant="secondary"
+          class="bg-background/90 text-foreground font-mono text-[11px] font-bold px-2.5 py-0.5 shadow-sm border border-border/70 backdrop-blur-md"
+        >
+          {{ currentIndex() + 1 }} / {{ totalImages() }}
+        </span>
+      </div>
+    }
+
+    <!-- Left / Prev Overlay Button -->
+    @if (hasMultiple()) {
+      <button
+        type="button"
+        (click)="prev($event)"
+        class="absolute left-2.5 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-background/90 hover:bg-background text-foreground shadow-md backdrop-blur-md opacity-90 hover:opacity-100 hover:scale-105 active:scale-95 transition-transform z-20 flex items-center justify-center cursor-pointer border border-border/70 focus:outline-none"
+        aria-label="Previous vehicle image"
+      >
+        <ng-icon name="lucideChevronLeft" class="text-lg"></ng-icon>
+      </button>
+
+      <!-- Right / Next Overlay Button -->
+      <button
+        type="button"
+        (click)="next($event)"
+        class="absolute right-2.5 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-background/90 hover:bg-background text-foreground shadow-md backdrop-blur-md opacity-90 hover:opacity-100 hover:scale-105 active:scale-95 transition-transform z-20 flex items-center justify-center cursor-pointer border border-border/70 focus:outline-none"
+        aria-label="Next vehicle image"
+      >
+        <ng-icon name="lucideChevronRight" class="text-lg"></ng-icon>
+      </button>
+    }
+  </div>
+
+  <!-- Thumbnails Strip -->
+  @if (showThumbnails && hasMultiple()) {
+    <div class="flex items-center gap-2 overflow-x-auto pb-1 px-0.5 scrollbar-thin">
+      @for (img of resolvedImages(); track $index) {
+        <button
+          type="button"
+          (click)="selectImage($index, $event)"
+          [class.ring-2]="currentIndex() === $index"
+          [class.ring-primary]="currentIndex() === $index"
+          [class.border-primary]="currentIndex() === $index"
+          [class.opacity-60]="currentIndex() !== $index"
+          [class.hover:opacity-100]="currentIndex() !== $index"
+          class="relative shrink-0 h-12 w-16 sm:h-14 sm:w-20 rounded-lg overflow-hidden border border-border/80 bg-muted/30 transition-all duration-200 cursor-pointer focus:outline-none"
+          [attr.aria-label]="'View image ' + ($index + 1)"
+        >
+          <img
+            [src]="img"
+            [alt]="alt + ' thumbnail ' + ($index + 1)"
+            (error)="onImageError($event)"
+            class="w-full h-full object-cover pointer-events-none"
+            loading="lazy"
+          />
+          @if ($index === 0) {
+            <span
+              class="absolute bottom-0 inset-x-0 bg-black/75 text-[9px] text-emerald-400 font-bold text-center tracking-tighter py-0.5"
+            >
+              Cover
+            </span>
+          }
+        </button>
+      }
+    </div>
+  }
+</div>

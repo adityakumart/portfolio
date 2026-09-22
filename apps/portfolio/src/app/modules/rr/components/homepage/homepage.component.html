@@ -377,14 +377,12 @@
 
         <!-- Scrollable Body -->
         <div class="flex-1 min-h-0 overflow-y-auto pr-1 space-y-4">
-          <!-- Vehicle Image -->
-          <div
-            class="rounded-xl overflow-hidden max-h-48 border border-border bg-muted/20 flex items-center justify-center"
-          >
-            <img
-              [src]="getVehicleImage(vehicle)"
-              alt="Vehicle"
-              class="w-full h-48 object-cover"
+          <!-- Vehicle Image Carousel -->
+          <div class="rounded-xl overflow-hidden">
+            <app-rr-vehicle-image-carousel
+              [images]="vehicle.images"
+              [alt]="vehicle.manufacturer + ' ' + vehicle.name"
+              containerClass="h-48 sm:h-52"
             />
           </div>
 
