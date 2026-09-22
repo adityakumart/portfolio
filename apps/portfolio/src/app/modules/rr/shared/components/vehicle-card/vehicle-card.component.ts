@@ -1,4 +1,13 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  ChangeDetectionStrategy,
+  OnInit,
+  OnDestroy,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HlmCardImports } from '@spartan-ng/hel/card';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
@@ -53,10 +62,13 @@ export type VehicleCardVariant = 'fleet' | 'stats' | 'homepage';
   templateUrl: './vehicle-card.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RRVehicleCardComponent {
+export class RRVehicleCardComponent implements OnInit, OnDestroy {
   @Input({ required: true }) vehicle!: IVehicle | IPublicVehicle | any;
   @Input() variant: VehicleCardVariant = 'fleet';
   @Input() isAdmin = false;
+
+  readonly currentImageIndex = signal<number>(0);
+  private autoScrollInterval: any = null;
 
   @Output() cardClick = new EventEmitter<any>();
   @Output() bookNow = new EventEmitter<IVehicle>();
@@ -94,19 +106,54 @@ export class RRVehicleCardComponent {
     return (this.vehicle.status || '').toUpperCase();
   }
 
-  get vehicleImage(): string {
-    if (this.vehicle?.images && this.vehicle.images.length > 0) {
-      return this.vehicle.images[0];
+  get vehicleImages(): string[] {
+    if (this.vehicle?.images && Array.isArray(this.vehicle.images)) {
+      return this.vehicle.images.filter((img: string) => typeof img === 'string' && img.trim().length > 0);
     }
-    return 'https://via.placeholder.com/150';
+    return [];
   }
 
   get imageCount(): number {
-    return this.vehicle?.images?.length || 0;
+    return this.vehicleImages.length;
   }
 
   get hasMultipleImages(): boolean {
     return this.imageCount > 1;
+  }
+
+  get vehicleImage(): string {
+    const list = this.vehicleImages;
+    if (list.length > 0) {
+      const idx = this.currentImageIndex() % list.length;
+      return list[idx] || list[0];
+    }
+    return 'https://via.placeholder.com/150';
+  }
+
+  ngOnInit() {
+    this.startAutoScroll();
+  }
+
+  ngOnDestroy() {
+    this.stopAutoScroll();
+  }
+
+  startAutoScroll() {
+    this.stopAutoScroll();
+    if (!this.hasMultipleImages) return;
+
+    this.autoScrollInterval = setInterval(() => {
+      if (this.hasMultipleImages) {
+        this.currentImageIndex.update((idx) => (idx + 1) % this.imageCount);
+      }
+    }, 3200);
+  }
+
+  stopAutoScroll() {
+    if (this.autoScrollInterval) {
+      clearInterval(this.autoScrollInterval);
+      this.autoScrollInterval = null;
+    }
   }
 
   onImageError(event: Event) {
