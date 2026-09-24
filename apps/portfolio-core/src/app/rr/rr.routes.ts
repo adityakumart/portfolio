@@ -10,8 +10,10 @@ import { authRateLimiter } from '../../middlewares/rate-limit.middleware';
 import { customerRouter } from '../../routes/customer.routes';
 import { BillingService } from '../../services/billing.service';
 
+import { getJwtSecret } from '../../config/security';
+
 const rrRouter = Router();
-const JWT_SECRET = process.env['JWT_SECRET'] || 'supersecretlocaljwtkey1234567890!';
+const JWT_SECRET = getJwtSecret();
 
 // Mount public routes for unauthenticated customer portal / homepage
 rrRouter.use('/public', rrPublicRouter);
@@ -587,7 +589,8 @@ rrRouter.get('/bookings', authenticateRRToken, async (req: any, res: Response) =
     const isPaginated = paginate === 'true' || page !== undefined || limit !== undefined;
 
     if (!isPaginated || all === 'true') {
-      const list = await col.find(query).sort({ createdAt: -1, _id: -1 }).toArray();
+      // Hard ceiling of 1000 items to prevent server out-of-memory crashes on large datasets
+      const list = await col.find(query).sort({ createdAt: -1, _id: -1 }).limit(1000).toArray();
       res.json(list);
       return;
     }
@@ -1123,7 +1126,8 @@ rrRouter.get('/logs', authenticateRRToken, requireAdmin, async (req: any, res: R
     }
 
     if (all === 'true') {
-      const list = await col.find(query).sort({ timestamp: -1, _id: -1 }).toArray();
+      // Hard ceiling of 1000 items to prevent server out-of-memory crashes on large datasets
+      const list = await col.find(query).sort({ timestamp: -1, _id: -1 }).limit(1000).toArray();
       res.json(list);
       return;
     }

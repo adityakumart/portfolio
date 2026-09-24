@@ -37,8 +37,9 @@ app.use(
     ],
   }),
 );
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Body parsers with strict size limits to prevent Denial-of-Service via huge payloads
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 // Global rate limiter on all /api routes (skips /api/ping and OPTIONS)
 app.use('/api', apiRateLimiter);

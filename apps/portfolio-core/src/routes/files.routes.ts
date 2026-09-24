@@ -22,6 +22,12 @@ filesRouter.post('/upload', authenticateToken, enforceFileRBAC, handleUploadFile
 filesRouter.post('/create-folder', authenticateToken, enforceFileRBAC, handleCreateFolder);
 filesRouter.post('/ai-context', authenticateToken, enforceFileRBAC, handleAiFileContext);
 
-// Publicly accessible local storage simulator endpoints (dev only)
-filesRouter.put('/mock-upload', handleMockUpload);
-filesRouter.get('/mock-download', handleMockDownload);
+// Development-only local storage simulator endpoints (disabled in production)
+if (process.env['NODE_ENV'] !== 'production' && !process.env['VERCEL']) {
+  filesRouter.put('/mock-upload', authenticateToken, handleMockUpload);
+  filesRouter.get('/mock-download', authenticateToken, handleMockDownload);
+} else {
+  filesRouter.all(['/mock-upload', '/mock-download'], (req, res) => {
+    res.status(403).json({ error: 'Forbidden', message: 'Mock file storage endpoints are disabled in production.' });
+  });
+}

@@ -13,8 +13,10 @@ const IV_LENGTH = 12; // 96-bit recommended for GCM
 const AUTH_TAG_LENGTH = 16; // 128-bit authentication tag
 const PREFIX = 'enc:v1:';
 
+import { getKycSecret } from '../../config/security';
+
 // Derive 256-bit key deterministically from master secret and salt
-const MASTER_SECRET = process.env['KYC_ENCRYPTION_KEY'] || process.env['JWT_SECRET'] || 'supersecretlocaljwtkey1234567890!';
+const MASTER_SECRET = getKycSecret();
 const SALT = 'portfolio_rr_kyc_salt_2026';
 const DERIVED_KEY = crypto.scryptSync(MASTER_SECRET, SALT, 32);
 const BLIND_INDEX_KEY = crypto.scryptSync(MASTER_SECRET, 'portfolio_blind_index_salt', 32);

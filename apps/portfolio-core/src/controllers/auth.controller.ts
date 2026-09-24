@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { AuthService } from '../services/auth.service';
 import * as jwt from 'jsonwebtoken';
+import { getJwtSecret } from '../config/security';
 
 export async function signup(req: Request, res: Response) {
   try {
@@ -66,8 +67,8 @@ export async function logout(req: Request, res: Response) {
       return;
     }
 
-    const JWT_SECRET = process.env['JWT_SECRET'] || 'your-super-secret-jwt-key';
-    const payload = jwt.verify(token, JWT_SECRET, { ignoreExpiration: true }) as { id: string };
+    const jwtSecret = getJwtSecret();
+    const payload = jwt.verify(token, jwtSecret, { ignoreExpiration: true }) as { id: string };
 
     const result = await AuthService.logout(payload.id);
     res.status(200).json(result);
