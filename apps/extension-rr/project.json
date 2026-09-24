@@ -22,7 +22,14 @@
             "input": "apps/extension-rr/public"
           }
         ],
-        "styles": ["apps/extension-rr/src/styles.scss"]
+        "styles": [
+          "apps/extension-rr/src/styles.scss"
+        ],
+        "stylePreprocessorOptions": {
+          "sass": {
+            "silenceDeprecations": ["import"]
+          }
+        }
       },
       "configurations": {
         "production": {

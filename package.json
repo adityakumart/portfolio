@@ -18,7 +18,13 @@
     "build:vercel": "nx build portfolio --configuration production --base-href /",
     "build:extension:rr": "nx build extension-rr --configuration production",
     "build:mobile:rr": "nx run portfolio-rr:sync",
-    "open:android:rr": "nx run portfolio-rr:open:android"
+    "open:android:rr": "nx run portfolio-rr:open:android",
+    "dev:desktop:user": "nx run portfolio:desktop:dev",
+    "build:desktop:user": "nx run portfolio:desktop:build",
+    "dev:desktop:rr": "nx run portfolio-rr:desktop:dev",
+    "build:desktop:rr": "nx run portfolio-rr:desktop:build",
+    "dev:desktop": "pnpm run dev:desktop:user",
+    "build:desktop": "pnpm run build:desktop:user"
   },
   "private": true,
   "dependencies": {
@@ -41,6 +47,7 @@
     "@ng-icons/core": "^35.0.1",
     "@ng-icons/lucide": "^35.0.1",
     "@spartan-ng/brain": "^1.3.4",
+    "@tauri-apps/api": "^2.11.1",
     "@types/crypto-js": "^4.2.2",
     "bcrypt": "^6.0.0",
     "class-variance-authority": "^0.7.0",
@@ -88,6 +95,7 @@
     "@swc/core": "~1.15.5",
     "@swc/helpers": "~0.5.18",
     "@tailwindcss/postcss": "^4.3.3",
+    "@tauri-apps/cli": "^2.11.5",
     "@types/bcrypt": "^6.0.0",
     "@types/chrome": "^0.3.0",
     "@types/cors": "^2.8.19",

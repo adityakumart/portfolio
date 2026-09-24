@@ -1,0 +1,44 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "RR Fleet Management",
+  "version": "1.0.0",
+  "identifier": "com.adityakumar.portfoliorr.desktop",
+  "build": {
+    "frontendDist": "../../dist/apps/portfolio-rr/browser",
+    "devUrl": "http://localhost:4205",
+    "beforeDevCommand": "pnpm exec nx serve portfolio-rr",
+    "beforeBuildCommand": "pnpm exec nx build portfolio-rr --configuration production"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "RR Fleet Management",
+        "width": 1280,
+        "height": 840,
+        "minWidth": 900,
+        "minHeight": 600,
+        "resizable": true,
+        "fullscreen": false,
+        "center": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "android": {
+      "debugApplicationIdSuffix": ".debug"
+    }
+  }
+}

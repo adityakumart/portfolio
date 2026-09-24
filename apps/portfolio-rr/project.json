@@ -22,7 +22,14 @@
             "input": "apps/portfolio-rr/public"
           }
         ],
-        "styles": ["apps/portfolio-rr/src/styles.scss"]
+        "styles": [
+          "apps/portfolio-rr/src/styles.scss"
+        ],
+        "stylePreprocessorOptions": {
+          "sass": {
+            "silenceDeprecations": ["import"]
+          }
+        }
       },
       "configurations": {
         "production": {
@@ -63,9 +70,32 @@
         "cwd": "apps/portfolio-rr"
       }
     },
+    "desktop:dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm exec tauri dev",
+        "cwd": "apps/portfolio-rr"
+      }
+    },
+    "desktop:build": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        {
+          "target": "build",
+          "params": "forward"
+        }
+      ],
+      "options": {
+        "command": "pnpm exec tauri build",
+        "cwd": "apps/portfolio-rr"
+      }
+    },
     "serve": {
       "continuous": true,
       "executor": "@angular/build:dev-server",
+      "options": {
+        "port": 4205
+      },
       "configurations": {
         "production": {
           "buildTarget": "portfolio-rr:build:production"
