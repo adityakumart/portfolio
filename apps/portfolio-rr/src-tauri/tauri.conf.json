@@ -5,7 +5,7 @@
   "identifier": "com.adityakumar.portfoliorr.desktop",
   "build": {
     "frontendDist": "../../dist/apps/portfolio-rr/browser",
-    "devUrl": "http://localhost:4200",
+    "devUrl": "http://localhost:4205",
     "beforeDevCommand": "pnpm exec nx serve portfolio-rr",
     "beforeBuildCommand": "pnpm exec nx build portfolio-rr --configuration production"
   },
