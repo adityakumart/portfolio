@@ -1,0 +1,91 @@
+{
+  "name": "portfolio-rr",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "app",
+  "sourceRoot": "apps/portfolio-rr/src",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@angular/build:application",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/portfolio-rr",
+        "baseHref": "/",
+        "browser": "apps/portfolio-rr/src/main.ts",
+        "tsConfig": "apps/portfolio-rr/tsconfig.app.json",
+        "inlineStyleLanguage": "scss",
+        "assets": [
+          {
+            "glob": "**/*",
+            "input": "apps/portfolio-rr/public"
+          }
+        ],
+        "styles": ["apps/portfolio-rr/src/styles.scss"]
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "2mb",
+              "maximumError": "5mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "20kb",
+              "maximumError": "60kb"
+            }
+          ],
+          "outputHashing": "all"
+        },
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "sync": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "npx cap sync android",
+        "cwd": "apps/portfolio-rr"
+      }
+    },
+    "open:android": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx cap open android",
+        "cwd": "apps/portfolio-rr"
+      }
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@angular/build:dev-server",
+      "configurations": {
+        "production": {
+          "buildTarget": "portfolio-rr:build:production"
+        },
+        "development": {
+          "buildTarget": "portfolio-rr:build:development"
+        }
+      },
+      "defaultConfiguration": "development"
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "serve-static": {
+      "continuous": true,
+      "executor": "@nx/web:file-server",
+      "options": {
+        "buildTarget": "portfolio-rr:build",
+        "staticFilePath": "dist/apps/portfolio-rr/browser",
+        "spa": true
+      }
+    }
+  }
+}
