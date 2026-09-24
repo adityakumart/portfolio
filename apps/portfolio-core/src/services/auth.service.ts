@@ -4,8 +4,10 @@ import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 import { User } from '@portfolio/shared-types';
 
-const JWT_SECRET = process.env['JWT_SECRET'] || '';
-const REFRESH_SECRET = process.env['REFRESH_SECRET'] || '';
+import { getJwtSecret, getRefreshSecret } from '../config/security';
+
+const JWT_SECRET = getJwtSecret();
+const REFRESH_SECRET = getRefreshSecret();
 
 export class AuthService {
   // 1. SIGNUP

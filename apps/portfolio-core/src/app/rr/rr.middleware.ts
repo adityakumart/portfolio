@@ -1,18 +1,18 @@
 import { Request, Response, NextFunction } from 'express';
 import * as jwt from 'jsonwebtoken';
-
-const JWT_SECRET = process.env['JWT_SECRET'] || 'supersecretlocaljwtkey1234567890!';
+import { getJwtSecret } from '../../config/security';
+import { RRService } from './rr.service';
 
 export interface IRRRequest extends Request {
   userId?: string;
   userRole?: string;
 }
 
-export function authenticateRRToken(
+export async function authenticateRRToken(
   req: IRRRequest,
   res: Response,
   next: NextFunction
-): void {
+): Promise<void> {
   try {
     const authHeader = req.headers['authorization'];
     if (!authHeader) {
@@ -32,9 +32,33 @@ export function authenticateRRToken(
       return;
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET) as { id: string; role: string };
-    req.userId = decoded.id;
-    req.userRole = decoded.role;
+    const jwtSecret = getJwtSecret();
+    const decoded = jwt.verify(token, jwtSecret) as { id: string; role?: string };
+    
+    // Instant Revocation & Real-time Role Sync:
+    // Verify that the employee still exists, has not been deleted, and has not been deactivated.
+    const empCol = await RRService.getEmployeesCol();
+    const emp = await empCol.findOne({ id: decoded.id, isDeleted: { $ne: true } });
+
+    if (!emp) {
+      res.status(401).json({
+        error: 'Unauthorized',
+        message: 'Employee account does not exist or has been removed.',
+      });
+      return;
+    }
+
+    if (!emp.allowLogin) {
+      res.status(403).json({
+        error: 'Forbidden',
+        message: 'Account access has been revoked by an administrator.',
+      });
+      return;
+    }
+
+    req.userId = emp.id;
+    // Always use the real-time role from database to prevent stale token privilege escalation
+    req.userRole = emp.role;
     next();
   } catch (error: unknown) {
     const err = error as Error;

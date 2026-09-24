@@ -37,8 +37,9 @@ app.use(
     ],
   }),
 );
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Body parsers with strict size limits to prevent Denial-of-Service via huge payloads
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 // Global rate limiter on all /api routes (skips /api/ping and OPTIONS)
 app.use('/api', apiRateLimiter);
@@ -54,6 +55,17 @@ app.get('/api/ping', (req, res) => {
 
 app.get(['/', '/api'], (req, res) => {
   res.send({ message: `portfolio-core API` });
+});
+
+// Centralized error handling middleware: prevents stack trace leaks and formats consistent JSON errors
+app.use((err: any, req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error('Unhandled server error:', err);
+  const status = typeof err.status === 'number' ? err.status : (typeof err.statusCode === 'number' ? err.statusCode : 500);
+  const isClientError = status >= 400 && status < 500;
+  res.status(status).json({
+    error: isClientError ? 'Bad Request' : 'Internal Server Error',
+    message: isClientError ? err.message : 'An unexpected error occurred. Please try again later.',
+  });
 });
 
 if (!process.env['VERCEL']) {

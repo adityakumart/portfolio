@@ -21,7 +21,7 @@ import {
   IVehicleUploadedAsset,
 } from '@portfolio/shared-types';
 
-export {
+export type {
   IRRUser,
   IVehicle,
   IVehicleAutocompleteItem,

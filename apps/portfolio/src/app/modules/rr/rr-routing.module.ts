@@ -13,7 +13,7 @@ import { RRHistoryComponent } from './components/dashboard/components/history/hi
 import { RRActivityLogsComponent } from './components/dashboard/components/activity-logs/activity-logs.component';
 import { RRCustomerListComponent } from './components/dashboard/components/customer-list/customer-list.component';
 
-const routes: Routes = [
+export const RR_ROUTES: Routes = [
   { path: '', component: RRHomepageComponent },
   { path: 'home', component: RRHomepageComponent },
   { path: 'login', component: RRLoginComponent },
@@ -34,7 +34,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [RouterModule.forChild(routes)],
+  imports: [RouterModule.forChild(RR_ROUTES)],
   exports: [RouterModule]
 })
 export class RRRoutingModule { }

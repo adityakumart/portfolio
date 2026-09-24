@@ -8,6 +8,9 @@
       "@portfolio/shared-types": [
         "./libs/shared-types/src/index.ts"
       ],
+      "@portfolio/feature-rr": [
+        "./apps/portfolio/src/app/modules/rr/index.ts"
+      ],
       "@spartan-ng/hel/button": [
         "./libs/styles/button/src/index.ts"
       ],
