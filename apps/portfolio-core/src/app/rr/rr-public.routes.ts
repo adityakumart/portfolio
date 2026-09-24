@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { RRService } from './rr.service';
+import { safeRegex } from '../../utils/security/regex.util';
 
 const rrPublicRouter = Router();
 
@@ -23,7 +24,7 @@ rrPublicRouter.get('/vehicles', async (req: Request, res: Response) => {
     };
 
     if (search && typeof search === 'string' && search.trim()) {
-      const searchRegex = new RegExp(search.trim(), 'i');
+      const searchRegex = safeRegex(search.trim(), 'i');
       filter.$or = [
         { name: { $regex: searchRegex } },
         { manufacturer: { $regex: searchRegex } },
@@ -48,12 +49,9 @@ rrPublicRouter.get('/vehicles', async (req: Request, res: Response) => {
       })
       .sort({ manufacturer: 1, name: 1 });
 
-    if (limit) {
-      const limitNum = parseInt(limit as string, 10);
-      if (!isNaN(limitNum) && limitNum > 0) {
-        cursor = cursor.limit(limitNum);
-      }
-    }
+    const parsedLimit = limit ? parseInt(limit as string, 10) : 100;
+    const safeLimit = !isNaN(parsedLimit) && parsedLimit > 0 ? Math.min(parsedLimit, 100) : 100;
+    cursor = cursor.limit(safeLimit);
 
     const list = await cursor.toArray();
     res.json(list);

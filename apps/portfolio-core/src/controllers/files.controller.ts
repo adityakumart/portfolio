@@ -161,12 +161,28 @@ export async function handleUploadFile(req: AuthenticatedRequest, res: Response)
     const contentType = req.headers['content-type'] || 'application/octet-stream';
     const fileName = path.basename(cleanKey);
 
+    const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+    let currentSize = 0;
+    let exceeded = false;
     const chunks: Buffer[] = [];
+
     req.on('data', (chunk) => {
+      if (exceeded) return;
+      currentSize += chunk.length;
+      if (currentSize > MAX_FILE_SIZE) {
+        exceeded = true;
+        res.status(413).json({
+          error: 'Payload Too Large',
+          message: 'File size exceeds maximum allowed upload limit of 50MB.',
+        });
+        req.destroy();
+        return;
+      }
       chunks.push(chunk);
     });
 
     req.on('end', async () => {
+      if (exceeded) return;
       const buffer = Buffer.concat(chunks);
       try {
         await R2Service.uploadObject(fullKey, buffer, contentType);
