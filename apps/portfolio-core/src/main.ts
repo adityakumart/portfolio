@@ -57,6 +57,17 @@ app.get(['/', '/api'], (req, res) => {
   res.send({ message: `portfolio-core API` });
 });
 
+// Centralized error handling middleware: prevents stack trace leaks and formats consistent JSON errors
+app.use((err: any, req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error('Unhandled server error:', err);
+  const status = typeof err.status === 'number' ? err.status : (typeof err.statusCode === 'number' ? err.statusCode : 500);
+  const isClientError = status >= 400 && status < 500;
+  res.status(status).json({
+    error: isClientError ? 'Bad Request' : 'Internal Server Error',
+    message: isClientError ? err.message : 'An unexpected error occurred. Please try again later.',
+  });
+});
+
 if (!process.env['VERCEL']) {
   app.listen(port, host, () => {
     console.log(`[ ready ] http://${host}:${port}`);

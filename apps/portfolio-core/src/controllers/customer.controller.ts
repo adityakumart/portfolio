@@ -10,6 +10,7 @@ import {
   ICustomerListResponse,
   ICustomerAutocompleteItem,
 } from '@portfolio/shared-types';
+import { safeRegex } from '../utils/security/regex.util';
 
 /**
  * Controller managing Customer Membership and KYC RESTful endpoints.
@@ -152,7 +153,7 @@ export class CustomerController {
       const filter: Record<string, unknown> = { isDeleted: { $ne: true } };
 
       if (search) {
-        const regex = new RegExp(search, 'i');
+        const regex = safeRegex(search, 'i');
         filter['$or'] = [
           { firstName: regex },
           { lastName: regex },
@@ -199,7 +200,7 @@ export class CustomerController {
       };
 
       if (q) {
-        const regex = new RegExp(q, 'i');
+        const regex = safeRegex(q, 'i');
         filter['$or'] = [
           { membershipId: regex },
           { firstName: regex },

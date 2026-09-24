@@ -11,6 +11,7 @@ import { customerRouter } from '../../routes/customer.routes';
 import { BillingService } from '../../services/billing.service';
 
 import { getJwtSecret } from '../../config/security';
+import { safeRegex, escapeRegex } from '../../utils/security/regex.util';
 
 const rrRouter = Router();
 const JWT_SECRET = getJwtSecret();
@@ -201,7 +202,7 @@ rrRouter.get('/vehicles', authenticateRRToken, async (req: Request, res: Respons
       filter.isDeleted = { $ne: true };
     }
     if (search && typeof search === 'string' && search.trim()) {
-      const searchRegex = new RegExp(search.trim(), 'i');
+      const searchRegex = safeRegex(search.trim(), 'i');
       filter.$or = [
         { name: { $regex: searchRegex } },
         { manufacturer: { $regex: searchRegex } },
@@ -254,7 +255,7 @@ const handleBookingVehiclesAutocomplete = async (req: Request, res: Response) =>
     };
 
     if (search && typeof search === 'string' && search.trim()) {
-      const searchRegex = new RegExp(search.trim(), 'i');
+      const searchRegex = safeRegex(search.trim(), 'i');
       match.$or = [
         { vehicleRegNo: { $regex: searchRegex } },
         { vehicleName: { $regex: searchRegex } },
@@ -322,7 +323,7 @@ rrRouter.post('/vehicles', authenticateRRToken, requireAdmin, async (req: any, r
     const data: Omit<IVehicle, 'createdAt'> = req.body;
     const col = await RRService.getVehiclesCol();
 
-    const existing = await col.findOne({ regNo: { $regex: new RegExp(`^${data.regNo}$`, 'i') } });
+    const existing = await col.findOne({ regNo: { $regex: new RegExp(`^${escapeRegex(data.regNo)}$`, 'i') } });
     if (existing) {
       if (existing.isDeleted) {
         // Vehicle was previously soft-deleted; restore and update with new details
@@ -502,7 +503,7 @@ rrRouter.get('/bookings', authenticateRRToken, async (req: any, res: Response) =
 
     // Vehicle filter (regNo, name, manufacturer)
     if (vehicle && typeof vehicle === 'string' && vehicle.trim()) {
-      const vRegex = new RegExp(vehicle.trim(), 'i');
+      const vRegex = safeRegex(vehicle.trim(), 'i');
       andConditions.push({
         $or: [
           { vehicleRegNo: { $regex: vRegex } },
@@ -514,7 +515,7 @@ rrRouter.get('/bookings', authenticateRRToken, async (req: any, res: Response) =
 
     // Customer filter (first name, second name, phone)
     if (customer && typeof customer === 'string' && customer.trim()) {
-      const cRegex = new RegExp(customer.trim(), 'i');
+      const cRegex = safeRegex(customer.trim(), 'i');
       andConditions.push({
         $or: [
           { renterFirstName: { $regex: cRegex } },
@@ -547,7 +548,7 @@ rrRouter.get('/bookings', authenticateRRToken, async (req: any, res: Response) =
 
     // General search filter if provided
     if (search && typeof search === 'string' && search.trim()) {
-      const sRegex = new RegExp(search.trim(), 'i');
+      const sRegex = safeRegex(search.trim(), 'i');
       andConditions.push({
         $or: [
           { id: { $regex: sRegex } },
@@ -962,8 +963,8 @@ rrRouter.post('/employees', authenticateRRToken, requireAdmin, async (req: any, 
 
     // Check duplicate
     const duplicate = await col.findOne({
-      firstName: { $regex: new RegExp(`^${data.firstName}$`, 'i') },
-      lastName: { $regex: new RegExp(`^${data.lastName}$`, 'i') },
+      firstName: { $regex: new RegExp(`^${escapeRegex(data.firstName)}$`, 'i') },
+      lastName: { $regex: new RegExp(`^${escapeRegex(data.lastName)}$`, 'i') },
       dob: data.dob,
       isDeleted: { $ne: true }
     });
@@ -1116,7 +1117,7 @@ rrRouter.get('/logs', authenticateRRToken, requireAdmin, async (req: any, res: R
     }
 
     if (search && typeof search === 'string' && search.trim()) {
-      const searchRegex = new RegExp(search.trim(), 'i');
+      const searchRegex = safeRegex(search.trim(), 'i');
       query.$or = [
         { action: { $regex: searchRegex } },
         { performedBy: { $regex: searchRegex } },
