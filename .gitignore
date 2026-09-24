@@ -57,3 +57,11 @@ vitest.config.*.timestamp*
 # Vercel
 /.vercel
 .angular
+
+# Mobile & Android Secrets
+*.keystore
+*.jks
+google-services.json
+play-store-credentials.json
+local.properties
+.gradle/
