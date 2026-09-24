@@ -68,6 +68,28 @@
             }
           ]
         },
+        "desktop": {
+          "baseHref": "/",
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "2mb",
+              "maximumError": "5mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "20kb",
+              "maximumError": "60kb"
+            }
+          ],
+          "outputHashing": "all",
+          "fileReplacements": [
+            {
+              "replace": "apps/portfolio/src/environments/environment.ts",
+              "with": "apps/portfolio/src/environments/environment.prod.ts"
+            }
+          ]
+        },
         "development": {
           "optimization": false,
           "extractLicenses": false,
@@ -79,6 +101,26 @@
       "outputs": [
         "{options.outputPath.base}"
       ]
+    },
+    "desktop:dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm exec tauri dev",
+        "cwd": "apps/portfolio"
+      }
+    },
+    "desktop:build": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        {
+          "target": "build",
+          "params": "forward"
+        }
+      ],
+      "options": {
+        "command": "pnpm exec tauri build",
+        "cwd": "apps/portfolio"
+      }
     },
     "serve": {
       "hmr": true,

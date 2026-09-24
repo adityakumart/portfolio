@@ -65,3 +65,7 @@ google-services.json
 play-store-credentials.json
 local.properties
 .gradle/
+
+# Tauri Desktop
+src-tauri/target/
+src-tauri/gen/
