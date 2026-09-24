@@ -35,6 +35,22 @@ rrRouter.post('/auth/login', authRateLimiter, async (req: Request, res: Response
 
     const empCol = await RRService.getEmployeesCol();
 
+    const handleFailedLogin = async (employee: any, failureReason: string) => {
+      const attempts = (employee.failedLoginAttempts || 0) + 1;
+      const updates: any = { failedLoginAttempts: attempts };
+      if (attempts >= 5) {
+        updates.lockoutUntil = new Date(Date.now() + 15 * 60 * 1000); // 15-minute lock
+      }
+      await empCol.updateOne({ id: employee.id }, { $set: updates });
+      res.status(401).json({ error: 'Unauthorized', message: failureReason });
+    };
+
+    const resetFailedAttempts = async (employee: any) => {
+      if (employee.failedLoginAttempts || employee.lockoutUntil) {
+        await empCol.updateOne({ id: employee.id }, { $set: { failedLoginAttempts: 0, lockoutUntil: null } });
+      }
+    };
+
     // 1. Admin Login (Username & Password)
     if (username && password) {
       // Find employee by email, id, or check if it matches AdminUN/AdminPD directly if DB is empty
@@ -48,6 +64,15 @@ rrRouter.post('/auth/login', authRateLimiter, async (req: Request, res: Response
         return;
       }
 
+      if (emp.lockoutUntil && new Date(emp.lockoutUntil) > new Date()) {
+        const remaining = Math.ceil((new Date(emp.lockoutUntil).getTime() - Date.now()) / (60 * 1000));
+        res.status(423).json({
+          error: 'Locked',
+          message: `Account is temporarily locked due to consecutive failed attempts. Please try again after ${remaining} minute(s).`
+        });
+        return;
+      }
+
       if (!emp.allowLogin) {
         res.status(403).json({ error: 'Forbidden', message: 'Your account is disabled' });
         return;
@@ -56,16 +81,18 @@ rrRouter.post('/auth/login', authRateLimiter, async (req: Request, res: Response
       if (emp.role === 'admin' && emp.passwordHash) {
         const isMatch = await bcrypt.compare(password, emp.passwordHash);
         if (!isMatch) {
-          res.status(401).json({ error: 'Unauthorized', message: 'Invalid password' });
+          await handleFailedLogin(emp, 'Invalid password');
           return;
         }
       } else {
         // If they are an employee but logging in with username/password, we verify against DOB
         if (emp.dob !== password) {
-          res.status(401).json({ error: 'Unauthorized', message: 'Invalid password' });
+          await handleFailedLogin(emp, 'Invalid password');
           return;
         }
       }
+
+      await resetFailedAttempts(emp);
 
       const token = jwt.sign({ id: emp.id, role: emp.role }, JWT_SECRET, { expiresIn: '24h' });
       await RRService.logActivity(
@@ -96,15 +123,26 @@ rrRouter.post('/auth/login', authRateLimiter, async (req: Request, res: Response
         return;
       }
 
+      if (emp.lockoutUntil && new Date(emp.lockoutUntil) > new Date()) {
+        const remaining = Math.ceil((new Date(emp.lockoutUntil).getTime() - Date.now()) / (60 * 1000));
+        res.status(423).json({
+          error: 'Locked',
+          message: `Account is temporarily locked due to consecutive failed attempts. Please try again after ${remaining} minute(s).`
+        });
+        return;
+      }
+
       if (!emp.allowLogin) {
         res.status(403).json({ error: 'Forbidden', message: 'Your account is disabled' });
         return;
       }
 
       if (emp.dob !== dob) {
-        res.status(401).json({ error: 'Unauthorized', message: 'Incorrect date of birth.' });
+        await handleFailedLogin(emp, 'Incorrect date of birth.');
         return;
       }
+
+      await resetFailedAttempts(emp);
 
       const token = jwt.sign({ id: emp.id, role: emp.role }, JWT_SECRET, { expiresIn: '24h' });
       await RRService.logActivity(

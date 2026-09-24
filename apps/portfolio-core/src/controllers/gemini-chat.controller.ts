@@ -33,6 +33,14 @@ export async function handleChatStream(
       return;
     }
 
+    if (prompt.length > 4000) {
+      res.status(400).json({
+        error: 'Bad Request',
+        message: 'Prompt exceeds the maximum allowed length of 4,000 characters.',
+      });
+      return;
+    }
+
     const db = await connectToDatabase();
     let activeChatId = chatId;
     let chatObjectId: ObjectId;

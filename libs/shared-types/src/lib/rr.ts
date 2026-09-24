@@ -41,6 +41,8 @@ export interface IEmployee {
   isDeleted?: boolean;
   deletedAt?: string | null;
   deletedBy?: string | null;
+  failedLoginAttempts?: number;
+  lockoutUntil?: Date | string | null;
 }
 
 export interface IVehiclePricingTier {

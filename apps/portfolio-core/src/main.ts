@@ -1,5 +1,6 @@
 import express from 'express';
-
+import helmet from 'helmet';
+import mongoSanitize from 'express-mongo-sanitize';
 import cors from 'cors';
 import { authRouter } from './routes/auth.routes';
 import { chatRouter } from './routes/chat.routes';
@@ -37,6 +38,18 @@ app.use(
     ],
   }),
 );
+
+// Security headers via Helmet
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+    contentSecurityPolicy: false,
+  }),
+);
+
+// Prevent NoSQL query injection attacks across body, query, and params
+app.use(mongoSanitize());
+
 // Body parsers with strict size limits to prevent Denial-of-Service via huge payloads
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
