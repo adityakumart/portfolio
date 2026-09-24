@@ -19,8 +19,12 @@
     "build:extension:rr": "nx build extension-rr --configuration production",
     "build:mobile:rr": "nx run portfolio-rr:sync",
     "open:android:rr": "nx run portfolio-rr:open:android",
-    "dev:desktop": "nx run portfolio:desktop:dev",
-    "build:desktop": "nx run portfolio:desktop:build"
+    "dev:desktop:user": "nx run portfolio:desktop:dev",
+    "build:desktop:user": "nx run portfolio:desktop:build",
+    "dev:desktop:rr": "nx run portfolio-rr:desktop:dev",
+    "build:desktop:rr": "nx run portfolio-rr:desktop:build",
+    "dev:desktop": "pnpm run dev:desktop:user",
+    "build:desktop": "pnpm run build:desktop:user"
   },
   "private": true,
   "dependencies": {
