@@ -1,5 +1,5 @@
 <div
-  class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-background/80 dark:bg-black/80 backdrop-blur-xl backdrop-saturate-150 animate-in fade-in duration-300 select-none"
+  class="fixed inset-0 z-[9999] flex items-center justify-center p-4 min-h-[100dvh] bg-background/80 dark:bg-black/80 backdrop-blur-xl backdrop-saturate-150 animate-in fade-in duration-300 select-none pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]"
   role="dialog"
   aria-modal="true"
   aria-labelledby="lock-screen-title"
@@ -82,6 +82,9 @@
             [placeholder]="isAdmin() ? '••••••••' : 'YYYY-MM-DD or password'"
             class="w-full pr-10 text-sm h-11 rounded-xl bg-background/60"
             autocomplete="current-password"
+            autocapitalize="none"
+            autocorrect="off"
+            spellcheck="false"
             [disabled]="isVerifying()"
             autofocus
           />
@@ -114,7 +117,7 @@
       <button
         hlmBtn
         type="submit"
-        class="w-full h-11 rounded-xl font-semibold gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-lg shadow-cyan-500/25 transition-all"
+        class="w-full h-11 rounded-xl font-semibold gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-lg shadow-cyan-500/25 transition-all min-h-[44px]"
         [disabled]="isVerifying() || !credentialInput().trim()"
       >
         @if (isVerifying()) {
@@ -131,7 +134,7 @@
         hlmBtn
         variant="ghost"
         type="button"
-        class="w-full h-10 rounded-xl text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors gap-2"
+        class="w-full h-10 rounded-xl text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors gap-2 min-h-[44px]"
         (click)="onLogout()"
       >
         <ng-icon name="lucideLogOut" class="text-sm"></ng-icon>

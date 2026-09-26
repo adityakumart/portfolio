@@ -30,6 +30,8 @@ export class RRInactivityService implements OnDestroy {
   private boundActivityHandler = this.onUserActivity.bind(this);
   private boundStorageHandler = this.onStorageEvent.bind(this);
   private boundVisibilityHandler = this.onVisibilityChange.bind(this);
+  private boundPauseHandler = this.onAppPause.bind(this);
+  private boundResumeHandler = this.onAppResume.bind(this);
 
   private boundChromeStorageHandler = (changes: any, areaName: string) => {
     if (areaName !== 'local') return;
@@ -69,7 +71,7 @@ export class RRInactivityService implements OnDestroy {
   }
 
   /**
-   * Initializes initial state from localStorage & chrome.storage (useful on page reloads, new tabs, or extension popup open)
+   * Initializes initial state from localStorage & chrome.storage (useful on page reloads, new tabs, extension popup, or mobile resume)
    */
   private initializeFromStorage(): void {
     if (typeof window === 'undefined') return;
@@ -122,8 +124,8 @@ export class RRInactivityService implements OnDestroy {
     if (this.isTracking || typeof window === 'undefined') return;
     this.isTracking = true;
 
-    // Attach passive activity listeners to window
-    const events = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click'];
+    // Attach passive activity listeners to window (supports desktop, extension, and mobile touch)
+    const events = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'touchend', 'scroll', 'click'];
     events.forEach((evt) => {
       window.addEventListener(evt, this.boundActivityHandler, { passive: true });
     });
@@ -131,6 +133,10 @@ export class RRInactivityService implements OnDestroy {
     window.addEventListener('storage', this.boundStorageHandler);
     document.addEventListener('visibilitychange', this.boundVisibilityHandler);
     window.addEventListener('focus', this.boundVisibilityHandler);
+
+    // Native Mobile lifecycle events (Capacitor / Mobile WebView / Cordova)
+    window.addEventListener('pause', this.boundPauseHandler);
+    window.addEventListener('resume', this.boundResumeHandler);
 
     // Chrome Extension storage change listener
     if (this.isChromeExtension() && (window as any).chrome?.storage?.onChanged) {
@@ -150,7 +156,7 @@ export class RRInactivityService implements OnDestroy {
     if (!this.isTracking || typeof window === 'undefined') return;
     this.isTracking = false;
 
-    const events = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click'];
+    const events = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'touchend', 'scroll', 'click'];
     events.forEach((evt) => {
       window.removeEventListener(evt, this.boundActivityHandler);
     });
@@ -158,6 +164,9 @@ export class RRInactivityService implements OnDestroy {
     window.removeEventListener('storage', this.boundStorageHandler);
     document.removeEventListener('visibilitychange', this.boundVisibilityHandler);
     window.removeEventListener('focus', this.boundVisibilityHandler);
+
+    window.removeEventListener('pause', this.boundPauseHandler);
+    window.removeEventListener('resume', this.boundResumeHandler);
 
     if (this.isChromeExtension() && (window as any).chrome?.storage?.onChanged) {
       (window as any).chrome.storage.onChanged.removeListener(this.boundChromeStorageHandler);
@@ -183,7 +192,36 @@ export class RRInactivityService implements OnDestroy {
   }
 
   /**
-   * Records active timestamp in memory and localStorage for cross-tab sync
+   * Mobile app paused (backgrounded or screen off)
+   */
+  private onAppPause(): void {
+    if (this.isLocked() || !this.rrApi.currentUser()) return;
+    this.recordActivityNow();
+  }
+
+  /**
+   * Mobile app resumed (foregrounded)
+   */
+  private onAppResume(): void {
+    if (!this.rrApi.currentUser()) return;
+
+    // Refresh last active timestamp from storage
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const storedLast = localStorage.getItem(STORAGE_KEY_LAST_ACTIVE);
+      if (storedLast) {
+        const parsed = parseInt(storedLast, 10);
+        if (!isNaN(parsed)) {
+          this.lastActiveTimestamp = parsed;
+        }
+      }
+    }
+
+    // Immediately evaluate if user was away for >= 5 minutes
+    this.evaluateSessionHealth();
+  }
+
+  /**
+   * Records active timestamp in memory and localStorage for cross-tab and mobile sync
    */
   private recordActivityNow(): void {
     const now = Date.now();
@@ -217,7 +255,7 @@ export class RRInactivityService implements OnDestroy {
   private onVisibilityChange(): void {
     if (typeof document === 'undefined' || document.hidden || this.isLocked()) return;
 
-    // Check latest timestamp from localStorage in case user was active in another tab
+    // Check latest timestamp from localStorage in case user was active in another tab or app was asleep
     if (typeof window !== 'undefined' && window.localStorage) {
       const storedLast = localStorage.getItem(STORAGE_KEY_LAST_ACTIVE);
       if (storedLast) {
