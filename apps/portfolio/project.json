@@ -167,7 +167,12 @@
       "options": {
         "command": "pnpm exec tauri build",
         "cwd": "apps/portfolio"
-      }
+      },
+      "configurations": {
+        "production": {},
+        "desktop": {}
+      },
+      "defaultConfiguration": "desktop"
     },
     "serve": {
       "hmr": true,
