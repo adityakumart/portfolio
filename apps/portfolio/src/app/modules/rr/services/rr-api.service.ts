@@ -55,8 +55,11 @@ export class RRApiService {
     this.loadSession();
   }
 
-  private isExtension(): boolean {
-    return typeof window !== 'undefined' && !!(window as any).chrome?.runtime?.id;
+  private isPersistentEnvironment(): boolean {
+    if (typeof window === 'undefined') return false;
+    const isExtension = !!(window as any).chrome?.runtime?.id;
+    const isCapacitor = !!(window as any).Capacitor?.isNativePlatform?.();
+    return isExtension || isCapacitor;
   }
 
   private loadSession() {
@@ -64,8 +67,8 @@ export class RRApiService {
       let userStr = window.sessionStorage ? sessionStorage.getItem('rr_user') : null;
       let token = window.sessionStorage ? sessionStorage.getItem('rr_token') : null;
 
-      // In extension environment, fallback to localStorage if sessionStorage was wiped on popup close
-      if ((!userStr || !token) && this.isExtension() && window.localStorage) {
+      // In extension and mobile environments, fallback to localStorage if sessionStorage was wiped on backgrounding
+      if ((!userStr || !token) && this.isPersistentEnvironment() && window.localStorage) {
         userStr = localStorage.getItem('rr_user');
         token = localStorage.getItem('rr_token');
       }
@@ -88,7 +91,7 @@ export class RRApiService {
         sessionStorage.setItem('loggedInUser', JSON.stringify({ role: user.role, id: user.id }));
       }
 
-      if (this.isExtension()) {
+      if (this.isPersistentEnvironment()) {
         if (window.localStorage) {
           localStorage.setItem('rr_user', JSON.stringify(user));
           localStorage.setItem('rr_token', token);
@@ -111,7 +114,7 @@ export class RRApiService {
         sessionStorage.removeItem('loggedInUser');
       }
 
-      if (this.isExtension()) {
+      if (this.isPersistentEnvironment()) {
         if (window.localStorage) {
           localStorage.removeItem('rr_user');
           localStorage.removeItem('rr_token');
@@ -129,7 +132,7 @@ export class RRApiService {
         const token = sessionStorage.getItem('rr_token');
         if (token) return token;
       }
-      if (this.isExtension() && window.localStorage) {
+      if (this.isPersistentEnvironment() && window.localStorage) {
         return localStorage.getItem('rr_token');
       }
     }
