@@ -180,6 +180,20 @@
         padding-top: 1rem;
         border-top: 1px solid var(--border, #334155);
 
+        @media (max-width: 480px) {
+          flex-direction: column-reverse;
+          align-items: stretch;
+
+          .save-settings-btn {
+            width: 100%;
+          }
+
+          .save-notice {
+            text-align: center;
+            justify-content: center;
+          }
+        }
+
         .save-notice {
           font-size: 0.85rem;
           font-weight: 500;

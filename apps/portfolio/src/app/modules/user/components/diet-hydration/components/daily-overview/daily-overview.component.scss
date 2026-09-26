@@ -9,31 +9,49 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 100%;
 
   .date-picker-controls {
     display: inline-flex;
     align-items: center;
+    justify-content: space-between;
     background: var(--card, #1e293b);
     border: 1px solid var(--border, #334155);
     border-radius: 9999px;
     padding: 0.25rem 0.5rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    max-width: 100%;
+
+    @media (max-width: 480px) {
+      width: 100%;
+      max-width: 360px;
+    }
 
     .current-date-display {
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      padding: 0 1rem;
+      padding: 0 0.75rem;
+
+      @media (max-width: 380px) {
+        padding: 0 0.25rem;
+        gap: 0.25rem;
+      }
 
       .calendar-icon {
         color: var(--primary, #3b82f6);
         font-size: 1.1rem;
+        flex-shrink: 0;
       }
 
       .date-text {
         font-weight: 600;
         font-size: 0.95rem;
         letter-spacing: -0.01em;
+
+        @media (max-width: 380px) {
+          font-size: 0.82rem;
+        }
       }
 
       .today-badge-btn {
