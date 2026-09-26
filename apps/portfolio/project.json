@@ -149,6 +149,14 @@
         "cwd": "apps/portfolio"
       }
     },
+    "build:apk": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["sync"],
+      "options": {
+        "command": "cmd.exe /c gradlew.bat assembleDebug",
+        "cwd": "apps/portfolio/android"
+      }
+    },
     "desktop:dev": {
       "executor": "nx:run-commands",
       "options": {
