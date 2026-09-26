@@ -1,0 +1,89 @@
+<div hlmCard class="hydration-tracker-card">
+  <div hlmCardHeader class="tracker-header">
+    <div class="header-left">
+      <div class="water-icon-circle">
+        <ng-icon name="lucideDroplet" class="water-icon"></ng-icon>
+      </div>
+      <div>
+        <h3 hlmCardTitle class="tracker-title">Hydration Station</h3>
+        <p hlmCardDescription class="tracker-desc">
+          Stay hydrated throughout the day for focus and vitality.
+        </p>
+      </div>
+    </div>
+
+    <div class="goal-indicator">
+      <span class="goal-count">{{ state.hydrationTotal() }} / {{ state.hydrationTarget() }} ml</span>
+    </div>
+  </div>
+
+  <div hlmCardContent class="tracker-content">
+    <!-- Quick Add Preset Buttons -->
+    <div class="quick-add-bar">
+      <span class="quick-add-label">Quick Add:</span>
+      <div class="preset-buttons-group">
+        @for (amount of presetAmounts; track amount) {
+          <button
+            hlmBtn
+            variant="outline"
+            size="sm"
+            (click)="onQuickAdd(amount)"
+            class="preset-btn"
+          >
+            <ng-icon name="lucidePlus" class="mr-1"></ng-icon>
+            {{ amount }} ml
+          </button>
+        }
+      </div>
+
+      <div class="custom-amount-form">
+        <input
+          hlmInput
+          type="number"
+          placeholder="Custom ml"
+          [ngModel]="customAmount()"
+          (ngModelChange)="customAmount.set($event)"
+          class="custom-input"
+          min="10"
+          max="2000"
+        />
+        <button
+          hlmBtn
+          variant="secondary"
+          size="sm"
+          (click)="onCustomAdd()"
+          [disabled]="!customAmount() || (customAmount() || 0) <= 0"
+        >
+          Add
+        </button>
+      </div>
+    </div>
+
+    <!-- Intake History Log Entries -->
+    <div class="intake-log-section">
+      <h4 class="history-title">Today's Water Log</h4>
+
+      @if ((state.dashboardData()?.hydration?.entries || []).length === 0) {
+        <p class="empty-history-text">No water intake logged yet today. Take a sip!</p>
+      } @else {
+        <div class="entries-chips-list">
+          @for (entry of state.dashboardData()?.hydration?.entries; track entry.id) {
+            <div class="entry-chip">
+              <span class="chip-icon">💧</span>
+              <span class="chip-amount">+{{ entry.amountMl }} ml</span>
+              <span class="chip-time">{{ entry.time }}</span>
+              <button
+                type="button"
+                (click)="onDeleteEntry(entry.id)"
+                class="chip-delete-btn"
+                title="Remove entry"
+              >
+                <ng-icon name="lucideTrash2"></ng-icon>
+              </button>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</div>

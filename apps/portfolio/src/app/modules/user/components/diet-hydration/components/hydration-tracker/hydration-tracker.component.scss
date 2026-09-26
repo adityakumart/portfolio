@@ -1,0 +1,185 @@
+.hydration-tracker-card {
+  border-radius: 1rem;
+  border: 1px solid var(--border, #334155);
+  background: var(--card, #1e293b);
+  margin-bottom: 2rem;
+
+  .tracker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem 0.75rem;
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+
+      .water-icon-circle {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 0.75rem;
+        background: rgba(59, 130, 246, 0.15);
+        color: #3b82f6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+      }
+
+      .tracker-title {
+        font-size: 1.05rem;
+        font-weight: 600;
+        margin: 0;
+      }
+
+      .tracker-desc {
+        font-size: 0.8rem;
+        color: var(--muted-foreground, #94a3b8);
+        margin: 0.15rem 0 0;
+      }
+    }
+
+    .goal-indicator {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.1);
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+    }
+  }
+
+  .tracker-content {
+    padding: 0.75rem 1.5rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+}
+
+.quick-add-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border, #334155);
+  border-radius: 0.75rem;
+
+  .quick-add-label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--muted-foreground, #94a3b8);
+  }
+
+  .preset-buttons-group {
+    display: flex;
+    gap: 0.5rem;
+
+    .preset-btn {
+      border-radius: 9999px;
+      font-size: 0.8rem;
+    }
+  }
+
+  .custom-amount-form {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-left: auto;
+
+    .custom-input {
+      width: 6.5rem;
+      height: 2rem;
+      font-size: 0.8rem;
+      border-radius: 0.5rem;
+    }
+  }
+
+  @media (max-width: 580px) {
+    flex-direction: column;
+    align-items: stretch;
+
+    .preset-buttons-group {
+      width: 100%;
+      display: flex;
+
+      .preset-btn {
+        flex: 1;
+        justify-content: center;
+      }
+    }
+
+    .custom-amount-form {
+      margin-left: 0;
+      width: 100%;
+
+      .custom-input {
+        flex: 1;
+        width: auto;
+      }
+    }
+  }
+}
+
+.intake-log-section {
+  .history-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem;
+    color: var(--muted-foreground, #94a3b8);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .empty-history-text {
+    font-size: 0.82rem;
+    color: var(--muted-foreground, #94a3b8);
+    margin: 0;
+  }
+
+  .entries-chips-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+
+    .entry-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: rgba(59, 130, 246, 0.08);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: 9999px;
+      padding: 0.2rem 0.6rem;
+      font-size: 0.8rem;
+
+      .chip-amount {
+        font-weight: 600;
+        color: #60a5fa;
+      }
+
+      .chip-time {
+        font-size: 0.72rem;
+        color: var(--muted-foreground, #94a3b8);
+      }
+
+      .chip-delete-btn {
+        background: none;
+        border: none;
+        padding: 0;
+        margin-left: 0.2rem;
+        cursor: pointer;
+        color: var(--muted-foreground, #94a3b8);
+        display: flex;
+        align-items: center;
+        transition: color 0.15s ease;
+
+        &:hover {
+          color: #ef4444;
+        }
+      }
+    }
+  }
+}
