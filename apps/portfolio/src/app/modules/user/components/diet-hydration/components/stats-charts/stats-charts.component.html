@@ -1,0 +1,89 @@
+<div class="stats-charts-container">
+  <!-- Header & Controls -->
+  <div class="charts-header">
+    <div>
+      <h3 class="charts-title">Health & Habit Analytics</h3>
+      <p class="charts-subtitle">
+        Visual aggregation of your hydration consistency and junk food streaks.
+      </p>
+    </div>
+
+    <div class="timeframe-switch">
+      <button
+        hlmBtn
+        [variant]="timeframe() === 'weekly' ? 'default' : 'outline'"
+        size="sm"
+        (click)="setTimeframe('weekly')"
+        class="timeframe-btn"
+      >
+        7 Days
+      </button>
+      <button
+        hlmBtn
+        [variant]="timeframe() === 'monthly' ? 'default' : 'outline'"
+        size="sm"
+        (click)="setTimeframe('monthly')"
+        class="timeframe-btn"
+      >
+        This Month
+      </button>
+    </div>
+  </div>
+
+  <!-- Key Aggregate Numbers -->
+  @if (state.statsData()) {
+    <div class="stats-summary-strip">
+      <div class="summary-pill">
+        <span class="pill-label">Clean Streak Rate</span>
+        <span class="pill-value text-green-400">
+          {{ state.statsData()?.junkFoodStats?.cleanStreakPercentage }}%
+        </span>
+      </div>
+      <div class="summary-pill">
+        <span class="pill-label">Clean Days</span>
+        <span class="pill-value text-green-500">
+          {{ state.statsData()?.junkFoodStats?.cleanDaysCount }} days
+        </span>
+      </div>
+      <div class="summary-pill">
+        <span class="pill-label">Junk Days</span>
+        <span class="pill-value text-amber-500">
+          {{ state.statsData()?.junkFoodStats?.junkDaysCount }} days
+        </span>
+      </div>
+    </div>
+  }
+
+  <!-- Dual Chart Cards -->
+  <div class="charts-grid">
+    <!-- Hydration Chart -->
+    <div hlmCard class="chart-card">
+      <div hlmCardHeader class="chart-card-header">
+        <div class="chart-title-group">
+          <ng-icon name="lucideDroplet" class="icon-water"></ng-icon>
+          <h4 hlmCardTitle>Hydration Volume vs Daily Target</h4>
+        </div>
+      </div>
+      <div hlmCardContent class="chart-card-body">
+        <div class="canvas-container">
+          <canvas #hydrationCanvas></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Habit Distribution Doughnut -->
+    <div hlmCard class="chart-card">
+      <div hlmCardHeader class="chart-card-header">
+        <div class="chart-title-group">
+          <ng-icon name="lucideSparkles" class="icon-habit"></ng-icon>
+          <h4 hlmCardTitle>Clean Eating Breakdown</h4>
+        </div>
+      </div>
+      <div hlmCardContent class="chart-card-body">
+        <div class="canvas-container">
+          <canvas #habitsCanvas></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

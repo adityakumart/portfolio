@@ -1,0 +1,134 @@
+<div class="daily-overview-container">
+  <!-- Date Selector Header -->
+  <div class="date-navigation-bar">
+    <div class="date-picker-controls">
+      <button hlmBtn variant="outline" size="icon" (click)="shiftDate(-1)" title="Previous Day">
+        <ng-icon name="lucideChevronLeft" class="text-base"></ng-icon>
+      </button>
+
+      <div class="current-date-display">
+        <ng-icon name="lucideCalendar" class="calendar-icon"></ng-icon>
+        <span class="date-text">{{ formattedDate }}</span>
+        @if (!isToday) {
+          <button hlmBtn variant="secondary" size="sm" (click)="jumpToToday()" class="today-badge-btn">
+            Today
+          </button>
+        }
+      </div>
+
+      <button hlmBtn variant="outline" size="icon" (click)="shiftDate(1)" title="Next Day">
+        <ng-icon name="lucideChevronRight" class="text-base"></ng-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Summary Metric Cards Grid -->
+  <div class="metrics-grid">
+    <!-- Hydration Progress Card -->
+    <div hlmCard class="metric-card hydration-card">
+      <div hlmCardHeader class="metric-header">
+        <div class="metric-title-group">
+          <div class="icon-circle water-glow">
+            <ng-icon name="lucideDroplet" class="icon-water"></ng-icon>
+          </div>
+          <div>
+            <h3 hlmCardTitle class="card-title">Hydration</h3>
+            <p hlmCardDescription class="card-subtitle">
+              Goal: {{ state.hydrationTarget() }} ml
+            </p>
+          </div>
+        </div>
+        <button hlmBtn variant="default" size="sm" (click)="onQuickAddWater()" class="quick-add-btn">
+          <ng-icon name="lucidePlus" class="mr-1"></ng-icon>
+          +{{ state.userConfig()?.hydration?.cupPresetMl || 250 }}ml
+        </button>
+      </div>
+
+      <div hlmCardContent class="metric-body">
+        <div class="progress-details">
+          <span class="value-highlight">{{ state.hydrationTotal() }}</span>
+          <span class="unit-text">/ {{ state.hydrationTarget() }} ml</span>
+          <span class="percentage-badge">
+            {{ state.hydrationPercentage() }}%
+          </span>
+        </div>
+        <div class="progress-track-wrapper">
+          <div class="progress-fill-bar" [style.width.%]="state.hydrationPercentage()"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Calories Card -->
+    <div hlmCard class="metric-card calories-card">
+      <div hlmCardHeader class="metric-header">
+        <div class="metric-title-group">
+          <div class="icon-circle fire-glow">
+            <ng-icon name="lucideFlame" class="icon-fire"></ng-icon>
+          </div>
+          <div>
+            <h3 hlmCardTitle class="card-title">Calories Logged</h3>
+            <p hlmCardDescription class="card-subtitle">Estimated Intake</p>
+          </div>
+        </div>
+        <span hlmBadge variant="outline" class="cal-badge">Today</span>
+      </div>
+
+      <div hlmCardContent class="metric-body">
+        <div class="progress-details">
+          <span class="value-highlight">{{ state.totalCalories() }}</span>
+          <span class="unit-text">kcal</span>
+        </div>
+        <p class="metric-caption">Across all breakfast, lunch, snacks, and dinner logs.</p>
+      </div>
+    </div>
+
+    <!-- Junk Food Reflection Habit Card -->
+    <div hlmCard class="metric-card junk-habit-card">
+      <div hlmCardHeader class="metric-header">
+        <div class="metric-title-group">
+          <div class="icon-circle habit-glow">
+            <ng-icon name="lucideSparkles" class="icon-habit"></ng-icon>
+          </div>
+          <div>
+            <h3 hlmCardTitle class="card-title">Daily Reflection</h3>
+            <p hlmCardDescription class="card-subtitle">Junk Food Check</p>
+          </div>
+        </div>
+
+        <button hlmBtn variant="outline" size="sm" (click)="openJunkPrompt()" class="record-btn">
+          {{ state.isJunkFoodRecorded() ? 'Edit' : 'Record' }}
+        </button>
+      </div>
+
+      <div hlmCardContent class="metric-body">
+        @if (state.isJunkFoodRecorded()) {
+          @if (state.isCleanDay()) {
+            <div class="status-box clean">
+              <ng-icon name="lucideCheckCircle2" class="status-icon"></ng-icon>
+              <div>
+                <strong>Clean Day!</strong>
+                <p>No junk food recorded today. Amazing work!</p>
+              </div>
+            </div>
+          } @else {
+            <div class="status-box junk-recorded">
+              <ng-icon name="lucideAlertCircle" class="status-icon"></ng-icon>
+              <div>
+                <strong>Junk Food Logged</strong>
+                <p>{{ state.dashboardData()?.junkFood?.itemsDescription || 'Craving recorded.' }}</p>
+              </div>
+            </div>
+          }
+        } @else {
+          <div class="status-box pending" (click)="openJunkPrompt()">
+            <ng-icon name="lucideCalendar" class="status-icon"></ng-icon>
+            <div>
+              <strong>Pending Reflection</strong>
+              <p>Click here to complete your daily check-in.</p>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>
