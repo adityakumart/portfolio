@@ -4,7 +4,7 @@
     <div>
       <h3 class="charts-title">Health & Habit Analytics</h3>
       <p class="charts-subtitle">
-        Visual aggregation of your hydration consistency and junk food streaks.
+        Native vector aggregation of your hydration volume and clean-eating streaks.
       </p>
     </div>
 
@@ -30,59 +30,188 @@
     </div>
   </div>
 
-  <!-- Key Aggregate Numbers -->
+  <!-- Key Aggregate Metrics Strip -->
   @if (state.statsData()) {
     <div class="stats-summary-strip">
       <div class="summary-pill">
-        <span class="pill-label">Clean Streak Rate</span>
+        <span class="pill-label">Clean Eating Rate</span>
         <span class="pill-value text-green-400">
-          {{ state.statsData()?.junkFoodStats?.cleanStreakPercentage }}%
+          {{ habitGauge().streak }}%
         </span>
       </div>
       <div class="summary-pill">
         <span class="pill-label">Clean Days</span>
         <span class="pill-value text-green-500">
-          {{ state.statsData()?.junkFoodStats?.cleanDaysCount }} days
+          {{ habitGauge().clean }} days
         </span>
       </div>
       <div class="summary-pill">
-        <span class="pill-label">Junk Days</span>
+        <span class="pill-label">Junk Food Days</span>
         <span class="pill-value text-amber-500">
           {{ state.statsData()?.junkFoodStats?.junkDaysCount }} days
+        </span>
+      </div>
+      <div class="summary-pill">
+        <span class="pill-label">Scale Peak</span>
+        <span class="pill-value text-sky-400">
+          {{ maxScaleMl() }} ml
         </span>
       </div>
     </div>
   }
 
-  <!-- Dual Chart Cards -->
+  <!-- Dual Visual Cards Grid -->
   <div class="charts-grid">
-    <!-- Hydration Chart -->
+    <!-- 1. Native Hydration Volume Bar Chart -->
     <div hlmCard class="chart-card">
       <div hlmCardHeader class="chart-card-header">
         <div class="chart-title-group">
-          <ng-icon name="lucideDroplet" class="icon-water"></ng-icon>
-          <h4 hlmCardTitle>Hydration Volume vs Daily Target</h4>
+          <div class="icon-circle water-glow">
+            <ng-icon name="lucideDroplet" class="icon-water"></ng-icon>
+          </div>
+          <div>
+            <h4 hlmCardTitle>Daily Hydration Intake</h4>
+            <p hlmCardDescription>Bar volume vs daily goal threshold</p>
+          </div>
         </div>
+
+        @if (hoveredBar()) {
+          <div class="live-hover-tag">
+            <strong>{{ hoveredBar()?.totalIntakeMl }} ml</strong>
+            <span>({{ hoveredBar()?.dayLabel }})</span>
+          </div>
+        }
       </div>
+
       <div hlmCardContent class="chart-card-body">
-        <div class="canvas-container">
-          <canvas #hydrationCanvas></canvas>
+        <div class="chart-stage">
+          <!-- Dashed Target Goal Line -->
+          <div
+            class="target-line"
+            [style.bottom.%]="targetThresholdPercent()"
+            title="Daily Target Threshold"
+          >
+            <span class="target-line-tag">
+              Goal: {{ state.userConfig()?.hydration?.dailyTargetMl || 2500 }}ml
+            </span>
+          </div>
+
+          <!-- Vertical Bars Track -->
+          <div class="bars-container" [class.monthly-view]="timeframe() === 'monthly'">
+            @for (bar of hydrationBars(); track bar.date) {
+              <div
+                class="bar-column"
+                (mouseenter)="onHoverBar(bar)"
+                (mouseleave)="onHoverBar(null)"
+              >
+                <!-- Tooltip Popup -->
+                <div class="bar-tooltip">
+                  <span class="tooltip-date">{{ bar.date }}</span>
+                  <span class="tooltip-val">{{ bar.totalIntakeMl }} ml</span>
+                  <span class="tooltip-goal" [class.met]="bar.isGoalMet">
+                    {{ bar.isGoalMet ? '✓ Goal Met' : bar.targetMl - bar.totalIntakeMl + ' ml left' }}
+                  </span>
+                </div>
+
+                <!-- Animated Bar Element -->
+                <div class="bar-track">
+                  <div
+                    class="bar-fill"
+                    [class.goal-met]="bar.isGoalMet"
+                    [style.height.%]="bar.heightPercent"
+                  ></div>
+                </div>
+
+                <!-- Bottom Date Label -->
+                <span class="bar-label">{{ bar.dayLabel }}</span>
+              </div>
+            }
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Habit Distribution Doughnut -->
+    <!-- 2. Clean Habits & Craving Trigger Breakdown -->
     <div hlmCard class="chart-card">
       <div hlmCardHeader class="chart-card-header">
         <div class="chart-title-group">
-          <ng-icon name="lucideSparkles" class="icon-habit"></ng-icon>
-          <h4 hlmCardTitle>Clean Eating Breakdown</h4>
+          <div class="icon-circle habit-glow">
+            <ng-icon name="lucideSparkles" class="icon-habit"></ng-icon>
+          </div>
+          <div>
+            <h4 hlmCardTitle>Habit & Craving Dynamics</h4>
+            <p hlmCardDescription>Clean consistency and impulse drivers</p>
+          </div>
         </div>
       </div>
-      <div hlmCardContent class="chart-card-body">
-        <div class="canvas-container">
-          <canvas #habitsCanvas></canvas>
+
+      <div hlmCardContent class="chart-card-body habits-body">
+        <!-- SVG Donut Progress Gauge -->
+        <div class="gauge-section">
+          <div class="donut-svg-wrapper">
+            <svg viewBox="0 0 100 100" class="donut-svg">
+              <!-- Background circle -->
+              <circle
+                cx="50"
+                cy="50"
+                r="40"
+                class="donut-track"
+              />
+              <!-- Progress fill circle -->
+              <circle
+                cx="50"
+                cy="50"
+                r="40"
+                class="donut-fill"
+                [style.strokeDasharray]="habitGauge().circumference"
+                [style.strokeDashoffset]="habitGauge().offset"
+              />
+            </svg>
+            <div class="donut-inner-content">
+              <span class="donut-percentage">{{ habitGauge().streak }}%</span>
+              <span class="donut-label">Clean Streak</span>
+            </div>
+          </div>
+
+          <div class="gauge-legend">
+            <div class="legend-row">
+              <span class="legend-dot bg-green-500"></span>
+              <span class="legend-text">Clean Days</span>
+              <strong class="legend-count text-green-400">{{ habitGauge().clean }}</strong>
+            </div>
+            <div class="legend-row">
+              <span class="legend-dot bg-amber-500"></span>
+              <span class="legend-text">Junk Food Days</span>
+              <strong class="legend-count text-amber-400">
+                {{ state.statsData()?.junkFoodStats?.junkDaysCount || 0 }}
+              </strong>
+            </div>
+          </div>
         </div>
+
+        <!-- Craving Triggers Breakdown Bar List -->
+        @if (cravingBars().length > 0) {
+          <div class="cravings-section">
+            <h5 class="cravings-title">Identified Craving Triggers</h5>
+            <div class="cravings-bars-list">
+              @for (c of cravingBars(); track c.label) {
+                <div class="craving-bar-item">
+                  <div class="craving-bar-meta">
+                    <span class="craving-name">{{ c.label }}</span>
+                    <span class="craving-count">{{ c.count }}x ({{ c.percent }}%)</span>
+                  </div>
+                  <div class="craving-bar-track">
+                    <div class="craving-bar-fill" [style.width.%]="c.percent"></div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        } @else {
+          <div class="no-cravings-clean">
+            <p>🌟 No craving triggers recorded during this timeframe. Excellent discipline!</p>
+          </div>
+        }
       </div>
     </div>
   </div>
