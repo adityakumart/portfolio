@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
@@ -50,7 +50,7 @@ import { RRApiService } from '../../services/rr-api.service';
   templateUrl: './rr-lock-screen.component.html',
   styleUrl: './rr-lock-screen.component.scss',
 })
-export class RRLockScreenComponent {
+export class RRLockScreenComponent implements AfterViewInit {
   inactivityService = inject(RRInactivityService);
   rrApi = inject(RRApiService);
 
@@ -61,6 +61,16 @@ export class RRLockScreenComponent {
   isAdmin = computed(() => this.currentUser()?.role === 'admin');
   isVerifying = computed(() => this.inactivityService.isVerifying());
   errorMessage = computed(() => this.inactivityService.errorMessage());
+
+  ngAfterViewInit(): void {
+    // Focus the credential input automatically on desktop and web
+    setTimeout(() => {
+      if (typeof document !== 'undefined') {
+        const input = document.getElementById('rr-lock-credential') as HTMLInputElement;
+        input?.focus();
+      }
+    }, 100);
+  }
 
   getInitials(): string {
     const user = this.currentUser();
@@ -87,6 +97,10 @@ export class RRLockScreenComponent {
     if (event.key === 'Enter') {
       event.preventDefault();
       this.onUnlockSubmit();
+    } else if (event.key === 'Escape') {
+      // Prevent dismissing security lock screen on desktop
+      event.preventDefault();
+      event.stopPropagation();
     }
   }
 

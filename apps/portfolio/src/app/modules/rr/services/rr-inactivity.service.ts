@@ -32,6 +32,7 @@ export class RRInactivityService implements OnDestroy {
   private boundVisibilityHandler = this.onVisibilityChange.bind(this);
   private boundPauseHandler = this.onAppPause.bind(this);
   private boundResumeHandler = this.onAppResume.bind(this);
+  private tauriUnlistenFocus: (() => void) | null = null;
 
   private boundChromeStorageHandler = (changes: any, areaName: string) => {
     if (areaName !== 'local') return;
@@ -49,6 +50,10 @@ export class RRInactivityService implements OnDestroy {
 
   private isChromeExtension(): boolean {
     return typeof window !== 'undefined' && !!(window as any).chrome?.storage?.local;
+  }
+
+  private isTauriDesktop(): boolean {
+    return typeof window !== 'undefined' && ('__TAURI_INTERNALS__' in window || '__TAURI__' in window);
   }
 
   constructor() {
@@ -80,6 +85,7 @@ export class RRInactivityService implements OnDestroy {
       const storedLock = localStorage.getItem(STORAGE_KEY_IS_LOCKED);
       if (storedLock === 'true') {
         this.isLocked.set(true);
+        this.updateDesktopTitle(true);
         return;
       }
 
@@ -138,6 +144,9 @@ export class RRInactivityService implements OnDestroy {
     window.addEventListener('pause', this.boundPauseHandler);
     window.addEventListener('resume', this.boundResumeHandler);
 
+    // Desktop Tauri window lifecycle listeners
+    this.initDesktopListeners();
+
     // Chrome Extension storage change listener
     if (this.isChromeExtension() && (window as any).chrome?.storage?.onChanged) {
       (window as any).chrome.storage.onChanged.addListener(this.boundChromeStorageHandler);
@@ -168,6 +177,11 @@ export class RRInactivityService implements OnDestroy {
     window.removeEventListener('pause', this.boundPauseHandler);
     window.removeEventListener('resume', this.boundResumeHandler);
 
+    if (this.tauriUnlistenFocus) {
+      this.tauriUnlistenFocus();
+      this.tauriUnlistenFocus = null;
+    }
+
     if (this.isChromeExtension() && (window as any).chrome?.storage?.onChanged) {
       (window as any).chrome.storage.onChanged.removeListener(this.boundChromeStorageHandler);
     }
@@ -175,6 +189,44 @@ export class RRInactivityService implements OnDestroy {
     if (this.checkIntervalId) {
       clearInterval(this.checkIntervalId);
       this.checkIntervalId = null;
+    }
+  }
+
+  /**
+   * Setup desktop Tauri window focus listeners safely via dynamic import
+   */
+  private async initDesktopListeners(): Promise<void> {
+    if (!this.isTauriDesktop()) return;
+    try {
+      const { getCurrentWindow } = await import('@tauri-apps/api/window');
+      const appWindow = getCurrentWindow();
+      this.tauriUnlistenFocus = await appWindow.onFocusChanged(({ payload: focused }) => {
+        if (focused) {
+          this.onAppResume();
+        } else {
+          this.onAppPause();
+        }
+      });
+    } catch {
+      // Graceful fallback to standard window focus/blur
+    }
+  }
+
+  /**
+   * Updates desktop window title based on lock status
+   */
+  private async updateDesktopTitle(locked: boolean): Promise<void> {
+    if (!this.isTauriDesktop()) return;
+    try {
+      const { getCurrentWindow } = await import('@tauri-apps/api/window');
+      const appWindow = getCurrentWindow();
+      if (locked) {
+        await appWindow.setTitle('RR Fleet Management (Session Locked)');
+      } else {
+        await appWindow.setTitle('RR Fleet Management');
+      }
+    } catch {
+      // Ignore if title change is unsupported in current context
     }
   }
 
@@ -192,7 +244,7 @@ export class RRInactivityService implements OnDestroy {
   }
 
   /**
-   * Mobile app paused (backgrounded or screen off)
+   * App paused or minimized (Mobile background / Desktop window blur)
    */
   private onAppPause(): void {
     if (this.isLocked() || !this.rrApi.currentUser()) return;
@@ -200,7 +252,7 @@ export class RRInactivityService implements OnDestroy {
   }
 
   /**
-   * Mobile app resumed (foregrounded)
+   * App resumed or window focused (Mobile foreground / Desktop window focus)
    */
   private onAppResume(): void {
     if (!this.rrApi.currentUser()) return;
@@ -221,7 +273,7 @@ export class RRInactivityService implements OnDestroy {
   }
 
   /**
-   * Records active timestamp in memory and localStorage for cross-tab and mobile sync
+   * Records active timestamp in memory and localStorage for cross-tab and cross-platform sync
    */
   private recordActivityNow(): void {
     const now = Date.now();
@@ -276,8 +328,10 @@ export class RRInactivityService implements OnDestroy {
     if (event.key === STORAGE_KEY_IS_LOCKED) {
       if (event.newValue === 'true') {
         this.isLocked.set(true);
+        this.updateDesktopTitle(true);
       } else if (event.newValue === 'false') {
         this.isLocked.set(false);
+        this.updateDesktopTitle(false);
         this.lastActiveTimestamp = Date.now();
       }
     } else if (event.key === STORAGE_KEY_LAST_ACTIVE && event.newValue) {
@@ -299,6 +353,8 @@ export class RRInactivityService implements OnDestroy {
     if (typeof window !== 'undefined' && window.localStorage) {
       localStorage.setItem(STORAGE_KEY_IS_LOCKED, 'true');
     }
+
+    this.updateDesktopTitle(true);
 
     if (this.isChromeExtension()) {
       (window as any).chrome.storage.local.set({ [STORAGE_KEY_IS_LOCKED]: 'true' });
@@ -368,6 +424,8 @@ export class RRInactivityService implements OnDestroy {
       localStorage.setItem(STORAGE_KEY_IS_LOCKED, 'false');
     }
 
+    this.updateDesktopTitle(false);
+
     if (this.isChromeExtension()) {
       (window as any).chrome.storage.local.set({ [STORAGE_KEY_IS_LOCKED]: 'false' });
       if ((window as any).chrome.action) {
@@ -384,6 +442,8 @@ export class RRInactivityService implements OnDestroy {
       localStorage.removeItem(STORAGE_KEY_LAST_ACTIVE);
       localStorage.removeItem(STORAGE_KEY_IS_LOCKED);
     }
+
+    this.updateDesktopTitle(false);
 
     if (this.isChromeExtension()) {
       (window as any).chrome.storage.local.remove([STORAGE_KEY_LAST_ACTIVE, STORAGE_KEY_IS_LOCKED]);

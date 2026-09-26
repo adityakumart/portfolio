@@ -59,7 +59,8 @@ export class RRApiService {
     if (typeof window === 'undefined') return false;
     const isExtension = !!(window as any).chrome?.runtime?.id;
     const isCapacitor = !!(window as any).Capacitor?.isNativePlatform?.();
-    return isExtension || isCapacitor;
+    const isTauri = '__TAURI_INTERNALS__' in window || '__TAURI__' in window;
+    return isExtension || isCapacitor || isTauri;
   }
 
   private loadSession() {
