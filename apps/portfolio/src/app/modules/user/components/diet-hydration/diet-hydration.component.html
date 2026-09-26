@@ -1,0 +1,230 @@
+<div class="diet-hydration-page">
+  <!-- Top Navigation & Tab Bar -->
+  <div class="dashboard-header">
+    <div class="page-title-box">
+      <div class="title-icon-badge">
+        <ng-icon name="lucideActivity" class="header-icon"></ng-icon>
+      </div>
+      <div>
+        <h1 class="page-title">Diet & Hydration Tracking</h1>
+        <p class="page-subtitle">
+          Monitor your daily meals, stay hydrated, and cultivate mindful eating habits.
+        </p>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="tabs-nav-strip">
+      <button
+        hlmBtn
+        [variant]="state.activeTab() === 'overview' ? 'default' : 'ghost'"
+        size="sm"
+        (click)="setActiveTab('overview')"
+        class="tab-btn"
+      >
+        <ng-icon name="lucideCalendar" class="mr-1"></ng-icon>
+        Daily Overview
+      </button>
+
+      <button
+        hlmBtn
+        [variant]="state.activeTab() === 'trends' ? 'default' : 'ghost'"
+        size="sm"
+        (click)="setActiveTab('trends')"
+        class="tab-btn"
+      >
+        <ng-icon name="lucideTrendingUp" class="mr-1"></ng-icon>
+        Habit Trends & Charts
+      </button>
+
+      <button
+        hlmBtn
+        [variant]="state.activeTab() === 'settings' ? 'default' : 'ghost'"
+        size="sm"
+        (click)="setActiveTab('settings')"
+        class="tab-btn"
+      >
+        <ng-icon name="lucideSettings" class="mr-1"></ng-icon>
+        Settings & Goals
+      </button>
+    </div>
+  </div>
+
+  <!-- TAB 1: DAILY OVERVIEW -->
+  @if (state.activeTab() === 'overview') {
+    <div class="tab-view-content">
+      <!-- Daily Summary Cards -->
+      <app-daily-overview></app-daily-overview>
+
+      <!-- Water Station Tracker -->
+      <app-hydration-tracker></app-hydration-tracker>
+
+      <!-- Meal Categories List -->
+      <app-meal-section></app-meal-section>
+    </div>
+  }
+
+  <!-- TAB 2: HABIT TRENDS & CHARTS -->
+  @if (state.activeTab() === 'trends') {
+    <div class="tab-view-content">
+      <app-stats-charts></app-stats-charts>
+    </div>
+  }
+
+  <!-- TAB 3: SETTINGS & GOALS -->
+  @if (state.activeTab() === 'settings') {
+    <div class="tab-view-content settings-wrapper">
+      <div hlmCard class="settings-card">
+        <div hlmCardHeader class="settings-header">
+          <h3 hlmCardTitle>Configure Targets & Notification Alarms</h3>
+          <p hlmCardDescription>
+            Personalize your hydration target, preset cup amounts, and evening reflection time.
+          </p>
+        </div>
+
+        <div hlmCardContent class="settings-body">
+          <!-- Hydration Target -->
+          <div class="form-row-2">
+            <div class="form-group">
+              <label hlmLabel for="targetMl">Daily Hydration Target (ml)</label>
+              <input
+                hlmInput
+                id="targetMl"
+                type="number"
+                [(ngModel)]="targetMl"
+                min="500"
+                max="10000"
+                step="100"
+              />
+            </div>
+
+            <div class="form-group">
+              <label hlmLabel for="cupPreset">Quick-Add Cup Preset (ml)</label>
+              <input
+                hlmInput
+                id="cupPreset"
+                type="number"
+                [(ngModel)]="cupPreset"
+                min="100"
+                max="1000"
+                step="50"
+              />
+            </div>
+          </div>
+
+          <!-- Notification Toggles -->
+          <div class="settings-toggle-group">
+            <div class="toggle-row">
+              <input
+                type="checkbox"
+                id="remindersEnabled"
+                [(ngModel)]="remindersEnabled"
+                class="checkbox-input"
+              />
+              <label for="remindersEnabled" class="toggle-label">
+                <strong>Enable Hydration Reminder Alarms</strong>
+                <span>Triggers Web Notifications & Toasts during your active hours.</span>
+              </label>
+            </div>
+          </div>
+
+          @if (remindersEnabled) {
+            <div class="form-row-3 nested-config">
+              <div class="form-group">
+                <label hlmLabel for="reminderInterval">Reminder Interval (minutes)</label>
+                <input
+                  hlmInput
+                  id="reminderInterval"
+                  type="number"
+                  [(ngModel)]="reminderInterval"
+                  min="15"
+                  max="360"
+                  step="15"
+                />
+              </div>
+
+              <div class="form-group">
+                <label hlmLabel for="startTime">Active From</label>
+                <input
+                  hlmInput
+                  id="startTime"
+                  type="time"
+                  [(ngModel)]="startTime"
+                />
+              </div>
+
+              <div class="form-group">
+                <label hlmLabel for="endTime">Active Until</label>
+                <input
+                  hlmInput
+                  id="endTime"
+                  type="time"
+                  [(ngModel)]="endTime"
+                />
+              </div>
+            </div>
+          }
+
+          <div class="settings-divider"></div>
+
+          <!-- Junk Food Prompt -->
+          <div class="settings-toggle-group">
+            <div class="toggle-row">
+              <input
+                type="checkbox"
+                id="junkPromptEnabled"
+                [(ngModel)]="junkPromptEnabled"
+                class="checkbox-input"
+              />
+              <label for="junkPromptEnabled" class="toggle-label">
+                <strong>Daily Junk Food Evening Reflection</strong>
+                <span>Shows an evening prompt to reflect on your clean-eating streak.</span>
+              </label>
+            </div>
+          </div>
+
+          @if (junkPromptEnabled) {
+            <div class="form-group nested-config max-w-xs">
+              <label hlmLabel for="junkPromptTime">Evening Reflection Time</label>
+              <input
+                hlmInput
+                id="junkPromptTime"
+                type="time"
+                [(ngModel)]="junkPromptTime"
+              />
+            </div>
+          }
+
+          <!-- Save Button -->
+          <div class="settings-actions">
+            @if (settingsSavedNotice) {
+              <span class="save-notice text-green-500">
+                <ng-icon name="lucideCheck" class="mr-1"></ng-icon>
+                Settings saved successfully!
+              </span>
+            }
+
+            <button
+              hlmBtn
+              variant="default"
+              (click)="onSaveSettings()"
+              [disabled]="state.isSaving()"
+              class="save-settings-btn"
+            >
+              {{ state.isSaving() ? 'Saving...' : 'Save Configuration' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Modals -->
+  @if (state.isMealDialogOpen()) {
+    <app-food-log-dialog></app-food-log-dialog>
+  }
+
+  @if (state.isJunkPromptOpen()) {
+    <app-junk-food-prompt-modal></app-junk-food-prompt-modal>
+  }
+</div>

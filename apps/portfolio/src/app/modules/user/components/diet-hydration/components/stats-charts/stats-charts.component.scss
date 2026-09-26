@@ -1,0 +1,120 @@
+.stats-charts-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.charts-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  .charts-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .charts-subtitle {
+    font-size: 0.82rem;
+    color: var(--muted-foreground, #94a3b8);
+    margin: 0.2rem 0 0;
+  }
+
+  .timeframe-switch {
+    display: inline-flex;
+    gap: 0.35rem;
+    background: var(--card, #1e293b);
+    padding: 0.25rem;
+    border-radius: 9999px;
+    border: 1px solid var(--border, #334155);
+
+    .timeframe-btn {
+      border-radius: 9999px;
+      font-size: 0.78rem;
+    }
+  }
+}
+
+.stats-summary-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  .summary-pill {
+    background: var(--card, #1e293b);
+    border: 1px solid var(--border, #334155);
+    border-radius: 0.75rem;
+    padding: 0.6rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+
+    .pill-label {
+      font-size: 0.75rem;
+      color: var(--muted-foreground, #94a3b8);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .pill-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+  }
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 1.25rem;
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chart-card {
+  border-radius: 1rem;
+  border: 1px solid var(--border, #334155);
+  background: var(--card, #1e293b);
+
+  .chart-card-header {
+    padding: 1.25rem 1.25rem 0.75rem;
+
+    .chart-title-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      .icon-water {
+        color: #38bdf8;
+        font-size: 1.2rem;
+      }
+
+      .icon-habit {
+        color: #a855f7;
+        font-size: 1.2rem;
+      }
+
+      h4 {
+        font-size: 0.95rem;
+        font-weight: 600;
+        margin: 0;
+      }
+    }
+  }
+
+  .chart-card-body {
+    padding: 0.75rem 1.25rem 1.25rem;
+
+    .canvas-container {
+      position: relative;
+      height: 260px;
+      width: 100%;
+    }
+  }
+}

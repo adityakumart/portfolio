@@ -1,0 +1,106 @@
+<div class="meal-sections-grid">
+  @for (cat of categories; track cat.type) {
+    <div hlmCard class="meal-category-card">
+      <!-- Header -->
+      <div hlmCardHeader class="category-header">
+        <div class="title-with-emoji">
+          <span class="emoji-avatar">{{ cat.iconEmoji }}</span>
+          <div>
+            <div class="title-row">
+              <h3 hlmCardTitle class="cat-title">{{ cat.title }}</h3>
+              @if (getMealCalories(cat.type) > 0) {
+                <span class="cal-badge-pill">
+                  <ng-icon name="lucideFlame" class="mr-1"></ng-icon>
+                  {{ getMealCalories(cat.type) }} kcal
+                </span>
+              }
+            </div>
+            <p hlmCardDescription class="cat-desc">{{ cat.description }}</p>
+          </div>
+        </div>
+
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          (click)="onAdd(cat.type)"
+          class="add-item-btn"
+        >
+          <ng-icon name="lucidePlus" class="mr-1"></ng-icon>
+          Add
+        </button>
+      </div>
+
+      <!-- Meal Items List -->
+      <div hlmCardContent class="category-content">
+        @if (getMeals(cat.type).length === 0) {
+          <div class="empty-meal-placeholder" (click)="onAdd(cat.type)">
+            <p>No food logged yet for {{ cat.title.toLowerCase() }}.</p>
+            <span class="click-to-add">+ Add Item</span>
+          </div>
+        } @else {
+          <div class="meal-items-list">
+            @for (meal of getMeals(cat.type); track meal.id) {
+              <div class="meal-item-card">
+                <!-- Thumbnail if photo exists -->
+                @if (meal.imageUrl) {
+                  <a [href]="meal.imageUrl" target="_blank" rel="noopener" class="meal-thumb-wrapper" title="View Full Photo">
+                    <img [src]="meal.imageUrl" [alt]="meal.foodName" class="meal-thumb" />
+                  </a>
+                }
+
+                <div class="meal-item-details">
+                  <div class="item-title-row">
+                    <h4 class="item-food-name">{{ meal.foodName }}</h4>
+                    @if (meal.estimatedCalories) {
+                      <span class="item-calories">{{ meal.estimatedCalories }} kcal</span>
+                    }
+                  </div>
+
+                  <div class="item-meta-tags">
+                    @if (meal.portionSize) {
+                      <span class="meta-tag portion">{{ meal.portionSize }}</span>
+                    }
+                    @if (meal.mealTime) {
+                      <span class="meta-tag time">
+                        <ng-icon name="lucideClock" class="mr-1"></ng-icon>
+                        {{ meal.mealTime }}
+                      </span>
+                    }
+                    @if (meal.notes) {
+                      <span class="meta-tag notes">{{ meal.notes }}</span>
+                    }
+                  </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="item-actions">
+                  <button
+                    hlmBtn
+                    variant="ghost"
+                    size="icon"
+                    (click)="onEdit(cat.type, meal)"
+                    title="Edit Item"
+                    class="action-btn"
+                  >
+                    <ng-icon name="lucideEdit"></ng-icon>
+                  </button>
+                  <button
+                    hlmBtn
+                    variant="ghost"
+                    size="icon"
+                    (click)="onDelete(meal.id)"
+                    title="Delete Item"
+                    class="action-btn text-red-500 hover:text-red-600"
+                  >
+                    <ng-icon name="lucideTrash2"></ng-icon>
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>
