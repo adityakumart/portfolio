@@ -31,6 +31,24 @@ export class RRInactivityService implements OnDestroy {
   private boundStorageHandler = this.onStorageEvent.bind(this);
   private boundVisibilityHandler = this.onVisibilityChange.bind(this);
 
+  private boundChromeStorageHandler = (changes: any, areaName: string) => {
+    if (areaName !== 'local') return;
+    if (changes[STORAGE_KEY_IS_LOCKED]) {
+      const val = changes[STORAGE_KEY_IS_LOCKED].newValue;
+      this.isLocked.set(val === 'true' || val === true);
+    }
+    if (changes[STORAGE_KEY_LAST_ACTIVE] && changes[STORAGE_KEY_LAST_ACTIVE].newValue) {
+      const parsed = parseInt(changes[STORAGE_KEY_LAST_ACTIVE].newValue, 10);
+      if (!isNaN(parsed)) {
+        this.lastActiveTimestamp = parsed;
+      }
+    }
+  };
+
+  private isChromeExtension(): boolean {
+    return typeof window !== 'undefined' && !!(window as any).chrome?.storage?.local;
+  }
+
   constructor() {
     // Automatically manage tracking based on currentUser authentication status
     effect(() => {
@@ -51,30 +69,49 @@ export class RRInactivityService implements OnDestroy {
   }
 
   /**
-   * Initializes initial state from localStorage (useful on page reloads or new tabs)
+   * Initializes initial state from localStorage & chrome.storage (useful on page reloads, new tabs, or extension popup open)
    */
   private initializeFromStorage(): void {
-    if (typeof window === 'undefined' || !window.localStorage) return;
+    if (typeof window === 'undefined') return;
 
-    const storedLock = localStorage.getItem(STORAGE_KEY_IS_LOCKED);
-    if (storedLock === 'true') {
-      this.isLocked.set(true);
-      return;
+    if (window.localStorage) {
+      const storedLock = localStorage.getItem(STORAGE_KEY_IS_LOCKED);
+      if (storedLock === 'true') {
+        this.isLocked.set(true);
+        return;
+      }
+
+      const storedLastActive = localStorage.getItem(STORAGE_KEY_LAST_ACTIVE);
+      if (storedLastActive) {
+        const parsedTime = parseInt(storedLastActive, 10);
+        if (!isNaN(parsedTime)) {
+          this.lastActiveTimestamp = parsedTime;
+          const elapsed = Date.now() - parsedTime;
+          if (elapsed >= this.timeoutMs()) {
+            this.lockSession();
+            return;
+          }
+        }
+      } else {
+        this.recordActivityNow();
+      }
     }
 
-    const storedLastActive = localStorage.getItem(STORAGE_KEY_LAST_ACTIVE);
-    if (storedLastActive) {
-      const parsedTime = parseInt(storedLastActive, 10);
-      if (!isNaN(parsedTime)) {
-        this.lastActiveTimestamp = parsedTime;
-        const elapsed = Date.now() - parsedTime;
-        if (elapsed >= this.timeoutMs()) {
-          this.lockSession();
-          return;
+    // Chrome Extension storage bridge
+    if (this.isChromeExtension()) {
+      (window as any).chrome.storage.local.get(
+        [STORAGE_KEY_IS_LOCKED, STORAGE_KEY_LAST_ACTIVE],
+        (res: any) => {
+          if (res && (res[STORAGE_KEY_IS_LOCKED] === 'true' || res[STORAGE_KEY_IS_LOCKED] === true)) {
+            this.isLocked.set(true);
+          } else if (res && res[STORAGE_KEY_LAST_ACTIVE]) {
+            const parsed = parseInt(res[STORAGE_KEY_LAST_ACTIVE], 10);
+            if (!isNaN(parsed) && Date.now() - parsed >= this.timeoutMs()) {
+              this.lockSession();
+            }
+          }
         }
-      }
-    } else {
-      this.recordActivityNow();
+      );
     }
   }
 
@@ -94,6 +131,11 @@ export class RRInactivityService implements OnDestroy {
     window.addEventListener('storage', this.boundStorageHandler);
     document.addEventListener('visibilitychange', this.boundVisibilityHandler);
     window.addEventListener('focus', this.boundVisibilityHandler);
+
+    // Chrome Extension storage change listener
+    if (this.isChromeExtension() && (window as any).chrome?.storage?.onChanged) {
+      (window as any).chrome.storage.onChanged.addListener(this.boundChromeStorageHandler);
+    }
 
     // Heartbeat ticker to evaluate time elapsed every second
     this.checkIntervalId = setInterval(() => {
@@ -116,6 +158,10 @@ export class RRInactivityService implements OnDestroy {
     window.removeEventListener('storage', this.boundStorageHandler);
     document.removeEventListener('visibilitychange', this.boundVisibilityHandler);
     window.removeEventListener('focus', this.boundVisibilityHandler);
+
+    if (this.isChromeExtension() && (window as any).chrome?.storage?.onChanged) {
+      (window as any).chrome.storage.onChanged.removeListener(this.boundChromeStorageHandler);
+    }
 
     if (this.checkIntervalId) {
       clearInterval(this.checkIntervalId);
@@ -144,6 +190,9 @@ export class RRInactivityService implements OnDestroy {
     this.lastActiveTimestamp = now;
     if (typeof window !== 'undefined' && window.localStorage) {
       localStorage.setItem(STORAGE_KEY_LAST_ACTIVE, now.toString());
+    }
+    if (this.isChromeExtension()) {
+      (window as any).chrome.storage.local.set({ [STORAGE_KEY_LAST_ACTIVE]: now.toString() });
     }
   }
 
@@ -212,6 +261,14 @@ export class RRInactivityService implements OnDestroy {
     if (typeof window !== 'undefined' && window.localStorage) {
       localStorage.setItem(STORAGE_KEY_IS_LOCKED, 'true');
     }
+
+    if (this.isChromeExtension()) {
+      (window as any).chrome.storage.local.set({ [STORAGE_KEY_IS_LOCKED]: 'true' });
+      if ((window as any).chrome.action) {
+        (window as any).chrome.action.setBadgeText({ text: 'LOCK' });
+        (window as any).chrome.action.setBadgeBackgroundColor({ color: '#f59e0b' });
+      }
+    }
   }
 
   /**
@@ -272,6 +329,13 @@ export class RRInactivityService implements OnDestroy {
     if (typeof window !== 'undefined' && window.localStorage) {
       localStorage.setItem(STORAGE_KEY_IS_LOCKED, 'false');
     }
+
+    if (this.isChromeExtension()) {
+      (window as any).chrome.storage.local.set({ [STORAGE_KEY_IS_LOCKED]: 'false' });
+      if ((window as any).chrome.action) {
+        (window as any).chrome.action.setBadgeText({ text: '' });
+      }
+    }
   }
 
   /**
@@ -281,6 +345,13 @@ export class RRInactivityService implements OnDestroy {
     if (typeof window !== 'undefined' && window.localStorage) {
       localStorage.removeItem(STORAGE_KEY_LAST_ACTIVE);
       localStorage.removeItem(STORAGE_KEY_IS_LOCKED);
+    }
+
+    if (this.isChromeExtension()) {
+      (window as any).chrome.storage.local.remove([STORAGE_KEY_LAST_ACTIVE, STORAGE_KEY_IS_LOCKED]);
+      if ((window as any).chrome.action) {
+        (window as any).chrome.action.setBadgeText({ text: '' });
+      }
     }
   }
 

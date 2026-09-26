@@ -55,10 +55,21 @@ export class RRApiService {
     this.loadSession();
   }
 
+  private isExtension(): boolean {
+    return typeof window !== 'undefined' && !!(window as any).chrome?.runtime?.id;
+  }
+
   private loadSession() {
-    if (typeof window !== 'undefined' && window.sessionStorage) {
-      const userStr = sessionStorage.getItem('rr_user');
-      const token = sessionStorage.getItem('rr_token');
+    if (typeof window !== 'undefined') {
+      let userStr = window.sessionStorage ? sessionStorage.getItem('rr_user') : null;
+      let token = window.sessionStorage ? sessionStorage.getItem('rr_token') : null;
+
+      // In extension environment, fallback to localStorage if sessionStorage was wiped on popup close
+      if ((!userStr || !token) && this.isExtension() && window.localStorage) {
+        userStr = localStorage.getItem('rr_user');
+        token = localStorage.getItem('rr_token');
+      }
+
       if (userStr && token) {
         try {
           this.currentUser.set(JSON.parse(userStr));
@@ -70,26 +81,57 @@ export class RRApiService {
   }
 
   private saveSession(user: IRRUser, token: string) {
-    if (typeof window !== 'undefined' && window.sessionStorage) {
-      sessionStorage.setItem('rr_user', JSON.stringify(user));
-      sessionStorage.setItem('rr_token', token);
-      sessionStorage.setItem('loggedInUser', JSON.stringify({ role: user.role, id: user.id }));
+    if (typeof window !== 'undefined') {
+      if (window.sessionStorage) {
+        sessionStorage.setItem('rr_user', JSON.stringify(user));
+        sessionStorage.setItem('rr_token', token);
+        sessionStorage.setItem('loggedInUser', JSON.stringify({ role: user.role, id: user.id }));
+      }
+
+      if (this.isExtension()) {
+        if (window.localStorage) {
+          localStorage.setItem('rr_user', JSON.stringify(user));
+          localStorage.setItem('rr_token', token);
+          localStorage.setItem('loggedInUser', JSON.stringify({ role: user.role, id: user.id }));
+        }
+        (window as any).chrome?.storage?.local?.set({
+          rr_user: JSON.stringify(user),
+          rr_token: token,
+        });
+      }
     }
     this.currentUser.set(user);
   }
 
   private clearSession() {
-    if (typeof window !== 'undefined' && window.sessionStorage) {
-      sessionStorage.removeItem('rr_user');
-      sessionStorage.removeItem('rr_token');
-      sessionStorage.removeItem('loggedInUser');
+    if (typeof window !== 'undefined') {
+      if (window.sessionStorage) {
+        sessionStorage.removeItem('rr_user');
+        sessionStorage.removeItem('rr_token');
+        sessionStorage.removeItem('loggedInUser');
+      }
+
+      if (this.isExtension()) {
+        if (window.localStorage) {
+          localStorage.removeItem('rr_user');
+          localStorage.removeItem('rr_token');
+          localStorage.removeItem('loggedInUser');
+        }
+        (window as any).chrome?.storage?.local?.remove(['rr_user', 'rr_token']);
+      }
     }
     this.currentUser.set(null);
   }
 
   getToken(): string | null {
-    if (typeof window !== 'undefined' && window.sessionStorage) {
-      return sessionStorage.getItem('rr_token');
+    if (typeof window !== 'undefined') {
+      if (window.sessionStorage) {
+        const token = sessionStorage.getItem('rr_token');
+        if (token) return token;
+      }
+      if (this.isExtension() && window.localStorage) {
+        return localStorage.getItem('rr_token');
+      }
     }
     return null;
   }
