@@ -90,6 +90,28 @@
             }
           ]
         },
+        "mobile": {
+          "baseHref": "/",
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "2mb",
+              "maximumError": "5mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "20kb",
+              "maximumError": "60kb"
+            }
+          ],
+          "outputHashing": "all",
+          "fileReplacements": [
+            {
+              "replace": "apps/portfolio/src/environments/environment.ts",
+              "with": "apps/portfolio/src/environments/environment.prod.ts"
+            }
+          ]
+        },
         "development": {
           "optimization": false,
           "extractLicenses": false,
@@ -101,6 +123,31 @@
       "outputs": [
         "{options.outputPath.base}"
       ]
+    },
+    "sync": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        {
+          "target": "build",
+          "params": "forward"
+        }
+      ],
+      "options": {
+        "command": "npx cap sync android",
+        "cwd": "apps/portfolio"
+      },
+      "configurations": {
+        "production": {},
+        "mobile": {}
+      },
+      "defaultConfiguration": "mobile"
+    },
+    "open:android": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx cap open android",
+        "cwd": "apps/portfolio"
+      }
     },
     "desktop:dev": {
       "executor": "nx:run-commands",
