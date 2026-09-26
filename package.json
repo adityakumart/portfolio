@@ -4,6 +4,10 @@
   "scripts": {
     "ng": "ng",
     "dev:web": "npx nx serve portfolio --hmr -o",
+    "dev:web:user": "pnpm run dev:web",
+    "dev:web:rr": "npx nx serve portfolio-rr",
+    "build:web:user": "nx build portfolio --configuration production",
+    "build:web:rr": "nx build portfolio-rr --configuration production",
     "build": "nx build portfolio --configuration production && gzipper compress ./dist/apps/portfolio",
     "githubBuild": "nx build portfolio --configuration production && npx angular-cli-ghpages --dir=dist/apps/portfolio/browser",
     "build1": "nx build portfolio --configuration production --source-map && gzipper compress ./dist/apps/portfolio",
