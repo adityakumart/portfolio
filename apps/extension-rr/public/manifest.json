@@ -10,9 +10,13 @@
   "side_panel": {
     "default_path": "index.html"
   },
+  "background": {
+    "service_worker": "background.js"
+  },
   "permissions": [
     "storage",
-    "sidePanel"
+    "sidePanel",
+    "alarms"
   ],
   "host_permissions": [
     "http://localhost:3000/*",
