@@ -12,7 +12,14 @@
   box-sizing: border-box;
   transition:
     background 0.4s ease,
-    color 0.4s ease;
+    color 0.4s ease,
+    filter 0.3s ease;
+
+  &.dashboard-locked {
+    filter: blur(12px) brightness(0.75);
+    pointer-events: none;
+    user-select: none;
+  }
 
   /* HEADER */
   .app-header {

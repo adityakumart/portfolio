@@ -1,4 +1,4 @@
-<div class="dashboard-wrapper">
+<div class="dashboard-wrapper" [class.dashboard-locked]="inactivityService.isLocked()">
   <!-- Header -->
   <header class="app-header">
     <div class="flex items-center gap-2">
@@ -357,3 +357,7 @@
     </div>
   </ng-template>
 </div>
+
+@if (inactivityService.isLocked()) {
+  <app-rr-lock-screen></app-rr-lock-screen>
+}
