@@ -37,6 +37,7 @@ import {
   lucideZap,
   lucideMenu,
   lucideX,
+  lucideActivity,
 } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
@@ -90,6 +91,7 @@ export interface SidebarItem {
       lucideZap,
       lucideMenu,
       lucideX,
+      lucideActivity,
     }),
   ],
   templateUrl: './sidebar.component.html',
@@ -249,6 +251,11 @@ export class SidebarComponent implements OnDestroy {
             icon: 'lucideMessageSquare',
           },
           { label: 'File Manager', link: '/user/files', icon: 'lucideFolder' },
+          {
+            label: 'Diet & Hydration',
+            link: '/user/diet-hydration',
+            icon: 'lucideActivity',
+          },
         ],
       });
     } else if (rrUser) {
