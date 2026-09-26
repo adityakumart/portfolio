@@ -26,6 +26,8 @@ import { HlmInputImports } from '@spartan-ng/hel/input';
 import { HlmDropdownMenuImports } from '@spartan-ng/hel/dropdown-menu';
 import { HlmAvatarImports } from '@spartan-ng/hel/avatar';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
+import { RRInactivityService } from '../../services/rr-inactivity.service';
+import { RRLockScreenComponent } from '../lock-screen/rr-lock-screen.component';
 
 @Component({
   selector: 'app-rr-dashboard',
@@ -41,6 +43,7 @@ import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
     HlmDropdownMenuImports,
     HlmAvatarImports,
     HlmTooltipImports,
+    RRLockScreenComponent,
   ],
   providers: [
     provideIcons({
@@ -66,6 +69,7 @@ import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
 })
 export class RRDashboardComponent implements OnInit {
   rrApi = inject(RRApiService);
+  inactivityService = inject(RRInactivityService);
   private router = inject(Router);
   private dialog = inject(HlmDialogService);
   private activeDialogRef: any = null;

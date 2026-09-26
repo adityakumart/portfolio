@@ -1,0 +1,142 @@
+<div
+  class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-background/80 dark:bg-black/80 backdrop-blur-xl backdrop-saturate-150 animate-in fade-in duration-300 select-none"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="lock-screen-title"
+>
+  <!-- Center Card -->
+  <div
+    class="relative w-full max-w-md bg-card/95 text-card-foreground border border-border/80 shadow-2xl rounded-3xl p-6 sm:p-8 overflow-hidden animate-in zoom-in-95 duration-200"
+    (keydown)="onKeyDown($event)"
+  >
+    <!-- Background Ambient Glow -->
+    <div
+      class="absolute -top-20 left-1/2 -translate-x-1/2 w-48 h-48 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none"
+    ></div>
+
+    <!-- Header Section -->
+    <div class="flex flex-col items-center text-center mb-6">
+      <div
+        class="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center mb-4 text-cyan-500 shadow-inner shadow-cyan-500/20"
+      >
+        <ng-icon name="lucideLock" class="text-3xl"></ng-icon>
+      </div>
+      <h2 id="lock-screen-title" class="text-2xl font-bold tracking-tight text-foreground">
+        Session Locked
+      </h2>
+      <p class="text-xs sm:text-sm text-muted-foreground mt-1 max-w-xs">
+        Your workspace was locked after 5 minutes of inactivity to protect sensitive data.
+      </p>
+    </div>
+
+    <!-- User Profile Strip -->
+    @if (currentUser()) {
+      <div
+        class="flex items-center gap-3 p-3 rounded-2xl bg-muted/50 border border-border/60 mb-6"
+      >
+        <hlm-avatar class="h-10 w-10 shrink-0">
+          <span
+            hlmAvatarFallback
+            class="bg-gradient-to-tr from-cyan-500 to-blue-600 text-white font-bold text-sm shadow-sm"
+          >
+            {{ getInitials() }}
+          </span>
+        </hlm-avatar>
+        <div class="flex flex-col min-w-0 flex-1 text-left">
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-sm text-foreground truncate">
+              {{ currentUser()?.firstName }} {{ currentUser()?.lastName }}
+            </span>
+            <span
+              hlmBadge
+              [variant]="isAdmin() ? 'default' : 'secondary'"
+              class="text-[10px] uppercase font-extrabold px-1.5 py-0.5"
+            >
+              {{ currentUser()?.role }}
+            </span>
+          </div>
+          <span class="text-xs text-muted-foreground truncate">
+            {{ currentUser()?.email || currentUser()?.id }}
+          </span>
+        </div>
+      </div>
+    }
+
+    <!-- Unlock Form -->
+    <form (ngSubmit)="onUnlockSubmit()" class="space-y-4">
+      <div class="space-y-1.5 text-left">
+        <label hlmLabel for="rr-lock-credential" class="text-xs font-semibold">
+          @if (isAdmin()) {
+            Enter Admin Password
+          } @else {
+            Enter Date of Birth or Password
+          }
+        </label>
+        <div class="relative">
+          <input
+            hlmInput
+            id="rr-lock-credential"
+            [type]="showPassword() ? 'text' : 'password'"
+            [(ngModel)]="credentialInput"
+            name="credentialInput"
+            [placeholder]="isAdmin() ? '••••••••' : 'YYYY-MM-DD or password'"
+            class="w-full pr-10 text-sm h-11 rounded-xl bg-background/60"
+            autocomplete="current-password"
+            [disabled]="isVerifying()"
+            autofocus
+          />
+          <button
+            type="button"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
+            (click)="togglePasswordVisibility()"
+            tabindex="-1"
+            aria-label="Toggle password visibility"
+          >
+            <ng-icon
+              [name]="showPassword() ? 'lucideEyeOff' : 'lucideEye'"
+              class="text-base"
+            ></ng-icon>
+          </button>
+        </div>
+      </div>
+
+      <!-- Error Alert -->
+      @if (errorMessage()) {
+        <div
+          class="flex items-center gap-2 p-2.5 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs font-medium animate-in fade-in slide-in-from-top-1 duration-200"
+        >
+          <ng-icon name="lucideAlertCircle" class="text-base shrink-0"></ng-icon>
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
+
+      <!-- Primary Action: Unlock Button -->
+      <button
+        hlmBtn
+        type="submit"
+        class="w-full h-11 rounded-xl font-semibold gap-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-lg shadow-cyan-500/25 transition-all"
+        [disabled]="isVerifying() || !credentialInput().trim()"
+      >
+        @if (isVerifying()) {
+          <hlm-spinner class="h-4 w-4 text-white"></hlm-spinner>
+          <span>Verifying...</span>
+        } @else {
+          <ng-icon name="lucideShieldCheck" class="text-lg"></ng-icon>
+          <span>Unlock Session</span>
+        }
+      </button>
+
+      <!-- Secondary Action: Logout / Switch User -->
+      <button
+        hlmBtn
+        variant="ghost"
+        type="button"
+        class="w-full h-10 rounded-xl text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors gap-2"
+        (click)="onLogout()"
+      >
+        <ng-icon name="lucideLogOut" class="text-sm"></ng-icon>
+        <span>Not you? Log out & switch account</span>
+      </button>
+    </form>
+  </div>
+</div>
