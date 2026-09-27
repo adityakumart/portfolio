@@ -30,26 +30,45 @@ export class HydrationService {
   static async getConfig(userId: string): Promise<IUserDietConfig> {
     const UserDietConfig = await getUserDietConfigModel();
     const userObjId = new Types.ObjectId(userId);
-    let doc = await UserDietConfig.findOne({ userId: userObjId });
-    if (!doc) {
-      doc = await UserDietConfig.create({
-        userId: userObjId,
-        hydration: {
-          dailyTargetMl: 2500,
-          unit: 'ml',
-          cupPresetMl: 250,
-          remindersEnabled: false,
-          reminderIntervalMinutes: 60,
-          reminderStartTime: '08:00',
-          reminderEndTime: '22:00',
+
+    try {
+      const doc = await UserDietConfig.findOneAndUpdate(
+        { userId: userObjId },
+        {
+          $setOnInsert: {
+            userId: userObjId,
+            hydration: {
+              dailyTargetMl: 2500,
+              unit: 'ml',
+              cupPresetMl: 250,
+              remindersEnabled: false,
+              reminderIntervalMinutes: 60,
+              reminderStartTime: '08:00',
+              reminderEndTime: '22:00',
+            },
+            junkFoodPrompt: {
+              enabled: true,
+              promptTime: '21:00',
+            },
+          },
         },
-        junkFoodPrompt: {
-          enabled: true,
-          promptTime: '21:00',
+        {
+          upsert: true,
+          new: true,
+          setDefaultsOnInsert: true,
         },
-      });
+      );
+
+      return doc.toClientJSON();
+    } catch (err: any) {
+      if (err.code === 11000) {
+        const existing = await UserDietConfig.findOne({ userId: userObjId });
+        if (existing) {
+          return existing.toClientJSON();
+        }
+      }
+      throw err;
     }
-    return doc.toClientJSON();
   }
 
   static async updateConfig(
