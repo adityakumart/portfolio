@@ -58,6 +58,14 @@ const routes: Routes = [
         canActivate: [authGuard],
       },
       {
+        path: 'diet-hydration',
+        loadComponent: () =>
+          import(
+            './components/diet-hydration/diet-hydration.component'
+          ).then((m) => m.DietHydrationComponent),
+        canActivate: [authGuard],
+      },
+      {
         path: 'dev-tools',
         loadChildren: () =>
           import('../dev-tools/dev-tools-routing.module').then(

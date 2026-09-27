@@ -1,0 +1,109 @@
+<div class="dialog-overlay-backdrop" (click)="close()">
+  <div class="dialog-modal-card" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="modal-header">
+      <div class="header-title-box">
+        <div class="sparkle-icon-circle">
+          <ng-icon name="lucideSparkles"></ng-icon>
+        </div>
+        <div>
+          <h2 class="modal-title">Daily Evening Reflection</h2>
+          <p class="modal-subtitle">Honest daily tracking builds permanent healthy habits.</p>
+        </div>
+      </div>
+      <button hlmBtn variant="ghost" size="icon" (click)="close()">
+        <ng-icon name="lucideX"></ng-icon>
+      </button>
+    </div>
+
+    <!-- Body Content -->
+    <div class="modal-body-content">
+      <p class="reflection-question">
+        Did you eat any sweets, sugary drinks, or junk food today?
+      </p>
+
+      <!-- Binary Choice Cards -->
+      <div class="binary-choices-grid">
+        <div
+          class="choice-card clean-choice"
+          [class.selected]="consumed() === false"
+          (click)="setConsumed(false)"
+        >
+          <span class="choice-emoji">🥦</span>
+          <div class="choice-text">
+            <h4>No, Kept it Clean!</h4>
+            <p>100% wholesome, healthy meals today.</p>
+          </div>
+          @if (consumed() === false) {
+            <ng-icon name="lucideCheckCircle2" class="check-icon text-green-500"></ng-icon>
+          }
+        </div>
+
+        <div
+          class="choice-card junk-choice"
+          [class.selected]="consumed() === true"
+          (click)="setConsumed(true)"
+        >
+          <span class="choice-emoji">🍟</span>
+          <div class="choice-text">
+            <h4>Yes, Had Some</h4>
+            <p>Had sweets, soda, snacks, or takeout.</p>
+          </div>
+          @if (consumed() === true) {
+            <ng-icon name="lucideCheckCircle2" class="check-icon text-amber-500"></ng-icon>
+          }
+        </div>
+      </div>
+
+      <!-- Expandable details when consumed === true -->
+      @if (consumed() === true) {
+        <div class="junk-details-expansion">
+          <div class="form-group">
+            <label hlmLabel for="itemsDesc">What did you have? (Optional)</label>
+            <input
+              hlmInput
+              id="itemsDesc"
+              [ngModel]="itemsDescription()"
+              (ngModelChange)="itemsDescription.set($event)"
+              placeholder="e.g. 2 slices of pepperoni pizza and a cola"
+            />
+          </div>
+
+          <div class="form-group">
+            <label hlmLabel>What triggered the craving?</label>
+            <div class="craving-triggers-list">
+              @for (opt of cravingOptions; track opt.trigger) {
+                <button
+                  type="button"
+                  class="trigger-pill"
+                  [class.active]="selectedTrigger() === opt.trigger"
+                  (click)="setTrigger(opt.trigger)"
+                >
+                  <span>{{ opt.emoji }}</span>
+                  <span>{{ opt.label }}</span>
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-footer">
+      <button hlmBtn variant="outline" (click)="close()">
+        Cancel
+      </button>
+      <button
+        hlmBtn
+        variant="default"
+        [disabled]="consumed() === null || state.isSaving()"
+        (click)="onSave()"
+        class="save-reflection-btn"
+      >
+        <ng-icon name="lucideCheck" class="mr-1"></ng-icon>
+        {{ state.isSaving() ? 'Saving...' : 'Record Reflection' }}
+      </button>
+    </div>
+  </div>
+</div>
