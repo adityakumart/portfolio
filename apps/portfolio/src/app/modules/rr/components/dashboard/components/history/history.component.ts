@@ -25,6 +25,7 @@ import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
 import { HlmInputImports } from '@spartan-ng/hel/input';
 import { HlmLabelImports } from '@spartan-ng/hel/label';
 import { HlmDialogService } from '@spartan-ng/hel/dialog';
+import { HlmDropdownMenuImports } from '@spartan-ng/hel/dropdown-menu';
 import { HlmDatePickerImports } from '@spartan-ng/hel/date-picker';
 import { IndianDatePipe, toISODateString, IndianDateInput } from '../../../../../../shared/pipes/indian-date.pipe';
 import {
@@ -46,6 +47,8 @@ import {
   lucidePhoneCall,
   lucideShieldCheck,
   lucideAlertCircle,
+  lucideEye,
+  lucideDownload,
 } from '@ng-icons/lucide';
 import { toast } from '@spartan-ng/hel/sonner';
 import { RRInvoicePdfService } from '../../../../services/rr-invoice-pdf.service';
@@ -62,6 +65,7 @@ import { AadharMaskPipe } from '../../../../shared';
     HlmBadgeImports,
     HlmButtonImports,
     HlmTooltipImports,
+    HlmDropdownMenuImports,
     HlmInputImports,
     HlmLabelImports,
     HlmDatePickerImports,
@@ -88,6 +92,8 @@ import { AadharMaskPipe } from '../../../../shared';
       lucidePhoneCall,
       lucideShieldCheck,
       lucideAlertCircle,
+      lucideEye,
+      lucideDownload,
     }),
   ],
   templateUrl: './history.component.html',
@@ -366,11 +372,27 @@ export class RRHistoryComponent implements OnInit {
     return end >= start ? end - start : 0;
   }
 
+  viewAgreement(b: IBooking) {
+    this.invoicePdf.viewAgreementPdf(b);
+  }
+
+  downloadAgreement(b: IBooking) {
+    this.invoicePdf.downloadAgreementPdf(b);
+  }
+
+  viewInvoice(b: IBooking) {
+    this.invoicePdf.viewInvoicePdf(b);
+  }
+
+  downloadInvoice(b: IBooking) {
+    this.invoicePdf.downloadInvoicePdf(b);
+  }
+
   exportBookingPdf(b: IBooking) {
-    this.invoicePdf.printAgreementPdf(b);
+    this.downloadAgreement(b);
   }
 
   exportInvoicePdf(b: IBooking) {
-    this.invoicePdf.printInvoicePdf(b);
+    this.downloadInvoice(b);
   }
 }

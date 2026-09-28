@@ -1,15 +1,19 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import jsPDF from 'jspdf';
+import { HlmDialogService } from '@spartan-ng/hel/dialog';
 import { maskAadhar } from '../shared/utils/aadhar-mask.util';
 import { formatToIndianDate } from '../../../shared/pipes/indian-date.pipe';
+import { RRPdfViewerDialogComponent } from '../shared/dialogs/pdf-viewer-dialog/rr-pdf-viewer-dialog.component';
 export { formatToIndianDate };
 
 @Injectable({
   providedIn: 'root',
 })
 export class RRInvoicePdfService {
-  async printAgreementPdf(b: any): Promise<void> {
-    if (!b) return;
+  private dialog = inject(HlmDialogService);
+
+  async generateAgreementPdfDoc(b: any): Promise<jsPDF | null> {
+    if (!b) return null;
 
     // Normalize all fields to avoid "undefined" strings in printed PDF
     const id = b.id || 'DRAFT';
@@ -330,11 +334,38 @@ export class RRInvoicePdfService {
     doc.setFont('Helvetica', 'bold');
     doc.text('Renter Signature', 130, y);
 
+    return doc;
+  }
+
+  async downloadAgreementPdf(b: any): Promise<void> {
+    const doc = await this.generateAgreementPdfDoc(b);
+    if (!doc) return;
+    const id = b.id || 'DRAFT';
     doc.save(`Agreement_${id}.pdf`);
   }
 
-  async printInvoicePdf(b: any): Promise<void> {
-    if (!b) return;
+  async viewAgreementPdf(b: any): Promise<void> {
+    const doc = await this.generateAgreementPdfDoc(b);
+    if (!doc) return;
+    const id = b.id || 'DRAFT';
+    const blob = doc.output('blob');
+    const blobUrl = URL.createObjectURL(blob);
+    this.dialog.open(RRPdfViewerDialogComponent, {
+      context: {
+        title: `Rental Agreement - #${id}`,
+        fileName: `Agreement_${id}.pdf`,
+        blobUrl,
+      },
+      contentClass: 'w-[95vw] max-w-5xl p-0 border-0 bg-transparent shadow-none',
+    });
+  }
+
+  async printAgreementPdf(b: any): Promise<void> {
+    return this.downloadAgreementPdf(b);
+  }
+
+  async generateInvoicePdfDoc(b: any): Promise<jsPDF | null> {
+    if (!b) return null;
 
     const id = b.id || 'N/A';
     const renterName =
@@ -954,6 +985,33 @@ export class RRInvoicePdfService {
       },
     );
 
+    return doc;
+  }
+
+  async downloadInvoicePdf(b: any): Promise<void> {
+    const doc = await this.generateInvoicePdfDoc(b);
+    if (!doc) return;
+    const id = b.id || 'N/A';
     doc.save(`Invoice_${id}.pdf`);
+  }
+
+  async viewInvoicePdf(b: any): Promise<void> {
+    const doc = await this.generateInvoicePdfDoc(b);
+    if (!doc) return;
+    const id = b.id || 'N/A';
+    const blob = doc.output('blob');
+    const blobUrl = URL.createObjectURL(blob);
+    this.dialog.open(RRPdfViewerDialogComponent, {
+      context: {
+        title: `Tax Invoice - INV-${id}`,
+        fileName: `Invoice_${id}.pdf`,
+        blobUrl,
+      },
+      contentClass: 'w-[95vw] max-w-5xl p-0 border-0 bg-transparent shadow-none',
+    });
+  }
+
+  async printInvoicePdf(b: any): Promise<void> {
+    return this.downloadInvoicePdf(b);
   }
 }

@@ -36,6 +36,7 @@ import {
   lucidePhoneCall,
   lucideExternalLink,
   lucideMoreVertical,
+  lucideDownload,
 } from '@ng-icons/lucide';
 import { Router, RouterLink } from '@angular/router';
 import { HlmDialogService } from '@spartan-ng/hel/dialog';
@@ -104,6 +105,7 @@ export type SeatingFilter = 'all' | '5' | '7';
       lucidePhoneCall,
       lucideExternalLink,
       lucideMoreVertical,
+      lucideDownload,
     }),
   ],
   templateUrl: './stats-view.component.html',
@@ -454,9 +456,18 @@ export class RRStatsViewComponent implements OnInit {
     });
   }
 
-  printAgreement(b: IBooking, event?: Event) {
+  viewAgreement(b: IBooking, event?: Event) {
     event?.stopPropagation();
-    this.invoicePdf.printAgreementPdf(b);
+    this.invoicePdf.viewAgreementPdf(b);
+  }
+
+  downloadAgreement(b: IBooking, event?: Event) {
+    event?.stopPropagation();
+    this.invoicePdf.downloadAgreementPdf(b);
+  }
+
+  printAgreement(b: IBooking, event?: Event) {
+    this.downloadAgreement(b, event);
   }
 
   endBooking(b: IBooking, event?: Event) {

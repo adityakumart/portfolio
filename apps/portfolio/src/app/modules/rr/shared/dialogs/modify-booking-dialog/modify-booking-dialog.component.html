@@ -109,10 +109,38 @@
     <!-- Fixed Footer -->
     <div class="shrink-0 flex flex-wrap items-center justify-end gap-2 pt-3 border-t border-border">
       <button hlmBtn variant="ghost" class="order-3 sm:order-1" (click)="closeDialog()">Cancel</button>
-      <button hlmBtn variant="outline" class="action-btn flex items-center gap-1.5 order-2" [disabled]="modifyBookingFormGroup.invalid" (click)="printAgreementPDFFromModifyForm()">
+      <button
+        hlmBtn
+        variant="outline"
+        type="button"
+        class="action-btn flex items-center gap-1.5 order-2"
+        [disabled]="modifyBookingFormGroup.invalid"
+        [hlmDropdownMenuTrigger]="modifyAgreementMenu"
+      >
         <ng-icon name="lucideFileText"></ng-icon>
-        <span>Print Agreement PDF</span>
+        <span>Agreement</span>
+        <ng-icon name="lucideChevronDown" class="text-[10px] opacity-70"></ng-icon>
       </button>
+      <ng-template #modifyAgreementMenu>
+        <div hlmDropdownMenu class="w-48 p-1 rounded-xl shadow-xl border border-border bg-card/95 backdrop-blur-md">
+          <button
+            hlmDropdownMenuItem
+            class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
+            (click)="viewAgreementPDFFromModifyForm()"
+          >
+            <ng-icon name="lucideEye" class="text-xs text-primary"></ng-icon>
+            <span>View (Read-Only)</span>
+          </button>
+          <button
+            hlmDropdownMenuItem
+            class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
+            (click)="downloadAgreementPDFFromModifyForm()"
+          >
+            <ng-icon name="lucideDownload" class="text-xs text-muted-foreground"></ng-icon>
+            <span>Download</span>
+          </button>
+        </div>
+      </ng-template>
       <button hlmBtn class="action-btn success flex items-center gap-1.5 order-1 sm:order-3 font-bold shadow-sm" [disabled]="modifyBookingFormGroup.invalid || isSubmitting()" (click)="submitModifyBooking()">
         <ng-icon name="lucideSave"></ng-icon>
         <span>{{ isSubmitting() ? 'Saving...' : 'Save Changes' }}</span>
