@@ -6,9 +6,12 @@
   "sourceRoot": "apps/portfolio-rr/src",
   "tags": [],
   "targets": {
+    "set-env": {
+      "command": "node tools/scripts/set-env.js"
+    },
     "build": {
       "executor": "@angular/build:application",
-      "dependsOn": [],
+      "dependsOn": ["set-env"],
       "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/apps/portfolio-rr",
@@ -45,7 +48,13 @@
               "maximumError": "60kb"
             }
           ],
-          "outputHashing": "all"
+          "outputHashing": "all",
+          "fileReplacements": [
+            {
+              "replace": "apps/portfolio/src/environments/environment.ts",
+              "with": "apps/portfolio/src/environments/environment.prod.ts"
+            }
+          ]
         },
         "development": {
           "optimization": false,
@@ -68,6 +77,14 @@
       "options": {
         "command": "npx cap open android",
         "cwd": "apps/portfolio-rr"
+      }
+    },
+    "build:apk": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["sync"],
+      "options": {
+        "command": "cmd.exe /c gradlew.bat assembleDebug",
+        "cwd": "apps/portfolio-rr/android"
       }
     },
     "desktop:dev": {
