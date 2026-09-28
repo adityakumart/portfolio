@@ -5,6 +5,7 @@ import { BrnDialogRef, injectBrnDialogContext } from '@spartan-ng/brain/dialog';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmInputImports } from '@spartan-ng/hel/input';
 import { HlmLabelImports } from '@spartan-ng/hel/label';
+import { HlmDropdownMenuImports } from '@spartan-ng/hel/dropdown-menu';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideCalendarRange,
@@ -12,6 +13,9 @@ import {
   lucideSave,
   lucideFileText,
   lucideAlertTriangle,
+  lucideEye,
+  lucideDownload,
+  lucideChevronDown,
 } from '@ng-icons/lucide';
 import { toast } from '@spartan-ng/hel/sonner';
 import { IBooking, IVehicle, IVehiclePricing } from '@portfolio/shared-types';
@@ -34,6 +38,7 @@ export interface ModifyBookingDialogContext {
     HlmButtonImports,
     HlmInputImports,
     HlmLabelImports,
+    HlmDropdownMenuImports,
     NgIconComponent,
     AadharVisiblePipe,
   ],
@@ -44,6 +49,9 @@ export interface ModifyBookingDialogContext {
       lucideSave,
       lucideFileText,
       lucideAlertTriangle,
+      lucideEye,
+      lucideDownload,
+      lucideChevronDown,
     }),
   ],
   templateUrl: './modify-booking-dialog.component.html',
@@ -350,15 +358,30 @@ export class RRModifyBookingDialogComponent implements OnInit {
     }
   }
 
-  printAgreementPDFFromModifyForm() {
+  private getMergedBooking() {
     const original = this.selectedBooking();
-    if (!original) return;
+    if (!original) return null;
     const formVal = this.modifyBookingFormGroup.value;
-    const merged = {
+    return {
       ...original,
       ...formVal,
     };
-    this.invoicePdf.printAgreementPdf(merged);
+  }
+
+  viewAgreementPDFFromModifyForm() {
+    const merged = this.getMergedBooking();
+    if (!merged) return;
+    this.invoicePdf.viewAgreementPdf(merged);
+  }
+
+  downloadAgreementPDFFromModifyForm() {
+    const merged = this.getMergedBooking();
+    if (!merged) return;
+    this.invoicePdf.downloadAgreementPdf(merged);
+  }
+
+  printAgreementPDFFromModifyForm() {
+    this.downloadAgreementPDFFromModifyForm();
   }
 
   closeDialog() {

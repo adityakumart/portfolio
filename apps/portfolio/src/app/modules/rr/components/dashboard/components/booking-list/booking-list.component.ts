@@ -26,6 +26,8 @@ import {
   lucideX,
   lucideSave,
   lucideMoreVertical,
+  lucideEye,
+  lucideDownload,
 } from '@ng-icons/lucide';
 import { IBooking, IVehicle, ICustomerIntimation } from '@portfolio/shared-types';
 import { RRApiService } from '../../../../services/rr-api.service';
@@ -71,6 +73,8 @@ import { IndianDatePipe } from '../../../../../../shared/pipes/indian-date.pipe'
       lucideX,
       lucideSave,
       lucideMoreVertical,
+      lucideEye,
+      lucideDownload,
     }),
   ],
   templateUrl: './booking-list.component.html',
@@ -212,8 +216,16 @@ export class RRBookingListComponent implements OnInit {
     expectedReturnDateTime: [''],
   });
 
+  viewBookingPdf(b: IBooking) {
+    this.invoicePdf.viewAgreementPdf(b);
+  }
+
+  downloadBookingPdf(b: IBooking) {
+    this.invoicePdf.downloadAgreementPdf(b);
+  }
+
   exportBookingPdf(b: IBooking) {
-    this.invoicePdf.printAgreementPdf(b);
+    this.downloadBookingPdf(b);
   }
 
   openIntimationModal(booking: IBooking) {

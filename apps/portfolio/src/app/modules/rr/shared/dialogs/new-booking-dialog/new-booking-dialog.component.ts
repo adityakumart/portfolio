@@ -26,8 +26,10 @@ import {
   lucideMail,
   lucideMapPin,
   lucideChevronDown,
+  lucideDownload,
 } from '@ng-icons/lucide';
 import { toast } from '@spartan-ng/hel/sonner';
+import { HlmDropdownMenuImports } from '@spartan-ng/hel/dropdown-menu';
 import {
   IVehicle,
   IVehiclePricing,
@@ -55,6 +57,7 @@ export interface NewBookingDialogContext {
     HlmButtonImports,
     HlmInputImports,
     HlmLabelImports,
+    HlmDropdownMenuImports,
     NgIconComponent,
     RRAadharInputComponent,
   ],
@@ -79,6 +82,7 @@ export interface NewBookingDialogContext {
       lucideMail,
       lucideMapPin,
       lucideChevronDown,
+      lucideDownload,
     }),
   ],
   templateUrl: './new-booking-dialog.component.html',
@@ -754,9 +758,9 @@ export class RRNewBookingDialogComponent implements OnInit {
     }
   }
 
-  printAgreementPDFFromForm() {
+  private getAgreementDraftObject() {
     const val = this.bookingFormGroup.value;
-    const bObj = {
+    return {
       id: 'RRB-DRAFT',
       vehicleRegNo: val.vehicleRegNo || '____',
       vehicleName: val.vehicleName || '____',
@@ -793,8 +797,20 @@ export class RRNewBookingDialogComponent implements OnInit {
       travelTo: val.travelTo || '____',
       vehicleOdometerStart: val.vehicleOdometerStart || '____',
     };
+  }
 
-    this.invoicePdf.printAgreementPdf(bObj);
+  viewAgreementPDFFromForm() {
+    const bObj = this.getAgreementDraftObject();
+    this.invoicePdf.viewAgreementPdf(bObj);
+  }
+
+  downloadAgreementPDFFromForm() {
+    const bObj = this.getAgreementDraftObject();
+    this.invoicePdf.downloadAgreementPdf(bObj);
+  }
+
+  printAgreementPDFFromForm() {
+    this.downloadAgreementPDFFromForm();
   }
 
   closeDialog() {

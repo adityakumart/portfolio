@@ -88,9 +88,37 @@
                 <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 rounded-full text-emerald-500 hover:bg-emerald-500/10" hlmTooltip="End Rental" (click)="openEndBookingPopup(b)">
                   <ng-icon name="lucideCalendarX"></ng-icon>
                 </button>
-                <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 rounded-full text-primary hover:bg-primary/10" hlmTooltip="Print Agreement PDF" (click)="exportBookingPdf(b)">
+                <button
+                  hlmBtn
+                  size="icon"
+                  variant="ghost"
+                  class="h-8 w-8 rounded-full text-primary hover:bg-primary/10"
+                  hlmTooltip="Agreement Options"
+                  [hlmDropdownMenuTrigger]="bookingAgreementMenu"
+                  aria-label="Agreement Options"
+                >
                   <ng-icon name="lucideFileText"></ng-icon>
                 </button>
+                <ng-template #bookingAgreementMenu>
+                  <div hlmDropdownMenu class="w-44 p-1 rounded-xl shadow-xl border border-border bg-card/95 backdrop-blur-md">
+                    <button
+                      hlmDropdownMenuItem
+                      class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
+                      (click)="viewBookingPdf(b)"
+                    >
+                      <ng-icon name="lucideEye" class="text-xs text-primary"></ng-icon>
+                      <span>View (Read-Only)</span>
+                    </button>
+                    <button
+                      hlmDropdownMenuItem
+                      class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
+                      (click)="downloadBookingPdf(b)"
+                    >
+                      <ng-icon name="lucideDownload" class="text-xs text-muted-foreground"></ng-icon>
+                      <span>Download</span>
+                    </button>
+                  </div>
+                </ng-template>
                 <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 rounded-full hover:bg-muted" hlmTooltip="Modify Details" (click)="openModifyBookingPopup(b)">
                   <ng-icon name="lucidePencil"></ng-icon>
                 </button>
@@ -109,7 +137,7 @@
                   <ng-icon name="lucideMoreVertical" class="text-sm"></ng-icon>
                 </button>
                 <ng-template #mobileBookingMenu>
-                  <div hlmDropdownMenu class="w-52 p-1 rounded-xl shadow-xl border border-border bg-card/95 backdrop-blur-md">
+                  <div hlmDropdownMenu class="w-56 p-1 rounded-xl shadow-xl border border-border bg-card/95 backdrop-blur-md">
                     <button
                       hlmDropdownMenuItem
                       class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
@@ -121,10 +149,18 @@
                     <button
                       hlmDropdownMenuItem
                       class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
-                      (click)="exportBookingPdf(b)"
+                      (click)="viewBookingPdf(b)"
                     >
-                      <ng-icon name="lucideFileText" class="text-xs text-primary"></ng-icon>
-                      <span>Print Agreement PDF</span>
+                      <ng-icon name="lucideEye" class="text-xs text-primary"></ng-icon>
+                      <span>View Agreement (Read-Only)</span>
+                    </button>
+                    <button
+                      hlmDropdownMenuItem
+                      class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
+                      (click)="downloadBookingPdf(b)"
+                    >
+                      <ng-icon name="lucideDownload" class="text-xs text-muted-foreground"></ng-icon>
+                      <span>Download Agreement</span>
                     </button>
                     <button
                       hlmDropdownMenuItem

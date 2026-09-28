@@ -607,10 +607,18 @@
               <button
                 hlmDropdownMenuItem
                 class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
-                (click)="printAgreement(b, $event)"
+                (click)="viewAgreement(b, $event)"
               >
-                <ng-icon name="lucideFileText" class="text-xs text-muted-foreground"></ng-icon>
-                <span>Print Agreement</span>
+                <ng-icon name="lucideEye" class="text-xs text-primary"></ng-icon>
+                <span>View Agreement (Read-Only)</span>
+              </button>
+              <button
+                hlmDropdownMenuItem
+                class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
+                (click)="downloadAgreement(b, $event)"
+              >
+                <ng-icon name="lucideDownload" class="text-xs text-muted-foreground"></ng-icon>
+                <span>Download Agreement</span>
               </button>
               <button
                 hlmDropdownMenuItem
@@ -643,11 +651,33 @@
           variant="secondary"
           size="sm"
           class="w-36 h-7.5 text-xs font-medium rounded-lg shadow-sm border border-border/40 flex items-center justify-center gap-1.5 transition-all active:scale-95"
-          (click)="printAgreement(b, $event)"
+          [hlmDropdownMenuTrigger]="overlayAgreementMenu"
+          (click)="$event.stopPropagation()"
         >
           <ng-icon name="lucideFileText" class="text-xs"></ng-icon>
-          <span>Print Agreement</span>
+          <span>Agreement</span>
+          <ng-icon name="lucideChevronDown" class="text-[10px] opacity-70"></ng-icon>
         </button>
+        <ng-template #overlayAgreementMenu>
+          <div hlmDropdownMenu class="w-48 p-1 rounded-xl shadow-xl border border-border bg-card/95 backdrop-blur-md">
+            <button
+              hlmDropdownMenuItem
+              class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
+              (click)="viewAgreement(b, $event)"
+            >
+              <ng-icon name="lucideEye" class="text-xs text-primary"></ng-icon>
+              <span>View (Read-Only)</span>
+            </button>
+            <button
+              hlmDropdownMenuItem
+              class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
+              (click)="downloadAgreement(b, $event)"
+            >
+              <ng-icon name="lucideDownload" class="text-xs text-muted-foreground"></ng-icon>
+              <span>Download</span>
+            </button>
+          </div>
+        </ng-template>
 
         <button
           hlmBtn
