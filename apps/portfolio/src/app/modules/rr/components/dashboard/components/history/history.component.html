@@ -290,7 +290,7 @@
                 <button
                   type="button"
                   class="font-bold font-mono text-xs px-2.5 py-1 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 border border-primary/25 cursor-pointer inline-flex items-center gap-1.5 transition-all group shadow-2xs active:scale-95"
-                  hlmTooltip="Click to view itemized breakdown & print invoice"
+                  hlmTooltip="Click to view itemized breakdown & invoice"
                   (click)="openBreakdownModal(b)"
                 >
                   <span>₹{{ b.finalRentalAmount }}</span>
@@ -335,32 +335,12 @@
                   size="icon"
                   variant="ghost"
                   class="h-8 w-8 rounded-full text-primary hover:bg-primary/10"
-                  hlmTooltip="Agreement Options"
-                  [hlmDropdownMenuTrigger]="desktopAgreementMenu"
-                  aria-label="Agreement Options"
+                  hlmTooltip="View Agreement"
+                  aria-label="View Agreement"
+                  (click)="viewAgreement(b)"
                 >
                   <ng-icon name="lucideFileText"></ng-icon>
                 </button>
-                <ng-template #desktopAgreementMenu>
-                  <div hlmDropdownMenu class="w-44 p-1 rounded-xl shadow-xl border border-border bg-card/95 backdrop-blur-md">
-                    <button
-                      hlmDropdownMenuItem
-                      class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
-                      (click)="viewAgreement(b)"
-                    >
-                      <ng-icon name="lucideEye" class="text-xs text-primary"></ng-icon>
-                      <span>View (Read-Only)</span>
-                    </button>
-                    <button
-                      hlmDropdownMenuItem
-                      class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
-                      (click)="downloadAgreement(b)"
-                    >
-                      <ng-icon name="lucideDownload" class="text-xs text-muted-foreground"></ng-icon>
-                      <span>Download</span>
-                    </button>
-                  </div>
-                </ng-template>
               </td>
 
               <!-- Invoice (Tablet/Desktop) -->
@@ -371,34 +351,13 @@
                     size="sm"
                     variant="outline"
                     class="h-7 px-2.5 text-xs text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 font-semibold gap-1 inline-flex items-center"
-                    hlmTooltip="Invoice Options"
-                    [hlmDropdownMenuTrigger]="desktopInvoiceMenu"
-                    aria-label="Invoice Options"
+                    hlmTooltip="View Invoice"
+                    aria-label="View Invoice"
+                    (click)="viewInvoice(b)"
                   >
                     <ng-icon name="lucideReceipt" class="text-xs"></ng-icon>
                     <span>Invoice</span>
-                    <ng-icon name="lucideChevronDown" class="text-[10px] opacity-70"></ng-icon>
                   </button>
-                  <ng-template #desktopInvoiceMenu>
-                    <div hlmDropdownMenu class="w-44 p-1 rounded-xl shadow-xl border border-border bg-card/95 backdrop-blur-md">
-                      <button
-                        hlmDropdownMenuItem
-                        class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
-                        (click)="viewInvoice(b)"
-                      >
-                        <ng-icon name="lucideEye" class="text-xs text-emerald-600 dark:text-emerald-400"></ng-icon>
-                        <span>View (Read-Only)</span>
-                      </button>
-                      <button
-                        hlmDropdownMenuItem
-                        class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
-                        (click)="downloadInvoice(b)"
-                      >
-                        <ng-icon name="lucideDownload" class="text-xs text-muted-foreground"></ng-icon>
-                        <span>Download</span>
-                      </button>
-                    </div>
-                  </ng-template>
                 } @else {
                   <span class="text-muted-foreground text-xs">&mdash;</span>
                 }
@@ -412,32 +371,12 @@
                     size="icon"
                     variant="ghost"
                     class="h-7 w-7 rounded-full text-primary hover:bg-primary/10"
-                    [hlmDropdownMenuTrigger]="mobileAgreementMenu"
-                    aria-label="Agreement Options"
-                    title="Agreement Options"
+                    aria-label="View Agreement"
+                    title="View Agreement"
+                    (click)="viewAgreement(b)"
                   >
                     <ng-icon name="lucideFileText" class="text-xs"></ng-icon>
                   </button>
-                  <ng-template #mobileAgreementMenu>
-                    <div hlmDropdownMenu class="w-44 p-1 rounded-xl shadow-xl border border-border bg-card/95 backdrop-blur-md">
-                      <button
-                        hlmDropdownMenuItem
-                        class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
-                        (click)="viewAgreement(b)"
-                      >
-                        <ng-icon name="lucideEye" class="text-xs text-primary"></ng-icon>
-                        <span>View (Read-Only)</span>
-                      </button>
-                      <button
-                        hlmDropdownMenuItem
-                        class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
-                        (click)="downloadAgreement(b)"
-                      >
-                        <ng-icon name="lucideDownload" class="text-xs text-muted-foreground"></ng-icon>
-                        <span>Download</span>
-                      </button>
-                    </div>
-                  </ng-template>
 
                   @if (b.status === 'completed') {
                     <button
@@ -445,32 +384,12 @@
                       size="icon"
                       variant="ghost"
                       class="h-7 w-7 rounded-full text-emerald-600 hover:bg-emerald-500/10"
-                      [hlmDropdownMenuTrigger]="mobileInvoiceMenu"
-                      aria-label="Invoice Options"
-                      title="Invoice Options"
+                      aria-label="View Invoice"
+                      title="View Invoice"
+                      (click)="viewInvoice(b)"
                     >
                       <ng-icon name="lucideReceipt" class="text-xs"></ng-icon>
                     </button>
-                    <ng-template #mobileInvoiceMenu>
-                      <div hlmDropdownMenu class="w-44 p-1 rounded-xl shadow-xl border border-border bg-card/95 backdrop-blur-md">
-                        <button
-                          hlmDropdownMenuItem
-                          class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
-                          (click)="viewInvoice(b)"
-                        >
-                          <ng-icon name="lucideEye" class="text-xs text-emerald-600 dark:text-emerald-400"></ng-icon>
-                          <span>View (Read-Only)</span>
-                        </button>
-                        <button
-                          hlmDropdownMenuItem
-                          class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
-                          (click)="downloadInvoice(b)"
-                        >
-                          <ng-icon name="lucideDownload" class="text-xs text-muted-foreground"></ng-icon>
-                          <span>Download</span>
-                        </button>
-                      </div>
-                    </ng-template>
                   }
                 </div>
               </td>
@@ -840,63 +759,23 @@
             variant="outline"
             size="sm"
             class="flex items-center gap-1.5"
-            [hlmDropdownMenuTrigger]="breakdownAgreementMenu"
+            (click)="viewAgreement(selectedBooking()!)"
+            title="View Agreement"
           >
             <ng-icon name="lucideFileText"></ng-icon>
             <span>Agreement</span>
-            <ng-icon name="lucideChevronDown" class="text-[10px] opacity-70"></ng-icon>
           </button>
-          <ng-template #breakdownAgreementMenu>
-            <div hlmDropdownMenu class="w-44 p-1 rounded-xl shadow-xl border border-border bg-card/95 backdrop-blur-md">
-              <button
-                hlmDropdownMenuItem
-                class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
-                (click)="viewAgreement(selectedBooking()!)"
-              >
-                <ng-icon name="lucideEye" class="text-xs text-primary"></ng-icon>
-                <span>View (Read-Only)</span>
-              </button>
-              <button
-                hlmDropdownMenuItem
-                class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
-                (click)="downloadAgreement(selectedBooking()!)"
-              >
-                <ng-icon name="lucideDownload" class="text-xs text-muted-foreground"></ng-icon>
-                <span>Download</span>
-              </button>
-            </div>
-          </ng-template>
 
           <button
             hlmBtn
             size="sm"
             class="action-btn success flex items-center gap-1.5 font-bold shadow-sm"
-            [hlmDropdownMenuTrigger]="breakdownInvoiceMenu"
+            (click)="viewInvoice(selectedBooking()!)"
+            title="View Invoice"
           >
             <ng-icon name="lucideReceipt"></ng-icon>
             <span>Invoice</span>
-            <ng-icon name="lucideChevronDown" class="text-[10px] opacity-70"></ng-icon>
           </button>
-          <ng-template #breakdownInvoiceMenu>
-            <div hlmDropdownMenu class="w-44 p-1 rounded-xl shadow-xl border border-border bg-card/95 backdrop-blur-md">
-              <button
-                hlmDropdownMenuItem
-                class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
-                (click)="viewInvoice(selectedBooking()!)"
-              >
-                <ng-icon name="lucideEye" class="text-xs text-emerald-600 dark:text-emerald-400"></ng-icon>
-                <span>View (Read-Only)</span>
-              </button>
-              <button
-                hlmDropdownMenuItem
-                class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
-                (click)="downloadInvoice(selectedBooking()!)"
-              >
-                <ng-icon name="lucideDownload" class="text-xs text-muted-foreground"></ng-icon>
-                <span>Download</span>
-              </button>
-            </div>
-          </ng-template>
         </div>
       </div>
     </div>
