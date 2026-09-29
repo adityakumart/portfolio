@@ -805,12 +805,11 @@ export class RRNewBookingDialogComponent implements OnInit {
   }
 
   downloadAgreementPDFFromForm() {
-    const bObj = this.getAgreementDraftObject();
-    this.invoicePdf.downloadAgreementPdf(bObj);
+    this.viewAgreementPDFFromForm();
   }
 
   printAgreementPDFFromForm() {
-    this.downloadAgreementPDFFromForm();
+    this.viewAgreementPDFFromForm();
   }
 
   closeDialog() {

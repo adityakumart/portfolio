@@ -375,13 +375,11 @@ export class RRModifyBookingDialogComponent implements OnInit {
   }
 
   downloadAgreementPDFFromModifyForm() {
-    const merged = this.getMergedBooking();
-    if (!merged) return;
-    this.invoicePdf.downloadAgreementPdf(merged);
+    this.viewAgreementPDFFromModifyForm();
   }
 
   printAgreementPDFFromModifyForm() {
-    this.downloadAgreementPDFFromModifyForm();
+    this.viewAgreementPDFFromModifyForm();
   }
 
   closeDialog() {

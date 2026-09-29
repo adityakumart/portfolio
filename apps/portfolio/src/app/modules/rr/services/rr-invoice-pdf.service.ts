@@ -361,7 +361,7 @@ export class RRInvoicePdfService {
   }
 
   async printAgreementPdf(b: any): Promise<void> {
-    return this.downloadAgreementPdf(b);
+    return this.viewAgreementPdf(b);
   }
 
   async generateInvoicePdfDoc(b: any): Promise<jsPDF | null> {
@@ -1012,6 +1012,6 @@ export class RRInvoicePdfService {
   }
 
   async printInvoicePdf(b: any): Promise<void> {
-    return this.downloadInvoicePdf(b);
+    return this.viewInvoicePdf(b);
   }
 }

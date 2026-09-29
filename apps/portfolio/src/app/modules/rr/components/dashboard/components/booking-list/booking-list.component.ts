@@ -221,11 +221,11 @@ export class RRBookingListComponent implements OnInit {
   }
 
   downloadBookingPdf(b: IBooking) {
-    this.invoicePdf.downloadAgreementPdf(b);
+    this.viewBookingPdf(b);
   }
 
   exportBookingPdf(b: IBooking) {
-    this.downloadBookingPdf(b);
+    this.viewBookingPdf(b);
   }
 
   openIntimationModal(booking: IBooking) {

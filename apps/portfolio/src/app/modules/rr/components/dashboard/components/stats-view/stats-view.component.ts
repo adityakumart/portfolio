@@ -462,12 +462,11 @@ export class RRStatsViewComponent implements OnInit {
   }
 
   downloadAgreement(b: IBooking, event?: Event) {
-    event?.stopPropagation();
-    this.invoicePdf.downloadAgreementPdf(b);
+    this.viewAgreement(b, event);
   }
 
   printAgreement(b: IBooking, event?: Event) {
-    this.downloadAgreement(b, event);
+    this.viewAgreement(b, event);
   }
 
   endBooking(b: IBooking, event?: Event) {

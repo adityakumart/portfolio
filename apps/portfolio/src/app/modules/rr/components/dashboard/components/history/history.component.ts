@@ -377,7 +377,7 @@ export class RRHistoryComponent implements OnInit {
   }
 
   downloadAgreement(b: IBooking) {
-    this.invoicePdf.downloadAgreementPdf(b);
+    this.viewAgreement(b);
   }
 
   viewInvoice(b: IBooking) {
@@ -385,14 +385,14 @@ export class RRHistoryComponent implements OnInit {
   }
 
   downloadInvoice(b: IBooking) {
-    this.invoicePdf.downloadInvoicePdf(b);
+    this.viewInvoice(b);
   }
 
   exportBookingPdf(b: IBooking) {
-    this.downloadAgreement(b);
+    this.viewAgreement(b);
   }
 
   exportInvoicePdf(b: IBooking) {
-    this.downloadInvoice(b);
+    this.viewInvoice(b);
   }
 }
