@@ -58,12 +58,31 @@ export class BillingService {
       };
     }
 
-    // Determine configured discount rate (e.g. 10% regular, 15% silver, 20% gold, 25% platinum)
-    const discountRate = customer.discountRate > 0 ? customer.discountRate : 10;
+    // Check if membership end date has passed
+    if (customer.endDate && new Date(customer.endDate).getTime() < Date.now()) {
+      return {
+        isRegularCustomer: false,
+        discountRate: 0,
+        discountAmount: 0,
+        originalAmount: validAmount,
+        finalRentalAmount: validAmount,
+        endDate: customer.endDate ? new Date(customer.endDate).toISOString() : undefined,
+        message: `Customer membership expired on ${new Date(customer.endDate).toLocaleDateString()}. Regular discount unavailable.`,
+      };
+    }
+
+    // Determine configured discount rate (allows 0 to 30%)
+    const discountRate = Math.min(30, Math.max(0, customer.discountRate > 0 ? customer.discountRate : 10));
 
     // Mathematical discount calculation:
     // Amount = (Total * Rate) / 100, rounded to nearest INR
-    const discountAmount = Math.round((validAmount * discountRate) / 100);
+    let discountAmount = Math.round((validAmount * discountRate) / 100);
+
+    // Enforce max discount ceiling (if maxDiscountAmount is set, discount cannot exceed it)
+    if (customer.maxDiscountAmount && customer.maxDiscountAmount > 0) {
+      discountAmount = Math.min(discountAmount, customer.maxDiscountAmount);
+    }
+
     const finalRentalAmount = Math.max(0, validAmount - discountAmount);
 
     return {
@@ -75,10 +94,15 @@ export class BillingService {
       email: customer.email,
       membershipTier: customer.membershipTier,
       discountRate,
+      maxDiscountAmount: customer.maxDiscountAmount,
       discountAmount,
       originalAmount: validAmount,
       finalRentalAmount,
-      message: `Verified ${customer.membershipTier.toUpperCase()} Member! Automatic ${discountRate}% discount (₹${discountAmount}) applied.`,
+      endDate: customer.endDate ? new Date(customer.endDate).toISOString() : undefined,
+      message:
+        customer.maxDiscountAmount && customer.maxDiscountAmount > 0
+          ? `Verified ${customer.membershipTier.toUpperCase()} Member! ${discountRate}% discount (capped up to ₹${customer.maxDiscountAmount}): ₹${discountAmount} applied.`
+          : `Verified ${customer.membershipTier.toUpperCase()} Member! Automatic ${discountRate}% discount (₹${discountAmount}) applied.`,
     };
   }
 
@@ -129,6 +153,10 @@ export class BillingService {
             address: 'Road No. 12, Banjara Hills, Hyderabad, TS 500034',
             membershipTier: 'gold',
             discountRate: 20,
+            maxDiscountAmount: 1000,
+            startDate: new Date(),
+            endDate: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000), // ~6 months
+            durationMonths: 6,
             totalBookings: 12,
             isActive: true,
           },
@@ -145,6 +173,10 @@ export class BillingService {
             address: 'Main Road, Kakinada, AP 533001',
             membershipTier: 'regular',
             discountRate: 10,
+            maxDiscountAmount: 500,
+            startDate: new Date(),
+            endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // ~1 year
+            durationMonths: 12,
             totalBookings: 3,
             isActive: true,
           },
