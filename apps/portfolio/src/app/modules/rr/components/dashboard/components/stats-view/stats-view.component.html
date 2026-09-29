@@ -566,7 +566,7 @@
       
       <div class="absolute top-3 left-3">
         @if (activeCategory() === 'payments' || +b.pendingAmount > 0) {
-          <span hlmBadge variant="destructive" class="font-bold text-[10px] font-mono shadow-xs">
+          <span hlmBadge variant="outline" class="font-bold text-[10px] font-mono shadow-xs text-purple-600 dark:text-purple-400 bg-purple-500/10 border-purple-500/30">
             DUE: ₹{{ b.pendingAmount }}
           </span>
         } @else {
@@ -676,12 +676,26 @@
           <span>{{ b.renterPhone }}</span>
         </span>
       </div>
-      @if (b.renterAadhar) {
-        <div class="text-[11px] font-mono text-muted-foreground flex items-center gap-1 mb-2">
-          <span class="text-[10px] uppercase font-semibold text-foreground/60">Aadhaar:</span>
-          <span>{{ b.renterAadhar | aadharVisible }}</span>
+
+      <!-- Pickup and Return Schedule -->
+      <div class="grid grid-cols-2 gap-2 p-2 my-2 rounded-xl bg-muted/30 border border-border/50 text-[11px]">
+        <div>
+          <div class="flex items-center gap-1 text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-0.5">
+            <ng-icon name="lucideClock" class="text-[10px] text-cyan-500"></ng-icon>
+            <span>Pickup</span>
+          </div>
+          <div class="font-semibold text-foreground leading-tight">{{ b.pickupDateTime | indianDate }}</div>
+          <div class="text-[10px] text-muted-foreground font-mono mt-0.5">{{ b.pickupDateTime | date:'shortTime' }}</div>
         </div>
-      }
+        <div class="border-l border-border/50 pl-2">
+          <div class="flex items-center gap-1 text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-0.5">
+            <ng-icon name="lucideCalendarCheck" class="text-[10px] text-orange-500"></ng-icon>
+            <span>Return</span>
+          </div>
+          <div class="font-semibold text-foreground leading-tight">{{ b.returnDateTime | indianDate }}</div>
+          <div class="text-[10px] text-muted-foreground font-mono mt-0.5">{{ b.returnDateTime | date:'shortTime' }}</div>
+        </div>
+      </div>
 
       @if (b.lastIntimation) {
         <div class="inline-flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400 font-semibold mb-2 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
@@ -696,8 +710,8 @@
           <span>Rent: ₹{{ b.finalRentalAmount || b.totalRentalAmount }}</span>
         </span>
         @if (+b.pendingAmount > 0) {
-          <span class="inline-flex items-center gap-1 text-[11px] font-bold text-rose-600 dark:text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-md" hlmTooltip="Pending Due Amount">
-            <ng-icon name="lucideAlertCircle" class="text-xs"></ng-icon>
+          <span class="inline-flex items-center gap-1 text-[11px] font-bold text-purple-600 dark:text-purple-400 bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded-md" hlmTooltip="Pending Due Amount">
+            <ng-icon name="lucideAlertTriangle" class="text-xs text-purple-500"></ng-icon>
             <span>Due: ₹{{ b.pendingAmount }}</span>
           </span>
         } @else {
