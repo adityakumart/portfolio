@@ -18,6 +18,7 @@ import {
   ValidationErrors,
 } from '@angular/forms';
 import { RRCustomerApiService } from '../../../../services/rr-customer-api.service';
+import { RRApiService } from '../../../../services/rr-api.service';
 import {
   IRegularCustomerMasked,
   CustomerMembershipTier,
@@ -50,6 +51,9 @@ import {
   lucideSparkles,
   lucideTag,
   lucideCheck,
+  lucideCalendar,
+  lucideClock,
+  lucideAlertCircle,
 } from '@ng-icons/lucide';
 
 export type FormMode = 'create' | 'edit' | 'view';
@@ -87,6 +91,9 @@ export type FormMode = 'create' | 'edit' | 'view';
       lucideSparkles,
       lucideTag,
       lucideCheck,
+      lucideCalendar,
+      lucideClock,
+      lucideAlertCircle,
     }),
   ],
   templateUrl: './customer-list.component.html',
@@ -94,10 +101,14 @@ export type FormMode = 'create' | 'edit' | 'view';
 })
 export class RRCustomerListComponent implements OnInit {
   customerApi = inject(RRCustomerApiService);
+  rrApi = inject(RRApiService);
   private fb = inject(FormBuilder);
   private dialogService = inject(HlmDialogService);
 
   @ViewChild('customerModal') customerModal!: TemplateRef<unknown>;
+
+  // RBAC permission: Only Admin can Add, Edit, Delete; Employees can only view
+  isAdmin = computed(() => this.rrApi.currentUser()?.role === 'admin');
 
   // Component state signals
   searchQuery = signal<string>('');
@@ -140,9 +151,49 @@ export class RRCustomerListComponent implements OnInit {
   }
 
   /**
+   * Calculates end date string from start date and duration in months.
+   */
+  calculateEndDate(startStr: string, months: number): string {
+    if (!startStr) return '';
+    const date = new Date(startStr);
+    if (isNaN(date.getTime())) return '';
+    date.setMonth(date.getMonth() + Number(months || 0));
+    return date.toISOString().split('T')[0];
+  }
+
+  /**
+   * Automatically synchronizes end date when start date or duration changes.
+   */
+  syncEndDate(): void {
+    const start = this.customerFormGroup.get('startDate')?.value;
+    const months = Number(this.customerFormGroup.get('durationMonths')?.value);
+    if (start && months > 0) {
+      const computedEnd = this.calculateEndDate(start, months);
+      this.customerFormGroup.patchValue({ endDate: computedEnd }, { emitEvent: false });
+    }
+  }
+
+  setDurationPreset(months: number): void {
+    this.customerFormGroup.patchValue({ durationMonths: months });
+    this.syncEndDate();
+  }
+
+  getDaysRemaining(endDateStr?: string): number {
+    if (!endDateStr) return 0;
+    const end = new Date(endDateStr).getTime();
+    const now = new Date().setHours(0, 0, 0, 0);
+    return Math.ceil((end - now) / (1000 * 60 * 60 * 24));
+  }
+
+  isEndDateExpired(endDateStr?: string): boolean {
+    return this.getDaysRemaining(endDateStr) < 0;
+  }
+
+  /**
    * Initializes Reactive Form with comprehensive synchronous validators.
    */
   private initForm(): void {
+    const today = new Date().toISOString().split('T')[0];
     this.customerFormGroup = this.fb.group({
       firstName: [
         '',
@@ -192,8 +243,15 @@ export class RRCustomerListComponent implements OnInit {
       membershipTier: ['regular', [Validators.required]],
       discountRate: [
         10,
-        [Validators.required, Validators.min(0), Validators.max(100)],
+        [Validators.required, Validators.min(0), Validators.max(30)],
       ],
+      maxDiscountAmount: [
+        '',
+        [Validators.min(1), Validators.pattern(/^[1-9]\d*$/)],
+      ],
+      startDate: [today, [Validators.required]],
+      durationMonths: [12, [Validators.required, Validators.min(1)]],
+      endDate: [this.calculateEndDate(today, 12), [Validators.required]],
       isActive: [true],
     });
 
@@ -210,6 +268,14 @@ export class RRCustomerListComponent implements OnInit {
           { emitEvent: false }
         );
       });
+
+    // Auto-calculate end date when start date or duration changes
+    this.customerFormGroup.get('startDate')?.valueChanges.subscribe(() => {
+      this.syncEndDate();
+    });
+    this.customerFormGroup.get('durationMonths')?.valueChanges.subscribe(() => {
+      this.syncEndDate();
+    });
   }
 
   /**
@@ -241,11 +307,20 @@ export class RRCustomerListComponent implements OnInit {
   }
 
   openCreateModal(): void {
+    if (!this.isAdmin()) {
+      toast.error('Only Administrators have permission to add new regular customer memberships.');
+      return;
+    }
+    const today = new Date().toISOString().split('T')[0];
     this.activeMode.set('create');
     this.selectedCustomer.set(null);
     this.customerFormGroup.reset({
       membershipTier: 'regular',
       discountRate: 10,
+      maxDiscountAmount: '',
+      startDate: today,
+      durationMonths: 12,
+      endDate: this.calculateEndDate(today, 12),
       isActive: true,
     });
     this.customerFormGroup.enable();
@@ -267,9 +342,20 @@ export class RRCustomerListComponent implements OnInit {
   }
 
   openEditModal(customer: IRegularCustomerMasked): void {
+    if (!this.isAdmin()) {
+      toast.error('Only Administrators have permission to edit customer memberships.');
+      return;
+    }
     this.activeMode.set('edit');
     this.selectedCustomer.set(customer);
     this.customerFormGroup.enable();
+
+    const start = customer.startDate
+      ? new Date(customer.startDate).toISOString().split('T')[0]
+      : new Date(customer.createdAt).toISOString().split('T')[0];
+    const end = customer.endDate
+      ? new Date(customer.endDate).toISOString().split('T')[0]
+      : this.calculateEndDate(start, customer.durationMonths || 12);
 
     this.customerFormGroup.patchValue({
       firstName: customer.firstName,
@@ -280,7 +366,11 @@ export class RRCustomerListComponent implements OnInit {
       email: customer.email,
       address: customer.address,
       membershipTier: customer.membershipTier,
-      discountRate: customer.discountRate,
+      discountRate: Math.min(30, customer.discountRate),
+      maxDiscountAmount: customer.maxDiscountAmount || '',
+      startDate: start,
+      durationMonths: customer.durationMonths || 12,
+      endDate: end,
       isActive: customer.isActive,
       aadhar: '',
       dl: '',
@@ -300,6 +390,14 @@ export class RRCustomerListComponent implements OnInit {
   openViewModal(customer: IRegularCustomerMasked): void {
     this.activeMode.set('view');
     this.selectedCustomer.set(customer);
+
+    const start = customer.startDate
+      ? new Date(customer.startDate).toISOString().split('T')[0]
+      : new Date(customer.createdAt).toISOString().split('T')[0];
+    const end = customer.endDate
+      ? new Date(customer.endDate).toISOString().split('T')[0]
+      : this.calculateEndDate(start, customer.durationMonths || 12);
+
     this.customerFormGroup.patchValue({
       firstName: customer.firstName,
       lastName: customer.lastName,
@@ -312,6 +410,10 @@ export class RRCustomerListComponent implements OnInit {
       address: customer.address,
       membershipTier: customer.membershipTier,
       discountRate: customer.discountRate,
+      maxDiscountAmount: customer.maxDiscountAmount || '',
+      startDate: start,
+      durationMonths: customer.durationMonths || 12,
+      endDate: end,
       isActive: customer.isActive,
     });
     this.customerFormGroup.disable();
@@ -331,6 +433,11 @@ export class RRCustomerListComponent implements OnInit {
   async onFormSubmit(): Promise<void> {
     if (this.activeMode() === 'view') {
       this.closeModal();
+      return;
+    }
+
+    if (!this.isAdmin()) {
+      toast.error('Only Administrators are authorized to perform this operation.');
       return;
     }
 
@@ -357,6 +464,10 @@ export class RRCustomerListComponent implements OnInit {
           address: formVal.address.trim(),
           membershipTier: formVal.membershipTier,
           discountRate: Number(formVal.discountRate),
+          maxDiscountAmount: formVal.maxDiscountAmount ? Math.round(Number(formVal.maxDiscountAmount)) : undefined,
+          startDate: formVal.startDate,
+          endDate: formVal.endDate,
+          durationMonths: Number(formVal.durationMonths),
         };
 
         const created = await this.customerApi.createCustomer(payload);
@@ -378,6 +489,10 @@ export class RRCustomerListComponent implements OnInit {
           address: formVal.address.trim(),
           membershipTier: formVal.membershipTier,
           discountRate: Number(formVal.discountRate),
+          maxDiscountAmount: formVal.maxDiscountAmount ? Math.round(Number(formVal.maxDiscountAmount)) : undefined,
+          startDate: formVal.startDate,
+          endDate: formVal.endDate,
+          durationMonths: Number(formVal.durationMonths),
           isActive: formVal.isActive,
         };
 
@@ -405,6 +520,11 @@ export class RRCustomerListComponent implements OnInit {
   }
 
   async deleteCustomer(customer: IRegularCustomerMasked): Promise<void> {
+    if (!this.isAdmin()) {
+      toast.error('Only Administrators have permission to deactivate or delete memberships.');
+      return;
+    }
+
     if (
       !confirm(
         `Are you sure you want to deactivate and remove membership for ${customer.firstName} ${customer.lastName} (${customer.membershipId})?`

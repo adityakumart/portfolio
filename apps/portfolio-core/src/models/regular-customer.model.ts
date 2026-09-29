@@ -26,6 +26,10 @@ export interface IRegularCustomerDocument extends Document {
   address: string;
   membershipTier: CustomerMembershipTier;
   discountRate: number;
+  maxDiscountAmount?: number;
+  startDate: Date;
+  endDate: Date;
+  durationMonths?: number;
   totalBookings: number;
   isActive: boolean;
   isDeleted: boolean;
@@ -130,7 +134,25 @@ const RegularCustomerSchema = new Schema<IRegularCustomerDocument>(
       type: Number,
       default: 10,
       min: [0, 'Discount rate cannot be negative'],
-      max: [100, 'Discount rate cannot exceed 100%'],
+      max: [30, 'Discount rate cannot exceed 30%'],
+    },
+    maxDiscountAmount: {
+      type: Number,
+      default: null,
+      min: [0, 'Max discount amount must be a positive integer'],
+    },
+    startDate: {
+      type: Date,
+      default: Date.now,
+    },
+    endDate: {
+      type: Date,
+      required: [true, 'Membership end date is required'],
+      index: true,
+    },
+    durationMonths: {
+      type: Number,
+      default: 12,
     },
     totalBookings: {
       type: Number,
@@ -236,6 +258,10 @@ RegularCustomerSchema.methods['toMaskedJSON'] = function (): IRegularCustomerMas
     address: obj.address,
     membershipTier: obj.membershipTier as CustomerMembershipTier,
     discountRate: obj.discountRate,
+    maxDiscountAmount: obj.maxDiscountAmount,
+    startDate: obj.startDate ? new Date(obj.startDate).toISOString() : undefined,
+    endDate: obj.endDate ? new Date(obj.endDate).toISOString() : undefined,
+    durationMonths: obj.durationMonths,
     totalBookings: obj.totalBookings,
     isActive: obj.isActive,
     createdAt: obj.createdAt ? new Date(obj.createdAt).toISOString() : new Date().toISOString(),

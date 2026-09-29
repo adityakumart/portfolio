@@ -27,6 +27,8 @@ import {
   lucideMapPin,
   lucideChevronDown,
   lucideDownload,
+  lucideCalendar,
+  lucideTag,
 } from '@ng-icons/lucide';
 import { toast } from '@spartan-ng/hel/sonner';
 import { HlmDropdownMenuImports } from '@spartan-ng/hel/dropdown-menu';
@@ -83,6 +85,8 @@ export interface NewBookingDialogContext {
       lucideMapPin,
       lucideChevronDown,
       lucideDownload,
+      lucideCalendar,
+      lucideTag,
     }),
   ],
   templateUrl: './new-booking-dialog.component.html',
@@ -347,14 +351,19 @@ export class RRNewBookingDialogComponent implements OnInit {
   }
 
   /**
-   * Queries lightweight customer autocomplete endpoint (returns ONLY id and name).
+   * Queries lightweight customer autocomplete endpoint (returns ONLY active, non-expired members).
    */
   async loadAutocompleteResults(query: string): Promise<void> {
     this.autocompleteQuery.set(query);
     this.isSearchingCustomers.set(true);
     try {
       const results = await this.customerApi.getAutocomplete(query);
-      this.autocompleteResults.set(results);
+      const now = new Date();
+      // Exclude members whose end date has passed
+      const activeNonExpired = results.filter(
+        (item) => !item.endDate || new Date(item.endDate) >= now
+      );
+      this.autocompleteResults.set(activeNonExpired);
     } catch {
       this.autocompleteResults.set([]);
     } finally {
@@ -362,11 +371,35 @@ export class RRNewBookingDialogComponent implements OnInit {
     }
   }
 
+  getMemberDaysRemaining(endDateStr?: string): number {
+    if (!endDateStr) return 0;
+    const end = new Date(endDateStr).getTime();
+    const now = new Date().setHours(0, 0, 0, 0);
+    return Math.ceil((end - now) / (1000 * 60 * 60 * 24));
+  }
+
+  getMemberEndDateBadgeClass(endDateStr?: string): string {
+    const days = this.getMemberDaysRemaining(endDateStr);
+    if (days <= 30) {
+      // <= 30 days: red color
+      return 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30';
+    } else if (days <= 60) {
+      // <= 60 days: yellow color
+      return 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30';
+    } else if (days >= 90) {
+      // >= 90 days: green color
+      return 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30';
+    } else {
+      // 61-89 days: yellow color
+      return 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30';
+    }
+  }
+
   /**
    * When an item is selected from autocomplete:
    * 1. Fetches full member details via GET /api/rr/customers/:id
    * 2. Prefills all booking form controls (Name, Father, Phone, Address, KYC)
-   * 3. Auto-applies membership tier discount to financials step
+   * 3. Auto-applies membership tier discount to financials step (respecting maxDiscountAmount cap)
    */
   async selectRegularCustomer(item: ICustomerAutocompleteItem): Promise<void> {
     this.isMemberDropdownOpen.set(false);
@@ -390,11 +423,14 @@ export class RRNewBookingDialogComponent implements OnInit {
         renterDL: fullCustomer.dl,
       });
 
-      // Calculate and auto-apply tier discount
+      // Calculate and auto-apply tier discount (0 - 30%, capped at maxDiscountAmount)
       const totalAmount =
         Number(this.bookingFormGroup.get('totalRentalAmount')?.value) || 0;
-      const rate = fullCustomer.discountRate || 0;
-      const discountAmount = Math.round((totalAmount * rate) / 100);
+      const rate = Math.min(30, Math.max(0, fullCustomer.discountRate || 0));
+      let discountAmount = Math.round((totalAmount * rate) / 100);
+      if (fullCustomer.maxDiscountAmount && fullCustomer.maxDiscountAmount > 0) {
+        discountAmount = Math.min(discountAmount, fullCustomer.maxDiscountAmount);
+      }
       const finalRentalAmount = Math.max(0, totalAmount - discountAmount);
 
       this.membershipDiscount.set({
@@ -406,10 +442,15 @@ export class RRNewBookingDialogComponent implements OnInit {
         email: fullCustomer.email,
         membershipTier: fullCustomer.membershipTier,
         discountRate: rate,
+        maxDiscountAmount: fullCustomer.maxDiscountAmount,
         discountAmount,
         originalAmount: totalAmount,
         finalRentalAmount,
-        message: `${fullCustomer.membershipTier.toUpperCase()} Member (${rate}% discount active)`,
+        endDate: fullCustomer.endDate,
+        message:
+          fullCustomer.maxDiscountAmount && fullCustomer.maxDiscountAmount > 0
+            ? `${fullCustomer.membershipTier.toUpperCase()} Member (${rate}% discount active, capped up to ₹${fullCustomer.maxDiscountAmount})`
+            : `${fullCustomer.membershipTier.toUpperCase()} Member (${rate}% discount active)`,
       });
 
       this.bookingFormGroup.patchValue({
@@ -695,7 +736,13 @@ export class RRNewBookingDialogComponent implements OnInit {
     let finalRent = total;
     if (discountVal > 0 && discountType !== 'none') {
       if (discountType === 'percentage') {
-        finalRent = total - (total * discountVal) / 100;
+        let discountAmt = (total * discountVal) / 100;
+        // Apply max discount ceiling if customer has configured cap
+        const activeCustomer = this.selectedRegularCustomer();
+        if (activeCustomer?.maxDiscountAmount && activeCustomer.maxDiscountAmount > 0) {
+          discountAmt = Math.min(discountAmt, activeCustomer.maxDiscountAmount);
+        }
+        finalRent = total - discountAmt;
       } else if (discountType === 'rupee' || discountType === 'rupees') {
         finalRent = total - discountVal;
       }

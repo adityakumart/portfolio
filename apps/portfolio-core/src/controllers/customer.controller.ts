@@ -67,6 +67,20 @@ export class CustomerController {
         errors.push('Driving License must be 15 to 16 alphanumeric characters');
       }
 
+      // Discount rate validation (0 to 30%)
+      if (body.discountRate !== undefined && (Number(body.discountRate) < 0 || Number(body.discountRate) > 30)) {
+        errors.push('Discount rate must be between 0% and 30%');
+      }
+
+      // Max discount amount validation (positive integer if provided)
+      if (
+        body.maxDiscountAmount !== undefined &&
+        body.maxDiscountAmount !== null &&
+        (Number(body.maxDiscountAmount) <= 0 || !Number.isInteger(Number(body.maxDiscountAmount)))
+      ) {
+        errors.push('Max discount amount must be a positive integer');
+      }
+
       if (errors.length > 0) {
         res.status(400).json({ error: 'Validation Failed', details: errors });
         return;
@@ -94,14 +108,31 @@ export class CustomerController {
       const totalCount = await RegularCustomer.countDocuments();
       const membershipId = `RRC${String(totalCount + 1).padStart(3, '0')}`;
 
-      // Default discount rate per tier
-      let discountRate = body.discountRate ?? 10;
+      // Default discount rate per tier (clamped to max 30%)
+      let discountRate = body.discountRate !== undefined ? Number(body.discountRate) : 10;
       const tier = body.membershipTier || 'regular';
-      if (!body.discountRate) {
+      if (body.discountRate === undefined) {
         if (tier === 'silver') discountRate = 15;
         else if (tier === 'gold') discountRate = 20;
         else if (tier === 'platinum') discountRate = 25;
       }
+      discountRate = Math.min(30, Math.max(0, discountRate));
+
+      // Calculate membership validity dates
+      const startDate = body.startDate ? new Date(body.startDate) : new Date();
+      const durationMonths = body.durationMonths && Number(body.durationMonths) > 0 ? Number(body.durationMonths) : 12;
+      let endDate: Date;
+      if (body.endDate) {
+        endDate = new Date(body.endDate);
+      } else {
+        endDate = new Date(startDate);
+        endDate.setMonth(endDate.getMonth() + durationMonths);
+      }
+
+      const maxDiscountAmount =
+        body.maxDiscountAmount && Number(body.maxDiscountAmount) > 0
+          ? Math.round(Number(body.maxDiscountAmount))
+          : undefined;
 
       // 4. Create and save model (encryption handled automatically via Mongoose pre-save hook)
       const newCustomer = new RegularCustomer({
@@ -117,6 +148,10 @@ export class CustomerController {
         address: body.address.trim(),
         membershipTier: tier,
         discountRate,
+        maxDiscountAmount,
+        startDate,
+        endDate,
+        durationMonths,
         totalBookings: 0,
         isActive: true,
       });
@@ -185,42 +220,49 @@ export class CustomerController {
     }
   }
 
-  /**
-   * GET /api/rr/customers/autocomplete
-   * Lightweight endpoint returning strictly ID and Name for fast dropdown selection.
-   */
   static async getCustomersAutocomplete(req: IRRRequest, res: Response): Promise<void> {
     try {
       await connectMongoose();
       const q = typeof req.query['q'] === 'string' ? req.query['q'].trim() : '';
+      const now = new Date();
 
-      const filter: Record<string, unknown> = {
-        isDeleted: { $ne: true },
-        isActive: { $ne: false },
-      };
+      // Only active, non-deleted customers whose membership end date has not passed
+      const andConditions: Array<Record<string, unknown>> = [
+        { isDeleted: { $ne: true } },
+        { isActive: { $ne: false } },
+        {
+          $or: [
+            { endDate: { $exists: false } },
+            { endDate: { $gt: now } },
+          ],
+        },
+      ];
 
       if (q) {
         const regex = safeRegex(q, 'i');
-        filter['$or'] = [
-          { membershipId: regex },
-          { firstName: regex },
-          { lastName: regex },
-        ];
+        andConditions.push({
+          $or: [
+            { membershipId: regex },
+            { firstName: regex },
+            { lastName: regex },
+          ],
+        });
       }
 
-      const docs = await RegularCustomer.find(filter)
-        .select('_id membershipId firstName lastName')
+      const docs = await RegularCustomer.find({ $and: andConditions })
+        .select('_id membershipId firstName lastName endDate')
         .sort({ firstName: 1, membershipId: 1 })
         .limit(20)
         .lean()
         .exec();
 
       const items: ICustomerAutocompleteItem[] = (
-        docs as Array<{ _id: unknown; membershipId: string; firstName: string; lastName: string }>
+        docs as Array<{ _id: unknown; membershipId: string; firstName: string; lastName: string; endDate?: Date }>
       ).map((d) => ({
         _id: String(d._id),
         membershipId: d.membershipId,
         name: `${d.firstName} ${d.lastName}`.trim(),
+        endDate: d.endDate ? new Date(d.endDate).toISOString() : undefined,
       }));
 
       res.status(200).json(items);
@@ -288,7 +330,39 @@ export class CustomerController {
       if (body.altPhone !== undefined) customer.altPhone = body.altPhone.trim();
       if (body.membershipTier !== undefined) customer.membershipTier = body.membershipTier;
       if (body.discountRate !== undefined && Number.isFinite(body.discountRate)) {
-        customer.discountRate = body.discountRate;
+        const rate = Number(body.discountRate);
+        if (rate < 0 || rate > 30) {
+          res.status(400).json({ error: 'Validation Error', message: 'Discount rate must be between 0% and 30%' });
+          return;
+        }
+        customer.discountRate = rate;
+      }
+      if (body.maxDiscountAmount !== undefined) {
+        if (
+          body.maxDiscountAmount !== null &&
+          (Number(body.maxDiscountAmount) <= 0 || !Number.isInteger(Number(body.maxDiscountAmount)))
+        ) {
+          res.status(400).json({ error: 'Validation Error', message: 'Max discount amount must be a positive integer' });
+          return;
+        }
+        customer.maxDiscountAmount =
+          body.maxDiscountAmount && Number(body.maxDiscountAmount) > 0
+            ? Math.round(Number(body.maxDiscountAmount))
+            : undefined;
+      }
+      if (body.startDate !== undefined) {
+        customer.startDate = new Date(body.startDate);
+      }
+      if (body.durationMonths !== undefined) {
+        customer.durationMonths = Number(body.durationMonths);
+      }
+      if (body.endDate !== undefined) {
+        customer.endDate = new Date(body.endDate);
+      } else if (body.durationMonths !== undefined) {
+        const base = customer.startDate ? new Date(customer.startDate) : new Date();
+        const end = new Date(base);
+        end.setMonth(end.getMonth() + (customer.durationMonths ?? 12));
+        customer.endDate = end;
       }
       if (body.isActive !== undefined) customer.isActive = body.isActive;
 

@@ -15,7 +15,11 @@ export interface IRegularCustomer {
   dlBlindIndex?: string;
   address: string;
   membershipTier: CustomerMembershipTier;
-  discountRate: number; // Percentage, e.g. 10 for 10%
+  discountRate: number; // Percentage, e.g. 10 for 10% (0 - 30%)
+  maxDiscountAmount?: number; // Capped discount ceiling in INR
+  startDate?: string; // Membership start date
+  endDate?: string; // Membership end date
+  durationMonths?: number; // Configured validity period in months
   totalBookings: number;
   isActive: boolean;
   isDeleted?: boolean;
@@ -37,6 +41,10 @@ export interface IRegularCustomerMasked {
   address: string;
   membershipTier: CustomerMembershipTier;
   discountRate: number;
+  maxDiscountAmount?: number;
+  startDate?: string;
+  endDate?: string;
+  durationMonths?: number;
   totalBookings: number;
   isActive: boolean;
   createdAt: string;
@@ -55,6 +63,10 @@ export interface ICreateCustomerDTO {
   address: string;
   membershipTier?: CustomerMembershipTier;
   discountRate?: number;
+  maxDiscountAmount?: number;
+  startDate?: string;
+  endDate?: string;
+  durationMonths?: number;
 }
 
 export interface IUpdateCustomerDTO {
@@ -69,6 +81,10 @@ export interface IUpdateCustomerDTO {
   address?: string;
   membershipTier?: CustomerMembershipTier;
   discountRate?: number;
+  maxDiscountAmount?: number;
+  startDate?: string;
+  endDate?: string;
+  durationMonths?: number;
   isActive?: boolean;
 }
 
@@ -80,10 +96,12 @@ export interface ICustomerMembershipDiscount {
   phone?: string;
   email?: string;
   membershipTier?: CustomerMembershipTier;
-  discountRate: number; // Percentage e.g. 10
+  discountRate: number; // Percentage e.g. 10 (0 - 30%)
+  maxDiscountAmount?: number; // Capped max discount ceiling in INR
   discountAmount: number; // Computed discount value in INR
   originalAmount: number; // Base rental amount
   finalRentalAmount: number; // Base minus discount
+  endDate?: string;
   message?: string;
 }
 
@@ -99,5 +117,6 @@ export interface ICustomerAutocompleteItem {
   _id: string;
   membershipId: string;
   name: string;
+  endDate?: string;
 }
 

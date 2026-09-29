@@ -13,9 +13,9 @@ customerRouter.get('/billing/discount', CustomerController.checkDiscount);
 // Autocomplete lookup returning only id and name (must precede :id param)
 customerRouter.get('/autocomplete', CustomerController.getCustomersAutocomplete);
 
-// Customer CRUD operations
-customerRouter.post('/', CustomerController.createCustomer);
+// Customer CRUD operations (Only Admin has Add, Edit, Delete access; Employees have View access)
+customerRouter.post('/', requireAdmin, CustomerController.createCustomer);
 customerRouter.get('/', CustomerController.getCustomers);
 customerRouter.get('/:id', CustomerController.getCustomerById);
-customerRouter.put('/:id', CustomerController.updateCustomer);
+customerRouter.put('/:id', requireAdmin, CustomerController.updateCustomer);
 customerRouter.delete('/:id', requireAdmin, CustomerController.deleteCustomer);

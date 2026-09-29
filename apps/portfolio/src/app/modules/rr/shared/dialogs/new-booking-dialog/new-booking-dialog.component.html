@@ -233,12 +233,23 @@
                           {{ cust.membershipId }}
                         </span>
                       </div>
-                      <div class="text-[11px] text-muted-foreground flex items-center gap-2 mt-0.5">
+                      <div class="text-[11px] text-muted-foreground flex items-center gap-2 mt-1 flex-wrap">
                         <span>s/o, d/o: <strong>{{ cust.fatherName }}</strong></span>
                         <span>&bull;</span>
                         <span class="capitalize font-semibold text-amber-600 dark:text-amber-400">
-                          {{ cust.membershipTier }} Tier ({{ cust.discountRate }}% Off Auto-Applied)
+                          {{ cust.membershipTier }} Tier ({{ cust.discountRate }}% Off{{ cust.maxDiscountAmount ? ' • Max ₹' + cust.maxDiscountAmount : '' }})
                         </span>
+                        @if (cust.endDate) {
+                          <span>&bull;</span>
+                          <span
+                            class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border"
+                            [ngClass]="getMemberEndDateBadgeClass(cust.endDate)"
+                          >
+                            <ng-icon name="lucideCalendar" class="size-3"></ng-icon>
+                            <span>End Date: {{ cust.endDate | date:'dd MMM yyyy' }}</span>
+                            <span>({{ getMemberDaysRemaining(cust.endDate) }} days left)</span>
+                          </span>
+                        }
                       </div>
                     </div>
                   </div>
@@ -283,6 +294,24 @@
                     <ng-icon name="lucideShieldCheck" class="size-3.5 text-emerald-500"></ng-icon>
                     <span>KYC Aadhaar: <strong class="text-foreground font-mono">{{ cust.aadhar }}</strong></span>
                   </div>
+                  @if (cust.endDate) {
+                    <div class="flex items-center gap-1.5">
+                      <ng-icon name="lucideCalendar" class="size-3.5 text-primary"></ng-icon>
+                      <span class="text-muted-foreground">Valid Until:</span>
+                      <span
+                        class="px-2 py-0.5 rounded font-bold text-[11px] border"
+                        [ngClass]="getMemberEndDateBadgeClass(cust.endDate)"
+                      >
+                        {{ cust.endDate | date:'dd MMM yyyy' }} ({{ getMemberDaysRemaining(cust.endDate) }}d)
+                      </span>
+                    </div>
+                  }
+                  @if (cust.maxDiscountAmount) {
+                    <div class="flex items-center gap-1.5 text-muted-foreground">
+                      <ng-icon name="lucideTag" class="size-3.5 text-primary"></ng-icon>
+                      <span>Max Discount Cap: <strong class="text-foreground font-semibold">₹{{ cust.maxDiscountAmount }}</strong></span>
+                    </div>
+                  }
                   <div class="sm:col-span-2 lg:col-span-3 text-muted-foreground flex items-start gap-1.5 pt-0.5">
                     <ng-icon name="lucideMapPin" class="size-3.5 text-primary mt-0.5 shrink-0"></ng-icon>
                     <span class="line-clamp-1">Address: <strong class="text-foreground">{{ cust.address }}</strong></span>
@@ -507,7 +536,7 @@
               <div class="p-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 flex items-center justify-between text-xs text-emerald-800 dark:text-emerald-300">
                 <span class="inline-flex items-center gap-1.5 font-semibold">
                   <ng-icon name="lucideCrown" class="text-amber-500 text-sm"></ng-icon>
-                  <span>Regular Member Discount: {{ m.discountRate }}% auto-applied (Saving Rs. {{ m.discountAmount }})</span>
+                  <span>Regular Member Discount: {{ m.discountRate }}% auto-applied (Saving Rs. {{ m.discountAmount }}{{ m.maxDiscountAmount ? ' • Capped at max Rs. ' + m.maxDiscountAmount : '' }})</span>
                 </span>
                 <span class="font-mono font-bold uppercase text-[10px] bg-emerald-500/20 px-2 py-0.5 rounded">
                   {{ m.membershipTier }} Tier
