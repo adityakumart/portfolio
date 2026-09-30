@@ -2,7 +2,7 @@ import { connectToDatabase } from '../utils/DB/mongodb';
 import { ObjectId } from 'mongodb';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
-import { User } from '@portfolio/shared-types';
+import { User, UserModules } from '@portfolio/shared-types';
 
 import { getJwtSecret, getRefreshSecret } from '../config/security';
 
@@ -42,6 +42,12 @@ export class AuthService {
         refresh_token: null,
         user_logged_in_at: null,
         updated_at: new Date().toISOString(),
+        modules: {
+          aiSpace: false,
+          aiAssistant: false,
+          fileManager: false,
+          dietHydration: false,
+        },
       };
 
       const result = await userCollection.insertOne(newUser);
@@ -104,6 +110,12 @@ export class AuthService {
       const safeUser = {
         id: updatedUser._id.toString(),
         ...updatedUser,
+        modules: updatedUser['modules'] || {
+          aiSpace: false,
+          aiAssistant: false,
+          fileManager: false,
+          dietHydration: false,
+        },
       } as unknown as User & { password?: string; _id?: unknown };
       delete safeUser.password;
       delete (safeUser as any)._id;
@@ -167,6 +179,12 @@ export class AuthService {
       const safeUser = {
         id: updatedUser._id.toString(),
         ...updatedUser,
+        modules: updatedUser['modules'] || {
+          aiSpace: false,
+          aiAssistant: false,
+          fileManager: false,
+          dietHydration: false,
+        },
       } as unknown as User & { password?: string; _id?: unknown };
       delete safeUser.password;
       delete (safeUser as any)._id;
@@ -209,6 +227,58 @@ export class AuthService {
       return { message: 'Logged out successfully' };
     } catch (err) {
       console.error('Logout Error:', err);
+      throw err;
+    }
+  }
+
+  // 5. UPDATE USER MODULES
+  static async updateUserModules(userId: string, modules: Partial<UserModules>) {
+    try {
+      const db = await connectToDatabase();
+      const userCollection = db.collection('user');
+
+      let objId: ObjectId;
+      try {
+        objId = new ObjectId(userId);
+      } catch {
+        throw new Error('Invalid user ID format');
+      }
+
+      const updateFields: Record<string, boolean> = {};
+      if (typeof modules.aiSpace === 'boolean') updateFields['modules.aiSpace'] = modules.aiSpace;
+      if (typeof modules.aiAssistant === 'boolean') updateFields['modules.aiAssistant'] = modules.aiAssistant;
+      if (typeof modules.fileManager === 'boolean') updateFields['modules.fileManager'] = modules.fileManager;
+      if (typeof modules.dietHydration === 'boolean') updateFields['modules.dietHydration'] = modules.dietHydration;
+
+      await userCollection.updateOne(
+        { _id: objId },
+        {
+          $set: {
+            ...updateFields,
+            updated_at: new Date().toISOString(),
+          },
+        },
+      );
+
+      const updatedUser = await userCollection.findOne({ _id: objId });
+      if (!updatedUser) throw new Error('User not found');
+
+      const safeUser = {
+        id: updatedUser._id.toString(),
+        ...updatedUser,
+        modules: updatedUser['modules'] || {
+          aiSpace: false,
+          aiAssistant: false,
+          fileManager: false,
+          dietHydration: false,
+        },
+      } as unknown as User & { password?: string; _id?: unknown };
+      delete safeUser.password;
+      delete (safeUser as any)._id;
+
+      return safeUser;
+    } catch (err) {
+      console.error('Update User Modules Error:', err);
       throw err;
     }
   }

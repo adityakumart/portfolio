@@ -100,3 +100,31 @@ export async function refresh(req: Request, res: Response) {
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }
 }
+
+export async function updateModules(req: Request, res: Response) {
+  try {
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) {
+      res.status(401).json({ error: 'Authorization header is required' });
+      return;
+    }
+    const token = authHeader.split(' ')[1];
+    const jwtSecret = getJwtSecret();
+    const payload = jwt.verify(token, jwtSecret) as { id: string };
+
+    const paramId = req.params['id'];
+    const targetUserId = (typeof paramId === 'string' ? paramId : Array.isArray(paramId) ? paramId[0] : null) || payload.id;
+    const { modules } = req.body;
+    if (!modules || typeof modules !== 'object') {
+      res.status(400).json({ error: 'modules object is required' });
+      return;
+    }
+
+    const updatedUser = await AuthService.updateUserModules(targetUserId, modules);
+    res.status(200).json({ user: updatedUser });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Update modules error:', err);
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+}

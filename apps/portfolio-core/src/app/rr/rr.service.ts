@@ -18,7 +18,7 @@ export class RRService {
 
   static async getEmployeesCol(): Promise<Collection<IEmployee>> {
     const db = await this.getDb();
-    return db.collection<IEmployee>('employees');
+    return db.collection<IEmployee>('employee');
   }
 
   static async getVehiclesCol(): Promise<Collection<IVehicle>> {
