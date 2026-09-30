@@ -13,8 +13,11 @@ import {
   lucideArrowRight,
   lucideUser,
   lucideSparkles,
+  lucideActivity,
+  lucideShieldAlert,
 } from '@ng-icons/lucide';
 import { AuthService } from '../../services/auth';
+import { getAssignedUserModules, UserModuleConfig } from '../../services/user-modules.config';
 
 @Component({
   selector: 'app-profile',
@@ -36,6 +39,8 @@ import { AuthService } from '../../services/auth';
       lucideArrowRight,
       lucideUser,
       lucideSparkles,
+      lucideActivity,
+      lucideShieldAlert,
     }),
   ],
   templateUrl: './profile.html',
@@ -44,4 +49,7 @@ import { AuthService } from '../../services/auth';
 export class ProfileComponent {
   authService = inject(AuthService);
   currentUser = computed(() => this.authService.currentUser());
+  assignedModules = computed<UserModuleConfig[]>(() =>
+    getAssignedUserModules(this.currentUser()),
+  );
 }
