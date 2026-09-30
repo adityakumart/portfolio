@@ -38,6 +38,7 @@ import {
   lucideMenu,
   lucideX,
   lucideActivity,
+  lucideShieldAlert,
 } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
@@ -47,6 +48,7 @@ import { AuthService } from '../../../modules/user/services/auth';
 import { ThemeService } from '../../../theme.service';
 import { devToolsRoutingList } from '../../data/routes';
 import { RRApiService } from '../../../modules/rr/services/rr-api.service';
+import { getAssignedUserModules } from '../../../modules/user/services/user-modules.config';
 
 export interface SidebarItem {
   label: string;
@@ -92,6 +94,7 @@ export interface SidebarItem {
       lucideMenu,
       lucideX,
       lucideActivity,
+      lucideShieldAlert,
     }),
   ],
   templateUrl: './sidebar.component.html',
@@ -240,23 +243,33 @@ export class SidebarComponent implements OnDestroy {
     ];
 
     if (user) {
+      const assigned = getAssignedUserModules(user);
+      const userChildren: SidebarItem[] = [];
+
+      if (assigned.length > 1) {
+        userChildren.push({ label: 'Profile', link: '/user', icon: 'lucideUser' });
+      }
+
+      for (const m of assigned) {
+        userChildren.push({
+          label: m.label,
+          link: m.route,
+          icon: m.icon === 'lucideFolderArchive' ? 'lucideFolder' : m.icon,
+        });
+      }
+
+      if (assigned.length === 0) {
+        userChildren.push({
+          label: 'No Modules',
+          link: '/user/no-modules',
+          icon: 'lucideShieldAlert',
+        });
+      }
+
       items.push({
         label: 'User',
         icon: 'lucideUser',
-        children: [
-          { label: 'Profile', link: '/user', icon: 'lucideUser' },
-          {
-            label: 'AI Assistant',
-            link: '/user/ai',
-            icon: 'lucideMessageSquare',
-          },
-          { label: 'File Manager', link: '/user/files', icon: 'lucideFolder' },
-          {
-            label: 'Diet & Hydration',
-            link: '/user/diet-hydration',
-            icon: 'lucideActivity',
-          },
-        ],
+        children: userChildren,
       });
     } else if (rrUser) {
       items.push({

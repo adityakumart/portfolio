@@ -2,6 +2,7 @@ import { NgModule, inject } from '@angular/core';
 import { RouterModule, Routes, CanActivateFn, Router } from '@angular/router';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { filter, map, take } from 'rxjs/operators';
+import { User, UserModules } from '@portfolio/shared-types';
 import { UserComponent } from './user';
 import { LoginComponent } from './components/login/login';
 import { ProfileComponent } from './components/profile/profile';
@@ -9,6 +10,7 @@ import { ProfileAiChatComponent } from './components/profile/profile-ai-chat.com
 import { AiChatComponent } from './components/ai-chat/ai-chat.component';
 import { FileManagerComponent } from './components/file-manager/file-manager.component';
 import { AuthService } from './services/auth';
+import { resolveUserDestination } from './services/user-modules.config';
 
 export const authGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
@@ -26,6 +28,92 @@ export const authGuard: CanActivateFn = () => {
   );
 };
 
+export const userHubGuard: CanActivateFn = () => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  const resolve = (user: User | null | undefined) => {
+    if (!user) return router.createUrlTree(['/user', 'login']);
+    const destination = resolveUserDestination(user);
+    if (destination.mode === 'single') {
+      return router.createUrlTree([destination.targetRoute]);
+    }
+    if (destination.mode === 'none') {
+      return router.createUrlTree(['/user', 'no-modules']);
+    }
+    return true;
+  };
+
+  const user = authService.currentUser();
+  if (user !== undefined) {
+    return resolve(user);
+  }
+
+  return toObservable(authService.currentUser).pipe(
+    filter((u) => u !== undefined),
+    take(1),
+    map((u) => resolve(u)),
+  );
+};
+
+export const noModulesGuard: CanActivateFn = () => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  const resolve = (user: User | null | undefined) => {
+    if (!user) return router.createUrlTree(['/user', 'login']);
+    const destination = resolveUserDestination(user);
+    if (destination.mode !== 'none') {
+      return router.createUrlTree([destination.targetRoute]);
+    }
+    return true;
+  };
+
+  const user = authService.currentUser();
+  if (user !== undefined) {
+    return resolve(user);
+  }
+
+  return toObservable(authService.currentUser).pipe(
+    filter((u) => u !== undefined),
+    take(1),
+    map((u) => resolve(u)),
+  );
+};
+
+export const createModuleGuard = (
+  moduleKey: keyof UserModules,
+): CanActivateFn => {
+  return () => {
+    const authService = inject(AuthService);
+    const router = inject(Router);
+
+    const checkAccess = (user: User | null | undefined) => {
+      if (!user) return router.createUrlTree(['/user', 'login']);
+      if (user.modules && user.modules[moduleKey] === true) {
+        return true;
+      }
+      const destination = resolveUserDestination(user);
+      return router.createUrlTree(
+        destination.mode === 'multiple'
+          ? ['/user']
+          : [destination.targetRoute],
+      );
+    };
+
+    const user = authService.currentUser();
+    if (user !== undefined) {
+      return checkAccess(user);
+    }
+
+    return toObservable(authService.currentUser).pipe(
+      filter((u) => u !== undefined),
+      take(1),
+      map((u) => checkAccess(u)),
+    );
+  };
+};
+
 const routes: Routes = [
   {
     path: '',
@@ -33,29 +121,33 @@ const routes: Routes = [
     children: [
       { path: 'login', component: LoginComponent },
       {
+        path: 'no-modules',
+        loadComponent: () =>
+          import(
+            './components/no-modules/no-modules.component'
+          ).then((m) => m.NoModulesComponent),
+        canActivate: [authGuard, noModulesGuard],
+      },
+      {
         path: '',
         component: ProfileComponent,
         pathMatch: 'full',
-        // Block access if the user is unauthenticated
-        canActivate: [authGuard],
+        canActivate: [authGuard, userHubGuard],
       },
       {
         path: 'ai',
         component: ProfileAiChatComponent,
-        // Block access if the user is unauthenticated
-        canActivate: [authGuard],
+        canActivate: [authGuard, createModuleGuard('aiAssistant')],
       },
       {
         path: 'chat',
         component: AiChatComponent,
-        // Block access if the user is unauthenticated
-        canActivate: [authGuard],
+        canActivate: [authGuard, createModuleGuard('aiSpace')],
       },
       {
         path: 'files',
         component: FileManagerComponent,
-        // Block access if the user is unauthenticated
-        canActivate: [authGuard],
+        canActivate: [authGuard, createModuleGuard('fileManager')],
       },
       {
         path: 'diet-hydration',
@@ -63,7 +155,7 @@ const routes: Routes = [
           import(
             './components/diet-hydration/diet-hydration.component'
           ).then((m) => m.DietHydrationComponent),
-        canActivate: [authGuard],
+        canActivate: [authGuard, createModuleGuard('dietHydration')],
       },
       {
         path: 'dev-tools',
@@ -93,3 +185,4 @@ const routes: Routes = [
   exports: [RouterModule],
 })
 export class UserRoutingModule {}
+
