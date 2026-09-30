@@ -1,5 +1,12 @@
 export type UserRole = 'admin' | 'user';
 
+export interface UserModules {
+  aiSpace: boolean;
+  aiAssistant: boolean;
+  fileManager: boolean;
+  dietHydration: boolean;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -15,6 +22,7 @@ export interface User {
   refresh_token?: string | null;
   user_logged_in_at?: string | null;
   updated_at?: string;
+  modules?: UserModules;
 }
 
 export interface AuthSession {
