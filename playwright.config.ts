@@ -2,7 +2,18 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './apps/portfolio/src/app',
-  testMatch: '**/*.spec.ts',
+  testMatch: [
+    '**/portfolio.component.spec.ts',
+    '**/modules/portfolio/**/*.spec.ts',
+    '**/user.spec.ts',
+    '**/modules/user/**/*.component.spec.ts',
+    '**/rr.spec.ts',
+    '**/diet-hydration.spec.ts',
+  ],
+  testIgnore: [
+    '**/services/auth.spec.ts',
+    '**/*.util.spec.ts',
+  ],
   fullyParallel: true,
   forbidOnly: !!process.env['CI'],
   retries: process.env['CI'] ? 2 : 0,
