@@ -51,6 +51,9 @@ vitest.config.*.timestamp*
 *.env
 *.env.prod
 
+playwright-report/
+test-results/
+
 # Auto-generated environment configurations
 /apps/portfolio/src/environments/environment.ts
 /apps/portfolio/src/environments/environment.prod.ts
