@@ -1,0 +1,545 @@
+<div class="planner-page">
+  <!-- Top Header -->
+  <header class="planner-header">
+    <div class="title-cluster">
+      <div class="header-icon-box">
+        <ng-icon name="lucideCheckSquare" class="header-icon"></ng-icon>
+      </div>
+      <div>
+        <h1 class="page-title">Notes & Planner</h1>
+        <p class="page-subtitle">
+          Capture thoughts, organize checklists, and stay on top of notifications
+        </p>
+      </div>
+    </div>
+
+    <!-- Header Actions -->
+    <div class="header-actions">
+      <button
+        hlmBtn
+        variant="outline"
+        size="sm"
+        class="notify-btn"
+        (click)="requestNotifications()"
+        title="Enable Desktop/Mobile Reminders"
+      >
+        <ng-icon name="lucideBell" class="mr-1.5"></ng-icon>
+        <span class="btn-text">Enable Reminders</span>
+      </button>
+
+      <button hlmBtn variant="outline" size="sm" (click)="openNoteModal()">
+        <ng-icon name="lucideStickyNote" class="mr-1.5"></ng-icon>
+        <span>+ Note</span>
+      </button>
+
+      <button hlmBtn variant="default" size="sm" class="primary-add-btn" (click)="openTodoModal()">
+        <ng-icon name="lucidePlus" class="mr-1.5"></ng-icon>
+        <span>+ Task</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Filter & Search Toolbar -->
+  <div class="toolbar-bar">
+    <div class="search-box">
+      <ng-icon name="lucideSearch" class="search-icon"></ng-icon>
+      <input
+        type="text"
+        placeholder="Search notes and tasks..."
+        [value]="state.searchQuery()"
+        (input)="state.searchQuery.set($any($event.target).value)"
+        class="search-input"
+      />
+      @if (state.searchQuery()) {
+        <button class="clear-search-btn" (click)="state.searchQuery.set('')">
+          <ng-icon name="lucideX"></ng-icon>
+        </button>
+      }
+    </div>
+
+    <!-- Mobile View Segmented Tabs -->
+    <div class="segmented-tabs">
+      <button
+        class="seg-tab"
+        [class.active]="state.activeTab() === 'all'"
+        (click)="state.activeTab.set('all')"
+      >
+        Overview
+      </button>
+      <button
+        class="seg-tab"
+        [class.active]="state.activeTab() === 'notes'"
+        (click)="state.activeTab.set('notes')"
+      >
+        Notes ({{ state.notes().length }})
+      </button>
+      <button
+        class="seg-tab"
+        [class.active]="state.activeTab() === 'todos'"
+        (click)="state.activeTab.set('todos')"
+      >
+        Tasks ({{ state.pendingTodos().length }})
+      </button>
+    </div>
+  </div>
+
+  <!-- Tag Filter Chips (if any exist) -->
+  @if (state.allTags().length > 0) {
+    <div class="tags-scroller">
+      <span class="tags-label">Tags:</span>
+      <button
+        class="tag-chip"
+        [class.active]="state.selectedTag() === null"
+        (click)="state.selectedTag.set(null)"
+      >
+        All
+      </button>
+      @for (tag of state.allTags(); track tag) {
+        <button
+          class="tag-chip"
+          [class.active]="state.selectedTag() === tag"
+          (click)="state.selectedTag.set(state.selectedTag() === tag ? null : tag)"
+        >
+          #{{ tag }}
+        </button>
+      }
+    </div>
+  }
+
+  <!-- Main Multi-Column or Single-Column Content -->
+  <div class="planner-grid" [class.view-notes]="state.activeTab() === 'notes'" [class.view-todos]="state.activeTab() === 'todos'">
+    
+    <!-- LEFT COLUMN: NOTES & SCRATCHPAD -->
+    @if (state.activeTab() === 'all' || state.activeTab() === 'notes') {
+      <section class="notes-panel">
+        <div class="panel-header">
+          <div class="panel-title-wrap">
+            <ng-icon name="lucideStickyNote" class="panel-icon text-amber-500"></ng-icon>
+            <h2 class="panel-title">Saved Notes</h2>
+            <span class="count-pill">{{ state.filteredNotes().length }}</span>
+          </div>
+          <button class="quick-new-link" (click)="openNoteModal()">+ New Note</button>
+        </div>
+
+        @if (state.isLoading()) {
+          <div class="loading-state">Loading notes...</div>
+        } @else if (state.filteredNotes().length === 0) {
+          <div class="empty-state-box">
+            <ng-icon name="lucideStickyNote" class="empty-icon"></ng-icon>
+            <p class="empty-title">No notes found</p>
+            <p class="empty-subtitle">Save quick ideas, text snippets, and drafts anytime.</p>
+            <button hlmBtn variant="outline" size="sm" class="mt-3" (click)="openNoteModal()">
+              Create first note
+            </button>
+          </div>
+        } @else {
+          <div class="notes-cards-list">
+            @for (note of state.filteredNotes(); track note.id) {
+              <div class="note-card" [class.pinned]="note.isPinned">
+                <div class="note-top">
+                  <h3 class="note-title">{{ note.title || 'Untitled Note' }}</h3>
+                  <div class="note-actions">
+                    <button
+                      class="icon-action-btn pin-btn"
+                      [class.pinned]="note.isPinned"
+                      (click)="state.toggleNotePin(note)"
+                      title="{{ note.isPinned ? 'Unpin' : 'Pin to top' }}"
+                    >
+                      <ng-icon name="lucidePin"></ng-icon>
+                    </button>
+                    <button
+                      class="icon-action-btn delete-btn"
+                      (click)="state.deleteNote(note.id)"
+                      title="Delete note"
+                    >
+                      <ng-icon name="lucideTrash2"></ng-icon>
+                    </button>
+                  </div>
+                </div>
+
+                <p class="note-content">{{ note.content }}</p>
+
+                <div class="note-footer">
+                  <div class="note-tags">
+                    @for (tag of note.tags; track tag) {
+                      <span class="note-tag-pill">#{{ tag }}</span>
+                    }
+                  </div>
+                  <span class="note-date">{{ note.updatedAt | date:'shortDate' }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </section>
+    }
+
+    <!-- RIGHT COLUMN: TO-DO TASKS & REMINDERS -->
+    @if (state.activeTab() === 'all' || state.activeTab() === 'todos') {
+      <section class="todos-panel">
+        <div class="panel-header">
+          <div class="panel-title-wrap">
+            <ng-icon name="lucideCheckSquare" class="panel-icon text-emerald-500"></ng-icon>
+            <h2 class="panel-title">To-Do List</h2>
+            <span class="count-pill">{{ state.pendingTodos().length }} pending</span>
+          </div>
+
+          <!-- Filter Sub-Tabs -->
+          <div class="todo-filter-pills">
+            <button
+              class="filter-pill"
+              [class.active]="state.todoFilter() === 'all'"
+              (click)="state.todoFilter.set('all')"
+            >
+              All
+            </button>
+            <button
+              class="filter-pill"
+              [class.active]="state.todoFilter() === 'today'"
+              (click)="state.todoFilter.set('today')"
+            >
+              Today ({{ state.todaysTodos().length }})
+            </button>
+            <button
+              class="filter-pill"
+              [class.active]="state.todoFilter() === 'upcoming'"
+              (click)="state.todoFilter.set('upcoming')"
+            >
+              Upcoming
+            </button>
+            <button
+              class="filter-pill"
+              [class.active]="state.todoFilter() === 'completed'"
+              (click)="state.todoFilter.set('completed')"
+            >
+              Done ({{ state.completedTodos().length }})
+            </button>
+          </div>
+        </div>
+
+        <!-- Inline Quick Add Input -->
+        <div class="quick-add-box">
+          <input
+            type="text"
+            placeholder="Add a new task and press Enter..."
+            [value]="quickTaskTitle()"
+            (input)="quickTaskTitle.set($any($event.target).value)"
+            (keydown.enter)="submitQuickTask()"
+            class="quick-add-input"
+          />
+          <button
+            hlmBtn
+            variant="default"
+            size="sm"
+            [disabled]="!quickTaskTitle().trim()"
+            (click)="submitQuickTask()"
+          >
+            Add
+          </button>
+        </div>
+
+        <!-- Overdue Tasks Warning Banner (if any) -->
+        @if (state.overdueTodos().length > 0 && state.todoFilter() !== 'completed') {
+          <div class="overdue-banner">
+            <ng-icon name="lucideAlertCircle" class="banner-icon"></ng-icon>
+            <span>You have {{ state.overdueTodos().length }} overdue tasks!</span>
+          </div>
+        }
+
+        <!-- Todo Items List -->
+        @if (state.isLoading()) {
+          <div class="loading-state">Loading tasks...</div>
+        } @else if (state.filteredTodos().length === 0) {
+          <div class="empty-state-box">
+            <ng-icon name="lucideCheckSquare" class="empty-icon text-emerald-500"></ng-icon>
+            <p class="empty-title">All tasks completed!</p>
+            <p class="empty-subtitle">Take a break or add a new goal for today.</p>
+            <button hlmBtn variant="outline" size="sm" class="mt-3" (click)="openTodoModal()">
+              Add a new task
+            </button>
+          </div>
+        } @else {
+          <div class="todo-items-list">
+            @for (todo of state.filteredTodos(); track todo.id) {
+              <div class="todo-item-row" [class.completed]="todo.status === 'completed'">
+                <!-- Checkbox -->
+                <button
+                  class="custom-checkbox"
+                  [class.checked]="todo.status === 'completed'"
+                  (click)="state.toggleTodoStatus(todo)"
+                  title="{{ todo.status === 'completed' ? 'Mark pending' : 'Mark completed' }}"
+                >
+                  @if (todo.status === 'completed') {
+                    <ng-icon name="lucideCheck" class="check-icon"></ng-icon>
+                  }
+                </button>
+
+                <!-- Task Details -->
+                <div class="todo-details">
+                  <div class="todo-title-row">
+                    <span class="todo-title" [class.strikethrough]="todo.status === 'completed'">
+                      {{ todo.title }}
+                    </span>
+
+                    <!-- Priority Badge -->
+                    <span class="priority-badge" [ngClass]="getPriorityClass(todo.priority)">
+                      {{ todo.priority }}
+                    </span>
+                  </div>
+
+                  @if (todo.description) {
+                    <p class="todo-desc">{{ todo.description }}</p>
+                  }
+
+                  <div class="todo-meta-row">
+                    @if (todo.dueDate) {
+                      <span class="meta-item date-meta" [class.overdue]="todo.dueDate < state.todaysDateStr() && todo.status !== 'completed'">
+                        <ng-icon name="lucideCalendar" class="meta-icon"></ng-icon>
+                        {{ todo.dueDate }} {{ todo.dueTime || '' }}
+                      </span>
+                    }
+
+                    @if (todo.reminder) {
+                      <span class="meta-item reminder-meta" title="Reminder: {{ todo.reminder.reminderTime }}">
+                        <ng-icon name="lucideBell" class="meta-icon"></ng-icon>
+                        Alert set
+                      </span>
+                    }
+
+                    @for (tag of todo.tags; track tag) {
+                      <span class="todo-tag-pill">#{{ tag }}</span>
+                    }
+                  </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="row-actions">
+                  <button
+                    class="icon-action-btn delete-btn"
+                    (click)="state.deleteTodo(todo.id)"
+                    title="Delete task"
+                  >
+                    <ng-icon name="lucideTrash2"></ng-icon>
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </section>
+    }
+  </div>
+
+  <!-- Mobile Floating Action Button (FAB) -->
+  <button class="mobile-fab" (click)="isMobileMenuOpen.set(!isMobileMenuOpen())" title="Add item">
+    <ng-icon name="lucidePlus"></ng-icon>
+  </button>
+
+  <!-- Mobile FAB Radial Menu -->
+  @if (isMobileMenuOpen()) {
+    <div class="mobile-fab-menu">
+      <button class="fab-option-btn note-fab" (click)="openNoteModal(); isMobileMenuOpen.set(false)">
+        <ng-icon name="lucideStickyNote" class="mr-2"></ng-icon>
+        New Note
+      </button>
+      <button class="fab-option-btn task-fab" (click)="openTodoModal(); isMobileMenuOpen.set(false)">
+        <ng-icon name="lucideCheckSquare" class="mr-2"></ng-icon>
+        New Task
+      </button>
+    </div>
+  }
+
+  <!-- NOTE MODAL / BOTTOM SHEET -->
+  @if (isNoteModalOpen()) {
+    <div class="modal-backdrop" (click)="closeNoteModal()">
+      <div class="modal-card bottom-sheet" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3 class="modal-title">New Note</h3>
+          <button class="close-btn" (click)="closeNoteModal()">
+            <ng-icon name="lucideX"></ng-icon>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Title (optional)</label>
+            <input
+              type="text"
+              placeholder="e.g., Project Ideas"
+              [(ngModel)]="noteForm.title"
+              class="form-input"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Note Content *</label>
+            <textarea
+              rows="6"
+              placeholder="Write your note, checklist, or scratchpad text..."
+              [(ngModel)]="noteForm.content"
+              class="form-textarea"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Tags</label>
+            <div class="tag-input-row">
+              <input
+                type="text"
+                placeholder="Add tag (e.g. work) and press enter"
+                [(ngModel)]="noteForm.tagInput"
+                (keydown.enter)="addNoteTag()"
+                class="form-input"
+              />
+              <button hlmBtn variant="outline" size="sm" (click)="addNoteTag()">Add</button>
+            </div>
+            @if (noteForm.tags.length > 0) {
+              <div class="selected-tags-row">
+                @for (tag of noteForm.tags; track tag) {
+                  <span class="selected-tag-pill">
+                    #{{ tag }}
+                    <button class="tag-remove-x" (click)="removeNoteTag(tag)">×</button>
+                  </span>
+                }
+              </div>
+            }
+          </div>
+
+          <div class="form-checkbox-row">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="noteForm.isPinned" />
+              <span>Pin this note to top</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button hlmBtn variant="ghost" size="sm" (click)="closeNoteModal()">Cancel</button>
+          <button
+            hlmBtn
+            variant="default"
+            size="sm"
+            [disabled]="!noteForm.content.trim() || state.isSaving()"
+            (click)="saveNote()"
+          >
+            {{ state.isSaving() ? 'Saving...' : 'Save Note' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- TODO MODAL / BOTTOM SHEET -->
+  @if (isTodoModalOpen()) {
+    <div class="modal-backdrop" (click)="closeTodoModal()">
+      <div class="modal-card bottom-sheet" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3 class="modal-title">New Task</h3>
+          <button class="close-btn" (click)="closeTodoModal()">
+            <ng-icon name="lucideX"></ng-icon>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Task Title *</label>
+            <input
+              type="text"
+              placeholder="What do you need to accomplish?"
+              [(ngModel)]="todoForm.title"
+              class="form-input"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Description (optional)</label>
+            <textarea
+              rows="3"
+              placeholder="Add more details or checklist items..."
+              [(ngModel)]="todoForm.description"
+              class="form-textarea"
+            ></textarea>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label">Priority</label>
+              <select [(ngModel)]="todoForm.priority" class="form-select">
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Due Date</label>
+              <input type="date" [(ngModel)]="todoForm.dueDate" class="form-input" />
+            </div>
+          </div>
+
+          <!-- Reminder Toggle Section -->
+          <div class="reminder-box">
+            <div class="form-checkbox-row">
+              <label class="checkbox-label">
+                <input type="checkbox" [(ngModel)]="todoForm.enableReminder" />
+                <span class="font-medium">Set Alert Reminder</span>
+              </label>
+            </div>
+
+            @if (todoForm.enableReminder) {
+              <div class="reminder-fields mt-3">
+                <div class="form-group">
+                  <label class="form-label">Reminder Date & Time</label>
+                  <input
+                    type="datetime-local"
+                    [(ngModel)]="todoForm.reminderTime"
+                    class="form-input"
+                  />
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Tags -->
+          <div class="form-group mt-3">
+            <label class="form-label">Tags</label>
+            <div class="tag-input-row">
+              <input
+                type="text"
+                placeholder="Add tag and press enter"
+                [(ngModel)]="todoForm.tagInput"
+                (keydown.enter)="addTodoTag()"
+                class="form-input"
+              />
+              <button hlmBtn variant="outline" size="sm" (click)="addTodoTag()">Add</button>
+            </div>
+            @if (todoForm.tags.length > 0) {
+              <div class="selected-tags-row">
+                @for (tag of todoForm.tags; track tag) {
+                  <span class="selected-tag-pill">
+                    #{{ tag }}
+                    <button class="tag-remove-x" (click)="removeTodoTag(tag)">×</button>
+                  </span>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button hlmBtn variant="ghost" size="sm" (click)="closeTodoModal()">Cancel</button>
+          <button
+            hlmBtn
+            variant="default"
+            size="sm"
+            [disabled]="!todoForm.title.trim() || state.isSaving()"
+            (click)="saveTodo()"
+          >
+            {{ state.isSaving() ? 'Saving...' : 'Create Task' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

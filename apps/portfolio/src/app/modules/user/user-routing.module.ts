@@ -158,6 +158,14 @@ const routes: Routes = [
         canActivate: [authGuard, createModuleGuard('dietHydration')],
       },
       {
+        path: 'planner',
+        loadComponent: () =>
+          import('./components/planner/planner.component').then(
+            (m) => m.PlannerComponent,
+          ),
+        canActivate: [authGuard, createModuleGuard('planner')],
+      },
+      {
         path: 'dev-tools',
         loadChildren: () =>
           import('../dev-tools/dev-tools-routing.module').then(

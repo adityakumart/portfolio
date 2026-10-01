@@ -65,6 +65,19 @@ export const USER_MODULES: UserModuleConfig[] = [
     iconBgClass: 'bg-emerald-500/10 border-emerald-500/20',
     iconTextClass: 'text-emerald-500',
   },
+  {
+    key: 'planner',
+    label: 'Notes & Planner',
+    route: '/user/planner',
+    icon: 'lucideCheckSquare',
+    description:
+      'Capture instant notes, organize prioritized checklists, and receive intelligent reminders.',
+    badge: 'Productivity',
+    gradientClass:
+      'bg-card border border-border/80 hover:bg-accent text-foreground',
+    iconBgClass: 'bg-teal-500/10 border-teal-500/20',
+    iconTextClass: 'text-teal-500',
+  },
 ];
 
 /**
