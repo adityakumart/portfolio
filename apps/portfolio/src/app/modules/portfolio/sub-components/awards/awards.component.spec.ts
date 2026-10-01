@@ -39,7 +39,7 @@ test.describe('AwardsComponent (<app-awards>)', () => {
     await expect(awarder).toBeVisible();
     expect((await awarder.textContent())?.trim().length).toBeGreaterThan(0);
 
-    const date = firstCard.locator('.text-muted-foreground');
+    const date = firstCard.locator('.text-xs span.text-muted-foreground');
     await expect(date).toBeVisible();
     expect((await date.textContent())?.trim().length).toBeGreaterThan(0);
 

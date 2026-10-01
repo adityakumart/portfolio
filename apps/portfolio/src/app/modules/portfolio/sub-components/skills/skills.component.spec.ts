@@ -28,10 +28,7 @@ test.describe('SkillsComponent (<app-skills>)', () => {
     const skillsComponent = page.locator('app-skills');
     await expect(skillsComponent).toBeVisible({ timeout: 10000 });
 
-    const tabsList = skillsComponent.locator('hlm-tabs-list');
-    await expect(tabsList).toBeVisible();
-
-    const triggers = tabsList.locator('button[hlmTabsTrigger]');
+    const triggers = skillsComponent.getByRole('tab');
     await expect(triggers).toHaveCount(4);
 
     await expect(triggers.nth(0)).toContainText('All Capabilities');
@@ -44,7 +41,7 @@ test.describe('SkillsComponent (<app-skills>)', () => {
     const skillsComponent = page.locator('app-skills');
     await expect(skillsComponent).toBeVisible({ timeout: 10000 });
 
-    const triggers = skillsComponent.locator('button[hlmTabsTrigger]');
+    const triggers = skillsComponent.getByRole('tab');
     const allCards = skillsComponent.locator('.skill-card-with-accent');
     const initialCount = await allCards.count();
     expect(initialCount).toBeGreaterThan(0);
