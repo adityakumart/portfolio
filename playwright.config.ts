@@ -8,6 +8,7 @@ export default defineConfig({
     '**/user.spec.ts',
     '**/modules/user/**/*.component.spec.ts',
     '**/rr.spec.ts',
+    '**/modules/rr/**/*.spec.ts',
     '**/diet-hydration.spec.ts',
   ],
   testIgnore: [
