@@ -3,13 +3,12 @@ import { test, expect } from '@playwright/test';
 test.describe('SkillsComponent (<app-skills>)', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('domcontentloaded');
+    await page.waitForLoadState('load');
 
-    // Scroll to deferred Skills placeholder to trigger loading
-    const placeholder = page.locator('[aria-label="Loading Skills"]');
-    if (await placeholder.count() > 0) {
-      await placeholder.scrollIntoViewIfNeeded();
-    }
+    // Scroll down to trigger deferred Skills section
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    const target = page.locator('app-skills, [aria-label="Loading Skills"]').first();
+    await target.scrollIntoViewIfNeeded().catch(() => {});
   });
 
   test('should render Technical Skills container and section description', async ({ page }) => {

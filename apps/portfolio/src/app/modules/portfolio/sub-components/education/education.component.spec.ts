@@ -3,13 +3,12 @@ import { test, expect } from '@playwright/test';
 test.describe('EducationComponent (<app-education>)', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('domcontentloaded');
+    await page.waitForLoadState('load');
 
-    // Scroll to deferred Education placeholder to trigger loading
-    const placeholder = page.locator('[aria-label="Loading Education"]');
-    if (await placeholder.count() > 0) {
-      await placeholder.scrollIntoViewIfNeeded();
-    }
+    // Scroll down to trigger deferred Education section
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    const target = page.locator('app-education, [aria-label="Loading Education"]').first();
+    await target.scrollIntoViewIfNeeded().catch(() => {});
   });
 
   test('should render Education container card and title', async ({ page }) => {

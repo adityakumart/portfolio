@@ -3,13 +3,12 @@ import { test, expect } from '@playwright/test';
 test.describe('ExperienceComponent (<app-experience>)', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('domcontentloaded');
+    await page.waitForLoadState('load');
 
-    // Scroll to deferred Work Experience placeholder to trigger loading
-    const placeholder = page.locator('[aria-label="Loading Experience"]');
-    if (await placeholder.count() > 0) {
-      await placeholder.scrollIntoViewIfNeeded();
-    }
+    // Scroll down to trigger deferred Work Experience section
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    const target = page.locator('app-experience, [aria-label="Loading Experience"]').first();
+    await target.scrollIntoViewIfNeeded().catch(() => {});
   });
 
   test('should render the experience component container and card', async ({ page }) => {
