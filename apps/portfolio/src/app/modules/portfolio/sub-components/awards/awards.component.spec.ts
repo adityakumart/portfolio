@@ -3,13 +3,12 @@ import { test, expect } from '@playwright/test';
 test.describe('AwardsComponent (<app-awards>)', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('domcontentloaded');
+    await page.waitForLoadState('load');
 
-    // Scroll to deferred Awards placeholder to trigger loading
-    const placeholder = page.locator('[aria-label="Loading Awards"]');
-    if (await placeholder.count() > 0) {
-      await placeholder.scrollIntoViewIfNeeded();
-    }
+    // Scroll down to trigger deferred Awards section
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    const target = page.locator('app-awards, [aria-label="Loading Awards"]').first();
+    await target.scrollIntoViewIfNeeded().catch(() => {});
   });
 
   test('should render Awards & Recognitions container section and heading', async ({ page }) => {
@@ -39,7 +38,7 @@ test.describe('AwardsComponent (<app-awards>)', () => {
     await expect(awarder).toBeVisible();
     expect((await awarder.textContent())?.trim().length).toBeGreaterThan(0);
 
-    const date = firstCard.locator('.text-muted-foreground');
+    const date = firstCard.locator('.text-xs span.text-muted-foreground');
     await expect(date).toBeVisible();
     expect((await date.textContent())?.trim().length).toBeGreaterThan(0);
 

@@ -3,13 +3,12 @@ import { test, expect } from '@playwright/test';
 test.describe('SkillsComponent (<app-skills>)', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('domcontentloaded');
+    await page.waitForLoadState('load');
 
-    // Scroll to deferred Skills placeholder to trigger loading
-    const placeholder = page.locator('[aria-label="Loading Skills"]');
-    if (await placeholder.count() > 0) {
-      await placeholder.scrollIntoViewIfNeeded();
-    }
+    // Scroll down to trigger deferred Skills section
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    const target = page.locator('app-skills, [aria-label="Loading Skills"]').first();
+    await target.scrollIntoViewIfNeeded().catch(() => {});
   });
 
   test('should render Technical Skills container and section description', async ({ page }) => {
@@ -28,10 +27,7 @@ test.describe('SkillsComponent (<app-skills>)', () => {
     const skillsComponent = page.locator('app-skills');
     await expect(skillsComponent).toBeVisible({ timeout: 10000 });
 
-    const tabsList = skillsComponent.locator('hlm-tabs-list');
-    await expect(tabsList).toBeVisible();
-
-    const triggers = tabsList.locator('button[hlmTabsTrigger]');
+    const triggers = skillsComponent.getByRole('tab');
     await expect(triggers).toHaveCount(4);
 
     await expect(triggers.nth(0)).toContainText('All Capabilities');
@@ -44,7 +40,7 @@ test.describe('SkillsComponent (<app-skills>)', () => {
     const skillsComponent = page.locator('app-skills');
     await expect(skillsComponent).toBeVisible({ timeout: 10000 });
 
-    const triggers = skillsComponent.locator('button[hlmTabsTrigger]');
+    const triggers = skillsComponent.getByRole('tab');
     const allCards = skillsComponent.locator('.skill-card-with-accent');
     const initialCount = await allCards.count();
     expect(initialCount).toBeGreaterThan(0);

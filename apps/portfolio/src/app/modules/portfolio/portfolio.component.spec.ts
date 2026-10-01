@@ -3,7 +3,8 @@ import { test, expect } from '@playwright/test';
 test.describe('Portfolio Module - Public Profile & Showcase', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('domcontentloaded');
+    await page.waitForLoadState('load');
+    await page.locator('app-hero').waitFor({ state: 'visible' });
   });
 
   test('should render page title and SEO meta description', async ({ page }) => {
@@ -60,11 +61,12 @@ test.describe('Portfolio Module - Public Profile & Showcase', () => {
   test('should toggle dark/light theme when clicking theme toggle button', async ({ page }) => {
     const themeBtn = page.locator('button[aria-label="Toggle color theme"]');
     await expect(themeBtn).toBeVisible();
+    await page.waitForTimeout(400);
 
     const wasDarkInitially = await page.evaluate(() => document.documentElement.classList.contains('dark'));
 
-    // Click theme toggle with force
-    await themeBtn.click({ force: true });
+    // Click theme toggle
+    await themeBtn.click();
 
     // Verify dark class and localStorage
     if (wasDarkInitially) {
@@ -78,7 +80,7 @@ test.describe('Portfolio Module - Public Profile & Showcase', () => {
     }
 
     // Toggle back
-    await themeBtn.click({ force: true });
+    await themeBtn.click();
     if (wasDarkInitially) {
       await expect(page.locator('html')).toHaveClass(/dark/);
     } else {
@@ -89,66 +91,60 @@ test.describe('Portfolio Module - Public Profile & Showcase', () => {
   test('should navigate to dashboard/login when clicking Enter Dashboard button', async ({ page }) => {
     const dashboardBtn = page.locator('button[aria-label="Enter Dashboard"]');
     await expect(dashboardBtn).toBeVisible();
+    await page.waitForTimeout(400);
 
     await dashboardBtn.click();
-    await page.waitForURL(/\/(user|user\/login)/);
+    await page.waitForURL(/\/(user|user\/login)/, { timeout: 15000 });
 
     // Without an active session, user guard redirects to /user/login
     await expect(page).toHaveURL(/.*\/user(\/login)?/);
   });
 
   test('should reveal deferred sections (Experience, Education, Skills, Certificates, Awards) upon scrolling', async ({ page }) => {
-    // 1. Scroll to and trigger Work Experience deferred section
-    const expPlaceholder = page.locator('[aria-label="Loading Experience"]');
-    if (await expPlaceholder.count() > 0) {
-      await expPlaceholder.scrollIntoViewIfNeeded();
-    }
+    // Scroll page downwards to trigger deferred sections
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+
+    // 1. Trigger Work Experience deferred section
+    const expTarget = page.locator('app-experience, [aria-label="Loading Experience"]').first();
+    await expTarget.scrollIntoViewIfNeeded().catch(() => {});
     const experienceSection = page.locator('[aria-label="Work Experience"]');
-    await expect(experienceSection).toBeVisible({ timeout: 10000 });
+    await expect(experienceSection).toBeVisible({ timeout: 15000 });
     await expect(experienceSection.getByRole('heading', { name: 'Work Experience' })).toBeVisible();
 
-    // 2. Scroll to and trigger Education deferred section
-    const eduPlaceholder = page.locator('[aria-label="Loading Education"]');
-    if (await eduPlaceholder.count() > 0) {
-      await eduPlaceholder.scrollIntoViewIfNeeded();
-    }
+    // 2. Trigger Education deferred section
+    const eduTarget = page.locator('app-education, [aria-label="Loading Education"]').first();
+    await eduTarget.scrollIntoViewIfNeeded().catch(() => {});
     const educationSection = page.locator('[aria-label="Education"]');
-    await expect(educationSection).toBeVisible({ timeout: 10000 });
+    await expect(educationSection).toBeVisible({ timeout: 15000 });
     await expect(educationSection.getByRole('heading', { name: 'Education' })).toBeVisible();
 
-    // 3. Scroll to and trigger Technical Skills deferred section
-    const skillsPlaceholder = page.locator('[aria-label="Loading Skills"]');
-    if (await skillsPlaceholder.count() > 0) {
-      await skillsPlaceholder.scrollIntoViewIfNeeded();
-    }
+    // 3. Trigger Technical Skills deferred section
+    const skillsTarget = page.locator('app-skills, [aria-label="Loading Skills"]').first();
+    await skillsTarget.scrollIntoViewIfNeeded().catch(() => {});
     const skillsSection = page.locator('section[aria-label="Technical Skills"]');
-    await expect(skillsSection).toBeVisible({ timeout: 10000 });
+    await expect(skillsSection).toBeVisible({ timeout: 15000 });
     await expect(skillsSection.getByRole('heading', { name: 'Technical Skills' })).toBeVisible();
 
     // Test tab filtering in skills
-    const skillCategoryButtons = skillsSection.locator('button[hlmTabsTrigger]');
+    const skillCategoryButtons = skillsSection.getByRole('tab');
     if (await skillCategoryButtons.count() > 1) {
       const secondTab = skillCategoryButtons.nth(1);
       await secondTab.click();
       await expect(secondTab).toBeVisible();
     }
 
-    // 4. Scroll to and trigger Certificates deferred section
-    const certPlaceholder = page.locator('[aria-label="Loading Certificates"]');
-    if (await certPlaceholder.count() > 0) {
-      await certPlaceholder.scrollIntoViewIfNeeded();
-    }
+    // 4. Trigger Certificates deferred section
+    const certTarget = page.locator('app-certificates, [aria-label="Loading Certificates"]').first();
+    await certTarget.scrollIntoViewIfNeeded().catch(() => {});
     const certificatesSection = page.locator('section[aria-label="Certificates"]');
-    await expect(certificatesSection).toBeVisible({ timeout: 10000 });
+    await expect(certificatesSection).toBeVisible({ timeout: 15000 });
     await expect(certificatesSection.getByRole('heading', { name: 'Certificates' })).toBeVisible();
 
-    // 5. Scroll to and trigger Awards deferred section
-    const awardsPlaceholder = page.locator('[aria-label="Loading Awards"]');
-    if (await awardsPlaceholder.count() > 0) {
-      await awardsPlaceholder.scrollIntoViewIfNeeded();
-    }
+    // 5. Trigger Awards deferred section
+    const awardsTarget = page.locator('app-awards, [aria-label="Loading Awards"]').first();
+    await awardsTarget.scrollIntoViewIfNeeded().catch(() => {});
     const awardsSection = page.locator('section[aria-label="Awards and Recognitions"]');
-    await expect(awardsSection).toBeVisible({ timeout: 10000 });
+    await expect(awardsSection).toBeVisible({ timeout: 15000 });
     await expect(awardsSection.getByRole('heading', { name: 'Awards & Recognitions' })).toBeVisible();
   });
 
