@@ -14,23 +14,146 @@ import { RRActivityLogsComponent } from './components/dashboard/components/activ
 import { RRCustomerListComponent } from './components/dashboard/components/customer-list/customer-list.component';
 
 export const RR_ROUTES: Routes = [
-  { path: '', component: RRHomepageComponent },
-  { path: 'home', component: RRHomepageComponent },
-  { path: 'login', component: RRLoginComponent },
+  {
+    path: '',
+    component: RRHomepageComponent,
+    data: {
+      seo: {
+        title: 'Royal Rentals | Luxury & Fleet Car Rental Platform',
+        description:
+          'Explore premium car rentals, fleet management, and seamless vehicle bookings with instant reservation support.',
+        keywords: [
+          'Royal Rentals',
+          'Car Rental',
+          'Luxury Car Hire',
+          'Vehicle Fleet',
+          'Automobile Rental',
+        ],
+        robots: 'index, follow',
+        ogType: 'website',
+      },
+    },
+  },
+  {
+    path: 'home',
+    component: RRHomepageComponent,
+    data: {
+      seo: {
+        title: 'Royal Rentals | Luxury & Fleet Car Rental Platform',
+        description:
+          'Explore premium car rentals, fleet management, and seamless vehicle bookings with instant reservation support.',
+        keywords: [
+          'Royal Rentals',
+          'Car Rental',
+          'Luxury Car Hire',
+          'Vehicle Fleet',
+          'Automobile Rental',
+        ],
+        robots: 'index, follow',
+        ogType: 'website',
+      },
+    },
+  },
+  {
+    path: 'login',
+    component: RRLoginComponent,
+    data: {
+      seo: {
+        title: 'Royal Rentals Portal Login | Fleet Management',
+        description:
+          'Sign in to access your Royal Rentals account, manage vehicle bookings, and review rental agreements.',
+        keywords: ['Rental Login', 'Royal Rentals Sign In', 'Fleet Portal'],
+        robots: 'index, follow',
+        ogType: 'website',
+      },
+    },
+  },
   {
     path: '',
     component: RRDashboardComponent,
     children: [
-      { path: 'dashboard', component: RRStatsViewComponent },
-      { path: 'booking/list', component: RRBookingListComponent },
-      { path: 'vehicle/list', component: RRVehicleListComponent },
-      { path: 'customer/list', component: RRCustomerListComponent },
-      { path: 'employee/list', component: RREmployeeListComponent },
-      { path: 'history', component: RRHistoryComponent },
-      { path: 'activity-logs', component: RRActivityLogsComponent },
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
-    ]
-  }
+      {
+        path: 'dashboard',
+        component: RRStatsViewComponent,
+        data: {
+          seo: {
+            title: 'Fleet Dashboard | Royal Rentals',
+            description: 'Fleet analytics and booking metrics.',
+            robots: 'noindex, nofollow',
+          },
+        },
+      },
+      {
+        path: 'booking/list',
+        component: RRBookingListComponent,
+        data: {
+          seo: {
+            title: 'Bookings Management | Royal Rentals',
+            description: 'Manage current and upcoming rental reservations.',
+            robots: 'noindex, nofollow',
+          },
+        },
+      },
+      {
+        path: 'vehicle/list',
+        component: RRVehicleListComponent,
+        data: {
+          seo: {
+            title: 'Vehicle Fleet Management | Royal Rentals',
+            description:
+              'Manage vehicle inventory, maintenance status, and pricing.',
+            robots: 'noindex, nofollow',
+          },
+        },
+      },
+      {
+        path: 'customer/list',
+        component: RRCustomerListComponent,
+        data: {
+          seo: {
+            title: 'Customer Directory | Royal Rentals',
+            description: 'Manage registered rental customers and loyalty tiers.',
+            robots: 'noindex, nofollow',
+          },
+        },
+      },
+      {
+        path: 'employee/list',
+        component: RREmployeeListComponent,
+        data: {
+          seo: {
+            title: 'Staff Management | Royal Rentals',
+            description: 'Employee roles and rental agent directory.',
+            robots: 'noindex, nofollow',
+          },
+        },
+      },
+      {
+        path: 'history',
+        component: RRHistoryComponent,
+        data: {
+          seo: {
+            title: 'Rental History & Invoices | Royal Rentals',
+            description:
+              'Completed rentals, transaction history, and invoice records.',
+            robots: 'noindex, nofollow',
+          },
+        },
+      },
+      {
+        path: 'activity-logs',
+        component: RRActivityLogsComponent,
+        data: {
+          seo: {
+            title: 'System Activity Logs | Royal Rentals',
+            description: 'Audit log of rental system operations.',
+            robots: 'noindex, nofollow',
+          },
+        },
+      },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+    ],
+  },
 ];
 
 @NgModule({

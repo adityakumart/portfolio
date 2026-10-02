@@ -35,6 +35,27 @@ export const AppRoutes: Routes = [
       import('./modules/portfolio/portfolio.component').then(
         (m) => m.PortfolioComponent,
       ),
+    data: {
+      seo: {
+        title:
+          'Aditya Kumar T | Product Group Lead Frontend & Senior Web Developer',
+        description:
+          'Portfolio of Aditya Kumar T - Product Group Lead Frontend with 8+ years of experience specializing in Angular, React, TypeScript, UI Architecture, and high-performance web applications.',
+        keywords: [
+          'Aditya Kumar T',
+          'Product Group Lead Frontend',
+          'Senior Web Developer',
+          'Angular Developer',
+          'React Developer',
+          'TypeScript',
+          'UI Architecture',
+          'Design Systems',
+          'Hyderabad',
+        ],
+        robots: 'index, follow',
+        ogType: 'profile',
+      },
+    },
   },
   {
     path: '**',

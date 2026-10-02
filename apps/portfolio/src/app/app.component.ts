@@ -11,6 +11,7 @@ import { filter, map } from 'rxjs/operators';
 import { ThemeService } from './theme.service';
 import { GlobalData } from '../shared/data/GlobalData';
 import { appRoutingList } from './shared/data/routes';
+import { SeoService } from './shared/services/seo.service';
 
 import { HlmToaster } from '@spartan-ng/hel/sonner';
 
@@ -29,6 +30,7 @@ export class AppComponent implements OnInit {
   private globalData: GlobalData = inject(GlobalData);
   private themeService = inject(ThemeService);
   private router = inject(Router);
+  private seoService = inject(SeoService);
 
   readonly isUserRoute = toSignal(
     this.router.events.pipe(
@@ -88,9 +90,6 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.document.title =
-      this.globalData.resume.basics.name +
-      ' || ' +
-      this.globalData.resume.basics.jobtitle;
+    this.seoService.initRouteListener();
   }
 }

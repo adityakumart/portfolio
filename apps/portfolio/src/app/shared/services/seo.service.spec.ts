@@ -201,4 +201,44 @@ describe('SeoService', () => {
     expect(parsed['@graph'][0]['name']).toBe('Aditya Kumar T');
     expect(parsed['@graph'][1]['@type']).toBe('ProfilePage');
   });
+
+  it('should apply route SEO with SoftwareApplication schema for tools', () => {
+    service.applyRouteSeo(
+      {
+        title: 'JSON to TypeScript Converter | Developer Tools',
+        description: 'Convert JSON to TypeScript interfaces online.',
+        keywords: ['JSON', 'TypeScript'],
+        robots: 'index, follow',
+        applicationCategory: 'DeveloperApplication',
+      },
+      '/user/dev-tools/converters/json-to-typescript',
+    );
+
+    expect(titleService.getTitle()).toBe(
+      'JSON to TypeScript Converter | Developer Tools',
+    );
+    expect(metaService.getTag('name="description"')?.content).toBe(
+      'Convert JSON to TypeScript interfaces online.',
+    );
+    expect(metaService.getTag('name="robots"')?.content).toBe('index, follow');
+
+    const script = document.getElementById(
+      'seo-structured-data',
+    ) as HTMLScriptElement;
+    expect(script).toBeTruthy();
+
+    const parsed = JSON.parse(script.textContent || '{}');
+    expect(parsed['@context']).toBe('https://schema.org');
+    expect(parsed['@type']).toBe('WebApplication');
+    expect(parsed.applicationCategory).toBe('DeveloperApplication');
+  });
+
+  it('should properly resolve canonical URLs', () => {
+    const directUrl = service.getCanonicalUrl('https://example.com/test');
+    expect(directUrl).toBe('https://example.com/test');
+
+    const relativeUrl = service.getCanonicalUrl('/user/login');
+    expect(relativeUrl).toContain('/user/login');
+  });
 });
+

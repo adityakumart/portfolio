@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+Disallow: /user/planner
+Disallow: /user/files
+Disallow: /user/diet-hydration
+Disallow: /user/chat
+Disallow: /user/ai
+Disallow: /user/no-modules
+Disallow: /user/rr/dashboard/
+Disallow: /user/rr/booking/
+Disallow: /user/rr/vehicle/
+Disallow: /user/rr/customer/
+Disallow: /user/rr/employee/
+Disallow: /user/rr/history
+Disallow: /user/rr/activity-logs
+
+Sitemap: https://adityakumart.github.io/portfolio/sitemap.xml

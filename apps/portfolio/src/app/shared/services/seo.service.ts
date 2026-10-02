@@ -1,6 +1,29 @@
 import { Injectable, inject, DOCUMENT } from '@angular/core';
 import { Title, Meta } from '@angular/platform-browser';
+import { Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { ResumeObject } from '../../../shared/Interface/Resume';
+import { environment } from '../../../environments/environment';
+
+export interface RouteSeoData {
+  title: string;
+  description: string;
+  keywords?: string | string[];
+  author?: string;
+  robots?: 'index, follow' | 'noindex, nofollow' | 'noindex, follow';
+  ogTitle?: string;
+  ogDescription?: string;
+  ogType?: 'website' | 'article' | 'profile';
+  ogImage?: string;
+  ogSiteName?: string;
+  twitterCard?: 'summary' | 'summary_large_image' | 'app' | 'player';
+  twitterTitle?: string;
+  twitterDescription?: string;
+  twitterImage?: string;
+  applicationCategory?: string;
+  schema?: object | object[];
+  extraMeta?: { name?: string; property?: string; content: string }[];
+}
 
 export interface SeoMetaConfig {
   title?: string;
@@ -32,6 +55,7 @@ export class SeoService {
   private titleService = inject(Title);
   private metaService = inject(Meta);
   private document = inject(DOCUMENT);
+  private router = inject(Router, { optional: true });
 
   private readonly jsonLdScriptId = 'seo-structured-data';
 
@@ -201,6 +225,55 @@ export class SeoService {
   }
 
   /**
+   * Resolves canonical URL based on path or current window location
+   */
+  getCanonicalUrl(path?: string): string {
+    if (path && (path.startsWith('http://') || path.startsWith('https://'))) {
+      return path;
+    }
+
+    const hasLocation = !!(
+      this.document &&
+      this.document.location &&
+      this.document.location.origin
+    );
+    const isLocal =
+      hasLocation &&
+      (this.document.location.hostname === 'localhost' ||
+        this.document.location.hostname === '127.0.0.1');
+
+    const configuredSiteUrl = (
+      (environment as { siteUrl?: string }).siteUrl ||
+      'https://adityakumart.github.io/portfolio'
+    ).replace(/\/+$/, '');
+
+    const origin =
+      hasLocation && !isLocal ? this.document.location.origin : configuredSiteUrl;
+
+    const normalizedPath = path
+      ? path.startsWith('/')
+        ? path
+        : `/${path}`
+      : hasLocation
+        ? this.document.location.pathname
+        : '/';
+
+    // If origin ends with '/portfolio' and path starts with '/portfolio/', prevent double path segment
+    if (
+      origin.endsWith('/portfolio') &&
+      normalizedPath.startsWith('/portfolio/')
+    ) {
+      return `${origin}${normalizedPath.substring('/portfolio'.length)}`;
+    }
+
+    if (origin.endsWith('/portfolio') && normalizedPath === '/portfolio') {
+      return `${origin}/`;
+    }
+
+    return `${origin}${normalizedPath}`;
+  }
+
+  /**
    * Injects or updates the canonical link tag in the document <head>
    */
   setCanonicalUrl(url?: string): void {
@@ -208,11 +281,7 @@ export class SeoService {
       return;
     }
 
-    const canonicalHref =
-      url ||
-      (this.document.location
-        ? `${this.document.location.origin}${this.document.location.pathname}`
-        : 'https://adityakumart.github.io/portfolio/');
+    const canonicalHref = this.getCanonicalUrl(url);
 
     let link: HTMLLinkElement | null = this.document.querySelector(
       "link[rel='canonical']",
@@ -335,9 +404,7 @@ export class SeoService {
    */
   setPortfolioSeo(resume: ResumeObject): void {
     const basics = resume.basics;
-    const siteUrl = this.document?.location
-      ? `${this.document.location.origin}${this.document.location.pathname}`
-      : 'https://adityakumart.github.io/portfolio/';
+    const siteUrl = this.getCanonicalUrl('/');
 
     const allSkills = resume.skills?.flatMap((s) => s.keywords.map((k) => k.name)) || [];
 
@@ -386,4 +453,127 @@ export class SeoService {
     const jsonLdData = this.generatePortfolioSchema(resume, siteUrl);
     this.setJsonLd(jsonLdData);
   }
+
+  /**
+   * Helper to generate Schema.org JSON-LD structured data for web applications / developer tools
+   */
+  generateSoftwareAppSchema(
+    name: string,
+    description: string,
+    url: string,
+    category = 'DeveloperApplication',
+  ): object {
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'WebApplication',
+      name,
+      description,
+      url,
+      applicationCategory: category,
+      operatingSystem: 'Any',
+      offers: {
+        '@type': 'Offer',
+        price: '0',
+        priceCurrency: 'USD',
+      },
+      author: {
+        '@type': 'Person',
+        name: 'Aditya Kumar T',
+        url: this.getCanonicalUrl('/'),
+      },
+    };
+  }
+
+  /**
+   * Applies route-level SEO configuration
+   */
+  applyRouteSeo(seo: RouteSeoData, currentPath?: string): void {
+    const siteUrl = this.getCanonicalUrl(currentPath);
+    const defaultImage = this.getCanonicalUrl('/assets/skills/angular.svg');
+
+    this.updateMetaTags({
+      title: seo.title,
+      description: seo.description,
+      keywords: seo.keywords,
+      author: seo.author || 'Aditya Kumar T',
+      robots: seo.robots || 'index, follow',
+      canonicalUrl: siteUrl,
+      themeColor: '#0f172a',
+      ogTitle: seo.ogTitle || seo.title,
+      ogDescription: seo.ogDescription || seo.description,
+      ogType: seo.ogType || 'website',
+      ogUrl: siteUrl,
+      ogImage: seo.ogImage || defaultImage,
+      ogSiteName: seo.ogSiteName || 'Aditya Kumar T Portfolio',
+      twitterCard: seo.twitterCard || 'summary_large_image',
+      twitterTitle: seo.twitterTitle || seo.ogTitle || seo.title,
+      twitterDescription:
+        seo.twitterDescription || seo.ogDescription || seo.description,
+      twitterImage: seo.twitterImage || seo.ogImage || defaultImage,
+      extraMeta: seo.extraMeta,
+    });
+
+    if (seo.applicationCategory) {
+      const appSchema = this.generateSoftwareAppSchema(
+        seo.title,
+        seo.description,
+        siteUrl,
+        seo.applicationCategory,
+      );
+      this.setJsonLd(appSchema);
+    } else if (seo.schema) {
+      this.setJsonLd(seo.schema);
+    } else {
+      // Remove any stale tool JSON-LD when moving to standard non-tool routes
+      if (
+        currentPath &&
+        currentPath !== '/' &&
+        currentPath !== '/portfolio' &&
+        currentPath !== '/portfolio/'
+      ) {
+        this.removeJsonLd();
+      }
+    }
+  }
+
+  /**
+   * Automatically synchronizes SEO metadata, title, canonical link, and JSON-LD
+   * based on activated route data on every NavigationEnd event.
+   */
+  initRouteListener(): void {
+    if (!this.router) {
+      return;
+    }
+
+    const processRoute = (url?: string) => {
+      let route = this.router!.routerState.root;
+      let routeSeo: RouteSeoData | undefined;
+
+      while (route.firstChild) {
+        route = route.firstChild;
+        if (route.snapshot.data && route.snapshot.data['seo']) {
+          routeSeo = route.snapshot.data['seo'] as RouteSeoData;
+        }
+      }
+
+      if (routeSeo) {
+        this.applyRouteSeo(routeSeo, url || this.router!.url);
+      }
+    };
+
+    if (this.router.navigated) {
+      processRoute(this.router.url);
+    }
+
+    this.router.events
+      .pipe(
+        filter(
+          (event): event is NavigationEnd => event instanceof NavigationEnd,
+        ),
+      )
+      .subscribe((event) => {
+        processRoute(event.urlAfterRedirects);
+      });
+  }
 }
+
