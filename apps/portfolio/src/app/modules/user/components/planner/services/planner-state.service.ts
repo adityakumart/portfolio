@@ -6,10 +6,13 @@ import {
   IUpdateNoteDto,
   ICreateTodoDto,
   IUpdateTodoDto,
+  ISubtask,
 } from '@portfolio/shared-types';
 import { PlannerApiService } from './planner-api.service';
 import { PlatformAdapterService } from './platform-adapter.service';
 import { toast } from '@spartan-ng/brain/sonner';
+
+const PLANNER_OFFLINE_CACHE_KEY = 'portfolio_planner_offline_cache';
 
 @Injectable({
   providedIn: 'root',
@@ -27,6 +30,10 @@ export class PlannerStateService {
   readonly selectedTag = signal<string | null>(null);
   readonly activeTab = signal<'all' | 'notes' | 'todos'>('all');
   readonly todoFilter = signal<'all' | 'today' | 'upcoming' | 'completed'>('all');
+
+  // Currently editing models (null if adding new)
+  readonly editingNote = signal<INote | null>(null);
+  readonly editingTodo = signal<ITodoItem | null>(null);
 
   // Computed Derived Signals
   readonly todaysDateStr = computed(() => {
@@ -143,19 +150,36 @@ export class PlannerStateService {
   });
 
   // State actions
-  loadDashboard(): void {
+  async loadDashboard(): Promise<void> {
+    // Attempt instant restore from offline cache
+    const cached = await this.platform.getStorageItem<{ notes: INote[]; todos: ITodoItem[] }>(
+      PLANNER_OFFLINE_CACHE_KEY,
+    );
+    if (cached && (this.notes().length === 0 && this.todos().length === 0)) {
+      if (cached.notes) this.notes.set(cached.notes);
+      if (cached.todos) this.todos.set(cached.todos);
+    }
+
     this.isLoading.set(true);
     this.api.getDashboard().subscribe({
       next: (res) => {
-        this.notes.set(res.notes || []);
-        this.todos.set(res.todos || []);
+        const fetchedNotes = res.notes || [];
+        const fetchedTodos = res.todos || [];
+        this.notes.set(fetchedNotes);
+        this.todos.set(fetchedTodos);
         this.isLoading.set(false);
         this.platform.updateBadge(this.pendingTodos().length);
+        this.platform.setStorageItem(PLANNER_OFFLINE_CACHE_KEY, {
+          notes: fetchedNotes,
+          todos: fetchedTodos,
+        });
       },
       error: (err) => {
         console.error('Failed to load planner dashboard:', err);
         this.isLoading.set(false);
-        toast.error('Could not load Planner items. Please check connection.');
+        if (!cached) {
+          toast.error('Could not load Planner items. Please check connection.');
+        }
       },
     });
   }
@@ -167,11 +191,14 @@ export class PlannerStateService {
         next: (newNote) => {
           this.notes.update((prev) => [newNote, ...prev]);
           this.isSaving.set(false);
+          this.platform.triggerHaptic('success');
+          this.syncCache();
           toast.success('Note saved');
           resolve(newNote);
         },
         error: (err) => {
           this.isSaving.set(false);
+          this.platform.triggerHaptic('error');
           toast.error('Failed to create note');
           reject(err);
         },
@@ -188,10 +215,14 @@ export class PlannerStateService {
             prev.map((n) => (n.id === id ? updated : n)),
           );
           this.isSaving.set(false);
+          this.platform.triggerHaptic('light');
+          this.syncCache();
+          toast.success('Note updated');
           resolve(updated);
         },
         error: (err) => {
           this.isSaving.set(false);
+          this.platform.triggerHaptic('error');
           toast.error('Failed to update note');
           reject(err);
         },
@@ -201,6 +232,7 @@ export class PlannerStateService {
 
   toggleNotePin(note: INote): void {
     const newPinned = !note.isPinned;
+    this.platform.triggerHaptic('selection');
     // Optimistic
     this.notes.update((prev) =>
       prev.map((n) => (n.id === note.id ? { ...n, isPinned: newPinned } : n)),
@@ -210,12 +242,14 @@ export class PlannerStateService {
         this.notes.update((prev) =>
           prev.map((n) => (n.id === note.id ? updated : n)),
         );
+        this.syncCache();
       },
       error: () => {
         // Rollback
         this.notes.update((prev) =>
           prev.map((n) => (n.id === note.id ? note : n)),
         );
+        this.platform.triggerHaptic('error');
         toast.error('Failed to update pin status');
       },
     });
@@ -224,13 +258,16 @@ export class PlannerStateService {
   deleteNote(id: string): void {
     const backup = this.notes();
     this.notes.update((prev) => prev.filter((n) => n.id !== id));
+    this.platform.triggerHaptic('medium');
 
     this.api.deleteNote(id).subscribe({
       next: () => {
+        this.syncCache();
         toast.success('Note deleted');
       },
       error: () => {
         this.notes.set(backup);
+        this.platform.triggerHaptic('error');
         toast.error('Failed to delete note');
       },
     });
@@ -243,12 +280,15 @@ export class PlannerStateService {
         next: (newTodo) => {
           this.todos.update((prev) => [newTodo, ...prev]);
           this.isSaving.set(false);
+          this.platform.triggerHaptic('success');
           this.platform.updateBadge(this.pendingTodos().length);
+          this.syncCache();
           toast.success('Task created');
           resolve(newTodo);
         },
         error: (err) => {
           this.isSaving.set(false);
+          this.platform.triggerHaptic('error');
           toast.error('Failed to create task');
           reject(err);
         },
@@ -265,11 +305,14 @@ export class PlannerStateService {
             prev.map((t) => (t.id === id ? updated : t)),
           );
           this.isSaving.set(false);
+          this.platform.triggerHaptic('light');
           this.platform.updateBadge(this.pendingTodos().length);
+          this.syncCache();
           resolve(updated);
         },
         error: (err) => {
           this.isSaving.set(false);
+          this.platform.triggerHaptic('error');
           toast.error('Failed to update task');
           reject(err);
         },
@@ -279,6 +322,8 @@ export class PlannerStateService {
 
   toggleTodoStatus(todo: ITodoItem): void {
     const isNowCompleted = todo.status !== 'completed';
+    this.platform.triggerHaptic(isNowCompleted ? 'success' : 'selection');
+
     const optimistic: ITodoItem = {
       ...todo,
       status: isNowCompleted ? 'completed' : 'pending',
@@ -296,12 +341,14 @@ export class PlannerStateService {
           prev.map((t) => (t.id === todo.id ? updated : t)),
         );
         this.platform.updateBadge(this.pendingTodos().length);
+        this.syncCache();
       },
       error: () => {
         // Rollback
         this.todos.update((prev) =>
           prev.map((t) => (t.id === todo.id ? todo : t)),
         );
+        this.platform.triggerHaptic('error');
         this.platform.updateBadge(this.pendingTodos().length);
         toast.error('Failed to toggle task');
       },
@@ -310,19 +357,57 @@ export class PlannerStateService {
 
   deleteTodo(id: string): void {
     const backup = this.todos();
+    this.notes.update((prev) => prev.filter((t) => t.id !== id));
     this.todos.update((prev) => prev.filter((t) => t.id !== id));
+    this.platform.triggerHaptic('medium');
     this.platform.updateBadge(this.pendingTodos().length);
 
     this.api.deleteTodo(id).subscribe({
       next: () => {
+        this.syncCache();
         toast.success('Task removed');
       },
       error: () => {
         this.todos.set(backup);
+        this.platform.triggerHaptic('error');
         this.platform.updateBadge(this.pendingTodos().length);
         toast.error('Failed to remove task');
       },
     });
+  }
+
+  // --- Subtask Management ---
+  toggleSubtask(todoId: string, subtaskId: string): void {
+    const target = this.todos().find((t) => t.id === todoId);
+    if (!target || !target.subtasks) return;
+
+    this.platform.triggerHaptic('selection');
+    const updatedSubtasks: ISubtask[] = target.subtasks.map((st) =>
+      st.id === subtaskId ? { ...st, completed: !st.completed } : st,
+    );
+
+    this.updateTodo(todoId, { subtasks: updatedSubtasks });
+  }
+
+  addSubtask(todoId: string, title: string): void {
+    const target = this.todos().find((t) => t.id === todoId);
+    if (!target) return;
+
+    const newSubtask: ISubtask = {
+      id: `st_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      title: title.trim(),
+      completed: false,
+    };
+    const updatedSubtasks = [...(target.subtasks || []), newSubtask];
+    this.updateTodo(todoId, { subtasks: updatedSubtasks });
+  }
+
+  removeSubtask(todoId: string, subtaskId: string): void {
+    const target = this.todos().find((t) => t.id === todoId);
+    if (!target || !target.subtasks) return;
+
+    const updatedSubtasks = target.subtasks.filter((st) => st.id !== subtaskId);
+    this.updateTodo(todoId, { subtasks: updatedSubtasks });
   }
 
   snoozeReminder(todoId: string, minutes: number = 10): void {
@@ -331,11 +416,21 @@ export class PlannerStateService {
         this.todos.update((prev) =>
           prev.map((t) => (t.id === todoId ? updated : t)),
         );
+        this.platform.triggerHaptic('light');
+        this.syncCache();
         toast.info(`Reminder snoozed for ${minutes} minutes`);
       },
       error: () => {
+        this.platform.triggerHaptic('error');
         toast.error('Could not snooze reminder');
       },
+    });
+  }
+
+  private syncCache(): void {
+    this.platform.setStorageItem(PLANNER_OFFLINE_CACHE_KEY, {
+      notes: this.notes(),
+      todos: this.todos(),
     });
   }
 }

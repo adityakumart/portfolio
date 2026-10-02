@@ -1,0 +1,163 @@
+<div
+  class="todo-item-card"
+  [class.completed]="todo.status === 'completed'"
+  [class.overdue]="isOverdue"
+>
+  <div class="todo-main-row">
+    <!-- Status Checkbox -->
+    <button
+      type="button"
+      class="todo-checkbox"
+      [class.checked]="todo.status === 'completed'"
+      (click)="statusToggle.emit(todo)"
+      [title]="todo.status === 'completed' ? 'Mark as incomplete' : 'Mark as complete'"
+      aria-label="Toggle task status"
+    >
+      @if (todo.status === 'completed') {
+        <ng-icon name="lucideCheck" class="check-icon"></ng-icon>
+      }
+    </button>
+
+    <!-- Task Body / Details -->
+    <div class="todo-body" (click)="edit.emit(todo)">
+      <div class="title-row">
+        <span class="todo-title" [class.strikethrough]="todo.status === 'completed'">
+          {{ todo.title }}
+        </span>
+        <span class="priority-pill" [ngClass]="getPriorityClass(todo.priority)">
+          {{ todo.priority }}
+        </span>
+      </div>
+
+      @if (todo.description) {
+        <p class="todo-desc">{{ todo.description }}</p>
+      }
+
+      <!-- Meta Badges: Due date, reminders, tags -->
+      <div class="meta-row">
+        @if (todo.dueDate) {
+          <span class="meta-badge date-badge" [class.overdue]="isOverdue">
+            <ng-icon name="lucideCalendar" class="meta-icon"></ng-icon>
+            {{ todo.dueDate }} {{ todo.dueTime || '' }}
+          </span>
+        }
+
+        @if (todo.reminder) {
+          <span
+            class="meta-badge reminder-badge"
+            (click)="$event.stopPropagation(); snooze.emit({ todoId: todo.id, minutes: 15 })"
+            title="Snooze reminder by 15 mins"
+          >
+            <ng-icon name="lucideBell" class="meta-icon"></ng-icon>
+            Reminder {{ todo.reminder.repeat !== 'none' ? '(' + todo.reminder.repeat + ')' : '' }}
+          </span>
+        }
+
+        @for (tag of todo.tags; track tag) {
+          <button
+            type="button"
+            class="meta-tag-pill"
+            (click)="$event.stopPropagation(); tagClick.emit(tag)"
+            title="Filter by #{{ tag }}"
+          >
+            #{{ tag }}
+          </button>
+        }
+      </div>
+
+      <!-- Subtasks Progress indicator -->
+      @if (totalSubtasksCount > 0) {
+        <div class="subtask-progress-bar-wrap" (click)="$event.stopPropagation(); isSubtasksExpanded.set(!isSubtasksExpanded())">
+          <div class="progress-bar-track">
+            <div class="progress-bar-fill" [style.width.%]="subtaskProgressPercent"></div>
+          </div>
+          <span class="progress-text">
+            {{ completedSubtasksCount }}/{{ totalSubtasksCount }} subtasks
+          </span>
+          <ng-icon [name]="isSubtasksExpanded() ? 'lucideChevronUp' : 'lucideChevronDown'" class="chevron-icon"></ng-icon>
+        </div>
+      }
+    </div>
+
+    <!-- Actions -->
+    <div class="todo-actions">
+      @if (totalSubtasksCount === 0) {
+        <button
+          type="button"
+          class="action-btn"
+          (click)="isSubtasksExpanded.set(!isSubtasksExpanded())"
+          title="Add subtask"
+        >
+          <ng-icon name="lucidePlus"></ng-icon>
+        </button>
+      }
+
+      <button
+        type="button"
+        class="action-btn edit-btn"
+        (click)="edit.emit(todo)"
+        title="Edit task"
+      >
+        <ng-icon name="lucideEdit3"></ng-icon>
+      </button>
+
+      <button
+        type="button"
+        class="action-btn delete-btn"
+        (click)="delete.emit(todo.id)"
+        title="Delete task"
+      >
+        <ng-icon name="lucideTrash2"></ng-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Expandable Subtasks Accordion -->
+  @if (isSubtasksExpanded()) {
+    <div class="subtasks-container">
+      @for (st of todo.subtasks; track st.id) {
+        <div class="subtask-row" [class.completed]="st.completed">
+          <button
+            type="button"
+            class="subtask-checkbox"
+            [class.checked]="st.completed"
+            (click)="subtaskToggle.emit({ todoId: todo.id, subtaskId: st.id })"
+          >
+            @if (st.completed) {
+              <ng-icon name="lucideCheck" class="st-check-icon"></ng-icon>
+            }
+          </button>
+          <span class="subtask-title" [class.strikethrough]="st.completed">{{ st.title }}</span>
+          <button
+            type="button"
+            class="subtask-delete-btn"
+            (click)="deleteSubtask.emit({ todoId: todo.id, subtaskId: st.id })"
+            title="Remove subtask"
+          >
+            <ng-icon name="lucideX"></ng-icon>
+          </button>
+        </div>
+      }
+
+      <!-- Quick Add Subtask Input -->
+      <div class="new-subtask-box">
+        <input
+          type="text"
+          placeholder="Add subtask and hit enter..."
+          [value]="newSubtaskTitle()"
+          (input)="newSubtaskTitle.set($any($event.target).value)"
+          (keydown.enter)="onAddSubtask()"
+          class="new-subtask-input"
+        />
+        <button
+          type="button"
+          class="add-subtask-submit-btn"
+          [disabled]="!newSubtaskTitle().trim()"
+          (click)="onAddSubtask()"
+        >
+          Add
+        </button>
+      </div>
+    </div>
+  }
+</div>

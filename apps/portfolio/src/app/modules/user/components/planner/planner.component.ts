@@ -5,6 +5,8 @@ import {
   OnDestroy,
   ChangeDetectionStrategy,
   signal,
+  ElementRef,
+  viewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -14,16 +16,14 @@ import {
   lucideStickyNote,
   lucidePlus,
   lucideSearch,
-  lucidePin,
-  lucideTrash2,
   lucideBell,
   lucideCalendar,
   lucideClock,
   lucideTag,
   lucideFilter,
-  lucideCheck,
   lucideAlertCircle,
   lucideX,
+  lucideCommand,
 } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmCardImports } from '@spartan-ng/hel/card';
@@ -32,11 +32,27 @@ import { HlmLabelImports } from '@spartan-ng/hel/label';
 import { PlannerStateService } from './services/planner-state.service';
 import { PlannerReminderService } from './services/planner-reminder.service';
 import { PlatformAdapterService } from './services/platform-adapter.service';
+import { PlannerLayoutService } from './services/planner-layout.service';
+
+import { NoteCardComponent } from './components/note-card/note-card.component';
+import { TodoItemComponent } from './components/todo-item/todo-item.component';
+import { MobileFabComponent } from './components/mobile-fab/mobile-fab.component';
+import { NoteEditorSheetComponent } from './components/note-editor-sheet/note-editor-sheet.component';
+import { TodoFormSheetComponent } from './components/todo-form-sheet/todo-form-sheet.component';
+import { CompactViewComponent } from './components/compact-view/compact-view.component';
+import { ReminderSettingsDialogComponent } from './components/reminder-settings-dialog/reminder-settings-dialog.component';
+
 import {
   INote,
   ITodoItem,
   TodoPriority,
-  TodoStatus,
+  ICreateNoteDto,
+  IUpdateNoteDto,
+  ICreateTodoDto,
+  IUpdateTodoDto,
+  ITodoReminder,
+  ISubtask,
+  ReminderRepeat,
 } from '@portfolio/shared-types';
 
 @Component({
@@ -50,6 +66,13 @@ import {
     HlmCardImports,
     HlmInputImports,
     HlmLabelImports,
+    NoteCardComponent,
+    TodoItemComponent,
+    MobileFabComponent,
+    NoteEditorSheetComponent,
+    TodoFormSheetComponent,
+    CompactViewComponent,
+    ReminderSettingsDialogComponent,
   ],
   providers: [
     provideIcons({
@@ -57,16 +80,14 @@ import {
       lucideStickyNote,
       lucidePlus,
       lucideSearch,
-      lucidePin,
-      lucideTrash2,
       lucideBell,
       lucideCalendar,
       lucideClock,
       lucideTag,
       lucideFilter,
-      lucideCheck,
       lucideAlertCircle,
       lucideX,
+      lucideCommand,
     }),
   ],
   templateUrl: './planner.component.html',
@@ -77,35 +98,19 @@ export class PlannerComponent implements OnInit, OnDestroy {
   readonly state = inject(PlannerStateService);
   readonly reminderService = inject(PlannerReminderService);
   readonly platform = inject(PlatformAdapterService);
+  readonly layout = inject(PlannerLayoutService);
 
-  // Dialog / Sheet Modals
+  readonly searchInputRef = viewChild<ElementRef<HTMLInputElement>>('searchInput');
+
+  // Modals & Sheets visibility
   readonly isNoteModalOpen = signal<boolean>(false);
   readonly isTodoModalOpen = signal<boolean>(false);
-  readonly isMobileMenuOpen = signal<boolean>(false);
+  readonly isReminderDialogOpen = signal<boolean>(false);
 
-  // New Note Form Model
-  noteForm = {
-    title: '',
-    content: '',
-    tagInput: '',
-    tags: [] as string[],
-    isPinned: false,
-    color: '#10b981',
-  };
-
-  // New Todo Form Model
-  todoForm = {
-    title: '',
-    description: '',
-    priority: 'medium' as TodoPriority,
-    dueDate: '',
-    dueTime: '',
-    tagInput: '',
-    tags: [] as string[],
-    enableReminder: false,
-    reminderTime: '',
-    repeat: 'none' as 'none' | 'daily' | 'weekly',
-  };
+  // Active items for editing
+  readonly activeNote = signal<INote | null>(null);
+  readonly activeTodo = signal<ITodoItem | null>(null);
+  readonly reminderTargetTodo = signal<ITodoItem | null>(null);
 
   // Inline Quick Task input
   quickTaskTitle = signal<string>('');
@@ -113,10 +118,34 @@ export class PlannerComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.state.loadDashboard();
     this.reminderService.init();
+
+    // Register Desktop / Web keyboard shortcuts
+    this.platform.registerGlobalShortcuts({
+      onNewNote: () => this.openNoteModal(),
+      onNewTask: () => this.openTodoModal(),
+      onFocusSearch: () => {
+        const el = this.searchInputRef()?.nativeElement;
+        if (el) {
+          el.focus();
+          el.select();
+        }
+      },
+      onEscape: () => this.closeAllModals(),
+    });
   }
 
   ngOnDestroy(): void {
     this.reminderService.destroy();
+    this.platform.unregisterGlobalShortcuts();
+  }
+
+  closeAllModals(): void {
+    this.isNoteModalOpen.set(false);
+    this.isTodoModalOpen.set(false);
+    this.isReminderDialogOpen.set(false);
+    this.activeNote.set(null);
+    this.activeTodo.set(null);
+    this.reminderTargetTodo.set(null);
   }
 
   // Quick Inline Task creation
@@ -135,113 +164,105 @@ export class PlannerComponent implements OnInit, OnDestroy {
   }
 
   // Note Modal Actions
-  openNoteModal(): void {
-    this.noteForm = {
-      title: '',
-      content: '',
-      tagInput: '',
-      tags: [],
-      isPinned: false,
-      color: '#10b981',
-    };
+  openNoteModal(noteToEdit?: INote): void {
+    this.activeNote.set(noteToEdit || null);
     this.isNoteModalOpen.set(true);
   }
 
   closeNoteModal(): void {
     this.isNoteModalOpen.set(false);
+    this.activeNote.set(null);
   }
 
-  addNoteTag(): void {
-    const t = this.noteForm.tagInput.trim().replace(/^#/, '');
-    if (t && !this.noteForm.tags.includes(t)) {
-      this.noteForm.tags.push(t);
-      this.noteForm.tagInput = '';
+  async handleSaveNote(noteData: {
+    title: string;
+    content: string;
+    tags: string[];
+    isPinned: boolean;
+    color: string;
+  }): Promise<void> {
+    const current = this.activeNote();
+    if (current) {
+      await this.state.updateNote(current.id, noteData);
+    } else {
+      await this.state.addNote(noteData);
     }
-  }
-
-  removeNoteTag(tag: string): void {
-    this.noteForm.tags = this.noteForm.tags.filter((t) => t !== tag);
-  }
-
-  async saveNote(): Promise<void> {
-    if (!this.noteForm.content.trim()) return;
-
-    if (this.noteForm.tagInput.trim()) {
-      this.addNoteTag();
-    }
-
-    await this.state.addNote({
-      title: this.noteForm.title.trim(),
-      content: this.noteForm.content.trim(),
-      tags: this.noteForm.tags,
-      isPinned: this.noteForm.isPinned,
-      color: this.noteForm.color,
-    });
-
     this.closeNoteModal();
   }
 
   // Todo Modal Actions
-  openTodoModal(): void {
-    const today = this.state.todaysDateStr();
-    this.todoForm = {
-      title: '',
-      description: '',
-      priority: 'medium',
-      dueDate: today,
-      dueTime: '12:00',
-      tagInput: '',
-      tags: [],
-      enableReminder: false,
-      reminderTime: `${today}T12:00`,
-      repeat: 'none',
-    };
+  openTodoModal(todoToEdit?: ITodoItem): void {
+    this.activeTodo.set(todoToEdit || null);
     this.isTodoModalOpen.set(true);
   }
 
   closeTodoModal(): void {
     this.isTodoModalOpen.set(false);
+    this.activeTodo.set(null);
   }
 
-  addTodoTag(): void {
-    const t = this.todoForm.tagInput.trim().replace(/^#/, '');
-    if (t && !this.todoForm.tags.includes(t)) {
-      this.todoForm.tags.push(t);
-      this.todoForm.tagInput = '';
+  async handleSaveTodo(todoData: {
+    title: string;
+    description?: string;
+    priority: TodoPriority;
+    dueDate?: string;
+    dueTime?: string;
+    tags: string[];
+    reminder?: ITodoReminder;
+    subtasks?: ISubtask[];
+  }): Promise<void> {
+    const current = this.activeTodo();
+    if (current) {
+      await this.state.updateTodo(current.id, todoData);
+    } else {
+      await this.state.addTodo({
+        ...todoData,
+        status: 'pending',
+      });
     }
-  }
-
-  removeTodoTag(tag: string): void {
-    this.todoForm.tags = this.todoForm.tags.filter((t) => t !== tag);
-  }
-
-  async saveTodo(): Promise<void> {
-    if (!this.todoForm.title.trim()) return;
-
-    if (this.todoForm.tagInput.trim()) {
-      this.addTodoTag();
-    }
-
-    const reminder = this.todoForm.enableReminder && this.todoForm.reminderTime
-      ? {
-          reminderTime: this.todoForm.reminderTime,
-          repeat: this.todoForm.repeat,
-          isTriggered: false,
-        }
-      : undefined;
-
-    await this.state.addTodo({
-      title: this.todoForm.title.trim(),
-      description: this.todoForm.description.trim(),
-      priority: this.todoForm.priority,
-      status: 'pending',
-      dueDate: this.todoForm.dueDate || undefined,
-      dueTime: this.todoForm.dueTime || undefined,
-      tags: this.todoForm.tags,
-      reminder,
-    });
-
     this.closeTodoModal();
+  }
+
+  // Reminder Dialog Actions
+  openReminderDialog(todo: ITodoItem): void {
+    this.reminderTargetTodo.set(todo);
+    this.isReminderDialogOpen.set(true);
+  }
+
+  closeReminderDialog(): void {
+    this.isReminderDialogOpen.set(false);
+    this.reminderTargetTodo.set(null);
+  }
+
+  handleUpdateReminder(data: {
+    todoId: string;
+    reminderTime: string;
+    repeat: ReminderRepeat;
+  }): void {
+    this.state.updateTodo(data.todoId, {
+      reminder: {
+        reminderTime: data.reminderTime,
+        repeat: data.repeat,
+        isTriggered: false,
+      },
+    });
+  }
+
+  handleSnooze(data: { todoId: string; minutes: number }): void {
+    this.state.snoozeReminder(data.todoId, data.minutes);
+  }
+
+  // Subtasks delegates
+  handleSubtaskToggle(event: { todoId: string; subtaskId: string }): void {
+    this.state.toggleSubtask(event.todoId, event.subtaskId);
+  }
+
+  handleAddSubtask(event: { todoId: string; title: string }): void {
+    this.state.addSubtask(event.todoId, event.title);
+  }
+
+  handleDeleteSubtask(event: { todoId: string; subtaskId: string }): void {
+    this.state.removeSubtask(event.todoId, event.subtaskId);
   }
 
   async requestNotifications(): Promise<void> {
@@ -250,20 +271,6 @@ export class PlannerComponent implements OnInit, OnDestroy {
       await this.platform.dispatchNotification('Planner Alerts Active', {
         body: 'You will receive reminders for scheduled tasks.',
       });
-    }
-  }
-
-  getPriorityClass(priority: TodoPriority): string {
-    switch (priority) {
-      case 'urgent':
-        return 'badge-urgent';
-      case 'high':
-        return 'badge-high';
-      case 'medium':
-        return 'badge-medium';
-      case 'low':
-      default:
-        return 'badge-low';
     }
   }
 }

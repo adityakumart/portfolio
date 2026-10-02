@@ -1,0 +1,26 @@
+<div class="fab-wrapper">
+  @if (isOpen()) {
+    <div class="fab-backdrop" (click)="isOpen.set(false)"></div>
+    <div class="fab-menu">
+      <button type="button" class="fab-menu-item note-btn" (click)="onNewNote()">
+        <ng-icon name="lucideStickyNote" class="item-icon"></ng-icon>
+        <span class="item-label">New Note</span>
+      </button>
+
+      <button type="button" class="fab-menu-item task-btn" (click)="onNewTask()">
+        <ng-icon name="lucideCheckSquare" class="item-icon"></ng-icon>
+        <span class="item-label">New Task</span>
+      </button>
+    </div>
+  }
+
+  <button
+    type="button"
+    class="main-fab"
+    [class.active]="isOpen()"
+    (click)="toggle()"
+    aria-label="Create note or task"
+  >
+    <ng-icon [name]="isOpen() ? 'lucideX' : 'lucidePlus'" class="fab-icon"></ng-icon>
+  </button>
+</div>

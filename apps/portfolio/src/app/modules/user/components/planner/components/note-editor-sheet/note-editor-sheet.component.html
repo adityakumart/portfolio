@@ -1,0 +1,115 @@
+@if (isOpen) {
+  <div class="sheet-backdrop" (click)="close.emit()">
+    <div class="sheet-container" (click)="$event.stopPropagation()">
+      <!-- Mobile drag pill handle -->
+      <div class="drag-handle-bar">
+        <span class="drag-pill"></span>
+      </div>
+
+      <!-- Header -->
+      <div class="sheet-header">
+        <div class="header-title-wrap">
+          <span class="color-indicator-dot" [style.background]="form.color"></span>
+          <h3 class="sheet-title">{{ note ? 'Edit Note' : 'New Note' }}</h3>
+        </div>
+        <button type="button" class="close-btn" (click)="close.emit()" aria-label="Close dialog">
+          <ng-icon name="lucideX"></ng-icon>
+        </button>
+      </div>
+
+      <!-- Body Form -->
+      <div class="sheet-body">
+        <!-- Title Input -->
+        <div class="form-group">
+          <label class="form-label" for="note-title-input">Title (optional)</label>
+          <input
+            id="note-title-input"
+            type="text"
+            placeholder="e.g. Project Architecture Thoughts"
+            [(ngModel)]="form.title"
+            class="form-input"
+          />
+        </div>
+
+        <!-- Content Area -->
+        <div class="form-group">
+          <div class="label-row">
+            <label class="form-label" for="note-content-input">Note Content *</label>
+            <span class="char-count">{{ form.content.length }} chars</span>
+          </div>
+          <textarea
+            id="note-content-input"
+            rows="6"
+            placeholder="Type your note, markdown, scratchpad or checklist..."
+            [(ngModel)]="form.content"
+            class="form-textarea"
+          ></textarea>
+        </div>
+
+        <!-- Color Accent Picker -->
+        <div class="form-group">
+          <label class="form-label">Accent Color</label>
+          <div class="color-palette-row">
+            @for (c of colorPresets; track c) {
+              <button
+                type="button"
+                class="color-circle"
+                [style.background]="c"
+                [class.active]="form.color === c"
+                (click)="form.color = c"
+                [title]="c"
+              ></button>
+            }
+          </div>
+        </div>
+
+        <!-- Tags Input -->
+        <div class="form-group">
+          <label class="form-label" for="note-tag-input">Tags</label>
+          <div class="tag-input-row">
+            <input
+              id="note-tag-input"
+              type="text"
+              placeholder="Add tag (e.g. sprint) & press Enter"
+              [(ngModel)]="form.tagInput"
+              (keydown.enter)="addTag()"
+              class="form-input"
+            />
+            <button type="button" class="tag-add-btn" (click)="addTag()">Add</button>
+          </div>
+          @if (form.tags.length > 0) {
+            <div class="tags-list-row">
+              @for (tag of form.tags; track tag) {
+                <span class="tag-pill">
+                  #{{ tag }}
+                  <button type="button" class="tag-x-btn" (click)="removeTag(tag)">×</button>
+                </span>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Pin to Top -->
+        <div class="form-checkbox-row">
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="form.isPinned" />
+            <span class="checkbox-text">Pin this note to the top of the list</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Footer Buttons -->
+      <div class="sheet-footer">
+        <button type="button" class="btn-cancel" (click)="close.emit()">Cancel</button>
+        <button
+          type="button"
+          class="btn-save"
+          [disabled]="!form.content.trim() || isSaving"
+          (click)="onSave()"
+        >
+          {{ isSaving ? 'Saving...' : note ? 'Save Changes' : 'Create Note' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
