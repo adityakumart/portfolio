@@ -30,6 +30,8 @@
         "inlineStyleLanguage": "scss",
         "assets": [
           "apps/portfolio/src/favicon.ico",
+          "apps/portfolio/src/robots.txt",
+          "apps/portfolio/src/sitemap.xml",
           "apps/portfolio/src/assets"
         ],
         "styles": [

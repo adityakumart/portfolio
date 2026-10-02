@@ -94,6 +94,15 @@
 
       <button
         type="button"
+        class="action-btn share-btn"
+        (click)="share.emit(todo)"
+        title="Share task"
+      >
+        <ng-icon name="lucideShare2"></ng-icon>
+      </button>
+
+      <button
+        type="button"
         class="action-btn edit-btn"
         (click)="edit.emit(todo)"
         title="Edit task"

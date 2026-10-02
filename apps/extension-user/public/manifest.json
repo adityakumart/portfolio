@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Portfolio User Workspace",
+  "version": "1.0.0",
+  "description": "Unified User Workspace: Planner (Notes & Tasks), AI Assistant, File Manager, and Diet Tracker in Chrome.",
+  "action": {
+    "default_popup": "index.html",
+    "default_title": "Open User Workspace"
+  },
+  "side_panel": {
+    "default_path": "index.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": [
+    "storage",
+    "sidePanel",
+    "alarms",
+    "notifications",
+    "contextMenus"
+  ],
+  "host_permissions": [
+    "http://localhost:3000/*",
+    "http://127.0.0.1:3000/*",
+    "https://*.vercel.app/*"
+  ]
+}

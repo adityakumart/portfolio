@@ -103,6 +103,34 @@ export class NoteEditorSheetComponent implements OnChanges {
     this.form.tags = this.form.tags.filter((t) => t !== tag);
   }
 
+  insertMarkdown(prefix: string, suffix = ''): void {
+    const textarea = document.getElementById('note-content-input') as HTMLTextAreaElement | null;
+    if (!textarea) {
+      this.form.content += (this.form.content ? '\n' : '') + prefix + suffix;
+      return;
+    }
+
+    const start = textarea.selectionStart ?? this.form.content.length;
+    const end = textarea.selectionEnd ?? this.form.content.length;
+    const current = this.form.content;
+    const selection = current.substring(start, end);
+
+    let replacement = '';
+    if (selection) {
+      replacement = `${prefix}${selection}${suffix}`;
+    } else {
+      replacement = `${prefix}${suffix}`;
+    }
+
+    this.form.content = current.substring(0, start) + replacement + current.substring(end);
+
+    setTimeout(() => {
+      textarea.focus();
+      const cursorTarget = selection ? start + replacement.length : start + prefix.length;
+      textarea.setSelectionRange(cursorTarget, cursorTarget);
+    }, 0);
+  }
+
   onSave(): void {
     if (!this.form.content.trim()) return;
     if (this.form.tagInput.trim()) {

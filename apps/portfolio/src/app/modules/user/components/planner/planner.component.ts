@@ -29,6 +29,7 @@ import {
   lucideKanban,
   lucideDownload,
   lucideUpload,
+  lucideWifiOff,
 } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmCardImports } from '@spartan-ng/hel/card';
@@ -102,6 +103,7 @@ import { toast } from '@spartan-ng/brain/sonner';
       lucideKanban,
       lucideDownload,
       lucideUpload,
+      lucideWifiOff,
     }),
   ],
   templateUrl: './planner.component.html',
@@ -350,6 +352,26 @@ export class PlannerComponent implements OnInit, OnDestroy {
       await this.platform.dispatchNotification('Planner Alerts Active', {
         body: 'You will receive reminders for scheduled tasks.',
       });
+    }
+  }
+
+  async handleShareNote(note: INote): Promise<void> {
+    const success = await this.platform.shareItem({
+      title: note.title || 'Planner Note',
+      text: note.content,
+    });
+    if (success) {
+      toast.success('Note shared or copied to clipboard');
+    }
+  }
+
+  async handleShareTodo(todo: ITodoItem): Promise<void> {
+    const success = await this.platform.shareItem({
+      title: todo.title,
+      text: todo.description || `Task: ${todo.title} (Priority: ${todo.priority})`,
+    });
+    if (success) {
+      toast.success('Task shared or copied to clipboard');
     }
   }
 }

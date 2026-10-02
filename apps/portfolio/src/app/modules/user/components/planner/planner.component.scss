@@ -109,6 +109,26 @@
   }
 }
 
+.offline-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.25rem;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 10px;
+  color: #f59e0b;
+  font-size: 0.85rem;
+  font-weight: 500;
+  animation: fadeIn 0.25s ease-in-out;
+
+  .offline-icon {
+    font-size: 1.15rem;
+    flex-shrink: 0;
+  }
+}
+
 // Toolbar
 .toolbar-bar {
   display: flex;

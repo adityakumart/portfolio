@@ -1,8 +1,10 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CompactViewComponent } from '../../../portfolio/src/app/modules/user/components/planner/components/compact-view/compact-view.component';
-import { PlannerStateService } from '../../../portfolio/src/app/modules/user/components/planner/services/planner-state.service';
-import { PlatformAdapterService } from '../../../portfolio/src/app/modules/user/components/planner/services/platform-adapter.service';
+import {
+  CompactViewComponent,
+  PlannerStateService,
+  PlatformAdapterService,
+} from '@portfolio/feature-user';
 
 @Component({
   selector: 'app-root',

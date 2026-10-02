@@ -21,6 +21,7 @@ async function injectUserSession(page: Page, options?: { modules?: Record<string
         devTools: true,
         formBuilder: true,
         rr: true,
+        planner: true,
       },
     },
   };
@@ -151,6 +152,7 @@ test.describe('User Module - Authentication, Route Guards & Profile Hub', () => 
           devTools: true,
           formBuilder: true,
           rr: true,
+          planner: true,
         },
       });
 
@@ -166,6 +168,25 @@ test.describe('User Module - Authentication, Route Guards & Profile Hub', () => 
       await expect(page.getByRole('heading', { name: 'AI Assistant' })).toBeVisible();
       await expect(page.getByRole('heading', { name: 'File Manager' })).toBeVisible();
       await expect(page.getByRole('heading', { name: 'Diet & Hydration' })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Notes & Planner' })).toBeVisible();
+    });
+
+    test('should block access to /user/planner when user lacks planner module access', async ({ page }) => {
+      await injectUserSession(page, {
+        email: 'no-planner@example.com',
+        modules: {
+          aiSpace: true,
+          aiAssistant: true,
+          fileManager: true,
+          dietHydration: true,
+          planner: false,
+        },
+      });
+
+      await page.goto('/portfolio/user/planner');
+      // createModuleGuard redirects user without access back to /user
+      await page.waitForURL(/.*\/user(?!\/planner)/);
+      await expect(page).toHaveURL(/.*\/user/);
     });
 
     test('should redirect to /user/no-modules when user has no active feature flags', async ({ page }) => {

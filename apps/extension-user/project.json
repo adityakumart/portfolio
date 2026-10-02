@@ -1,0 +1,81 @@
+{
+  "name": "extension-user",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "app",
+  "sourceRoot": "apps/extension-user/src",
+  "tags": [],
+  "targets": {
+    "set-env": {
+      "command": "node tools/scripts/set-env.js"
+    },
+    "build": {
+      "executor": "@angular/build:application",
+      "dependsOn": ["set-env"],
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/extension-user",
+        "baseHref": "./",
+        "browser": "apps/extension-user/src/main.ts",
+        "tsConfig": "apps/extension-user/tsconfig.app.json",
+        "inlineStyleLanguage": "scss",
+        "assets": [
+          {
+            "glob": "**/*",
+            "input": "apps/extension-user/public"
+          }
+        ],
+        "styles": [
+          "apps/extension-user/src/styles.scss"
+        ],
+        "stylePreprocessorOptions": {
+          "sass": {
+            "silenceDeprecations": ["import"]
+          }
+        }
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "2mb",
+              "maximumError": "5mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "20kb",
+              "maximumError": "60kb"
+            }
+          ],
+          "outputHashing": "none",
+          "fileReplacements": [
+            {
+              "replace": "apps/portfolio/src/environments/environment.ts",
+              "with": "apps/portfolio/src/environments/environment.prod.ts"
+            }
+          ]
+        },
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@angular/build:dev-server",
+      "configurations": {
+        "production": {
+          "buildTarget": "extension-user:build:production"
+        },
+        "development": {
+          "buildTarget": "extension-user:build:development"
+        }
+      },
+      "defaultConfiguration": "development"
+    }
+  }
+}

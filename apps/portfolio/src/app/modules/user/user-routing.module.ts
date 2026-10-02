@@ -119,7 +119,20 @@ const routes: Routes = [
     path: '',
     component: UserComponent,
     children: [
-      { path: 'login', component: LoginComponent },
+      {
+        path: 'login',
+        component: LoginComponent,
+        data: {
+          seo: {
+            title: 'Sign In | Aditya Kumar T Platform',
+            description:
+              'Sign in to access your platform dashboard, personalized developer tools, and workspace.',
+            keywords: ['Sign In', 'Login', 'Aditya Kumar T'],
+            robots: 'index, follow',
+            ogType: 'website',
+          },
+        },
+      },
       {
         path: 'no-modules',
         loadComponent: () =>
@@ -127,27 +140,66 @@ const routes: Routes = [
             './components/no-modules/no-modules.component'
           ).then((m) => m.NoModulesComponent),
         canActivate: [authGuard, noModulesGuard],
+        data: {
+          seo: {
+            title: 'Platform Modules | Aditya Kumar T',
+            description: 'Module management and activation.',
+            robots: 'noindex, nofollow',
+          },
+        },
       },
       {
         path: '',
         component: ProfileComponent,
         pathMatch: 'full',
         canActivate: [authGuard, userHubGuard],
+        data: {
+          seo: {
+            title: 'User Profile & Workspace | Aditya Kumar T',
+            description:
+              'Personalized user profile, module overview, and workspace shortcuts.',
+            robots: 'noindex, nofollow',
+          },
+        },
       },
       {
         path: 'ai',
         component: ProfileAiChatComponent,
         canActivate: [authGuard, createModuleGuard('aiAssistant')],
+        data: {
+          seo: {
+            title: 'AI Portfolio Assistant | Aditya Kumar T',
+            description:
+              "Interactive AI Assistant trained on Aditya Kumar T's portfolio and technical experience.",
+            robots: 'noindex, nofollow',
+          },
+        },
       },
       {
         path: 'chat',
         component: AiChatComponent,
         canActivate: [authGuard, createModuleGuard('aiSpace')],
+        data: {
+          seo: {
+            title: 'AI Workspace Chat | Aditya Kumar T',
+            description:
+              'Interactive AI Chat workspace for productivity and coding tasks.',
+            robots: 'noindex, nofollow',
+          },
+        },
       },
       {
         path: 'files',
         component: FileManagerComponent,
         canActivate: [authGuard, createModuleGuard('fileManager')],
+        data: {
+          seo: {
+            title: 'Cloud File Manager | Aditya Kumar T Platform',
+            description:
+              'Secure personal cloud storage, file explorer, and media manager.',
+            robots: 'noindex, nofollow',
+          },
+        },
       },
       {
         path: 'diet-hydration',
@@ -156,6 +208,14 @@ const routes: Routes = [
             './components/diet-hydration/diet-hydration.component'
           ).then((m) => m.DietHydrationComponent),
         canActivate: [authGuard, createModuleGuard('dietHydration')],
+        data: {
+          seo: {
+            title: 'Diet & Hydration Tracker | Health & Wellness',
+            description:
+              'Track daily calorie intake, macronutrients, and hydration goals.',
+            robots: 'noindex, nofollow',
+          },
+        },
       },
       {
         path: 'planner',
@@ -164,6 +224,14 @@ const routes: Routes = [
             (m) => m.PlannerComponent,
           ),
         canActivate: [authGuard, createModuleGuard('planner')],
+        data: {
+          seo: {
+            title: 'Task Planner & Kanban Board | Productivity Suite',
+            description:
+              'Organize tasks, manage reminders, and track sprint goals with interactive Kanban boards and markdown notes.',
+            robots: 'noindex, nofollow',
+          },
+        },
       },
       {
         path: 'dev-tools',

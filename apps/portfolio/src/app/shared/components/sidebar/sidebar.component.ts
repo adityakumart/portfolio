@@ -39,6 +39,7 @@ import {
   lucideX,
   lucideActivity,
   lucideShieldAlert,
+  lucideCheckSquare,
 } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
@@ -95,6 +96,7 @@ export interface SidebarItem {
       lucideX,
       lucideActivity,
       lucideShieldAlert,
+      lucideCheckSquare,
     }),
   ],
   templateUrl: './sidebar.component.html',

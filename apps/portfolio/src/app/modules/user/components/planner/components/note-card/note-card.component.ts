@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { lucidePin, lucideTrash2, lucideEdit3, lucideCopy, lucideCheck } from '@ng-icons/lucide';
+import { lucidePin, lucideTrash2, lucideEdit3, lucideCopy, lucideCheck, lucideShare2 } from '@ng-icons/lucide';
 import { INote } from '@portfolio/shared-types';
 
 export interface NoteLine {
@@ -28,6 +28,7 @@ export interface NoteLine {
       lucideEdit3,
       lucideCopy,
       lucideCheck,
+      lucideShare2,
     }),
   ],
   templateUrl: './note-card.component.html',
@@ -39,6 +40,7 @@ export class NoteCardComponent {
   @Output() pinToggle = new EventEmitter<INote>();
   @Output() delete = new EventEmitter<string>();
   @Output() edit = new EventEmitter<INote>();
+  @Output() share = new EventEmitter<INote>();
   @Output() tagClick = new EventEmitter<string>();
   @Output() contentChange = new EventEmitter<{ note: INote; newContent: string }>();
 

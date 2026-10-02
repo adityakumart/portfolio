@@ -21,6 +21,7 @@ import {
   lucidePlus,
   lucideX,
   lucideAlertCircle,
+  lucideShare2,
 } from '@ng-icons/lucide';
 import { ITodoItem, TodoPriority } from '@portfolio/shared-types';
 
@@ -41,6 +42,7 @@ import { ITodoItem, TodoPriority } from '@portfolio/shared-types';
       lucidePlus,
       lucideX,
       lucideAlertCircle,
+      lucideShare2,
     }),
   ],
   templateUrl: './todo-item.component.html',
@@ -54,6 +56,7 @@ export class TodoItemComponent {
   @Output() statusToggle = new EventEmitter<ITodoItem>();
   @Output() delete = new EventEmitter<string>();
   @Output() edit = new EventEmitter<ITodoItem>();
+  @Output() share = new EventEmitter<ITodoItem>();
   @Output() subtaskToggle = new EventEmitter<{ todoId: string; subtaskId: string }>();
   @Output() addSubtask = new EventEmitter<{ todoId: string; title: string }>();
   @Output() deleteSubtask = new EventEmitter<{ todoId: string; subtaskId: string }>();
