@@ -15,6 +15,7 @@ import {
   lucideSparkles,
   lucideActivity,
   lucideShieldAlert,
+  lucideCheckSquare,
 } from '@ng-icons/lucide';
 import { AuthService } from '../../services/auth';
 import { getAssignedUserModules, UserModuleConfig } from '../../services/user-modules.config';
@@ -41,6 +42,7 @@ import { getAssignedUserModules, UserModuleConfig } from '../../services/user-mo
       lucideSparkles,
       lucideActivity,
       lucideShieldAlert,
+      lucideCheckSquare,
     }),
   ],
   templateUrl: './profile.html',
