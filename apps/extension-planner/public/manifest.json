@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Planner - Notes, Tasks & Reminders",
+  "version": "1.0.0",
+  "description": "Quick-capture notes, manage to-do tasks, and get real-time reminder alerts anywhere in Chrome.",
+  "action": {
+    "default_popup": "index.html",
+    "default_title": "Open Planner Quick Capture"
+  },
+  "side_panel": {
+    "default_path": "index.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": [
+    "storage",
+    "sidePanel",
+    "alarms",
+    "notifications",
+    "contextMenus"
+  ],
+  "host_permissions": [
+    "http://localhost:3000/*",
+    "http://127.0.0.1:3000/*",
+    "https://*.vercel.app/*"
+  ]
+}

@@ -1,0 +1,437 @@
+@if (layout.viewMode() === 'compact') {
+  <!-- COMPACT MODE (Extension Popup & Side Panel) -->
+  <app-planner-compact-view
+    (openFullApp)="layout.forceCompact.set(false)"
+  ></app-planner-compact-view>
+} @else {
+  <!-- FULL & MOBILE RESPONSIVE PLANNER HUB -->
+  <div class="planner-page">
+    <!-- Hidden File Input for Backup Import -->
+    <input
+      #fileInput
+      type="file"
+      accept=".json"
+      (change)="handleFileSelected($event)"
+      style="display: none;"
+    />
+
+    <!-- Top Header -->
+    <header class="planner-header">
+      <div class="title-cluster">
+        <div class="header-icon-box">
+          <ng-icon name="lucideCheckSquare" class="header-icon"></ng-icon>
+        </div>
+        <div>
+          <h1 class="page-title">Notes & Planner</h1>
+          <p class="page-subtitle">
+            Capture thoughts, organize checklists, and stay on top of notifications
+          </p>
+        </div>
+      </div>
+
+      <!-- Header Actions -->
+      <div class="header-actions">
+        <!-- Export & Import Data Portability -->
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          class="backup-btn"
+          (click)="exportBackup()"
+          title="Export JSON Backup"
+        >
+          <ng-icon name="lucideDownload" class="mr-1"></ng-icon>
+          <span class="btn-text">Export</span>
+        </button>
+
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          class="backup-btn"
+          (click)="triggerImportFile()"
+          title="Import JSON Backup"
+        >
+          <ng-icon name="lucideUpload" class="mr-1"></ng-icon>
+          <span class="btn-text">Import</span>
+        </button>
+
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          class="notify-btn"
+          (click)="requestNotifications()"
+          title="Enable Desktop/Mobile Reminders"
+        >
+          <ng-icon name="lucideBell" class="mr-1.5"></ng-icon>
+          <span class="btn-text">Enable Reminders</span>
+        </button>
+
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          class="shortcut-btn"
+          (click)="openNoteModal()"
+          title="New Note (Ctrl+N)"
+        >
+          <ng-icon name="lucideStickyNote" class="mr-1.5"></ng-icon>
+          <span>+ Note</span>
+          <kbd class="kbd-hint">Ctrl+N</kbd>
+        </button>
+
+        <button
+          hlmBtn
+          variant="default"
+          size="sm"
+          class="primary-add-btn shortcut-btn"
+          (click)="openTodoModal()"
+          title="New Task (Ctrl+T)"
+        >
+          <ng-icon name="lucidePlus" class="mr-1.5"></ng-icon>
+          <span>+ Task</span>
+          <kbd class="kbd-hint">Ctrl+T</kbd>
+        </button>
+      </div>
+    </header>
+
+    <!-- Filter & Search Toolbar -->
+    <div class="toolbar-bar">
+      <div class="search-box">
+        <ng-icon name="lucideSearch" class="search-icon"></ng-icon>
+        <input
+          #searchInput
+          id="planner-search-input"
+          type="text"
+          placeholder="Search notes and tasks... (Ctrl+F)"
+          [value]="state.searchQuery()"
+          (input)="state.searchQuery.set($any($event.target).value)"
+          class="search-input"
+        />
+        @if (state.searchQuery()) {
+          <button
+            type="button"
+            class="clear-search-btn"
+            (click)="state.searchQuery.set('')"
+            aria-label="Clear search"
+          >
+            <ng-icon name="lucideX"></ng-icon>
+          </button>
+        }
+      </div>
+
+      <!-- Mobile View Segmented Tabs -->
+      <div class="segmented-tabs">
+        <button
+          type="button"
+          class="seg-tab"
+          [class.active]="state.activeTab() === 'all'"
+          (click)="state.activeTab.set('all')"
+        >
+          Overview
+        </button>
+        <button
+          type="button"
+          class="seg-tab"
+          [class.active]="state.activeTab() === 'notes'"
+          (click)="state.activeTab.set('notes')"
+        >
+          Notes ({{ state.notes().length }})
+        </button>
+        <button
+          type="button"
+          class="seg-tab"
+          [class.active]="state.activeTab() === 'todos'"
+          (click)="state.activeTab.set('todos')"
+        >
+          Tasks ({{ state.pendingTodos().length }})
+        </button>
+      </div>
+    </div>
+
+    <!-- Tag Filter Chips (if any exist) -->
+    @if (state.allTags().length > 0) {
+      <div class="tags-scroller">
+        <span class="tags-label">Tags:</span>
+        <button
+          type="button"
+          class="tag-chip"
+          [class.active]="state.selectedTag() === null"
+          (click)="state.selectedTag.set(null)"
+        >
+          All
+        </button>
+        @for (tag of state.allTags(); track tag) {
+          <button
+            type="button"
+            class="tag-chip"
+            [class.active]="state.selectedTag() === tag"
+            (click)="state.selectedTag.set(state.selectedTag() === tag ? null : tag)"
+          >
+            #{{ tag }}
+          </button>
+        }
+      </div>
+    }
+
+    <!-- Main Multi-Column or Single-Column Content -->
+    <div
+      class="planner-grid"
+      [class.view-notes]="state.activeTab() === 'notes'"
+      [class.view-todos]="state.activeTab() === 'todos'"
+    >
+      <!-- LEFT COLUMN: NOTES & SCRATCHPAD -->
+      @if (state.activeTab() === 'all' || state.activeTab() === 'notes') {
+        <section class="notes-panel">
+          <div class="panel-header">
+            <div class="panel-title-wrap">
+              <ng-icon name="lucideStickyNote" class="panel-icon text-amber-500"></ng-icon>
+              <h2 class="panel-title">Saved Notes</h2>
+              <span class="count-pill">{{ state.filteredNotes().length }}</span>
+            </div>
+
+            <div class="panel-header-controls">
+              <!-- View mode toggle: Grid vs List -->
+              <div class="view-toggle-wrap">
+                <button
+                  type="button"
+                  class="toggle-btn"
+                  [class.active]="state.notesViewMode() === 'grid'"
+                  (click)="state.notesViewMode.set('grid')"
+                  title="Grid View"
+                >
+                  <ng-icon name="lucideLayoutGrid"></ng-icon>
+                </button>
+                <button
+                  type="button"
+                  class="toggle-btn"
+                  [class.active]="state.notesViewMode() === 'list'"
+                  (click)="state.notesViewMode.set('list')"
+                  title="List View"
+                >
+                  <ng-icon name="lucideList"></ng-icon>
+                </button>
+              </div>
+
+              <button type="button" class="quick-new-link" (click)="openNoteModal()">+ New Note</button>
+            </div>
+          </div>
+
+          @if (state.isLoading() && state.notes().length === 0) {
+            <div class="loading-state">Loading notes...</div>
+          } @else if (state.filteredNotes().length === 0) {
+            <div class="empty-state-box">
+              <ng-icon name="lucideStickyNote" class="empty-icon"></ng-icon>
+              <p class="empty-title">No notes found</p>
+              <p class="empty-subtitle">Save quick ideas, text snippets, and drafts anytime.</p>
+              <button hlmBtn variant="outline" size="sm" class="mt-3" (click)="openNoteModal()">
+                Create first note
+              </button>
+            </div>
+          } @else {
+            <div
+              class="notes-cards-list"
+              [class.masonry-grid]="state.notesViewMode() === 'grid'"
+            >
+              @for (note of state.filteredNotes(); track note.id) {
+                <app-planner-note-card
+                  [note]="note"
+                  (pinToggle)="state.toggleNotePin($event)"
+                  (delete)="state.deleteNote($event)"
+                  (edit)="openNoteModal($event)"
+                  (tagClick)="state.selectedTag.set($event)"
+                  (contentChange)="handleNoteContentChange($event)"
+                ></app-planner-note-card>
+              }
+            </div>
+          }
+        </section>
+      }
+
+      <!-- RIGHT COLUMN: TO-DO TASKS & REMINDERS (LIST OR KANBAN) -->
+      @if (state.activeTab() === 'all' || state.activeTab() === 'todos') {
+        <section class="todos-panel" [class.full-kanban-panel]="state.tasksViewMode() === 'kanban'">
+          <div class="panel-header">
+            <div class="panel-title-wrap">
+              <ng-icon name="lucideCheckSquare" class="panel-icon text-emerald-500"></ng-icon>
+              <h2 class="panel-title">To-Do List</h2>
+              <span class="count-pill">{{ state.pendingTodos().length }} pending</span>
+            </div>
+
+            <!-- View mode toggle: List vs Kanban Board -->
+            <div class="view-toggle-wrap">
+              <button
+                type="button"
+                class="toggle-btn"
+                [class.active]="state.tasksViewMode() === 'list'"
+                (click)="state.tasksViewMode.set('list')"
+                title="List View"
+              >
+                <ng-icon name="lucideList"></ng-icon>
+                <span class="view-label">List</span>
+              </button>
+              <button
+                type="button"
+                class="toggle-btn"
+                [class.active]="state.tasksViewMode() === 'kanban'"
+                (click)="state.tasksViewMode.set('kanban')"
+                title="Kanban Board"
+              >
+                <ng-icon name="lucideKanban"></ng-icon>
+                <span class="view-label">Kanban</span>
+              </button>
+            </div>
+
+            <!-- Filter Sub-Tabs (only when in list view) -->
+            @if (state.tasksViewMode() === 'list') {
+              <div class="todo-filter-pills">
+                <button
+                  type="button"
+                  class="filter-pill"
+                  [class.active]="state.todoFilter() === 'all'"
+                  (click)="state.todoFilter.set('all')"
+                >
+                  All
+                </button>
+                <button
+                  type="button"
+                  class="filter-pill"
+                  [class.active]="state.todoFilter() === 'today'"
+                  (click)="state.todoFilter.set('today')"
+                >
+                  Today ({{ state.todaysTodos().length }})
+                </button>
+                <button
+                  type="button"
+                  class="filter-pill"
+                  [class.active]="state.todoFilter() === 'upcoming'"
+                  (click)="state.todoFilter.set('upcoming')"
+                >
+                  Upcoming
+                </button>
+                <button
+                  type="button"
+                  class="filter-pill"
+                  [class.active]="state.todoFilter() === 'completed'"
+                  (click)="state.todoFilter.set('completed')"
+                >
+                  Done ({{ state.completedTodos().length }})
+                </button>
+              </div>
+            }
+          </div>
+
+          <!-- KANBAN BOARD VIEW -->
+          @if (state.tasksViewMode() === 'kanban') {
+            <app-planner-kanban-board
+              [pendingTodos]="state.pendingColumnTodos()"
+              [inProgressTodos]="state.inProgressColumnTodos()"
+              [completedTodos]="state.completedColumnTodos()"
+              [todayStr]="state.todaysDateStr()"
+              (moveStatus)="handleMoveTaskStatus($event)"
+              (toggleStatus)="state.toggleTodoStatus($event)"
+              (edit)="openTodoModal($event)"
+              (delete)="state.deleteTodo($event)"
+              (openNewTask)="openTodoModal()"
+            ></app-planner-kanban-board>
+          } @else {
+            <!-- STANDARD LIST VIEW -->
+            <!-- Inline Quick Add Input -->
+            <div class="quick-add-box">
+              <input
+                type="text"
+                placeholder="Add a new task and press Enter..."
+                [value]="quickTaskTitle()"
+                (input)="quickTaskTitle.set($any($event.target).value)"
+                (keydown.enter)="submitQuickTask()"
+                class="quick-add-input"
+              />
+              <button
+                hlmBtn
+                variant="default"
+                size="sm"
+                [disabled]="!quickTaskTitle().trim()"
+                (click)="submitQuickTask()"
+              >
+                Add
+              </button>
+            </div>
+
+            <!-- Overdue Tasks Warning Banner (if any) -->
+            @if (state.overdueTodos().length > 0 && state.todoFilter() !== 'completed') {
+              <div class="overdue-banner">
+                <ng-icon name="lucideAlertCircle" class="banner-icon"></ng-icon>
+                <span>You have {{ state.overdueTodos().length }} overdue tasks!</span>
+              </div>
+            }
+
+            <!-- Todo Items List -->
+            @if (state.isLoading() && state.todos().length === 0) {
+              <div class="loading-state">Loading tasks...</div>
+            } @else if (state.filteredTodos().length === 0) {
+              <div class="empty-state-box">
+                <ng-icon name="lucideCheckSquare" class="empty-icon text-emerald-500"></ng-icon>
+                <p class="empty-title">All tasks completed!</p>
+                <p class="empty-subtitle">Take a break or add a new goal for today.</p>
+                <button hlmBtn variant="outline" size="sm" class="mt-3" (click)="openTodoModal()">
+                  Add a new task
+                </button>
+              </div>
+            } @else {
+              <div class="todo-items-list">
+                @for (todo of state.filteredTodos(); track todo.id) {
+                  <app-planner-todo-item
+                    [todo]="todo"
+                    [todayStr]="state.todaysDateStr()"
+                    (statusToggle)="state.toggleTodoStatus($event)"
+                    (delete)="state.deleteTodo($event)"
+                    (edit)="openTodoModal($event)"
+                    (subtaskToggle)="handleSubtaskToggle($event)"
+                    (addSubtask)="handleAddSubtask($event)"
+                    (deleteSubtask)="handleDeleteSubtask($event)"
+                    (tagClick)="state.selectedTag.set($event)"
+                    (snooze)="handleSnooze($event)"
+                  ></app-planner-todo-item>
+                }
+              </div>
+            }
+          }
+        </section>
+      }
+    </div>
+
+    <!-- Mobile Floating Action Button (FAB) -->
+    <app-planner-mobile-fab
+      (newNote)="openNoteModal()"
+      (newTask)="openTodoModal()"
+    ></app-planner-mobile-fab>
+
+    <!-- Note Editor Sheet (Modal / Bottom Sheet) -->
+    <app-planner-note-editor-sheet
+      [isOpen]="isNoteModalOpen()"
+      [note]="activeNote()"
+      [isSaving]="state.isSaving()"
+      (close)="closeNoteModal()"
+      (save)="handleSaveNote($event)"
+    ></app-planner-note-editor-sheet>
+
+    <!-- Todo Form Sheet (Modal / Bottom Sheet) -->
+    <app-planner-todo-form-sheet
+      [isOpen]="isTodoModalOpen()"
+      [todo]="activeTodo()"
+      [isSaving]="state.isSaving()"
+      (close)="closeTodoModal()"
+      (save)="handleSaveTodo($event)"
+    ></app-planner-todo-form-sheet>
+
+    <!-- Reminder Settings / Snooze Dialog -->
+    <app-planner-reminder-dialog
+      [isOpen]="isReminderDialogOpen()"
+      [todo]="reminderTargetTodo()"
+      (close)="closeReminderDialog()"
+      (updateReminder)="handleUpdateReminder($event)"
+      (snooze)="handleSnooze($event)"
+    ></app-planner-reminder-dialog>
+  </div>
+}

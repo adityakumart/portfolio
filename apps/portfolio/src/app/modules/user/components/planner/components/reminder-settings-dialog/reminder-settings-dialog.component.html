@@ -1,0 +1,57 @@
+@if (isOpen && todo) {
+  <div class="dialog-backdrop" (click)="close.emit()">
+    <div class="dialog-card" (click)="$event.stopPropagation()">
+      <div class="dialog-header">
+        <div class="title-wrap">
+          <ng-icon name="lucideBell" class="bell-icon"></ng-icon>
+          <h3 class="dialog-title">Reminder Settings</h3>
+        </div>
+        <button type="button" class="close-btn" (click)="close.emit()">
+          <ng-icon name="lucideX"></ng-icon>
+        </button>
+      </div>
+
+      <div class="dialog-body">
+        <p class="target-task-name">Task: <strong>{{ todo.title }}</strong></p>
+
+        <!-- Quick Snooze Buttons -->
+        <div class="quick-snooze-section">
+          <span class="section-label">Quick Snooze</span>
+          <div class="snooze-buttons-row">
+            <button type="button" class="snooze-btn" (click)="onQuickSnooze(5)">+5m</button>
+            <button type="button" class="snooze-btn" (click)="onQuickSnooze(15)">+15m</button>
+            <button type="button" class="snooze-btn" (click)="onQuickSnooze(60)">+1h</button>
+            <button type="button" class="snooze-btn" (click)="onQuickSnooze(1440)">+1 day</button>
+          </div>
+        </div>
+
+        <div class="divider"><span>OR CUSTOMIZE</span></div>
+
+        <!-- Date & Time Picker -->
+        <div class="form-group">
+          <label class="form-label">Trigger Date & Time</label>
+          <input
+            type="datetime-local"
+            [(ngModel)]="reminderTime"
+            class="form-input"
+          />
+        </div>
+
+        <!-- Repeat frequency -->
+        <div class="form-group">
+          <label class="form-label">Repeat Frequency</label>
+          <select [(ngModel)]="repeat" class="form-select">
+            <option value="none">Does not repeat</option>
+            <option value="daily">Every day</option>
+            <option value="weekly">Every week</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="dialog-footer">
+        <button type="button" class="btn-cancel" (click)="close.emit()">Cancel</button>
+        <button type="button" class="btn-save" (click)="onSave()">Update Reminder</button>
+      </div>
+    </div>
+  </div>
+}

@@ -1,0 +1,89 @@
+<div
+  class="note-card"
+  [class.pinned]="note.isPinned"
+  [style.border-top-color]="note.color || 'var(--color-primary)'"
+>
+  <div class="note-top">
+    <div class="title-wrap" (click)="edit.emit(note)">
+      <h3 class="note-title">{{ note.title || 'Untitled Note' }}</h3>
+    </div>
+
+    <div class="note-actions">
+      <button
+        type="button"
+        class="icon-action-btn copy-btn"
+        (click)="onCopy()"
+        [title]="copied ? 'Copied!' : 'Copy note content'"
+      >
+        <ng-icon [name]="copied ? 'lucideCheck' : 'lucideCopy'"></ng-icon>
+      </button>
+
+      <button
+        type="button"
+        class="icon-action-btn edit-btn"
+        (click)="edit.emit(note)"
+        title="Edit note"
+      >
+        <ng-icon name="lucideEdit3"></ng-icon>
+      </button>
+
+      <button
+        type="button"
+        class="icon-action-btn pin-btn"
+        [class.pinned]="note.isPinned"
+        (click)="pinToggle.emit(note)"
+        [title]="note.isPinned ? 'Unpin note' : 'Pin to top'"
+      >
+        <ng-icon name="lucidePin"></ng-icon>
+      </button>
+
+      <button
+        type="button"
+        class="icon-action-btn delete-btn"
+        (click)="delete.emit(note.id)"
+        title="Delete note"
+      >
+        <ng-icon name="lucideTrash2"></ng-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Note Body with interactive checklist rendering -->
+  <div class="note-body-content" (click)="edit.emit(note)">
+    @for (line of parsedLines; track line.lineIdx) {
+      @if (line.isChecklist) {
+        <div class="note-checklist-row">
+          <button
+            type="button"
+            class="note-checklist-check"
+            [class.checked]="line.checked"
+            (click)="toggleChecklistLine(line.lineIdx, $event)"
+          >
+            @if (line.checked) {
+              <ng-icon name="lucideCheck" class="cl-icon"></ng-icon>
+            }
+          </button>
+          <span class="cl-text" [class.done]="line.checked">{{ line.text }}</span>
+        </div>
+      } @else if (line.text.trim()) {
+        <p class="note-text-line">{{ line.text }}</p>
+      }
+    }
+  </div>
+
+  <div class="note-footer">
+    <div class="note-tags">
+      @for (tag of note.tags; track tag) {
+        <button
+          type="button"
+          class="note-tag-pill"
+          (click)="tagClick.emit(tag)"
+          title="Filter by #{{ tag }}"
+        >
+          #{{ tag }}
+        </button>
+      }
+    </div>
+    <span class="note-date">{{ note.updatedAt | date:'mediumDate' }}</span>
+  </div>
+</div>

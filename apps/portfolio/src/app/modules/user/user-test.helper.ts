@@ -29,6 +29,7 @@ export async function injectUserSession(page: Page, options?: UserSessionOptions
         devTools: true,
         formBuilder: true,
         rr: true,
+        planner: true,
         ...options?.modules,
       },
     },

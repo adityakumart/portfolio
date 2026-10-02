@@ -7,6 +7,7 @@ export default defineConfig({
     '**/modules/portfolio/**/*.spec.ts',
     '**/user.spec.ts',
     '**/modules/user/**/*.component.spec.ts',
+    '**/planner.spec.ts',
     '**/rr.spec.ts',
     '**/modules/rr/**/*.spec.ts',
     '**/diet-hydration.spec.ts',

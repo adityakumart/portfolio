@@ -5,6 +5,7 @@ export interface UserModules {
   aiAssistant: boolean;
   fileManager: boolean;
   dietHydration: boolean;
+  planner?: boolean;
 }
 
 export interface User {

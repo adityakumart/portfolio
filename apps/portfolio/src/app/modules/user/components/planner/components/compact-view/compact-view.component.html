@@ -1,0 +1,150 @@
+<div class="compact-container">
+  <!-- Compact Header -->
+  <header class="compact-header">
+    <div class="brand-row">
+      <div class="brand-title">
+        <ng-icon name="lucideCheckSquare" class="brand-icon"></ng-icon>
+        <span class="brand-text">Planner</span>
+      </div>
+
+      <div class="header-actions">
+        <button
+          type="button"
+          class="header-icon-btn"
+          (click)="refreshData()"
+          [class.spinning]="state.isLoading()"
+          title="Refresh"
+        >
+          <ng-icon name="lucideRefreshCw"></ng-icon>
+        </button>
+
+        <button
+          type="button"
+          class="header-icon-btn"
+          (click)="openFullApp.emit()"
+          title="Open Full App"
+        >
+          <ng-icon name="lucideExternalLink"></ng-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- Segmented tabs: Tasks vs Scratchpad -->
+    <div class="compact-nav">
+      <button
+        type="button"
+        class="nav-tab"
+        [class.active]="activeTab() === 'tasks'"
+        (click)="activeTab.set('tasks')"
+      >
+        <ng-icon name="lucideCheckSquare" class="nav-icon"></ng-icon>
+        <span>Tasks ({{ state.pendingTodos().length }})</span>
+      </button>
+
+      <button
+        type="button"
+        class="nav-tab"
+        [class.active]="activeTab() === 'notes'"
+        (click)="activeTab.set('notes')"
+      >
+        <ng-icon name="lucideStickyNote" class="nav-icon"></ng-icon>
+        <span>Notes ({{ state.notes().length }})</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="compact-main">
+    <!-- TASKS TAB -->
+    @if (activeTab() === 'tasks') {
+      <div class="tasks-view">
+        <!-- Quick Add Box -->
+        <div class="quick-add-wrap">
+          <input
+            type="text"
+            placeholder="Add task and press Enter..."
+            [value]="quickTaskInput()"
+            (input)="quickTaskInput.set($any($event.target).value)"
+            (keydown.enter)="submitQuickTask()"
+            class="compact-input"
+          />
+          <button
+            type="button"
+            class="compact-add-btn"
+            [disabled]="!quickTaskInput().trim()"
+            (click)="submitQuickTask()"
+          >
+            <ng-icon name="lucidePlus"></ng-icon>
+          </button>
+        </div>
+
+        <!-- Task Items -->
+        <div class="compact-items-list">
+          @if (state.isLoading() && state.todos().length === 0) {
+            <div class="compact-loading">Loading tasks...</div>
+          } @else if (state.pendingTodos().length === 0) {
+            <div class="compact-empty">
+              <ng-icon name="lucideCheck" class="empty-icon"></ng-icon>
+              <span>All caught up! Zero pending tasks.</span>
+            </div>
+          } @else {
+            @for (todo of state.pendingTodos(); track todo.id) {
+              <div class="compact-todo-row" [class.urgent]="todo.priority === 'urgent'">
+                <button
+                  type="button"
+                  class="compact-check"
+                  (click)="state.toggleTodoStatus(todo)"
+                  title="Mark complete"
+                >
+                  @if (todo.status === 'completed') {
+                    <ng-icon name="lucideCheck"></ng-icon>
+                  }
+                </button>
+
+                <div class="todo-info">
+                  <span class="todo-title">{{ todo.title }}</span>
+                  @if (todo.dueDate) {
+                    <span class="todo-due">{{ todo.dueDate }}</span>
+                  }
+                </div>
+
+                <span class="p-dot" [attr.data-priority]="todo.priority" [title]="todo.priority"></span>
+              </div>
+            }
+          }
+        </div>
+      </div>
+    }
+
+    <!-- NOTES / SCRATCHPAD TAB -->
+    @if (activeTab() === 'notes') {
+      <div class="notes-view">
+        <div class="scratchpad-header">
+          <span class="scratchpad-title">Quick Scratchpad</span>
+          <span class="auto-save-hint">Auto-saved</span>
+        </div>
+
+        <textarea
+          rows="6"
+          placeholder="Jot down quick thoughts, links, clipboard snippets..."
+          [value]="scratchpadText()"
+          (input)="onScratchpadChange($any($event.target).value)"
+          class="compact-textarea"
+        ></textarea>
+
+        <!-- Pinned Notes List -->
+        <div class="pinned-notes-section">
+          <span class="section-title">Saved Notes</span>
+          <div class="compact-notes-list">
+            @for (note of state.filteredNotes(); track note.id) {
+              <div class="compact-note-item">
+                <span class="note-item-title">{{ note.title || 'Note' }}</span>
+                <span class="note-snippet">{{ note.content }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  </main>
+</div>

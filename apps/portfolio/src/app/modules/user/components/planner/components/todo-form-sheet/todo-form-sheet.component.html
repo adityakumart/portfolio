@@ -1,0 +1,177 @@
+@if (isOpen) {
+  <div class="sheet-backdrop" (click)="close.emit()">
+    <div class="sheet-container" (click)="$event.stopPropagation()">
+      <!-- Drag pill for mobile drawers -->
+      <div class="drag-handle-bar">
+        <span class="drag-pill"></span>
+      </div>
+
+      <!-- Header -->
+      <div class="sheet-header">
+        <h3 class="sheet-title">{{ todo ? 'Edit Task' : 'New Task' }}</h3>
+        <button type="button" class="close-btn" (click)="close.emit()" aria-label="Close dialog">
+          <ng-icon name="lucideX"></ng-icon>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="sheet-body">
+        <!-- Title Input -->
+        <div class="form-group">
+          <label class="form-label" for="todo-title-input">Task Title *</label>
+          <input
+            id="todo-title-input"
+            type="text"
+            placeholder="e.g. Prepare Q3 deployment manifest"
+            [(ngModel)]="form.title"
+            class="form-input"
+          />
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+          <label class="form-label" for="todo-desc-input">Description (optional)</label>
+          <textarea
+            id="todo-desc-input"
+            rows="2"
+            placeholder="Provide context, links, or notes..."
+            [(ngModel)]="form.description"
+            class="form-textarea"
+          ></textarea>
+        </div>
+
+        <!-- Priority & Due Date Row -->
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label">Priority</label>
+            <div class="priority-selector">
+              @for (p of ['low', 'medium', 'high', 'urgent']; track p) {
+                <button
+                  type="button"
+                  class="priority-opt-btn"
+                  [class.active]="form.priority === p"
+                  [attr.data-priority]="p"
+                  (click)="form.priority = $any(p)"
+                >
+                  {{ p }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="todo-date-input">Due Date</label>
+            <input
+              id="todo-date-input"
+              type="date"
+              [(ngModel)]="form.dueDate"
+              class="form-input"
+            />
+          </div>
+        </div>
+
+        <!-- Subtasks Builder -->
+        <div class="form-group">
+          <label class="form-label">Checklist Subtasks ({{ form.subtasks.length }})</label>
+          <div class="subtask-input-row">
+            <input
+              type="text"
+              placeholder="Add step or checklist item & press Enter"
+              [(ngModel)]="form.newSubtaskInput"
+              (keydown.enter)="addSubtask()"
+              class="form-input"
+            />
+            <button type="button" class="btn-subtask-add" (click)="addSubtask()">
+              <ng-icon name="lucidePlus"></ng-icon>
+            </button>
+          </div>
+
+          @if (form.subtasks.length > 0) {
+            <div class="subtask-pills-list">
+              @for (st of form.subtasks; track st.id; let idx = $index) {
+                <div class="st-item-chip">
+                  <span class="st-text">{{ st.title }}</span>
+                  <button type="button" class="st-remove-btn" (click)="removeSubtask(idx)">×</button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Notification Reminder Settings Box -->
+        <div class="reminder-box">
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="form.enableReminder" />
+            <span class="reminder-title-label">
+              <ng-icon name="lucideBell" class="reminder-bell-icon"></ng-icon>
+              Enable Notification Reminder
+            </span>
+          </label>
+
+          @if (form.enableReminder) {
+            <div class="reminder-controls mt-2.5">
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label class="form-label-sub">Alert Time</label>
+                  <input
+                    type="datetime-local"
+                    [(ngModel)]="form.reminderTime"
+                    class="form-input form-input-sm"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label-sub">Repeat</label>
+                  <select [(ngModel)]="form.repeat" class="form-select form-input-sm">
+                    <option value="none">Does not repeat</option>
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Tags Input -->
+        <div class="form-group">
+          <label class="form-label" for="todo-tag-input">Tags</label>
+          <div class="tag-input-row">
+            <input
+              id="todo-tag-input"
+              type="text"
+              placeholder="Add tag and press Enter"
+              [(ngModel)]="form.tagInput"
+              (keydown.enter)="addTag()"
+              class="form-input"
+            />
+            <button type="button" class="tag-add-btn" (click)="addTag()">Add</button>
+          </div>
+          @if (form.tags.length > 0) {
+            <div class="tags-list-row">
+              @for (tag of form.tags; track tag) {
+                <span class="tag-pill">
+                  #{{ tag }}
+                  <button type="button" class="tag-x-btn" (click)="removeTag(tag)">×</button>
+                </span>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="sheet-footer">
+        <button type="button" class="btn-cancel" (click)="close.emit()">Cancel</button>
+        <button
+          type="button"
+          class="btn-save"
+          [disabled]="!form.title.trim() || isSaving"
+          (click)="onSave()"
+        >
+          {{ isSaving ? 'Saving...' : todo ? 'Save Changes' : 'Create Task' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
