@@ -37,6 +37,18 @@
             <label class="form-label" for="note-content-input">Note Content *</label>
             <span class="char-count">{{ form.content.length }} chars</span>
           </div>
+
+          <!-- Markdown Quick Action Toolbar -->
+          <div class="markdown-toolbar">
+            <button type="button" class="md-btn" (click)="insertMarkdown('# ')" title="Heading 1">H1</button>
+            <button type="button" class="md-btn" (click)="insertMarkdown('## ')" title="Heading 2">H2</button>
+            <button type="button" class="md-btn" (click)="insertMarkdown('**', '**')" title="Bold"><strong>B</strong></button>
+            <button type="button" class="md-btn" (click)="insertMarkdown('*', '*')" title="Italic"><em>I</em></button>
+            <button type="button" class="md-btn" (click)="insertMarkdown('- [ ] ')" title="Checklist Item">✓ Task</button>
+            <button type="button" class="md-btn" (click)="insertMarkdown('- ')" title="Bullet Item">• List</button>
+            <button type="button" class="md-btn" (click)="insertMarkdown('```\n', '\n```')" title="Code Block">&lt;/&gt;</button>
+          </div>
+
           <textarea
             id="note-content-input"
             rows="6"

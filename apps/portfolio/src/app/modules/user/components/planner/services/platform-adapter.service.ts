@@ -1,4 +1,4 @@
-import { Injectable, inject, PLATFORM_ID } from '@angular/core';
+import { Injectable, inject, PLATFORM_ID, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 
 export type HapticType = 'light' | 'medium' | 'heavy' | 'selection' | 'success' | 'warning' | 'error';
@@ -16,6 +16,18 @@ export interface ShortcutHandlers {
 export class PlatformAdapterService {
   private platformId = inject(PLATFORM_ID);
   private keydownListener: ((e: KeyboardEvent) => void) | null = null;
+  private baseTitle = 'Notes & Planner';
+
+  readonly isOnline = signal<boolean>(true);
+
+  constructor() {
+    if (this.isBrowser) {
+      this.isOnline.set(navigator.onLine);
+      window.addEventListener('online', () => this.isOnline.set(true));
+      window.addEventListener('offline', () => this.isOnline.set(false));
+      this.baseTitle = document.title || 'Notes & Planner';
+    }
+  }
 
   get isBrowser(): boolean {
     return isPlatformBrowser(this.platformId);
@@ -287,7 +299,29 @@ export class PlatformAdapterService {
       }
     }
 
-    // 3. Web HTML5 / Tauri Desktop Notification
+    // 3. Tauri Desktop Notification Bridge
+    if (this.isTauri) {
+      const w = window as any;
+      try {
+        if (w.__TAURI__?.core?.invoke) {
+          await w.__TAURI__.core.invoke('plugin:notification|notify', {
+            title,
+            body: options?.body,
+          });
+          return;
+        } else if (w.__TAURI__?.notification?.sendNotification) {
+          w.__TAURI__.notification.sendNotification({
+            title,
+            body: options?.body,
+          });
+          return;
+        }
+      } catch (e) {
+        console.debug('Tauri notification invoke error:', e);
+      }
+    }
+
+    // 4. Web HTML5 Desktop Notification
     if ('Notification' in window && Notification.permission === 'granted') {
       try {
         new Notification(title, {
@@ -299,6 +333,54 @@ export class PlatformAdapterService {
         console.warn('HTML5 Notification dispatch failed:', err);
       }
     }
+  }
+
+  async shareItem(options: { title: string; text?: string; url?: string }): Promise<boolean> {
+    if (!this.isBrowser) return false;
+
+    // 1. Capacitor Share Plugin (Mobile native sheet)
+    const w = window as any;
+    if (this.isCapacitor && w.Capacitor?.Plugins?.Share?.share) {
+      try {
+        await w.Capacitor.Plugins.Share.share({
+          title: options.title,
+          text: options.text,
+          url: options.url,
+          dialogTitle: options.title,
+        });
+        return true;
+      } catch (e) {
+        console.debug('Capacitor share dismissed or error:', e);
+      }
+    }
+
+    // 2. Web Share API (Mobile Safari, Chrome on Android, Modern Desktop)
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: options.title,
+          text: options.text,
+          url: options.url,
+        });
+        return true;
+      } catch (e) {
+        console.debug('Web share cancelled or error:', e);
+      }
+    }
+
+    // 3. Fallback: Copy to clipboard
+    if (navigator.clipboard?.writeText) {
+      try {
+        const shareContent = [options.title, options.text, options.url].filter(Boolean).join('\n\n');
+        await navigator.clipboard.writeText(shareContent);
+        this.triggerHaptic('success');
+        return true;
+      } catch (e) {
+        console.warn('Clipboard fallback failed:', e);
+      }
+    }
+
+    return false;
   }
 
   async scheduleLocalNotification(options: {
@@ -385,6 +467,17 @@ export class PlatformAdapterService {
 
   updateBadge(count: number): void {
     if (!this.isBrowser) return;
+
+    // Document Title Indicator
+    try {
+      if (count > 0) {
+        document.title = `(${count}) ${this.baseTitle}`;
+      } else {
+        document.title = this.baseTitle;
+      }
+    } catch {
+      // Ignored
+    }
 
     // Chrome Extension Action Badge
     if (this.isChromeExtension) {

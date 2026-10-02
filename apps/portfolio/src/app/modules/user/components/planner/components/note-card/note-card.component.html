@@ -20,6 +20,15 @@
 
       <button
         type="button"
+        class="icon-action-btn share-btn"
+        (click)="share.emit(note)"
+        title="Share note"
+      >
+        <ng-icon name="lucideShare2"></ng-icon>
+      </button>
+
+      <button
+        type="button"
         class="icon-action-btn edit-btn"
         (click)="edit.emit(note)"
         title="Edit note"
