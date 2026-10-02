@@ -70,7 +70,9 @@ export interface ICreateTodoDto {
   reminder?: ITodoReminder;
 }
 
-export interface IUpdateTodoDto extends Partial<ICreateTodoDto> {}
+export interface IUpdateTodoDto extends Partial<ICreateTodoDto> {
+  completedAt?: string;
+}
 
 export interface IPlannerDashboardResponse {
   notes: INote[];

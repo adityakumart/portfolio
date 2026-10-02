@@ -6,6 +6,15 @@
 } @else {
   <!-- FULL & MOBILE RESPONSIVE PLANNER HUB -->
   <div class="planner-page">
+    <!-- Hidden File Input for Backup Import -->
+    <input
+      #fileInput
+      type="file"
+      accept=".json"
+      (change)="handleFileSelected($event)"
+      style="display: none;"
+    />
+
     <!-- Top Header -->
     <header class="planner-header">
       <div class="title-cluster">
@@ -22,6 +31,31 @@
 
       <!-- Header Actions -->
       <div class="header-actions">
+        <!-- Export & Import Data Portability -->
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          class="backup-btn"
+          (click)="exportBackup()"
+          title="Export JSON Backup"
+        >
+          <ng-icon name="lucideDownload" class="mr-1"></ng-icon>
+          <span class="btn-text">Export</span>
+        </button>
+
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          class="backup-btn"
+          (click)="triggerImportFile()"
+          title="Import JSON Backup"
+        >
+          <ng-icon name="lucideUpload" class="mr-1"></ng-icon>
+          <span class="btn-text">Import</span>
+        </button>
+
         <button
           hlmBtn
           variant="outline"
@@ -156,7 +190,32 @@
               <h2 class="panel-title">Saved Notes</h2>
               <span class="count-pill">{{ state.filteredNotes().length }}</span>
             </div>
-            <button type="button" class="quick-new-link" (click)="openNoteModal()">+ New Note</button>
+
+            <div class="panel-header-controls">
+              <!-- View mode toggle: Grid vs List -->
+              <div class="view-toggle-wrap">
+                <button
+                  type="button"
+                  class="toggle-btn"
+                  [class.active]="state.notesViewMode() === 'grid'"
+                  (click)="state.notesViewMode.set('grid')"
+                  title="Grid View"
+                >
+                  <ng-icon name="lucideLayoutGrid"></ng-icon>
+                </button>
+                <button
+                  type="button"
+                  class="toggle-btn"
+                  [class.active]="state.notesViewMode() === 'list'"
+                  (click)="state.notesViewMode.set('list')"
+                  title="List View"
+                >
+                  <ng-icon name="lucideList"></ng-icon>
+                </button>
+              </div>
+
+              <button type="button" class="quick-new-link" (click)="openNoteModal()">+ New Note</button>
+            </div>
           </div>
 
           @if (state.isLoading() && state.notes().length === 0) {
@@ -171,7 +230,10 @@
               </button>
             </div>
           } @else {
-            <div class="notes-cards-list">
+            <div
+              class="notes-cards-list"
+              [class.masonry-grid]="state.notesViewMode() === 'grid'"
+            >
               @for (note of state.filteredNotes(); track note.id) {
                 <app-planner-note-card
                   [note]="note"
@@ -179,6 +241,7 @@
                   (delete)="state.deleteNote($event)"
                   (edit)="openNoteModal($event)"
                   (tagClick)="state.selectedTag.set($event)"
+                  (contentChange)="handleNoteContentChange($event)"
                 ></app-planner-note-card>
               }
             </div>
@@ -186,9 +249,9 @@
         </section>
       }
 
-      <!-- RIGHT COLUMN: TO-DO TASKS & REMINDERS -->
+      <!-- RIGHT COLUMN: TO-DO TASKS & REMINDERS (LIST OR KANBAN) -->
       @if (state.activeTab() === 'all' || state.activeTab() === 'todos') {
-        <section class="todos-panel">
+        <section class="todos-panel" [class.full-kanban-panel]="state.tasksViewMode() === 'kanban'">
           <div class="panel-header">
             <div class="panel-title-wrap">
               <ng-icon name="lucideCheckSquare" class="panel-icon text-emerald-500"></ng-icon>
@@ -196,101 +259,143 @@
               <span class="count-pill">{{ state.pendingTodos().length }} pending</span>
             </div>
 
-            <!-- Filter Sub-Tabs -->
-            <div class="todo-filter-pills">
+            <!-- View mode toggle: List vs Kanban Board -->
+            <div class="view-toggle-wrap">
               <button
                 type="button"
-                class="filter-pill"
-                [class.active]="state.todoFilter() === 'all'"
-                (click)="state.todoFilter.set('all')"
+                class="toggle-btn"
+                [class.active]="state.tasksViewMode() === 'list'"
+                (click)="state.tasksViewMode.set('list')"
+                title="List View"
               >
-                All
+                <ng-icon name="lucideList"></ng-icon>
+                <span class="view-label">List</span>
               </button>
               <button
                 type="button"
-                class="filter-pill"
-                [class.active]="state.todoFilter() === 'today'"
-                (click)="state.todoFilter.set('today')"
+                class="toggle-btn"
+                [class.active]="state.tasksViewMode() === 'kanban'"
+                (click)="state.tasksViewMode.set('kanban')"
+                title="Kanban Board"
               >
-                Today ({{ state.todaysTodos().length }})
-              </button>
-              <button
-                type="button"
-                class="filter-pill"
-                [class.active]="state.todoFilter() === 'upcoming'"
-                (click)="state.todoFilter.set('upcoming')"
-              >
-                Upcoming
-              </button>
-              <button
-                type="button"
-                class="filter-pill"
-                [class.active]="state.todoFilter() === 'completed'"
-                (click)="state.todoFilter.set('completed')"
-              >
-                Done ({{ state.completedTodos().length }})
+                <ng-icon name="lucideKanban"></ng-icon>
+                <span class="view-label">Kanban</span>
               </button>
             </div>
+
+            <!-- Filter Sub-Tabs (only when in list view) -->
+            @if (state.tasksViewMode() === 'list') {
+              <div class="todo-filter-pills">
+                <button
+                  type="button"
+                  class="filter-pill"
+                  [class.active]="state.todoFilter() === 'all'"
+                  (click)="state.todoFilter.set('all')"
+                >
+                  All
+                </button>
+                <button
+                  type="button"
+                  class="filter-pill"
+                  [class.active]="state.todoFilter() === 'today'"
+                  (click)="state.todoFilter.set('today')"
+                >
+                  Today ({{ state.todaysTodos().length }})
+                </button>
+                <button
+                  type="button"
+                  class="filter-pill"
+                  [class.active]="state.todoFilter() === 'upcoming'"
+                  (click)="state.todoFilter.set('upcoming')"
+                >
+                  Upcoming
+                </button>
+                <button
+                  type="button"
+                  class="filter-pill"
+                  [class.active]="state.todoFilter() === 'completed'"
+                  (click)="state.todoFilter.set('completed')"
+                >
+                  Done ({{ state.completedTodos().length }})
+                </button>
+              </div>
+            }
           </div>
 
-          <!-- Inline Quick Add Input -->
-          <div class="quick-add-box">
-            <input
-              type="text"
-              placeholder="Add a new task and press Enter..."
-              [value]="quickTaskTitle()"
-              (input)="quickTaskTitle.set($any($event.target).value)"
-              (keydown.enter)="submitQuickTask()"
-              class="quick-add-input"
-            />
-            <button
-              hlmBtn
-              variant="default"
-              size="sm"
-              [disabled]="!quickTaskTitle().trim()"
-              (click)="submitQuickTask()"
-            >
-              Add
-            </button>
-          </div>
-
-          <!-- Overdue Tasks Warning Banner (if any) -->
-          @if (state.overdueTodos().length > 0 && state.todoFilter() !== 'completed') {
-            <div class="overdue-banner">
-              <ng-icon name="lucideAlertCircle" class="banner-icon"></ng-icon>
-              <span>You have {{ state.overdueTodos().length }} overdue tasks!</span>
-            </div>
-          }
-
-          <!-- Todo Items List -->
-          @if (state.isLoading() && state.todos().length === 0) {
-            <div class="loading-state">Loading tasks...</div>
-          } @else if (state.filteredTodos().length === 0) {
-            <div class="empty-state-box">
-              <ng-icon name="lucideCheckSquare" class="empty-icon text-emerald-500"></ng-icon>
-              <p class="empty-title">All tasks completed!</p>
-              <p class="empty-subtitle">Take a break or add a new goal for today.</p>
-              <button hlmBtn variant="outline" size="sm" class="mt-3" (click)="openTodoModal()">
-                Add a new task
-              </button>
-            </div>
+          <!-- KANBAN BOARD VIEW -->
+          @if (state.tasksViewMode() === 'kanban') {
+            <app-planner-kanban-board
+              [pendingTodos]="state.pendingColumnTodos()"
+              [inProgressTodos]="state.inProgressColumnTodos()"
+              [completedTodos]="state.completedColumnTodos()"
+              [todayStr]="state.todaysDateStr()"
+              (moveStatus)="handleMoveTaskStatus($event)"
+              (toggleStatus)="state.toggleTodoStatus($event)"
+              (edit)="openTodoModal($event)"
+              (delete)="state.deleteTodo($event)"
+              (openNewTask)="openTodoModal()"
+            ></app-planner-kanban-board>
           } @else {
-            <div class="todo-items-list">
-              @for (todo of state.filteredTodos(); track todo.id) {
-                <app-planner-todo-item
-                  [todo]="todo"
-                  [todayStr]="state.todaysDateStr()"
-                  (statusToggle)="state.toggleTodoStatus($event)"
-                  (delete)="state.deleteTodo($event)"
-                  (edit)="openTodoModal($event)"
-                  (subtaskToggle)="handleSubtaskToggle($event)"
-                  (addSubtask)="handleAddSubtask($event)"
-                  (deleteSubtask)="handleDeleteSubtask($event)"
-                  (tagClick)="state.selectedTag.set($event)"
-                  (snooze)="handleSnooze($event)"
-                ></app-planner-todo-item>
-              }
+            <!-- STANDARD LIST VIEW -->
+            <!-- Inline Quick Add Input -->
+            <div class="quick-add-box">
+              <input
+                type="text"
+                placeholder="Add a new task and press Enter..."
+                [value]="quickTaskTitle()"
+                (input)="quickTaskTitle.set($any($event.target).value)"
+                (keydown.enter)="submitQuickTask()"
+                class="quick-add-input"
+              />
+              <button
+                hlmBtn
+                variant="default"
+                size="sm"
+                [disabled]="!quickTaskTitle().trim()"
+                (click)="submitQuickTask()"
+              >
+                Add
+              </button>
             </div>
+
+            <!-- Overdue Tasks Warning Banner (if any) -->
+            @if (state.overdueTodos().length > 0 && state.todoFilter() !== 'completed') {
+              <div class="overdue-banner">
+                <ng-icon name="lucideAlertCircle" class="banner-icon"></ng-icon>
+                <span>You have {{ state.overdueTodos().length }} overdue tasks!</span>
+              </div>
+            }
+
+            <!-- Todo Items List -->
+            @if (state.isLoading() && state.todos().length === 0) {
+              <div class="loading-state">Loading tasks...</div>
+            } @else if (state.filteredTodos().length === 0) {
+              <div class="empty-state-box">
+                <ng-icon name="lucideCheckSquare" class="empty-icon text-emerald-500"></ng-icon>
+                <p class="empty-title">All tasks completed!</p>
+                <p class="empty-subtitle">Take a break or add a new goal for today.</p>
+                <button hlmBtn variant="outline" size="sm" class="mt-3" (click)="openTodoModal()">
+                  Add a new task
+                </button>
+              </div>
+            } @else {
+              <div class="todo-items-list">
+                @for (todo of state.filteredTodos(); track todo.id) {
+                  <app-planner-todo-item
+                    [todo]="todo"
+                    [todayStr]="state.todaysDateStr()"
+                    (statusToggle)="state.toggleTodoStatus($event)"
+                    (delete)="state.deleteTodo($event)"
+                    (edit)="openTodoModal($event)"
+                    (subtaskToggle)="handleSubtaskToggle($event)"
+                    (addSubtask)="handleAddSubtask($event)"
+                    (deleteSubtask)="handleDeleteSubtask($event)"
+                    (tagClick)="state.selectedTag.set($event)"
+                    (snooze)="handleSnooze($event)"
+                  ></app-planner-todo-item>
+                }
+              </div>
+            }
           }
         </section>
       }

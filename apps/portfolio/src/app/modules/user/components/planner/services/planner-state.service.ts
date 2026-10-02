@@ -7,6 +7,7 @@ import {
   ICreateTodoDto,
   IUpdateTodoDto,
   ISubtask,
+  TodoStatus,
 } from '@portfolio/shared-types';
 import { PlannerApiService } from './planner-api.service';
 import { PlatformAdapterService } from './platform-adapter.service';
@@ -30,6 +31,10 @@ export class PlannerStateService {
   readonly selectedTag = signal<string | null>(null);
   readonly activeTab = signal<'all' | 'notes' | 'todos'>('all');
   readonly todoFilter = signal<'all' | 'today' | 'upcoming' | 'completed'>('all');
+
+  // View modes (Phase 3: List vs Kanban Board for Tasks, Grid vs List for Notes)
+  readonly tasksViewMode = signal<'list' | 'kanban'>('list');
+  readonly notesViewMode = signal<'grid' | 'list'>('grid');
 
   // Currently editing models (null if adding new)
   readonly editingNote = signal<INote | null>(null);
@@ -94,6 +99,40 @@ export class PlannerStateService {
     );
   });
 
+  // Kanban Column Computations
+  readonly pendingColumnTodos = computed(() => {
+    const q = this.searchQuery().toLowerCase().trim();
+    const tag = this.selectedTag();
+    return this.todos().filter((t) => {
+      if (t.status !== 'pending') return false;
+      const matchesQuery = !q || t.title.toLowerCase().includes(q) || t.description?.toLowerCase().includes(q);
+      const matchesTag = !tag || t.tags?.includes(tag);
+      return matchesQuery && matchesTag;
+    });
+  });
+
+  readonly inProgressColumnTodos = computed(() => {
+    const q = this.searchQuery().toLowerCase().trim();
+    const tag = this.selectedTag();
+    return this.todos().filter((t) => {
+      if (t.status !== 'in_progress') return false;
+      const matchesQuery = !q || t.title.toLowerCase().includes(q) || t.description?.toLowerCase().includes(q);
+      const matchesTag = !tag || t.tags?.includes(tag);
+      return matchesQuery && matchesTag;
+    });
+  });
+
+  readonly completedColumnTodos = computed(() => {
+    const q = this.searchQuery().toLowerCase().trim();
+    const tag = this.selectedTag();
+    return this.todos().filter((t) => {
+      if (t.status !== 'completed') return false;
+      const matchesQuery = !q || t.title.toLowerCase().includes(q) || t.description?.toLowerCase().includes(q);
+      const matchesTag = !tag || t.tags?.includes(tag);
+      return matchesQuery && matchesTag;
+    });
+  });
+
   readonly filteredTodos = computed(() => {
     const filter = this.todoFilter();
     const q = this.searchQuery().toLowerCase().trim();
@@ -151,7 +190,7 @@ export class PlannerStateService {
 
   // State actions
   async loadDashboard(): Promise<void> {
-    // Attempt instant restore from offline cache
+    // Instant restore from offline cache
     const cached = await this.platform.getStorageItem<{ notes: INote[]; todos: ITodoItem[] }>(
       PLANNER_OFFLINE_CACHE_KEY,
     );
@@ -173,6 +212,8 @@ export class PlannerStateService {
           notes: fetchedNotes,
           todos: fetchedTodos,
         });
+        // Sync local notification alarms
+        fetchedTodos.forEach((td) => this.syncLocalNotification(td));
       },
       error: (err) => {
         console.error('Failed to load planner dashboard:', err);
@@ -233,7 +274,6 @@ export class PlannerStateService {
   toggleNotePin(note: INote): void {
     const newPinned = !note.isPinned;
     this.platform.triggerHaptic('selection');
-    // Optimistic
     this.notes.update((prev) =>
       prev.map((n) => (n.id === note.id ? { ...n, isPinned: newPinned } : n)),
     );
@@ -245,7 +285,6 @@ export class PlannerStateService {
         this.syncCache();
       },
       error: () => {
-        // Rollback
         this.notes.update((prev) =>
           prev.map((n) => (n.id === note.id ? note : n)),
         );
@@ -282,6 +321,7 @@ export class PlannerStateService {
           this.isSaving.set(false);
           this.platform.triggerHaptic('success');
           this.platform.updateBadge(this.pendingTodos().length);
+          this.syncLocalNotification(newTodo);
           this.syncCache();
           toast.success('Task created');
           resolve(newTodo);
@@ -307,6 +347,7 @@ export class PlannerStateService {
           this.isSaving.set(false);
           this.platform.triggerHaptic('light');
           this.platform.updateBadge(this.pendingTodos().length);
+          this.syncLocalNotification(updated);
           this.syncCache();
           resolve(updated);
         },
@@ -334,6 +375,7 @@ export class PlannerStateService {
       prev.map((t) => (t.id === todo.id ? optimistic : t)),
     );
     this.platform.updateBadge(this.pendingTodos().length);
+    this.syncLocalNotification(optimistic);
 
     this.api.toggleTodo(todo.id).subscribe({
       next: (updated) => {
@@ -344,20 +386,64 @@ export class PlannerStateService {
         this.syncCache();
       },
       error: () => {
-        // Rollback
         this.todos.update((prev) =>
           prev.map((t) => (t.id === todo.id ? todo : t)),
         );
         this.platform.triggerHaptic('error');
         this.platform.updateBadge(this.pendingTodos().length);
+        this.syncLocalNotification(todo);
         toast.error('Failed to toggle task');
+      },
+    });
+  }
+
+  // Move task status directly (for Kanban columns)
+  moveTodoStatus(todoId: string, newStatus: TodoStatus): void {
+    const target = this.todos().find((t) => t.id === todoId);
+    if (!target || target.status === newStatus) return;
+
+    this.platform.triggerHaptic('selection');
+    const isCompleted = newStatus === 'completed';
+    const optimistic: ITodoItem = {
+      ...target,
+      status: newStatus,
+      completedAt: isCompleted ? new Date().toISOString() : undefined,
+    };
+
+    this.todos.update((prev) =>
+      prev.map((t) => (t.id === todoId ? optimistic : t)),
+    );
+    this.platform.updateBadge(this.pendingTodos().length);
+    this.syncLocalNotification(optimistic);
+
+    this.api.updateTodo(todoId, {
+      status: newStatus,
+      completedAt: isCompleted ? new Date().toISOString() : undefined,
+    }).subscribe({
+      next: (updated) => {
+        this.todos.update((prev) =>
+          prev.map((t) => (t.id === todoId ? updated : t)),
+        );
+        this.syncCache();
+        toast.info(`Task moved to ${newStatus.replace('_', ' ')}`);
+      },
+      error: () => {
+        this.todos.update((prev) =>
+          prev.map((t) => (t.id === todoId ? target : t)),
+        );
+        this.syncCache();
+        toast.error('Failed to move task');
       },
     });
   }
 
   deleteTodo(id: string): void {
     const backup = this.todos();
-    this.notes.update((prev) => prev.filter((t) => t.id !== id));
+    const target = this.todos().find((t) => t.id === id);
+    if (target) {
+      this.platform.cancelLocalNotification(this.hashStringToInt(target.id));
+    }
+
     this.todos.update((prev) => prev.filter((t) => t.id !== id));
     this.platform.triggerHaptic('medium');
     this.platform.updateBadge(this.pendingTodos().length);
@@ -417,6 +503,7 @@ export class PlannerStateService {
           prev.map((t) => (t.id === todoId ? updated : t)),
         );
         this.platform.triggerHaptic('light');
+        this.syncLocalNotification(updated);
         this.syncCache();
         toast.info(`Reminder snoozed for ${minutes} minutes`);
       },
@@ -425,6 +512,80 @@ export class PlannerStateService {
         toast.error('Could not snooze reminder');
       },
     });
+  }
+
+  // --- Data Portability: Export & Import ---
+  exportBackup(): void {
+    const today = this.todaysDateStr();
+    const backupData = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      notes: this.notes(),
+      todos: this.todos(),
+    };
+    const content = JSON.stringify(backupData, null, 2);
+    this.platform.exportToFile(`planner-backup-${today}.json`, content, 'application/json');
+    toast.success('Planner backup exported successfully');
+  }
+
+  async importBackup(jsonString: string): Promise<{ importedNotes: number; importedTodos: number }> {
+    try {
+      const data = JSON.parse(jsonString);
+      if (!data || (!Array.isArray(data.notes) && !Array.isArray(data.todos))) {
+        throw new Error('Invalid backup format');
+      }
+
+      const importedNotes: INote[] = data.notes || [];
+      const importedTodos: ITodoItem[] = data.todos || [];
+
+      // Merge avoiding duplicates by id
+      const existingNoteIds = new Set(this.notes().map((n) => n.id));
+      const newNotes = importedNotes.filter((n) => !existingNoteIds.has(n.id));
+
+      const existingTodoIds = new Set(this.todos().map((t) => t.id));
+      const newTodos = importedTodos.filter((t) => !existingTodoIds.has(t.id));
+
+      this.notes.update((prev) => [...newNotes, ...prev]);
+      this.todos.update((prev) => [...newTodos, ...prev]);
+
+      this.syncCache();
+      this.platform.updateBadge(this.pendingTodos().length);
+      newTodos.forEach((t) => this.syncLocalNotification(t));
+
+      toast.success(
+        `Imported ${newNotes.length} notes and ${newTodos.length} tasks successfully`,
+      );
+      return { importedNotes: newNotes.length, importedTodos: newTodos.length };
+    } catch (err: any) {
+      toast.error('Failed to import backup: ' + (err.message || 'Invalid JSON'));
+      throw err;
+    }
+  }
+
+  private syncLocalNotification(todo: ITodoItem): void {
+    const id = this.hashStringToInt(todo.id);
+    if (todo.status === 'completed' || !todo.reminder || todo.reminder.isTriggered) {
+      this.platform.cancelLocalNotification(id);
+      return;
+    }
+    const targetDate = new Date(todo.reminder.reminderTime);
+    if (!isNaN(targetDate.getTime()) && targetDate.getTime() > Date.now()) {
+      this.platform.scheduleLocalNotification({
+        id,
+        title: `Task Reminder: ${todo.title}`,
+        body: todo.description || 'This task is due now.',
+        at: targetDate,
+      });
+    }
+  }
+
+  private hashStringToInt(str: string): number {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = (hash << 5) - hash + str.charCodeAt(i);
+      hash |= 0;
+    }
+    return Math.abs(hash);
   }
 
   private syncCache(): void {

@@ -297,6 +297,50 @@
       text-decoration: underline;
     }
   }
+
+  .panel-header-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .view-toggle-wrap {
+    display: inline-flex;
+    align-items: center;
+    background: var(--secondary, #27272a);
+    border: 1px solid var(--border, #3f3f46);
+    padding: 2px;
+    border-radius: 6px;
+
+    .toggle-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.25rem 0.5rem;
+      border: none;
+      background: transparent;
+      color: var(--muted-foreground, #a1a1aa);
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+
+      .view-label {
+        font-size: 0.75rem;
+      }
+
+      &:hover {
+        color: #ffffff;
+      }
+
+      &.active {
+        background: var(--card, #18181b);
+        color: #ffffff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      }
+    }
+  }
 }
 
 // Lists
@@ -305,6 +349,25 @@
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
+}
+
+.notes-cards-list.masonry-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 0.85rem;
+}
+
+.todos-panel.full-kanban-panel {
+  background: transparent;
+  border: none;
+  padding: 0;
+
+  .panel-header {
+    background: var(--card, #18181b);
+    border: 1px solid var(--border, #27272a);
+    border-radius: 1rem;
+    padding: 1rem 1.25rem;
+  }
 }
 
 // Todo Panel Filters & Quick Add

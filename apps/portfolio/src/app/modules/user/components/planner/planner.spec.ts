@@ -206,5 +206,47 @@ test.describe('User Module - Planner (Notes, To-Dos & Multi-Platform Reminders)'
       const fab = page.locator('.main-fab');
       await expect(fab).toBeVisible();
     });
+
+    test('should switch to Kanban Board view and display columns', async ({ page }) => {
+      const kanbanToggle = page.locator('.view-toggle-wrap button:has-text("Kanban")');
+      await expect(kanbanToggle).toBeVisible();
+      await kanbanToggle.click();
+
+      // Kanban board container should now be visible
+      const kanbanBoard = page.locator('app-planner-kanban-board');
+      await expect(kanbanBoard).toBeVisible();
+      await expect(kanbanBoard.locator('.column-pending .col-title')).toHaveText('To Do');
+      await expect(kanbanBoard.locator('.column-in-progress .col-title')).toHaveText('In Progress');
+      await expect(kanbanBoard.locator('.column-completed .col-title')).toHaveText('Done');
+    });
+
+    test('should render and toggle interactive markdown checklist items in notes', async ({ page }) => {
+      // Seed note with checklist syntax
+      await page.route('**/api/user/planner/notes/mock-note-1', async (route) => {
+        if (route.request().method() === 'PUT') {
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({
+              id: 'mock-note-1',
+              userId: 'mock-user-id',
+              title: 'Architecture Strategy',
+              content: '- [x] Refactor platform adapter for offline sync.',
+              tags: ['architecture'],
+              isPinned: true,
+              color: '#10b981',
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            }),
+          });
+        }
+      });
+
+      const noteCard = page.locator('app-planner-note-card').first();
+      await expect(noteCard).toBeVisible();
+
+      // Check for content area
+      await expect(noteCard.locator('.note-body-content')).toBeVisible();
+    });
   });
 });

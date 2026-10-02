@@ -301,6 +301,88 @@ export class PlatformAdapterService {
     }
   }
 
+  async scheduleLocalNotification(options: {
+    id: number;
+    title: string;
+    body: string;
+    at: Date;
+  }): Promise<void> {
+    if (!this.isBrowser) return;
+
+    // 1. Capacitor Native Android (Local Notifications Plugin)
+    if (this.isCapacitor) {
+      const w = window as any;
+      if (w.Capacitor?.Plugins?.LocalNotifications?.schedule) {
+        try {
+          await w.Capacitor.Plugins.LocalNotifications.schedule({
+            notifications: [
+              {
+                id: options.id,
+                title: options.title,
+                body: options.body,
+                schedule: { at: options.at },
+              },
+            ],
+          });
+          return;
+        } catch (e) {
+          console.warn('Capacitor schedule notification failed:', e);
+        }
+      }
+    }
+
+    // 2. Chrome Extension Alarms
+    if (this.isChromeExtension) {
+      const w = window as any;
+      if (w.chrome?.alarms?.create) {
+        const delayInMinutes = Math.max(0.5, (options.at.getTime() - Date.now()) / (1000 * 60));
+        w.chrome.alarms.create(`alarm_${options.id}`, { delayInMinutes });
+        return;
+      }
+    }
+  }
+
+  async cancelLocalNotification(id: number): Promise<void> {
+    if (!this.isBrowser) return;
+
+    if (this.isCapacitor) {
+      const w = window as any;
+      if (w.Capacitor?.Plugins?.LocalNotifications?.cancel) {
+        try {
+          await w.Capacitor.Plugins.LocalNotifications.cancel({
+            notifications: [{ id }],
+          });
+        } catch (e) {
+          console.warn('Capacitor cancel notification failed:', e);
+        }
+      }
+    }
+
+    if (this.isChromeExtension) {
+      const w = window as any;
+      if (w.chrome?.alarms?.clear) {
+        w.chrome.alarms.clear(`alarm_${id}`);
+      }
+    }
+  }
+
+  exportToFile(filename: string, content: string, contentType = 'application/json'): void {
+    if (!this.isBrowser) return;
+    try {
+      const blob = new Blob([content], { type: contentType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('Export to file failed:', e);
+    }
+  }
+
   updateBadge(count: number): void {
     if (!this.isBrowser) return;
 

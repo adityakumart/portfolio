@@ -48,7 +48,28 @@
     </div>
   </div>
 
-  <p class="note-content" (click)="edit.emit(note)">{{ note.content }}</p>
+  <!-- Note Body with interactive checklist rendering -->
+  <div class="note-body-content" (click)="edit.emit(note)">
+    @for (line of parsedLines; track line.lineIdx) {
+      @if (line.isChecklist) {
+        <div class="note-checklist-row">
+          <button
+            type="button"
+            class="note-checklist-check"
+            [class.checked]="line.checked"
+            (click)="toggleChecklistLine(line.lineIdx, $event)"
+          >
+            @if (line.checked) {
+              <ng-icon name="lucideCheck" class="cl-icon"></ng-icon>
+            }
+          </button>
+          <span class="cl-text" [class.done]="line.checked">{{ line.text }}</span>
+        </div>
+      } @else if (line.text.trim()) {
+        <p class="note-text-line">{{ line.text }}</p>
+      }
+    }
+  </div>
 
   <div class="note-footer">
     <div class="note-tags">

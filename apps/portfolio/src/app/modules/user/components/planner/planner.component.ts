@@ -24,6 +24,11 @@ import {
   lucideAlertCircle,
   lucideX,
   lucideCommand,
+  lucideLayoutGrid,
+  lucideList,
+  lucideKanban,
+  lucideDownload,
+  lucideUpload,
 } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmCardImports } from '@spartan-ng/hel/card';
@@ -41,11 +46,13 @@ import { NoteEditorSheetComponent } from './components/note-editor-sheet/note-ed
 import { TodoFormSheetComponent } from './components/todo-form-sheet/todo-form-sheet.component';
 import { CompactViewComponent } from './components/compact-view/compact-view.component';
 import { ReminderSettingsDialogComponent } from './components/reminder-settings-dialog/reminder-settings-dialog.component';
+import { KanbanBoardComponent } from './components/kanban-board/kanban-board.component';
 
 import {
   INote,
   ITodoItem,
   TodoPriority,
+  TodoStatus,
   ICreateNoteDto,
   IUpdateNoteDto,
   ICreateTodoDto,
@@ -54,6 +61,7 @@ import {
   ISubtask,
   ReminderRepeat,
 } from '@portfolio/shared-types';
+import { toast } from '@spartan-ng/brain/sonner';
 
 @Component({
   selector: 'app-planner',
@@ -73,6 +81,7 @@ import {
     TodoFormSheetComponent,
     CompactViewComponent,
     ReminderSettingsDialogComponent,
+    KanbanBoardComponent,
   ],
   providers: [
     provideIcons({
@@ -88,6 +97,11 @@ import {
       lucideAlertCircle,
       lucideX,
       lucideCommand,
+      lucideLayoutGrid,
+      lucideList,
+      lucideKanban,
+      lucideDownload,
+      lucideUpload,
     }),
   ],
   templateUrl: './planner.component.html',
@@ -101,6 +115,7 @@ export class PlannerComponent implements OnInit, OnDestroy {
   readonly layout = inject(PlannerLayoutService);
 
   readonly searchInputRef = viewChild<ElementRef<HTMLInputElement>>('searchInput');
+  readonly fileInputRef = viewChild<ElementRef<HTMLInputElement>>('fileInput');
 
   // Modals & Sheets visibility
   readonly isNoteModalOpen = signal<boolean>(false);
@@ -114,6 +129,8 @@ export class PlannerComponent implements OnInit, OnDestroy {
 
   // Inline Quick Task input
   quickTaskTitle = signal<string>('');
+
+  private pasteListener: ((e: ClipboardEvent) => void) | null = null;
 
   ngOnInit(): void {
     this.state.loadDashboard();
@@ -132,11 +149,41 @@ export class PlannerComponent implements OnInit, OnDestroy {
       },
       onEscape: () => this.closeAllModals(),
     });
+
+    // Quick Capture Paste Listener
+    if (this.platform.isBrowser) {
+      this.pasteListener = (e: ClipboardEvent) => {
+        const target = e.target as HTMLElement;
+        const isInput =
+          target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+        if (isInput) return;
+
+        const pasted = e.clipboardData?.getData('text/plain')?.trim();
+        if (pasted && pasted.length > 0 && !this.isNoteModalOpen() && !this.isTodoModalOpen()) {
+          // Open new note prepopulated with pasted text
+          this.openNoteModal({
+            id: '',
+            userId: '',
+            title: '',
+            content: pasted,
+            tags: ['clipboard'],
+            isPinned: false,
+            createdAt: '',
+            updatedAt: '',
+          });
+          toast.info('Pasted text captured into new note draft');
+        }
+      };
+      window.addEventListener('paste', this.pasteListener);
+    }
   }
 
   ngOnDestroy(): void {
     this.reminderService.destroy();
     this.platform.unregisterGlobalShortcuts();
+    if (this.pasteListener && this.platform.isBrowser) {
+      window.removeEventListener('paste', this.pasteListener);
+    }
   }
 
   closeAllModals(): void {
@@ -182,12 +229,16 @@ export class PlannerComponent implements OnInit, OnDestroy {
     color: string;
   }): Promise<void> {
     const current = this.activeNote();
-    if (current) {
+    if (current && current.id) {
       await this.state.updateNote(current.id, noteData);
     } else {
       await this.state.addNote(noteData);
     }
     this.closeNoteModal();
+  }
+
+  handleNoteContentChange(event: { note: INote; newContent: string }): void {
+    this.state.updateNote(event.note.id, { content: event.newContent });
   }
 
   // Todo Modal Actions
@@ -212,7 +263,7 @@ export class PlannerComponent implements OnInit, OnDestroy {
     subtasks?: ISubtask[];
   }): Promise<void> {
     const current = this.activeTodo();
-    if (current) {
+    if (current && current.id) {
       await this.state.updateTodo(current.id, todoData);
     } else {
       await this.state.addTodo({
@@ -263,6 +314,34 @@ export class PlannerComponent implements OnInit, OnDestroy {
 
   handleDeleteSubtask(event: { todoId: string; subtaskId: string }): void {
     this.state.removeSubtask(event.todoId, event.subtaskId);
+  }
+
+  // Kanban Move
+  handleMoveTaskStatus(event: { todoId: string; newStatus: TodoStatus }): void {
+    this.state.moveTodoStatus(event.todoId, event.newStatus);
+  }
+
+  // Backup Export & Import
+  exportBackup(): void {
+    this.state.exportBackup();
+  }
+
+  triggerImportFile(): void {
+    this.fileInputRef()?.nativeElement.click();
+  }
+
+  async handleFileSelected(event: Event): Promise<void> {
+    const target = event.target as HTMLInputElement;
+    const file = target.files?.[0];
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      await this.state.importBackup(text);
+      target.value = ''; // Reset input
+    } catch (e) {
+      console.error('Import failed:', e);
+    }
   }
 
   async requestNotifications(): Promise<void> {

@@ -1,0 +1,203 @@
+<div class="kanban-board-container">
+  <!-- COLUMN 1: TO DO (Pending) -->
+  <div class="kanban-column column-pending">
+    <div class="column-header">
+      <div class="col-title-wrap">
+        <span class="status-dot dot-pending"></span>
+        <h3 class="col-title">To Do</h3>
+        <span class="col-count">{{ pendingTodos.length }}</span>
+      </div>
+      <button type="button" class="col-add-btn" (click)="openNewTask.emit()" title="Add Task">
+        <ng-icon name="lucidePlus"></ng-icon>
+      </button>
+    </div>
+
+    <div class="cards-scroller">
+      @if (pendingTodos.length === 0) {
+        <div class="empty-col-box">
+          <p>No tasks waiting to start</p>
+        </div>
+      } @else {
+        @for (todo of pendingTodos; track todo.id) {
+          <div class="kanban-card" [class.overdue]="isOverdue(todo)">
+            <div class="card-top">
+              <span class="priority-pill" [ngClass]="getPriorityClass(todo.priority)">{{ todo.priority }}</span>
+              <div class="card-actions">
+                <button type="button" class="mini-btn edit" (click)="edit.emit(todo)" title="Edit task">
+                  <ng-icon name="lucideEdit3"></ng-icon>
+                </button>
+                <button type="button" class="mini-btn delete" (click)="delete.emit(todo.id)" title="Delete task">
+                  <ng-icon name="lucideTrash2"></ng-icon>
+                </button>
+              </div>
+            </div>
+
+            <h4 class="card-title" (click)="edit.emit(todo)">{{ todo.title }}</h4>
+
+            @if (todo.description) {
+              <p class="card-desc">{{ todo.description }}</p>
+            }
+
+            <div class="card-meta">
+              @if (todo.dueDate) {
+                <span class="date-badge" [class.overdue]="isOverdue(todo)">
+                  <ng-icon name="lucideCalendar" class="mr-1"></ng-icon>
+                  {{ todo.dueDate }}
+                </span>
+              }
+              @if (todo.reminder) {
+                <span class="reminder-badge" title="Reminder set">
+                  <ng-icon name="lucideBell"></ng-icon>
+                </span>
+              }
+            </div>
+
+            <div class="card-footer">
+              <span class="hint-text">Move:</span>
+              <button
+                type="button"
+                class="move-btn in-progress-btn"
+                (click)="moveStatus.emit({ todoId: todo.id, newStatus: 'in_progress' })"
+                title="Start working on this"
+              >
+                <span>In Progress</span>
+                <ng-icon name="lucideArrowRight"></ng-icon>
+              </button>
+              <button
+                type="button"
+                class="move-btn done-btn"
+                (click)="moveStatus.emit({ todoId: todo.id, newStatus: 'completed' })"
+                title="Mark completed"
+              >
+                <span>Done</span>
+                <ng-icon name="lucideCheck"></ng-icon>
+              </button>
+            </div>
+          </div>
+        }
+      }
+    </div>
+  </div>
+
+  <!-- COLUMN 2: IN PROGRESS -->
+  <div class="kanban-column column-in-progress">
+    <div class="column-header">
+      <div class="col-title-wrap">
+        <span class="status-dot dot-in-progress"></span>
+        <h3 class="col-title">In Progress</h3>
+        <span class="col-count">{{ inProgressTodos.length }}</span>
+      </div>
+    </div>
+
+    <div class="cards-scroller">
+      @if (inProgressTodos.length === 0) {
+        <div class="empty-col-box">
+          <p>No active tasks in progress</p>
+        </div>
+      } @else {
+        @for (todo of inProgressTodos; track todo.id) {
+          <div class="kanban-card in-progress-active" [class.overdue]="isOverdue(todo)">
+            <div class="card-top">
+              <span class="priority-pill" [ngClass]="getPriorityClass(todo.priority)">{{ todo.priority }}</span>
+              <div class="card-actions">
+                <button type="button" class="mini-btn edit" (click)="edit.emit(todo)" title="Edit task">
+                  <ng-icon name="lucideEdit3"></ng-icon>
+                </button>
+                <button type="button" class="mini-btn delete" (click)="delete.emit(todo.id)" title="Delete task">
+                  <ng-icon name="lucideTrash2"></ng-icon>
+                </button>
+              </div>
+            </div>
+
+            <h4 class="card-title" (click)="edit.emit(todo)">{{ todo.title }}</h4>
+
+            @if (todo.description) {
+              <p class="card-desc">{{ todo.description }}</p>
+            }
+
+            <div class="card-meta">
+              @if (todo.dueDate) {
+                <span class="date-badge" [class.overdue]="isOverdue(todo)">
+                  <ng-icon name="lucideCalendar" class="mr-1"></ng-icon>
+                  {{ todo.dueDate }}
+                </span>
+              }
+              @if (todo.reminder) {
+                <span class="reminder-badge" title="Reminder set">
+                  <ng-icon name="lucideBell"></ng-icon>
+                </span>
+              }
+            </div>
+
+            <div class="card-footer">
+              <button
+                type="button"
+                class="move-btn pending-btn"
+                (click)="moveStatus.emit({ todoId: todo.id, newStatus: 'pending' })"
+                title="Move back to To Do"
+              >
+                <ng-icon name="lucideArrowLeft"></ng-icon>
+                <span>To Do</span>
+              </button>
+              <button
+                type="button"
+                class="move-btn done-btn"
+                (click)="moveStatus.emit({ todoId: todo.id, newStatus: 'completed' })"
+                title="Mark completed"
+              >
+                <span>Done</span>
+                <ng-icon name="lucideCheck"></ng-icon>
+              </button>
+            </div>
+          </div>
+        }
+      }
+    </div>
+  </div>
+
+  <!-- COLUMN 3: COMPLETED -->
+  <div class="kanban-column column-completed">
+    <div class="column-header">
+      <div class="col-title-wrap">
+        <span class="status-dot dot-completed"></span>
+        <h3 class="col-title">Done</h3>
+        <span class="col-count">{{ completedTodos.length }}</span>
+      </div>
+    </div>
+
+    <div class="cards-scroller">
+      @if (completedTodos.length === 0) {
+        <div class="empty-col-box">
+          <p>No completed tasks yet</p>
+        </div>
+      } @else {
+        @for (todo of completedTodos; track todo.id) {
+          <div class="kanban-card completed-card">
+            <div class="card-top">
+              <span class="priority-pill" [ngClass]="getPriorityClass(todo.priority)">{{ todo.priority }}</span>
+              <div class="card-actions">
+                <button type="button" class="mini-btn delete" (click)="delete.emit(todo.id)" title="Delete task">
+                  <ng-icon name="lucideTrash2"></ng-icon>
+                </button>
+              </div>
+            </div>
+
+            <h4 class="card-title strikethrough" (click)="edit.emit(todo)">{{ todo.title }}</h4>
+
+            <div class="card-footer">
+              <button
+                type="button"
+                class="move-btn in-progress-btn"
+                (click)="moveStatus.emit({ todoId: todo.id, newStatus: 'in_progress' })"
+                title="Reopen task"
+              >
+                <ng-icon name="lucideArrowLeft"></ng-icon>
+                <span>Reopen</span>
+              </button>
+            </div>
+          </div>
+        }
+      }
+    </div>
+  </div>
+</div>
