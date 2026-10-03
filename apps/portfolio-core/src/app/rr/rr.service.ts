@@ -219,7 +219,7 @@ export class RRService {
     performedBy: string,
     role: string,
     details?: string,
-  ): Promise<ILog> {
+  ): Promise<ILog | null> {
     try {
       const logsCol = await this.getLogsCol();
       const newLog: ILog = {
@@ -234,8 +234,8 @@ export class RRService {
       await logsCol.insertOne(newLog);
       return newLog;
     } catch (err) {
-      console.error('Error writing activity log:', err);
-      throw err;
+      console.error(`[RRService.logActivity] Error writing activity log for "${action}":`, err);
+      return null;
     }
   }
 }

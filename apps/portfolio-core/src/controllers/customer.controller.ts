@@ -158,16 +158,18 @@ export class CustomerController {
 
       await newCustomer.save();
 
-      // Log activity
-      await RRService.logActivity(
+      // Return masked representation first
+      res.status(201).json(newCustomer.toMaskedJSON());
+
+      // Log activity asynchronously after response
+      RRService.logActivity(
         `Created Customer Membership ${membershipId}`,
         req.userId || 'STAFF',
         req.userRole || 'employee',
         `Registered regular customer ${newCustomer.firstName} ${newCustomer.lastName} (${newCustomer.phone}) | Tier: ${tier.toUpperCase()}`
-      );
-
-      // Return masked representation
-      res.status(201).json(newCustomer.toMaskedJSON());
+      ).catch((logErr) => {
+        console.error('[AuditLog] Failed to log customer creation:', logErr);
+      });
     } catch (err: unknown) {
       console.error('CustomerController.createCustomer error:', err);
       res.status(500).json({ error: 'Internal Server Error', message: (err as Error).message });
@@ -420,14 +422,18 @@ export class CustomerController {
 
       await customer.save();
 
-      await RRService.logActivity(
+      // Send response first
+      res.status(200).json(customer.toMaskedJSON());
+
+      // Log activity asynchronously after response
+      RRService.logActivity(
         `Updated Customer Membership ${customer.membershipId}`,
         req.userId || 'STAFF',
         req.userRole || 'employee',
         `Updated customer record for ${customer.firstName} ${customer.lastName}`
-      );
-
-      res.status(200).json(customer.toMaskedJSON());
+      ).catch((logErr) => {
+        console.error('[AuditLog] Failed to log customer update:', logErr);
+      });
     } catch (err: unknown) {
       console.error('CustomerController.updateCustomer error:', err);
       res.status(500).json({ error: 'Internal Server Error', message: (err as Error).message });
@@ -458,16 +464,20 @@ export class CustomerController {
       customer.isDeleted = true;
       await customer.save();
 
-      await RRService.logActivity(
+      // Send response first
+      res.status(200).json({
+        success: true,
+        message: `Membership ${customer.membershipId} removed successfully.`,
+      });
+
+      // Log activity asynchronously after response
+      RRService.logActivity(
         `Deleted Customer Membership ${customer.membershipId}`,
         req.userId || 'ADMIN',
         req.userRole || 'admin',
         `Soft-deleted membership profile for ${customer.firstName} ${customer.lastName}`
-      );
-
-      res.status(200).json({
-        success: true,
-        message: `Membership ${customer.membershipId} removed successfully.`,
+      ).catch((logErr) => {
+        console.error('[AuditLog] Failed to log customer deletion:', logErr);
       });
     } catch (err: unknown) {
       console.error('CustomerController.deleteCustomer error:', err);

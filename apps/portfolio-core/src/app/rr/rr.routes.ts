@@ -95,12 +95,6 @@ rrRouter.post('/auth/login', authRateLimiter, async (req: Request, res: Response
       await resetFailedAttempts(emp);
 
       const token = jwt.sign({ id: emp.id, role: emp.role }, JWT_SECRET, { expiresIn: '24h' });
-      await RRService.logActivity(
-        'Logged in',
-        emp.id,
-        emp.role,
-        `User session authenticated (${emp.firstName} ${emp.lastName}, Role: ${emp.role.toUpperCase()})`
-      );
 
       res.json({
         access_token: token,
@@ -112,6 +106,14 @@ rrRouter.post('/auth/login', authRateLimiter, async (req: Request, res: Response
           role: emp.role
         }
       });
+
+      RRService.logActivity(
+        'Logged in',
+        emp.id,
+        emp.role,
+        `User session authenticated (${emp.firstName} ${emp.lastName}, Role: ${emp.role.toUpperCase()})`
+      ).catch((logErr) => console.error('[AuditLog] Failed to log admin login:', logErr));
+
       return;
     }
 
@@ -145,12 +147,6 @@ rrRouter.post('/auth/login', authRateLimiter, async (req: Request, res: Response
       await resetFailedAttempts(emp);
 
       const token = jwt.sign({ id: emp.id, role: emp.role }, JWT_SECRET, { expiresIn: '24h' });
-      await RRService.logActivity(
-        'Logged in',
-        emp.id,
-        emp.role,
-        `Employee badge authenticated (${emp.firstName} ${emp.lastName}, ID: ${emp.id})`
-      );
 
       res.json({
         access_token: token,
@@ -162,6 +158,14 @@ rrRouter.post('/auth/login', authRateLimiter, async (req: Request, res: Response
           role: emp.role
         }
       });
+
+      RRService.logActivity(
+        'Logged in',
+        emp.id,
+        emp.role,
+        `Employee badge authenticated (${emp.firstName} ${emp.lastName}, ID: ${emp.id})`
+      ).catch((logErr) => console.error('[AuditLog] Failed to log employee login:', logErr));
+
       return;
     }
 
@@ -178,13 +182,15 @@ rrRouter.post('/auth/logout', authenticateRRToken, async (req: any, res: Respons
     const empCol = await RRService.getEmployeesCol();
     const emp = await empCol.findOne({ id: req.userId });
     const empName = emp ? `${emp.firstName} ${emp.lastName}` : (req.userId || 'Staff');
-    await RRService.logActivity(
+
+    res.json({ success: true, message: 'Logged out successfully' });
+
+    RRService.logActivity(
       'Logged out',
       req.userId || 'Unknown',
       req.userRole || 'employee',
       `User session ended (${empName}, Role: ${(req.userRole || 'employee').toUpperCase()})`
-    );
-    res.json({ success: true, message: 'Logged out successfully' });
+    ).catch((logErr) => console.error('[AuditLog] Failed to log logout:', logErr));
   } catch (err: any) {
     console.error('Logout router error:', err);
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
@@ -379,13 +385,15 @@ rrRouter.post('/vehicles', authenticateRRToken, requireAdmin, async (req: any, r
           }
         );
         const restored = await col.findOne({ _id: existing._id });
-        await RRService.logActivity(
+        res.status(201).json(restored);
+
+        RRService.logActivity(
           `Restored vehicle ${data.regNo}`,
           req.userId,
           req.userRole,
           `Previously soft-deleted vehicle ${data.regNo} restored and updated.`
-        );
-        res.status(201).json(restored);
+        ).catch((logErr) => console.error('[AuditLog] Failed to log vehicle restore:', logErr));
+
         return;
       }
       res.status(409).json({ error: 'Conflict', message: `Vehicle with plate ${data.regNo} already exists.` });
@@ -398,14 +406,14 @@ rrRouter.post('/vehicles', authenticateRRToken, requireAdmin, async (req: any, r
     };
 
     await col.insertOne(newVehicle);
-    await RRService.logActivity(
+    res.status(201).json(newVehicle);
+
+    RRService.logActivity(
       `Added vehicle ${newVehicle.regNo}`,
       req.userId,
       req.userRole,
       `Vehicle added: ${newVehicle.manufacturer} ${newVehicle.name} (${newVehicle.model}, ${newVehicle.fuelType}, Odometer: ${newVehicle.odometer} km)`
-    );
-
-    res.status(201).json(newVehicle);
+    ).catch((logErr) => console.error('[AuditLog] Failed to log added vehicle:', logErr));
   } catch (err: any) {
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }
@@ -442,14 +450,14 @@ rrRouter.put('/vehicles/:id', authenticateRRToken, async (req: any, res: Respons
     );
 
     const updated = await col.findOne({ regNo });
-    await RRService.logActivity(
+    res.json(updated);
+
+    RRService.logActivity(
       `Modified vehicle ${regNo}`,
       req.userId,
       req.userRole,
       `Vehicle ${vehicle.manufacturer} ${vehicle.name} updated: [${modifiedFields.join(', ') || 'details modified'}]`
-    );
-
-    res.json(updated);
+    ).catch((logErr) => console.error('[AuditLog] Failed to log modified vehicle:', logErr));
   } catch (err: any) {
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }
@@ -489,13 +497,14 @@ rrRouter.delete('/vehicles/:id', authenticateRRToken, requireAdmin, async (req: 
       }
     );
 
-    await RRService.logActivity(
+    res.json({ message: `Vehicle ${regNo} deleted successfully.` });
+
+    RRService.logActivity(
       `Soft-deleted vehicle ${regNo}`,
       req.userId,
       req.userRole,
       `Vehicle soft-deleted from fleet: ${vehicle.manufacturer} ${vehicle.name} (${vehicle.model})`
-    );
-    res.json({ message: `Vehicle ${regNo} deleted successfully.` });
+    ).catch((logErr) => console.error('[AuditLog] Failed to log soft-deleted vehicle:', logErr));
   } catch (err: any) {
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }
@@ -713,14 +722,14 @@ rrRouter.post('/bookings', authenticateRRToken, async (req: any, res: Response) 
       }
     );
 
-    await RRService.logActivity(
+    res.status(201).json(newBooking);
+
+    RRService.logActivity(
       `Started booking ${bookingId}`,
       req.userId,
       req.userRole,
       `Booking started for customer ${newBooking.renterFirstName} ${newBooking.renterSecondName} (${newBooking.renterPhone}) | Vehicle: ${newBooking.vehicleRegNo} (${selectedVehicle.manufacturer} ${selectedVehicle.name}) | Pickup: ${newBooking.pickupDateTime} | Return: ${newBooking.returnDateTime} | Total: ₹${newBooking.finalRentalAmount}`
-    );
-
-    res.status(201).json(newBooking);
+    ).catch((logErr) => console.error('[AuditLog] Failed to log booking start:', logErr));
   } catch (err: any) {
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }
@@ -770,14 +779,14 @@ rrRouter.delete('/bookings/:id', authenticateRRToken, requireAdmin, async (req: 
       }
     }
 
-    await RRService.logActivity(
+    res.json({ message: `Booking ${bookingId} deleted successfully.` });
+
+    RRService.logActivity(
       `Soft-deleted booking ${bookingId}`,
       req.userId,
       req.userRole,
       `Booking ${bookingId} soft-deleted. Customer: ${booking.renterFirstName} ${booking.renterSecondName} | Vehicle: ${booking.vehicleRegNo}`
-    );
-
-    res.json({ message: `Booking ${bookingId} deleted successfully.` });
+    ).catch((logErr) => console.error('[AuditLog] Failed to log booking soft-delete:', logErr));
   } catch (err: any) {
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }
@@ -862,23 +871,25 @@ rrRouter.put('/bookings/:id', authenticateRRToken, async (req: any, res: Respons
 
     const updated = await bookingCol.findOne({ id: bookingId });
 
+    res.json(updated);
+
     if (updateData.status === 'completed') {
       const damagesNote = Number(updateData.damagesTotal || 0) > 0 ? ` | Damages: ₹${updateData.damagesTotal}` : '';
       const fineNote = Number(updateData.nonIntimationFine || 0) > 0 ? ` | Late/Non-intimation Fine: ₹${updateData.nonIntimationFine}` : '';
       const odoNote = updateData.vehicleOdometerEnd ? ` | Final Odo: ${updateData.vehicleOdometerEnd} km` : '';
-      await RRService.logActivity(
+      RRService.logActivity(
         `Ended booking ${bookingId}`,
         req.userId,
         req.userRole,
         `Booking completed for vehicle ${booking.vehicleRegNo}${odoNote} | Final Settlement: ₹${updateData.finalRentalAmount || booking.finalRentalAmount} | Paid: ₹${updateData.amountPaid || booking.amountPaid}${damagesNote}${fineNote}`
-      );
+      ).catch((logErr) => console.error('[AuditLog] Failed to log booking completion:', logErr));
     } else if (updateData.status === 'cancelled') {
-      await RRService.logActivity(
+      RRService.logActivity(
         `Cancelled booking ${bookingId}`,
         req.userId,
         req.userRole,
         `Booking cancelled for vehicle ${booking.vehicleRegNo}. Customer: ${booking.renterFirstName} ${booking.renterSecondName}`
-      );
+      ).catch((logErr) => console.error('[AuditLog] Failed to log booking cancellation:', logErr));
     } else {
       const modifiedFields = [
         updateData.returnDateTime && updateData.returnDateTime !== booking.returnDateTime ? `Return: ${updateData.returnDateTime}` : null,
@@ -890,15 +901,13 @@ rrRouter.put('/bookings/:id', authenticateRRToken, async (req: any, res: Respons
         updateData.totalKmLimit !== undefined ? `Limit: ${updateData.totalKmLimit} km` : null
       ].filter(Boolean).join(', ');
 
-      await RRService.logActivity(
+      RRService.logActivity(
         `Modified booking ${bookingId}`,
         req.userId,
         req.userRole,
         `Booking modified for vehicle ${booking.vehicleRegNo}: [${modifiedFields || 'Details updated'}]`
-      );
+      ).catch((logErr) => console.error('[AuditLog] Failed to log booking modification:', logErr));
     }
-
-    res.json(updated);
   } catch (err: any) {
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }
@@ -952,15 +961,6 @@ rrRouter.post('/bookings/:id/customer-intimation', authenticateRRToken, async (r
 
     await bookingCol.updateOne({ id: bookingId }, updateDoc);
 
-    // Audit Log for Customer Intimation
-    const logDetails = `Booking ${bookingId} (${booking.vehicleRegNo}) | Customer: ${booking.renterFirstName} ${booking.renterSecondName} (${booking.renterPhone}) | Reason: ${intimationType.toUpperCase()} | Note: "${notes}"${expectedReturnDateTime ? ` | New Expected Return: ${expectedReturnDateTime}` : ''}`;
-    await RRService.logActivity(
-      `Customer Intimation: ${bookingId}`,
-      req.userId,
-      req.userRole,
-      logDetails
-    );
-
     const updated = await bookingCol.findOne({ id: bookingId });
     res.json({
       success: true,
@@ -968,6 +968,15 @@ rrRouter.post('/bookings/:id/customer-intimation', authenticateRRToken, async (r
       intimation: intimationRecord,
       booking: updated
     });
+
+    // Audit Log for Customer Intimation (sent after response)
+    const logDetails = `Booking ${bookingId} (${booking.vehicleRegNo}) | Customer: ${booking.renterFirstName} ${booking.renterSecondName} (${booking.renterPhone}) | Reason: ${intimationType.toUpperCase()} | Note: "${notes}"${expectedReturnDateTime ? ` | New Expected Return: ${expectedReturnDateTime}` : ''}`;
+    RRService.logActivity(
+      `Customer Intimation: ${bookingId}`,
+      req.userId,
+      req.userRole,
+      logDetails
+    ).catch((logErr) => console.error('[AuditLog] Failed to log customer intimation:', logErr));
   } catch (err: any) {
     console.error('Error recording customer intimation:', err);
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
@@ -1036,14 +1045,14 @@ rrRouter.post('/employees', authenticateRRToken, requireAdmin, async (req: any, 
     };
 
     await col.insertOne(newEmp);
-    await RRService.logActivity(
+    res.status(201).json(newEmp);
+
+    RRService.logActivity(
       `Added employee ${newEmp.id}`,
       req.userId,
       req.userRole,
       `Employee registered: ${newEmp.firstName} ${newEmp.lastName} (Role: ${newEmp.role.toUpperCase()}, Phone: ${newEmp.phone})`
-    );
-
-    res.status(201).json(newEmp);
+    ).catch((logErr) => console.error('[AuditLog] Failed to log added employee:', logErr));
   } catch (err: any) {
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }
@@ -1076,14 +1085,14 @@ rrRouter.put('/employees/:id', authenticateRRToken, requireAdmin, async (req: an
       updateData.email ? `Email: ${updateData.email}` : null
     ].filter(Boolean).join(', ');
 
-    await RRService.logActivity(
+    res.json(updated);
+
+    RRService.logActivity(
       `Modified employee ${empId}`,
       req.userId,
       req.userRole,
       `Updated staff ${emp.firstName} ${emp.lastName}: [${modDetails || 'profile modified'}]`
-    );
-
-    res.json(updated);
+    ).catch((logErr) => console.error('[AuditLog] Failed to log modified employee:', logErr));
   } catch (err: any) {
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }
@@ -1119,14 +1128,14 @@ rrRouter.delete('/employees/:id', authenticateRRToken, requireAdmin, async (req:
       }
     );
 
-    await RRService.logActivity(
+    res.json({ message: `Employee ${empId} deleted successfully.` });
+
+    RRService.logActivity(
       `Soft-deleted employee ${empId}`,
       req.userId,
       req.userRole,
       `Employee soft-deleted: ${emp.firstName} ${emp.lastName} (Role: ${emp.role.toUpperCase()}, Phone: ${emp.phone})`
-    );
-
-    res.json({ message: `Employee ${empId} deleted successfully.` });
+    ).catch((logErr) => console.error('[AuditLog] Failed to log soft-deleted employee:', logErr));
   } catch (err: any) {
     console.error('Error deleting employee:', err);
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
