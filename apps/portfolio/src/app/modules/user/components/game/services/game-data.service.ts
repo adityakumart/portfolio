@@ -5,13 +5,16 @@ import {
   IFetchGameWordsRequest,
   IFetchGameWordsResponse,
 } from '@portfolio/shared-types';
+import { environment } from '../../../../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class GameDataService {
   private http = inject(HttpClient);
-  private readonly baseUrl = '/api/game/words/batch';
+  private get baseUrl(): string {
+    return `${environment.APIURL}/game/words/batch`;
+  }
 
   /**
    * Fetches a batch of random movie words excluding already seen IDs.

@@ -5,13 +5,16 @@ import {
   IMovieUploadResponse,
   IMovieListResponse,
 } from '@portfolio/shared-types';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class MovieApiService {
   private http = inject(HttpClient);
-  private readonly baseUrl = '/api/movies';
+  private get baseUrl(): string {
+    return `${environment.APIURL}/movies`;
+  }
 
   /**
    * Uploads an array of movie objects to the backend for deduplication and insertion.
