@@ -10,6 +10,21 @@ export const AppRoutes: Routes = [
       ),
   },
   {
+    path: 'movies',
+    loadComponent: () =>
+      import('./modules/movie-importer/movie-importer.component').then(
+        (m) => m.MovieImporterComponent,
+      ),
+    data: {
+      seo: {
+        title: 'Movie JSON Importer | Telugu Movie Translations',
+        description:
+          'Upload and manage Telugu movies with English translations dataset.',
+        robots: 'noindex, nofollow',
+      },
+    },
+  },
+  {
     path: 'dev-tools',
     redirectTo: 'user/dev-tools',
     pathMatch: 'prefix',

@@ -234,6 +234,21 @@ const routes: Routes = [
         },
       },
       {
+        path: 'movies',
+        loadComponent: () =>
+          import(
+            '../movie-importer/movie-importer.component'
+          ).then((m) => m.MovieImporterComponent),
+        data: {
+          seo: {
+            title: 'Movie JSON Importer | Aditya Kumar T Platform',
+            description:
+              'Upload and manage Telugu movies with English translations dataset.',
+            robots: 'noindex, nofollow',
+          },
+        },
+      },
+      {
         path: 'dev-tools',
         loadChildren: () =>
           import('../dev-tools/dev-tools-routing.module').then(

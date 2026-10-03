@@ -8,6 +8,7 @@ import { filesRouter } from './routes/files.routes';
 import { rrRouter } from './app/rr/rr.routes';
 import { dietHydrationRouter } from './routes/diet-hydration.routes';
 import { plannerRouter } from './routes/planner.routes';
+import { movieRouter } from './routes/movie.routes';
 import { apiRateLimiter } from './middlewares/rate-limit.middleware';
 
 const host = process.env['HOST'] ?? 'localhost';
@@ -76,6 +77,7 @@ app.use('/api/files', filesRouter);
 app.use('/api/rr', rrRouter);
 app.use('/api/user/diet-hydration', dietHydrationRouter);
 app.use('/api/user/planner', plannerRouter);
+app.use('/api/movies', movieRouter);
 
 app.get('/api/ping', (req, res) => {
   res.send({ status: 'ok', message: 'ping' });

@@ -40,6 +40,7 @@ import {
   lucideActivity,
   lucideShieldAlert,
   lucideCheckSquare,
+  lucideFilm,
 } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
@@ -97,6 +98,7 @@ export interface SidebarItem {
       lucideActivity,
       lucideShieldAlert,
       lucideCheckSquare,
+      lucideFilm,
     }),
   ],
   templateUrl: './sidebar.component.html',
@@ -242,6 +244,7 @@ export class SidebarComponent implements OnDestroy {
           })),
         })),
       },
+      { label: 'Movie Importer', icon: 'lucideFilm', link: '/movies' },
     ];
 
     if (user) {
