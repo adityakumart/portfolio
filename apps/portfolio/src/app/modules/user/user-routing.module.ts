@@ -249,6 +249,21 @@ const routes: Routes = [
         },
       },
       {
+        path: 'game',
+        loadComponent: () =>
+          import('./components/game/game.component').then(
+            (m) => m.GameComponent,
+          ),
+        data: {
+          seo: {
+            title: 'Telugu Movie Guesser Arena | Aditya Kumar T Platform',
+            description:
+              'Time-based multiplayer game guessing Telugu movies from English translations with text-to-speech audio clues.',
+            robots: 'noindex, nofollow',
+          },
+        },
+      },
+      {
         path: 'dev-tools',
         loadChildren: () =>
           import('../dev-tools/dev-tools-routing.module').then(

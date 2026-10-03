@@ -6,6 +6,10 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Client,
   },
   {
+    path: 'game',
+    renderMode: RenderMode.Client,
+  },
+  {
     path: 'user/**',
     renderMode: RenderMode.Client,
   },

@@ -25,6 +25,11 @@ export const AppRoutes: Routes = [
     },
   },
   {
+    path: 'game',
+    redirectTo: 'user/game',
+    pathMatch: 'prefix',
+  },
+  {
     path: 'dev-tools',
     redirectTo: 'user/dev-tools',
     pathMatch: 'prefix',

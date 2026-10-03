@@ -6,6 +6,7 @@ export interface UserModules {
   fileManager: boolean;
   dietHydration: boolean;
   planner?: boolean;
+  game?: boolean;
 }
 
 export interface User {
