@@ -7,3 +7,5 @@ export * from './lib/rr';
 export * from './lib/regular-customer';
 export * from './lib/diet-hydration';
 export * from './lib/planner';
+export * from './lib/movie.types';
+export * from './lib/game.types';

@@ -78,6 +78,19 @@ export const USER_MODULES: UserModuleConfig[] = [
     iconBgClass: 'bg-teal-500/10 border-teal-500/20',
     iconTextClass: 'text-teal-500',
   },
+  {
+    key: 'game',
+    label: 'Movie Guesser',
+    route: '/user/game',
+    icon: 'lucideGamepad2',
+    description:
+      'Time-based multiplayer game guessing Telugu movies from English translations with text-to-speech audio clues.',
+    badge: 'Multiplayer',
+    gradientClass:
+      'bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-md shadow-violet-500/15',
+    iconBgClass: 'bg-violet-500/10 border-violet-500/20',
+    iconTextClass: 'text-violet-400',
+  },
 ];
 
 /**
