@@ -47,6 +47,15 @@
           <ng-icon name="lucideFilm" class="text-sm"></ng-icon>
           <span>Movies</span>
         </button>
+        <button
+          type="button"
+          (click)="setTab('importer')"
+          class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all"
+          [ngClass]="activeTab() === 'importer' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'"
+        >
+          <ng-icon name="lucideLayers" class="text-sm"></ng-icon>
+          <span>JSON Importer</span>
+        </button>
       </nav>
     </div>
   </header>
@@ -127,10 +136,10 @@
             <span class="text-xs text-muted-foreground">need review</span>
           </div>
           <p class="text-xs text-muted-foreground mt-2">
-            <a routerLink="/movies" class="text-primary hover:underline inline-flex items-center gap-1">
+            <button (click)="setTab('importer')" class="text-primary hover:underline inline-flex items-center gap-1 cursor-pointer">
               Bulk Importer & Cleaner
               <ng-icon name="lucideExternalLink" class="text-[10px]"></ng-icon>
-            </a>
+            </button>
           </p>
         </div>
       </div>
@@ -468,13 +477,14 @@
           </button>
 
           <!-- Bulk Importer Shortcut -->
-          <a
-            routerLink="/movies"
-            class="px-3.5 py-2 rounded-xl text-xs font-medium border border-border hover:bg-muted text-foreground flex items-center gap-1.5 transition-colors"
+          <button
+            type="button"
+            (click)="setTab('importer')"
+            class="px-3.5 py-2 rounded-xl text-xs font-medium border border-border hover:bg-muted text-foreground flex items-center gap-1.5 transition-colors cursor-pointer"
           >
             <ng-icon name="lucideLayers" class="text-sm"></ng-icon>
-            <span>Bulk JSON</span>
-          </a>
+            <span>Bulk JSON Importer</span>
+          </button>
         </div>
       </div>
 
@@ -561,6 +571,11 @@
           </div>
         </div>
       </div>
+    </section>
+
+    <!-- TAB 4: BULK MOVIE JSON IMPORTER (Telugu Movie JSON Importer) -->
+    <section *ngIf="activeTab() === 'importer'" class="space-y-6 animate-in fade-in-50 duration-300">
+      <app-movie-importer></app-movie-importer>
     </section>
   </main>
 

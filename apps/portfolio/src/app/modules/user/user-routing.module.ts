@@ -267,6 +267,22 @@ const routes: Routes = [
         },
       },
       {
+        path: 'admin/importer',
+        loadComponent: () =>
+          import(
+            '../movie-importer/movie-importer.component'
+          ).then((m) => m.MovieImporterComponent),
+        canActivate: [authGuard, masterAdminGuard],
+        data: {
+          seo: {
+            title: 'Telugu Movie JSON Importer | Master Admin',
+            description:
+              'Upload and manage Telugu movies with English translations dataset.',
+            robots: 'noindex, nofollow',
+          },
+        },
+      },
+      {
         path: 'game',
         loadComponent: () =>
           import('./components/game/game.component').then(

@@ -52,8 +52,9 @@ import {
   UpdateMoviePayload,
   IMovie,
 } from '@portfolio/shared-types';
+import { MovieImporterComponent } from '../../../movie-importer/movie-importer.component';
 
-export type AdminTab = 'overview' | 'users' | 'movies';
+export type AdminTab = 'overview' | 'users' | 'movies' | 'importer';
 
 @Component({
   selector: 'app-admin-panel',
@@ -67,6 +68,7 @@ export type AdminTab = 'overview' | 'users' | 'movies';
     HlmCardImports,
     HlmBadgeImports,
     HlmInputImports,
+    MovieImporterComponent,
   ],
   providers: [
     provideIcons({

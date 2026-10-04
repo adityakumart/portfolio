@@ -246,7 +246,6 @@ export class SidebarComponent implements OnDestroy {
           })),
         })),
       },
-      { label: 'Movie Importer', icon: 'lucideFilm', link: '/movies' },
       { label: 'Movie Guesser', icon: 'lucideGamepad2', link: '/user/game' },
     ];
 
@@ -279,6 +278,11 @@ export class SidebarComponent implements OnDestroy {
           label: 'Master Admin',
           link: '/user/admin',
           icon: 'lucideShieldAlert',
+        });
+        userChildren.push({
+          label: 'Movie Importer',
+          link: '/user/admin/importer',
+          icon: 'lucideFilm',
         });
       }
 
