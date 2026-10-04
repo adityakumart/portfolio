@@ -38,6 +38,8 @@ import {
   IMovie,
   IMovieUploadResponse,
   IMovieSkippedDetail,
+  IUntranslatedCounts,
+  UntranslatedFilterMode,
 } from '@portfolio/shared-types';
 
 interface ParsedMoviePreview {
@@ -210,9 +212,18 @@ export class MovieImporterComponent implements OnInit {
   // Active audio feedback
   currentlyPlayingId = signal<string | null>(null);
 
+  // Untranslated records cleanup state
+  untranslatedCounts = signal<IUntranslatedCounts | null>(null);
+  isLoadingCounts = signal<boolean>(false);
+  isDeletingUntranslated = signal<boolean>(false);
+  isCleanupModalOpen = signal<boolean>(false);
+  selectedCleanupMode = signal<UntranslatedFilterMode>('both');
+  cleanupStatusMessage = signal<string | null>(null);
+
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.loadDbMovies();
+      this.loadUntranslatedCounts();
     }
   }
 
@@ -342,6 +353,7 @@ export class MovieImporterComponent implements OnInit {
         this.uploadResponse.set(res);
         if (res.stats.insertedCount > 0 || (res.stats.updatedCount && res.stats.updatedCount > 0)) {
           this.loadDbMovies();
+          this.loadUntranslatedCounts();
         }
       },
       error: (err) => {
@@ -449,10 +461,87 @@ export class MovieImporterComponent implements OnInit {
     this.movieApiService.deleteMovie(movie.id).subscribe({
       next: () => {
         this.loadDbMovies();
+        this.loadUntranslatedCounts();
       },
       error: (err) => {
         alert(
           `Failed to delete movie: ${err.error?.message || err.message}`,
+        );
+      },
+    });
+  }
+
+  // --- Untranslated Movies Cleanup Actions ---
+  loadUntranslatedCounts(): void {
+    this.isLoadingCounts.set(true);
+    this.movieApiService.getUntranslatedCounts().subscribe({
+      next: (res) => {
+        this.isLoadingCounts.set(false);
+        this.untranslatedCounts.set(res.counts);
+      },
+      error: (err) => {
+        this.isLoadingCounts.set(false);
+        console.error('Failed to load untranslated counts:', err);
+      },
+    });
+  }
+
+  openCleanupModal(): void {
+    this.cleanupStatusMessage.set(null);
+    this.isCleanupModalOpen.set(true);
+    this.loadUntranslatedCounts();
+  }
+
+  closeCleanupModal(): void {
+    this.isCleanupModalOpen.set(false);
+    this.cleanupStatusMessage.set(null);
+  }
+
+  setCleanupMode(mode: UntranslatedFilterMode): void {
+    this.selectedCleanupMode.set(mode);
+  }
+
+  executeDeleteUntranslated(): void {
+    const mode = this.selectedCleanupMode();
+    const counts = this.untranslatedCounts();
+    let countToDelete = 0;
+    if (counts) {
+      if (mode === 'both') countToDelete = counts.missingBoth;
+      else if (mode === 'either') countToDelete = counts.missingEither;
+      else if (mode === 'english') countToDelete = counts.missingEnglish;
+      else if (mode === 'telugu') countToDelete = counts.missingTelugu;
+    }
+
+    const modeLabels: Record<UntranslatedFilterMode, string> = {
+      both: 'having NEITHER English nor Telugu translation',
+      either: 'missing EITHER English or Telugu translation',
+      english: 'missing English translation',
+      telugu: 'missing Telugu translation',
+    };
+
+    const confirmMsg =
+      countToDelete > 0
+        ? `Are you sure you want to permanently delete ${countToDelete} movie record(s) ${modeLabels[mode]}?`
+        : `Are you sure you want to permanently delete all movie records ${modeLabels[mode]}?`;
+
+    if (!confirm(confirmMsg)) {
+      return;
+    }
+
+    this.isDeletingUntranslated.set(true);
+    this.cleanupStatusMessage.set(null);
+
+    this.movieApiService.deleteUntranslatedMovies(mode).subscribe({
+      next: (res) => {
+        this.isDeletingUntranslated.set(false);
+        this.cleanupStatusMessage.set(res.message);
+        this.loadDbMovies();
+        this.loadUntranslatedCounts();
+      },
+      error: (err) => {
+        this.isDeletingUntranslated.set(false);
+        alert(
+          `Failed to delete untranslated records: ${err.error?.message || err.message}`,
         );
       },
     });

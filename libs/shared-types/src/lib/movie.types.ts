@@ -42,3 +42,23 @@ export interface IMovieListResponse {
   limit: number;
   years: number[];
 }
+
+export type UntranslatedFilterMode = 'both' | 'either' | 'english' | 'telugu';
+
+export interface IUntranslatedCounts {
+  missingBoth: number;
+  missingEither: number;
+  missingEnglish: number;
+  missingTelugu: number;
+}
+
+export interface IUntranslatedCountsResponse {
+  success: boolean;
+  counts: IUntranslatedCounts;
+}
+
+export interface IDeleteUntranslatedResponse {
+  success: boolean;
+  deletedCount: number;
+  message: string;
+}
