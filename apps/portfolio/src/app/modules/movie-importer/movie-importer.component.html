@@ -11,8 +11,8 @@
           Telugu Movie JSON Importer
         </h1>
         <p class="text-muted-foreground text-sm md:text-base max-w-2xl">
-          Upload JSON arrays containing <code class="text-xs bg-muted px-1.5 py-0.5 rounded text-indigo-400 font-mono">&#123; title, cast, englishTranslation, year &#125;</code>.
-          Duplicates by title are automatically prevented, and records without English translation are skipped.
+          Upload JSON arrays containing <code class="text-xs bg-muted px-1.5 py-0.5 rounded text-indigo-400 font-mono">&#123; title, cast, englishTranslation, teluguTranslation, year &#125;</code>.
+          Existing records matching title will be updated, new records inserted, and records without translations are skipped.
         </p>
       </div>
 
@@ -27,9 +27,9 @@
           <span class="text-2xl font-bold text-indigo-400">{{ availableYears().length }}</span>
         </div>
         <div class="bg-card/70 border border-border/60 rounded-xl p-3 shadow-sm min-w-[110px] text-center col-span-2 sm:col-span-1">
-          <span class="text-xs text-muted-foreground block font-medium">Deduplication</span>
+          <span class="text-xs text-muted-foreground block font-medium">Title Matcher</span>
           <span class="text-xs font-semibold text-emerald-400 mt-2 block flex items-center justify-center gap-1">
-            <ng-icon name="lucideCheck" class="text-sm"></ng-icon> Active
+            <ng-icon name="lucideCheck" class="text-sm"></ng-icon> Upsert Active
           </span>
         </div>
       </div>
@@ -134,13 +134,13 @@
         @if (activeMode() === 'paste') {
           <div class="space-y-2">
             <label class="text-xs font-semibold text-muted-foreground">
-              Paste JSON Array (formatted as <code>[&#123; title, cast, englishTranslation, year &#125;]</code>)
+              Paste JSON Array (formatted as <code>[&#123; title, cast, englishTranslation, teluguTranslation, year &#125;]</code>)
             </label>
             <textarea
               [ngModel]="pastedJson()"
               (ngModelChange)="onJsonPasteChange($event)"
               rows="9"
-              placeholder="[&#10;  {&#10;    &quot;title&quot;: &quot;Aadaalla Majaka&quot;,&#10;    &quot;cast&quot;: &quot;Vikram, Sivaranjani&quot;,&#10;    &quot;englishTranslation&quot;: &quot;Women Are No Joke&quot;,&#10;    &quot;year&quot;: 1995&#10;  }&#10;]"
+              placeholder="[&#10;  {&#10;    &quot;title&quot;: &quot;Aadaalla Majaka&quot;,&#10;    &quot;cast&quot;: &quot;Vikram, Sivaranjani&quot;,&#10;    &quot;englishTranslation&quot;: &quot;Women Are No Joke&quot;,&#10;    &quot;teluguTranslation&quot;: &quot;Aadaallatho Pettukunte Anthuleni Gola!&quot;,&#10;    &quot;year&quot;: 1995&#10;  }&#10;]"
               class="w-full rounded-xl bg-muted/40 border border-border/80 px-3 py-2 text-xs font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/50 resize-y"
             ></textarea>
           </div>
@@ -168,7 +168,7 @@
             <div class="grid grid-cols-3 gap-2 text-center text-xs">
               <div class="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
                 <span class="block font-bold text-base font-mono">{{ readyToImportCount() }}</span>
-                <span>Ready to Import</span>
+                <span>Ready to Import/Update</span>
               </div>
               <div class="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400">
                 <span class="block font-bold text-base font-mono">{{ missingTranslationCount() }}</span>
@@ -181,7 +181,7 @@
             </div>
 
             <p class="text-[11px] text-muted-foreground italic">
-              * Note: Items without an English translation will be skipped automatically during insertion.
+              * Note: Items matching existing titles will be updated. Records without any English or Telugu translation will be skipped.
             </p>
           </div>
         }
@@ -198,10 +198,10 @@
         >
           @if (isUploading()) {
             <ng-icon name="lucideRefreshCw" class="animate-spin text-base"></ng-icon>
-            <span>Verifying & Inserting Movies...</span>
+            <span>Verifying, Inserting & Updating Movies...</span>
           } @else {
             <ng-icon name="lucideDatabase" class="text-base"></ng-icon>
-            <span>Import {{ readyToImportCount() }} Eligible Movies to Database</span>
+            <span>Import / Update {{ readyToImportCount() }} Eligible Movies in Database</span>
           }
         </button>
 
@@ -232,11 +232,11 @@
               <span class="block text-xl font-bold font-mono">{{ resp.stats.insertedCount }}</span>
               <span>New Inserted</span>
             </div>
-            <div class="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
-              <span class="block text-xl font-bold font-mono">{{ resp.stats.skippedDuplicates }}</span>
-              <span>Duplicates Skipped</span>
+            <div class="p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400">
+              <span class="block text-xl font-bold font-mono">{{ resp.stats.updatedCount || 0 }}</span>
+              <span>Updated by Title</span>
             </div>
-            <div class="p-2.5 rounded-xl bg-muted border border-border text-muted-foreground">
+            <div class="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
               <span class="block text-xl font-bold font-mono">{{ resp.stats.skippedMissingTranslation }}</span>
               <span>No Translation</span>
             </div>
@@ -287,7 +287,7 @@
           <div class="space-y-0.5">
             <h2 class="text-base font-bold text-foreground">Upload Batch Preview</h2>
             <p class="text-xs text-muted-foreground">
-              Inspection of items ready for insertion
+              Inspection of items ready for insertion / update
             </p>
           </div>
           @if (parsedPreview().length > 0) {
@@ -334,9 +334,16 @@
                     <p class="text-indigo-400 font-medium">
                       &ldquo;{{ movie.englishTranslation }}&rdquo;
                     </p>
-                  } @else {
+                  }
+                  @if (movie.teluguTranslation) {
+                    <p class="text-amber-300 font-medium text-[11px] flex items-center gap-1">
+                      <span class="text-muted-foreground text-[10px] font-semibold uppercase">Telugu:</span>
+                      &ldquo;{{ movie.teluguTranslation }}&rdquo;
+                    </p>
+                  }
+                  @if (!movie.englishTranslation && !movie.teluguTranslation) {
                     <p class="text-amber-400/80 italic text-[11px]">
-                      (No English Translation provided)
+                      (No Translation provided)
                     </p>
                   }
 
@@ -378,7 +385,7 @@
           </span>
         </div>
         <p class="text-xs text-muted-foreground">
-          Browse, filter, and test Text-to-Speech audio on English translations directly in the database.
+          Browse, filter, and test Text-to-Speech audio on English and Telugu translations directly in the database.
         </p>
       </div>
 
@@ -391,7 +398,7 @@
             type="text"
             [ngModel]="searchQuery()"
             (ngModelChange)="onSearch($event)"
-            placeholder="Search title, cast, or translation..."
+            placeholder="Search title, cast, English or Telugu translation..."
             class="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl bg-muted/50 border border-border/80 text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
           />
         </div>
@@ -451,7 +458,7 @@
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         @for (movie of dbMovies(); track movie.id) {
           <div class="bg-card/70 border border-border/70 hover:border-indigo-500/40 rounded-xl p-4 shadow-sm transition-all hover:shadow-md flex flex-col justify-between space-y-3 group">
-            <div class="space-y-1.5">
+            <div class="space-y-2">
               <div class="flex items-start justify-between gap-2">
                 <span class="font-bold text-foreground text-sm line-clamp-1 group-hover:text-indigo-400 transition-colors">
                   {{ movie.title }}
@@ -463,23 +470,53 @@
                 }
               </div>
 
-              <!-- English Translation Clue -->
-              <div class="flex items-center justify-between gap-2 p-2 rounded-lg bg-muted/40 border border-border/50">
-                <p class="text-xs font-semibold text-foreground/90 italic truncate">
-                  &ldquo;{{ movie.englishTranslation }}&rdquo;
-                </p>
-                <button
-                  type="button"
-                  (click)="playSpeech(movie.englishTranslation, movie.id || '')"
-                  title="Speak English translation"
-                  class="p-1 rounded-md hover:bg-muted text-muted-foreground hover:text-indigo-400 transition-colors flex-shrink-0"
-                >
-                  <ng-icon
-                    name="lucideVolume2"
-                    class="text-sm"
-                    [class.text-indigo-400]="currentlyPlayingId() === movie.id"
-                  ></ng-icon>
-                </button>
+              <!-- Translations Container -->
+              <div class="space-y-1.5">
+                @if (movie.englishTranslation) {
+                  <div class="flex items-center justify-between gap-2 p-2 rounded-lg bg-muted/40 border border-border/50">
+                    <div class="min-w-0 flex-1">
+                      <span class="text-[9px] uppercase tracking-wider text-indigo-400 font-bold block">English</span>
+                      <p class="text-xs font-semibold text-foreground/90 italic truncate">
+                        &ldquo;{{ movie.englishTranslation }}&rdquo;
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      (click)="playSpeech(movie.englishTranslation, (movie.id || '') + '-en', 'en-US')"
+                      title="Speak English translation"
+                      class="p-1 rounded-md hover:bg-muted text-muted-foreground hover:text-indigo-400 transition-colors flex-shrink-0"
+                    >
+                      <ng-icon
+                        name="lucideVolume2"
+                        class="text-sm"
+                        [class.text-indigo-400]="currentlyPlayingId() === ((movie.id || '') + '-en')"
+                      ></ng-icon>
+                    </button>
+                  </div>
+                }
+
+                @if (movie.teluguTranslation) {
+                  <div class="flex items-center justify-between gap-2 p-2 rounded-lg bg-amber-500/5 border border-amber-500/20">
+                    <div class="min-w-0 flex-1">
+                      <span class="text-[9px] uppercase tracking-wider text-amber-400 font-bold block">Telugu Alternate</span>
+                      <p class="text-xs font-medium text-amber-300 italic truncate">
+                        &ldquo;{{ movie.teluguTranslation }}&rdquo;
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      (click)="playSpeech(movie.teluguTranslation, (movie.id || '') + '-te', 'te-IN')"
+                      title="Speak Telugu translation"
+                      class="p-1 rounded-md hover:bg-muted text-muted-foreground hover:text-amber-400 transition-colors flex-shrink-0"
+                    >
+                      <ng-icon
+                        name="lucideVolume2"
+                        class="text-sm"
+                        [class.text-amber-400]="currentlyPlayingId() === ((movie.id || '') + '-te')"
+                      ></ng-icon>
+                    </button>
+                  </div>
+                }
               </div>
 
               @if (movie.cast) {

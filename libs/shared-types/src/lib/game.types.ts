@@ -3,6 +3,7 @@ export interface IMovieWordDto {
   title: string;
   cast?: string;
   englishTranslation: string;
+  teluguTranslation?: string;
   year?: number;
 }
 

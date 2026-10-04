@@ -5,6 +5,7 @@ export interface IMovieDocument extends Document {
   title: string;
   cast?: string;
   englishTranslation: string;
+  teluguTranslation?: string;
   year?: number;
   createdAt: Date;
   updatedAt: Date;
@@ -25,7 +26,13 @@ export const MovieSchema = new Schema<IMovieDocument>(
     },
     englishTranslation: {
       type: String,
-      required: true,
+      default: '',
+      trim: true,
+      index: true,
+    },
+    teluguTranslation: {
+      type: String,
+      default: '',
       trim: true,
       index: true,
     },
