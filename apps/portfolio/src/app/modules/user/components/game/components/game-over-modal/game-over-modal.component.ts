@@ -141,12 +141,21 @@ import { GameEngineService } from '../../services/game-engine.service';
           <h3 class="text-sm font-bold text-foreground">
             Session History Recap ({{ engine.history().length }} Words)
           </h3>
-          <div class="space-y-1.5 max-h-56 overflow-y-auto pr-1">
+          <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
             @for (item of engine.history(); track item.wordId + $index) {
-              <div class="flex items-center justify-between p-2 rounded-xl bg-muted/30 border border-border/40 text-xs">
-                <div class="space-y-0.5 truncate max-w-[280px]">
+              <div class="flex items-center justify-between p-2.5 rounded-xl bg-muted/30 border border-border/40 text-xs gap-3">
+                <div class="space-y-0.5 min-w-0 flex-1">
                   <span class="font-bold text-foreground block truncate">{{ item.title }}</span>
-                  <span class="text-muted-foreground italic text-[11px] block truncate">&ldquo;{{ item.englishTranslation }}&rdquo;</span>
+                  @if (item.englishTranslation) {
+                    <span class="text-indigo-400/90 italic text-[11px] block truncate">
+                      English: &ldquo;{{ item.englishTranslation }}&rdquo;
+                    </span>
+                  }
+                  @if (item.teluguTranslation) {
+                    <span class="text-amber-400/90 italic text-[11px] block truncate">
+                      Telugu: &ldquo;{{ item.teluguTranslation }}&rdquo;
+                    </span>
+                  }
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0">
                   <span

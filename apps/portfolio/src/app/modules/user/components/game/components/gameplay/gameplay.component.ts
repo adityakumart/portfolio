@@ -114,7 +114,7 @@ import { GameEngineService } from '../../services/game-engine.service';
         <div class="flex items-center justify-between border-b border-border/50 pb-4">
           <span class="text-xs font-bold uppercase tracking-widest text-indigo-400 flex items-center gap-1.5">
             <ng-icon name="lucideSparkles" class="text-sm"></ng-icon>
-            English Clue (Guess Movie in Telugu)
+            Movie Translation Clues (Guess Telugu Movie)
           </span>
 
           <div class="flex items-center gap-2">
@@ -126,25 +126,56 @@ import { GameEngineService } from '../../services/game-engine.service';
               </span>
             }
 
-            <!-- Speech Audio Replay Button -->
-            <button
-              type="button"
-              (click)="engine.replayCurrentWordAudio()"
-              title="Listen again"
-              class="px-3 py-1.5 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-400 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
-            >
-              <ng-icon name="lucideVolume2" class="text-base"></ng-icon>
-              <span>Replay Audio</span>
-            </button>
+            <!-- Speech Audio Replay Buttons -->
+            @if (engine.activeWord(); as word) {
+              @if (word.englishTranslation) {
+                <button
+                  type="button"
+                  (click)="engine.replayCurrentWordAudio('en')"
+                  title="Listen to English translation"
+                  class="px-2.5 py-1.5 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-400 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
+                >
+                  <ng-icon name="lucideVolume2" class="text-sm"></ng-icon>
+                  <span>English Audio</span>
+                </button>
+              }
+              @if (word.teluguTranslation) {
+                <button
+                  type="button"
+                  (click)="engine.replayCurrentWordAudio('te')"
+                  title="Listen to Telugu translation"
+                  class="px-2.5 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
+                >
+                  <ng-icon name="lucideVolume2" class="text-sm"></ng-icon>
+                  <span>Telugu Audio</span>
+                </button>
+              }
+            }
           </div>
         </div>
 
-        <!-- Prominent English Translation Clue -->
+        <!-- Prominent Translation Clues -->
         @if (engine.activeWord(); as word) {
           <div class="space-y-4 my-auto py-4 animate-in fade-in zoom-in-95 duration-200">
-            <h2 class="text-3xl md:text-5xl font-black text-foreground tracking-tight leading-tight px-4 selection:bg-indigo-500/30">
-              &ldquo;{{ word.englishTranslation }}&rdquo;
-            </h2>
+            <!-- English Translation Clue -->
+            @if (word.englishTranslation) {
+              <div class="space-y-1">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-400 block">English Clue</span>
+                <h2 class="text-2xl sm:text-4xl md:text-5xl font-black text-foreground tracking-tight leading-tight px-4 selection:bg-indigo-500/30">
+                  &ldquo;{{ word.englishTranslation }}&rdquo;
+                </h2>
+              </div>
+            }
+
+            <!-- Telugu Translation Clue -->
+            @if (word.teluguTranslation) {
+              <div class="p-3 sm:p-4 rounded-2xl bg-amber-500/10 border border-amber-500/25 max-w-xl mx-auto shadow-sm space-y-1">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-amber-400 block">Telugu Clue / Alternate Translation</span>
+                <p class="text-lg sm:text-2xl font-bold text-amber-300 italic tracking-wide">
+                  &ldquo;{{ word.teluguTranslation }}&rdquo;
+                </p>
+              </div>
+            }
 
             @if (word.cast) {
               <p class="text-sm text-muted-foreground max-w-md mx-auto line-clamp-2">
@@ -157,7 +188,7 @@ import { GameEngineService } from '../../services/game-engine.service';
               <button
                 type="button"
                 (click)="toggleRevealAnswer()"
-                class="inline-flex items-center gap-1.5 text-xs text-muted-foreground/70 hover:text-foreground transition-colors px-3 py-1 rounded-lg hover:bg-muted/40"
+                class="inline-flex items-center gap-1.5 text-xs text-muted-foreground/70 hover:text-foreground transition-colors px-3 py-1 rounded-lg hover:bg-muted/40 cursor-pointer"
               >
                 <ng-icon [name]="isAnswerRevealed() ? 'lucideEyeOff' : 'lucideEye'" class="text-sm"></ng-icon>
                 <span>{{ isAnswerRevealed() ? 'Hide Original Title' : 'Peek Telugu Title (Caller Hint)' }}</span>

@@ -28,6 +28,7 @@ export interface IGameWordHistoryItem {
   wordId: string;
   title: string;
   englishTranslation: string;
+  teluguTranslation?: string;
   cast?: string;
   guessedByPlayerId: string;
   result: 'correct' | 'pass';

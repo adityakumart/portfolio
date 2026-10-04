@@ -338,6 +338,7 @@ export class GameEngineService implements OnDestroy {
       wordId: currentWord.id,
       title: currentWord.title,
       englishTranslation: currentWord.englishTranslation,
+      teluguTranslation: currentWord.teluguTranslation,
       cast: currentWord.cast,
       guessedByPlayerId: updatedPlayers[activePlayerIndex].id,
       result,
@@ -405,12 +406,15 @@ export class GameEngineService implements OnDestroy {
   }
 
   /**
-   * Replays current English translation audio.
+   * Replays current translation audio (English or Telugu).
    */
-  replayCurrentWordAudio(): void {
+  replayCurrentWordAudio(lang: 'en' | 'te' = 'en'): void {
     const word = this.activeWord();
-    if (word) {
-      this.speechService.speak(word.englishTranslation);
+    if (!word) return;
+    if (lang === 'te' && word.teluguTranslation) {
+      this.speechService.speak(word.teluguTranslation, 'te-IN');
+    } else if (word.englishTranslation) {
+      this.speechService.speak(word.englishTranslation, 'en-US');
     }
   }
 
