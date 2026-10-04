@@ -274,6 +274,14 @@ export class SidebarComponent implements OnDestroy {
         });
       }
 
+      if (user.masterAdmin === true) {
+        userChildren.push({
+          label: 'Master Admin',
+          link: '/user/admin',
+          icon: 'lucideShieldAlert',
+        });
+      }
+
       items.push({
         label: 'User',
         icon: 'lucideUser',

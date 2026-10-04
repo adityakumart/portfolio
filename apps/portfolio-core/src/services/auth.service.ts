@@ -36,6 +36,7 @@ export class AuthService {
         first_name: firstName,
         last_name: lastName,
         admin: false,
+        masterAdmin: false,
         isEnabled: false,
         is_deleted: false,
         access_token: null,
@@ -47,6 +48,9 @@ export class AuthService {
           aiAssistant: false,
           fileManager: false,
           dietHydration: false,
+          planner: false,
+          game: false,
+          movies: false,
         },
       };
 
@@ -110,11 +114,16 @@ export class AuthService {
       const safeUser = {
         id: updatedUser._id.toString(),
         ...updatedUser,
-        modules: updatedUser['modules'] || {
+        masterAdmin: Boolean(updatedUser['masterAdmin']),
+        modules: {
           aiSpace: false,
           aiAssistant: false,
           fileManager: false,
           dietHydration: false,
+          planner: false,
+          game: false,
+          movies: false,
+          ...(updatedUser['modules'] || {}),
         },
       } as unknown as User & { password?: string; _id?: unknown };
       delete safeUser.password;
@@ -179,11 +188,16 @@ export class AuthService {
       const safeUser = {
         id: updatedUser._id.toString(),
         ...updatedUser,
-        modules: updatedUser['modules'] || {
+        masterAdmin: Boolean(updatedUser['masterAdmin']),
+        modules: {
           aiSpace: false,
           aiAssistant: false,
           fileManager: false,
           dietHydration: false,
+          planner: false,
+          game: false,
+          movies: false,
+          ...(updatedUser['modules'] || {}),
         },
       } as unknown as User & { password?: string; _id?: unknown };
       delete safeUser.password;
@@ -249,6 +263,9 @@ export class AuthService {
       if (typeof modules.aiAssistant === 'boolean') updateFields['modules.aiAssistant'] = modules.aiAssistant;
       if (typeof modules.fileManager === 'boolean') updateFields['modules.fileManager'] = modules.fileManager;
       if (typeof modules.dietHydration === 'boolean') updateFields['modules.dietHydration'] = modules.dietHydration;
+      if (typeof modules.planner === 'boolean') updateFields['modules.planner'] = modules.planner;
+      if (typeof modules.game === 'boolean') updateFields['modules.game'] = modules.game;
+      if (typeof modules.movies === 'boolean') updateFields['modules.movies'] = modules.movies;
 
       await userCollection.updateOne(
         { _id: objId },
@@ -266,11 +283,16 @@ export class AuthService {
       const safeUser = {
         id: updatedUser._id.toString(),
         ...updatedUser,
-        modules: updatedUser['modules'] || {
+        masterAdmin: Boolean(updatedUser['masterAdmin']),
+        modules: {
           aiSpace: false,
           aiAssistant: false,
           fileManager: false,
           dietHydration: false,
+          planner: false,
+          game: false,
+          movies: false,
+          ...(updatedUser['modules'] || {}),
         },
       } as unknown as User & { password?: string; _id?: unknown };
       delete safeUser.password;

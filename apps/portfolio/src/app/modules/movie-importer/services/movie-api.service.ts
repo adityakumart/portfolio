@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
   IMovieUploadResponse,
@@ -9,21 +9,35 @@ import {
   UntranslatedFilterMode,
 } from '@portfolio/shared-types';
 import { environment } from '../../../../environments/environment';
+import { AuthService } from '../../user/services/auth';
 
 @Injectable({
   providedIn: 'root',
 })
 export class MovieApiService {
   private http = inject(HttpClient);
+  private authService = inject(AuthService);
+
   private get baseUrl(): string {
     return `${environment.APIURL}/movies`;
+  }
+
+  private getAuthHeaders(): HttpHeaders {
+    const token = this.authService.getAccessToken();
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return headers;
   }
 
   /**
    * Uploads an array of movie objects to the backend for deduplication and insertion.
    */
   uploadMovies(movies: unknown[]): Observable<IMovieUploadResponse> {
-    return this.http.post<IMovieUploadResponse>(`${this.baseUrl}/upload`, movies);
+    return this.http.post<IMovieUploadResponse>(`${this.baseUrl}/upload`, movies, {
+      headers: this.getAuthHeaders(),
+    });
   }
 
   /**
@@ -59,6 +73,7 @@ export class MovieApiService {
   deleteMovie(id: string): Observable<{ success: boolean; message: string }> {
     return this.http.delete<{ success: boolean; message: string }>(
       `${this.baseUrl}/${id}`,
+      { headers: this.getAuthHeaders() },
     );
   }
 
@@ -80,7 +95,7 @@ export class MovieApiService {
     const params = new HttpParams().set('mode', mode);
     return this.http.delete<IDeleteUntranslatedResponse>(
       `${this.baseUrl}/untranslated`,
-      { params },
+      { params, headers: this.getAuthHeaders() },
     );
   }
 }

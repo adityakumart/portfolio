@@ -397,6 +397,98 @@ export class MovieService {
     const result = await MovieModel.deleteMany(filter);
     return { deletedCount: result.deletedCount || 0 };
   }
+
+  /**
+   * Creates a single movie record with duplicate check.
+   */
+  public async createMovie(payload: {
+    title: string;
+    cast?: string;
+    englishTranslation?: string;
+    teluguTranslation?: string;
+    year?: number;
+  }): Promise<IMovie> {
+    const rawTitle = payload.title?.trim();
+    if (!rawTitle) {
+      throw new Error('Movie title is required.');
+    }
+    const rawEn = payload.englishTranslation?.trim() || '';
+    const rawTe = payload.teluguTranslation?.trim() || '';
+    if (!rawEn && !rawTe) {
+      throw new Error('At least one translation (English or Telugu) is required.');
+    }
+
+    const MovieModel = await getMovieModel();
+    const existing = await MovieModel.findOne({
+      title: new RegExp(`^${escapeRegex(rawTitle)}$`, 'i'),
+    });
+
+    if (existing) {
+      throw new Error(`A movie with title "${rawTitle}" already exists.`);
+    }
+
+    const doc = await MovieModel.create({
+      title: rawTitle,
+      cast: payload.cast?.trim() || '',
+      englishTranslation: rawEn,
+      teluguTranslation: rawTe,
+      year: payload.year && !isNaN(payload.year) ? Number(payload.year) : undefined,
+    });
+
+    return {
+      id: doc._id.toString(),
+      title: doc.title,
+      cast: doc.cast,
+      englishTranslation: doc.englishTranslation,
+      teluguTranslation: doc.teluguTranslation,
+      year: doc.year,
+      createdAt: doc.createdAt,
+    };
+  }
+
+  /**
+   * Updates an existing movie record by ID.
+   */
+  public async updateMovie(
+    id: string,
+    payload: {
+      title?: string;
+      cast?: string;
+      englishTranslation?: string;
+      teluguTranslation?: string;
+      year?: number;
+    },
+  ): Promise<IMovie | null> {
+    const MovieModel = await getMovieModel();
+    const updateFields: Record<string, unknown> = {};
+
+    if (payload.title !== undefined) updateFields['title'] = payload.title.trim();
+    if (payload.cast !== undefined) updateFields['cast'] = payload.cast.trim();
+    if (payload.englishTranslation !== undefined)
+      updateFields['englishTranslation'] = payload.englishTranslation.trim();
+    if (payload.teluguTranslation !== undefined)
+      updateFields['teluguTranslation'] = payload.teluguTranslation.trim();
+    if (payload.year !== undefined)
+      updateFields['year'] = !isNaN(payload.year) ? Number(payload.year) : null;
+
+    const doc = await MovieModel.findByIdAndUpdate(
+      id,
+      { $set: updateFields },
+      { new: true },
+    );
+
+    if (!doc) return null;
+
+    return {
+      id: doc._id.toString(),
+      title: doc.title,
+      cast: doc.cast,
+      englishTranslation: doc.englishTranslation,
+      teluguTranslation: doc.teluguTranslation,
+      year: doc.year,
+      createdAt: doc.createdAt,
+    };
+  }
 }
 
 export const movieService = new MovieService();

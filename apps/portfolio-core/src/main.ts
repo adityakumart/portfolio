@@ -10,6 +10,7 @@ import { dietHydrationRouter } from './routes/diet-hydration.routes';
 import { plannerRouter } from './routes/planner.routes';
 import { movieRouter } from './routes/movie.routes';
 import { gameRouter } from './routes/game.routes';
+import { adminRouter } from './routes/admin.routes';
 import { apiRateLimiter } from './middlewares/rate-limit.middleware';
 
 const host = process.env['HOST'] ?? 'localhost';
@@ -81,6 +82,7 @@ app.use('/api/user/planner', plannerRouter);
 app.use('/api/movies', movieRouter);
 app.use('/api/user/game', gameRouter);
 app.use('/api/game', gameRouter);
+app.use('/api/admin', adminRouter);
 
 app.get('/api/ping', (req, res) => {
   res.send({ status: 'ok', message: 'ping' });

@@ -12,6 +12,15 @@
     </div>
     @if (currentUser()) {
       <div class="flex items-center gap-2">
+        @if (currentUser()?.masterAdmin) {
+          <a
+            routerLink="/user/admin"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-rose-500/10 text-rose-500 border border-rose-500/30 hover:bg-rose-500/20 transition-colors shadow-xs"
+          >
+            <ng-icon name="lucideShieldAlert" class="text-sm"></ng-icon>
+            <span>Master Admin Console</span>
+          </a>
+        }
         <span hlmBadge variant="secondary" class="text-xs px-3 py-1.5 gap-2 rounded-xl border border-border/60 shadow-xs">
           <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
           <span class="font-medium text-foreground">{{ currentUser()?.email }}</span>

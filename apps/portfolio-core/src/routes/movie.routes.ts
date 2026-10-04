@@ -6,16 +6,25 @@ import {
   handleDeleteMovie,
   handleGetUntranslatedCounts,
   handleDeleteUntranslatedMovies,
+  handleCreateMovie,
+  handleUpdateMovie,
 } from '../controllers/movie.controller';
+import { requireMasterAdmin } from '../middlewares/admin.middleware';
 
 export const movieRouter = Router();
 
 // Allow larger payload sizes specifically for bulk movie uploads (up to 50MB)
 movieRouter.use(express.json({ limit: '50mb' }));
 
-movieRouter.post('/upload', handleUploadMovies);
+// Public query endpoints (used by game, explorer)
 movieRouter.get('/untranslated/counts', handleGetUntranslatedCounts);
-movieRouter.delete('/untranslated', handleDeleteUntranslatedMovies);
 movieRouter.get('/', handleGetMovies);
-movieRouter.delete('/:id', handleDeleteMovie);
+
+// Mutating transactions protected with live masterAdmin DB check
+movieRouter.post('/', requireMasterAdmin, handleCreateMovie);
+movieRouter.put('/:id', requireMasterAdmin, handleUpdateMovie);
+movieRouter.post('/upload', requireMasterAdmin, handleUploadMovies);
+movieRouter.delete('/untranslated', requireMasterAdmin, handleDeleteUntranslatedMovies);
+movieRouter.delete('/:id', requireMasterAdmin, handleDeleteMovie);
+
 
