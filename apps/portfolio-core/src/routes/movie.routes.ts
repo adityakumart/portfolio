@@ -4,6 +4,8 @@ import {
   handleUploadMovies,
   handleGetMovies,
   handleDeleteMovie,
+  handleGetUntranslatedCounts,
+  handleDeleteUntranslatedMovies,
 } from '../controllers/movie.controller';
 
 export const movieRouter = Router();
@@ -12,5 +14,8 @@ export const movieRouter = Router();
 movieRouter.use(express.json({ limit: '50mb' }));
 
 movieRouter.post('/upload', handleUploadMovies);
+movieRouter.get('/untranslated/counts', handleGetUntranslatedCounts);
+movieRouter.delete('/untranslated', handleDeleteUntranslatedMovies);
 movieRouter.get('/', handleGetMovies);
 movieRouter.delete('/:id', handleDeleteMovie);
+

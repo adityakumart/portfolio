@@ -111,3 +111,61 @@ export async function handleDeleteMovie(
     });
   }
 }
+
+/**
+ * Handles fetching counts of untranslated movies by criteria.
+ */
+export async function handleGetUntranslatedCounts(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  try {
+    const counts = await movieService.getUntranslatedCounts();
+    res.status(200).json({
+      success: true,
+      counts,
+    });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Error fetching untranslated movie counts:', err);
+    res.status(500).json({
+      success: false,
+      error: 'Query Failed',
+      message: err.message || 'Failed to fetch untranslated counts.',
+    });
+  }
+}
+
+/**
+ * Handles batch deletion of untranslated movies.
+ * Query param: mode = 'both' | 'either' | 'english' | 'telugu' (default: 'both').
+ */
+export async function handleDeleteUntranslatedMovies(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  try {
+    const rawMode = req.query['mode'];
+    const mode = (typeof rawMode === 'string' ? rawMode : 'both') as
+      | 'both'
+      | 'either'
+      | 'english'
+      | 'telugu';
+
+    const result = await movieService.deleteUntranslatedMovies(mode);
+    res.status(200).json({
+      success: true,
+      deletedCount: result.deletedCount,
+      message: `Successfully deleted ${result.deletedCount} movie record(s) with no translation.`,
+    });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Error deleting untranslated movies:', err);
+    res.status(500).json({
+      success: false,
+      error: 'Delete Failed',
+      message: err.message || 'An error occurred deleting untranslated movies.',
+    });
+  }
+}
+

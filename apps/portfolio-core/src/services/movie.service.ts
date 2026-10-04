@@ -5,10 +5,23 @@ import {
   IMovieUploadResponse,
   IMovieListResponse,
   IMovieSkippedDetail,
+  IUntranslatedCounts,
+  UntranslatedFilterMode,
 } from '@portfolio/shared-types';
 
 function escapeRegex(text: string): string {
   return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+}
+
+function getBlankCondition(field: string): Record<string, unknown> {
+  return {
+    $or: [
+      { [field]: { $exists: false } },
+      { [field]: null },
+      { [field]: '' },
+      { [field]: { $regex: /^\s*$/ } },
+    ],
+  };
 }
 
 export class MovieService {
@@ -324,6 +337,65 @@ export class MovieService {
     const MovieModel = await getMovieModel();
     const result = await MovieModel.findByIdAndDelete(id);
     return !!result;
+  }
+
+  /**
+   * Retrieves counts of movies with missing translations by category.
+   */
+  public async getUntranslatedCounts(): Promise<IUntranslatedCounts> {
+    const MovieModel = await getMovieModel();
+    const condEn = getBlankCondition('englishTranslation');
+    const condTe = getBlankCondition('teluguTranslation');
+
+    const [missingBoth, missingEither, missingEnglish, missingTelugu] =
+      await Promise.all([
+        MovieModel.countDocuments({ $and: [condEn, condTe] }),
+        MovieModel.countDocuments({ $or: [condEn, condTe] }),
+        MovieModel.countDocuments(condEn),
+        MovieModel.countDocuments(condTe),
+      ]);
+
+    return {
+      missingBoth,
+      missingEither,
+      missingEnglish,
+      missingTelugu,
+    };
+  }
+
+  /**
+   * Deletes movie records where translations are missing.
+   * mode = 'both': deletes records missing BOTH English and Telugu translations (neither present).
+   * mode = 'either': deletes records missing EITHER English or Telugu translations.
+   * mode = 'english': deletes records missing English translation.
+   * mode = 'telugu': deletes records missing Telugu translation.
+   */
+  public async deleteUntranslatedMovies(
+    mode: UntranslatedFilterMode = 'both',
+  ): Promise<{ deletedCount: number }> {
+    const MovieModel = await getMovieModel();
+    const condEn = getBlankCondition('englishTranslation');
+    const condTe = getBlankCondition('teluguTranslation');
+
+    let filter: Record<string, unknown>;
+    switch (mode) {
+      case 'either':
+        filter = { $or: [condEn, condTe] };
+        break;
+      case 'english':
+        filter = condEn;
+        break;
+      case 'telugu':
+        filter = condTe;
+        break;
+      case 'both':
+      default:
+        filter = { $and: [condEn, condTe] };
+        break;
+    }
+
+    const result = await MovieModel.deleteMany(filter);
+    return { deletedCount: result.deletedCount || 0 };
   }
 }
 

@@ -4,6 +4,9 @@ import { Observable } from 'rxjs';
 import {
   IMovieUploadResponse,
   IMovieListResponse,
+  IUntranslatedCountsResponse,
+  IDeleteUntranslatedResponse,
+  UntranslatedFilterMode,
 } from '@portfolio/shared-types';
 import { environment } from '../../../../environments/environment';
 
@@ -56,6 +59,28 @@ export class MovieApiService {
   deleteMovie(id: string): Observable<{ success: boolean; message: string }> {
     return this.http.delete<{ success: boolean; message: string }>(
       `${this.baseUrl}/${id}`,
+    );
+  }
+
+  /**
+   * Fetches counts of records with missing translations.
+   */
+  getUntranslatedCounts(): Observable<IUntranslatedCountsResponse> {
+    return this.http.get<IUntranslatedCountsResponse>(
+      `${this.baseUrl}/untranslated/counts`,
+    );
+  }
+
+  /**
+   * Deletes all movie records matching untranslated mode ('both' | 'either' | 'english' | 'telugu').
+   */
+  deleteUntranslatedMovies(
+    mode: UntranslatedFilterMode = 'both',
+  ): Observable<IDeleteUntranslatedResponse> {
+    const params = new HttpParams().set('mode', mode);
+    return this.http.delete<IDeleteUntranslatedResponse>(
+      `${this.baseUrl}/untranslated`,
+      { params },
     );
   }
 }
