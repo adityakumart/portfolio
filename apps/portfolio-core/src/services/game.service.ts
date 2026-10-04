@@ -36,6 +36,7 @@ export class GameService {
           title: 1,
           cast: 1,
           englishTranslation: 1,
+          teluguTranslation: 1,
           year: 1,
         },
       },
@@ -47,7 +48,8 @@ export class GameService {
       id: doc._id.toString(),
       title: doc.title,
       cast: doc.cast || '',
-      englishTranslation: doc.englishTranslation,
+      englishTranslation: doc.englishTranslation || '',
+      teluguTranslation: doc.teluguTranslation || '',
       year: doc.year,
     }));
 

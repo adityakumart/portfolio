@@ -1,3 +1,4 @@
+import { AnyBulkWriteOperation } from 'mongoose';
 import { getMovieModel, IMovieDocument } from '../models/movie.model';
 import {
   IMovie,
@@ -12,10 +13,11 @@ function escapeRegex(text: string): string {
 
 export class MovieService {
   /**
-   * Imports an array of movies with strict validation:
-   * 1. Only insert if there is no previous record with the same movie title (case-insensitive).
-   * 2. Only insert if englishTranslation is non-empty string.
-   * 3. Include year in record.
+   * Imports an array of movies with upsert capability:
+   * 1. If a record with the same movie title exists (case-insensitive), update its fields with incoming data.
+   * 2. If no record with the movie title exists, insert it.
+   * 3. Requires at least an englishTranslation or teluguTranslation.
+   * 4. Includes year and cast in record.
    */
   public async importMovies(rawMovies: unknown[]): Promise<IMovieUploadResponse> {
     if (!Array.isArray(rawMovies)) {
@@ -24,11 +26,19 @@ export class MovieService {
 
     const MovieModel = await getMovieModel();
     const skipped: IMovieSkippedDetail[] = [];
-    const candidateMap = new Map<string, { title: string; cast: string; englishTranslation: string; year?: number }>();
+    const candidateMap = new Map<
+      string,
+      {
+        title: string;
+        cast: string;
+        englishTranslation: string;
+        teluguTranslation: string;
+        year?: number;
+      }
+    >();
 
     let skippedMissingTranslation = 0;
     let skippedInvalid = 0;
-    let skippedDuplicateInPayload = 0;
 
     for (const item of rawMovies) {
       if (!item || typeof item !== 'object') {
@@ -41,6 +51,10 @@ export class MovieService {
       const rawTranslation =
         typeof raw['englishTranslation'] === 'string'
           ? raw['englishTranslation'].trim()
+          : '';
+      const rawTeluguTranslation =
+        typeof raw['teluguTranslation'] === 'string'
+          ? raw['teluguTranslation'].trim()
           : '';
       const rawCast = typeof raw['cast'] === 'string' ? raw['cast'].trim() : '';
 
@@ -62,8 +76,8 @@ export class MovieService {
         continue;
       }
 
-      // Check for non-empty englishTranslation
-      if (!rawTranslation) {
+      // Check for at least one translation (english or telugu)
+      if (!rawTranslation && !rawTeluguTranslation) {
         skippedMissingTranslation++;
         skipped.push({
           title: rawTitle,
@@ -74,44 +88,48 @@ export class MovieService {
       }
 
       const normalizedTitleKey = rawTitle.toLowerCase();
-      if (candidateMap.has(normalizedTitleKey)) {
-        skippedDuplicateInPayload++;
-        skipped.push({
+      const existingCandidate = candidateMap.get(normalizedTitleKey);
+      if (existingCandidate) {
+        if (rawTranslation) existingCandidate.englishTranslation = rawTranslation;
+        if (rawTeluguTranslation) existingCandidate.teluguTranslation = rawTeluguTranslation;
+        if (rawCast) existingCandidate.cast = rawCast;
+        if (rawYear) existingCandidate.year = rawYear;
+      } else {
+        candidateMap.set(normalizedTitleKey, {
           title: rawTitle,
-          reason: 'duplicate_in_payload',
+          cast: rawCast,
+          englishTranslation: rawTranslation,
+          teluguTranslation: rawTeluguTranslation,
           year: rawYear,
         });
-        continue;
       }
-
-      candidateMap.set(normalizedTitleKey, {
-        title: rawTitle,
-        cast: rawCast,
-        englishTranslation: rawTranslation,
-        year: rawYear,
-      });
     }
 
     const candidates = Array.from(candidateMap.values());
     if (candidates.length === 0) {
       return {
         success: true,
-        message: 'No eligible movies with valid title and englishTranslation found in payload.',
+        message: 'No eligible movies with valid title and translation found in payload.',
         stats: {
           totalReceived: rawMovies.length,
           insertedCount: 0,
-          skippedDuplicates: skippedDuplicateInPayload,
+          updatedCount: 0,
+          skippedDuplicates: 0,
           skippedMissingTranslation,
           skippedInvalid,
         },
         inserted: [],
+        updated: [],
         skipped,
       };
     }
 
-    // Check existing records in database in batches to avoid huge regex arrays
+    // Check existing records in database in batches
     const BATCH_SIZE = 200;
-    const existingTitleSet = new Set<string>();
+    const existingDocMap = new Map<
+      string,
+      { _id: unknown; title: string; englishTranslation?: string; teluguTranslation?: string; cast?: string; year?: number }
+    >();
 
     for (let i = 0; i < candidates.length; i += BATCH_SIZE) {
       const slice = candidates.slice(i, i + BATCH_SIZE);
@@ -122,34 +140,85 @@ export class MovieService {
       const existingDocs = await MovieModel.find({
         title: { $in: regexPatterns },
       })
-        .select('title')
+        .select('_id title englishTranslation teluguTranslation cast year')
         .lean();
 
       for (const doc of existingDocs) {
         if (doc.title) {
-          existingTitleSet.add(doc.title.trim().toLowerCase());
+          existingDocMap.set(doc.title.trim().toLowerCase(), doc);
         }
       }
     }
 
-    // Separate new items from existing duplicates
-    const toInsert: Array<{ title: string; cast: string; englishTranslation: string; year?: number }> = [];
-    let skippedExistingDuplicates = 0;
+    // Separate into records to update vs records to insert
+    const toInsert: Array<{
+      title: string;
+      cast: string;
+      englishTranslation: string;
+      teluguTranslation: string;
+      year?: number;
+    }> = [];
+
+    const toUpdate: Array<{
+      id: unknown;
+      fields: Record<string, unknown>;
+      title: string;
+      year?: number;
+    }> = [];
 
     for (const candidate of candidates) {
       const key = candidate.title.toLowerCase();
-      if (existingTitleSet.has(key)) {
-        skippedExistingDuplicates++;
-        skipped.push({
-          title: candidate.title,
-          reason: 'already_exists',
-          year: candidate.year,
-        });
+      const existing = existingDocMap.get(key);
+
+      if (existing) {
+        const updateFields: Record<string, unknown> = {};
+
+        if (candidate.teluguTranslation) {
+          updateFields['teluguTranslation'] = candidate.teluguTranslation;
+        }
+        if (candidate.englishTranslation) {
+          updateFields['englishTranslation'] = candidate.englishTranslation;
+        }
+        if (candidate.cast) {
+          updateFields['cast'] = candidate.cast;
+        }
+        if (candidate.year !== undefined) {
+          updateFields['year'] = candidate.year;
+        }
+
+        if (Object.keys(updateFields).length > 0) {
+          toUpdate.push({
+            id: existing._id,
+            fields: updateFields,
+            title: candidate.title,
+            year: candidate.year || existing.year,
+          });
+        }
       } else {
         toInsert.push(candidate);
       }
     }
 
+    // Execute bulk updates for existing movies
+    if (toUpdate.length > 0) {
+      const bulkOps: AnyBulkWriteOperation<IMovieDocument>[] = toUpdate.map(
+        (item) => ({
+          updateOne: {
+            filter: { _id: item.id as any },
+            update: { $set: item.fields },
+          },
+        }),
+      );
+
+      const BULK_CHUNK = 500;
+      for (let i = 0; i < bulkOps.length; i += BULK_CHUNK) {
+        await MovieModel.bulkWrite(bulkOps.slice(i, i + BULK_CHUNK), {
+          ordered: false,
+        });
+      }
+    }
+
+    // Execute inserts for new movies
     let insertedDocs: IMovieDocument[] = [];
     if (toInsert.length > 0) {
       insertedDocs = (await MovieModel.insertMany(toInsert, {
@@ -157,16 +226,14 @@ export class MovieService {
       })) as IMovieDocument[];
     }
 
-    const totalSkippedDuplicates =
-      skippedExistingDuplicates + skippedDuplicateInPayload;
-
     return {
       success: true,
-      message: `Processed ${rawMovies.length} items: ${insertedDocs.length} inserted, ${totalSkippedDuplicates} duplicates skipped, ${skippedMissingTranslation} skipped without English translation.`,
+      message: `Processed ${rawMovies.length} items: ${insertedDocs.length} inserted, ${toUpdate.length} updated by matching title, ${skippedMissingTranslation} skipped without translation.`,
       stats: {
         totalReceived: rawMovies.length,
         insertedCount: insertedDocs.length,
-        skippedDuplicates: totalSkippedDuplicates,
+        updatedCount: toUpdate.length,
+        skippedDuplicates: 0,
         skippedMissingTranslation,
         skippedInvalid,
       },
@@ -175,8 +242,14 @@ export class MovieService {
         title: doc.title,
         cast: doc.cast,
         englishTranslation: doc.englishTranslation,
+        teluguTranslation: doc.teluguTranslation,
         year: doc.year,
         createdAt: doc.createdAt,
+      })),
+      updated: toUpdate.map((u) => ({
+        id: String(u.id),
+        title: u.title,
+        year: u.year,
       })),
       skipped,
     };
@@ -207,6 +280,7 @@ export class MovieService {
       filter['$or'] = [
         { title: { $regex: s, $options: 'i' } },
         { englishTranslation: { $regex: s, $options: 'i' } },
+        { teluguTranslation: { $regex: s, $options: 'i' } },
         { cast: { $regex: s, $options: 'i' } },
       ];
     }
@@ -231,7 +305,8 @@ export class MovieService {
         id: m._id.toString(),
         title: m.title,
         cast: m.cast || '',
-        englishTranslation: m.englishTranslation,
+        englishTranslation: m.englishTranslation || '',
+        teluguTranslation: m.teluguTranslation || '',
         year: m.year,
         createdAt: m.createdAt,
       })),

@@ -4,6 +4,7 @@ export interface IMovie {
   title: string;
   cast?: string;
   englishTranslation: string;
+  teluguTranslation?: string;
   year?: number;
   createdAt?: string | Date;
   updatedAt?: string | Date;
@@ -12,7 +13,8 @@ export interface IMovie {
 export interface IMovieUploadStats {
   totalReceived: number;
   insertedCount: number;
-  skippedDuplicates: number;
+  updatedCount: number;
+  skippedDuplicates?: number;
   skippedMissingTranslation: number;
   skippedInvalid: number;
 }
@@ -28,6 +30,7 @@ export interface IMovieUploadResponse {
   message: string;
   stats: IMovieUploadStats;
   inserted: IMovie[];
+  updated?: Array<{ id: string; title: string; year?: number }>;
   skipped?: IMovieSkippedDetail[];
 }
 

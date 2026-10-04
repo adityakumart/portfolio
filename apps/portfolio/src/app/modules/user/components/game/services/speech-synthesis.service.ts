@@ -30,9 +30,9 @@ export class SpeechSynthesisService {
   }
 
   /**
-   * Speaks English clue text aloud with optimal speech rate and Indian/US English voice.
+   * Speaks clue text aloud with optimal speech rate and appropriate language voice.
    */
-  speak(text: string): void {
+  speak(text: string, lang = 'en-US'): void {
     if (!isPlatformBrowser(this.platformId) || !('speechSynthesis' in window)) {
       return;
     }
@@ -46,12 +46,15 @@ export class SpeechSynthesisService {
     }
 
     const utterance = new SpeechSynthesisUtterance(text.trim());
+    utterance.lang = lang;
     utterance.rate = 0.95;
     utterance.pitch = 1.0;
 
-    // Pick best English voice (prefer en-IN, then en-US, then any English)
+    // Pick best matching voice
     if (this.availableVoices.length > 0) {
       const preferred =
+        this.availableVoices.find((v) => v.lang === lang) ||
+        this.availableVoices.find((v) => v.lang.startsWith(lang.slice(0, 2))) ||
         this.availableVoices.find((v) => v.lang.startsWith('en-IN')) ||
         this.availableVoices.find((v) => v.lang.startsWith('en-US')) ||
         this.availableVoices.find((v) => v.lang.startsWith('en'));

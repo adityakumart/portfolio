@@ -44,6 +44,7 @@ interface ParsedMoviePreview {
   title: string;
   cast: string;
   englishTranslation: string;
+  teluguTranslation: string;
   year?: number;
   status: 'valid' | 'missing_translation' | 'invalid';
   statusMessage: string;
@@ -115,6 +116,7 @@ export class MovieImporterComponent implements OnInit {
           title: '(Invalid Object)',
           cast: '',
           englishTranslation: '',
+          teluguTranslation: '',
           status: 'invalid',
           statusMessage: 'Item is not a valid JSON object',
         };
@@ -126,6 +128,10 @@ export class MovieImporterComponent implements OnInit {
       const englishTranslation =
         typeof rec['englishTranslation'] === 'string'
           ? rec['englishTranslation'].trim()
+          : '';
+      const teluguTranslation =
+        typeof rec['teluguTranslation'] === 'string'
+          ? rec['teluguTranslation'].trim()
           : '';
       const cast = typeof rec['cast'] === 'string' ? rec['cast'].trim() : '';
 
@@ -142,20 +148,22 @@ export class MovieImporterComponent implements OnInit {
           title: '(Missing Title)',
           cast,
           englishTranslation,
+          teluguTranslation,
           year,
           status: 'invalid',
           statusMessage: 'Title is required',
         };
       }
 
-      if (!englishTranslation) {
+      if (!englishTranslation && !teluguTranslation) {
         return {
           title,
           cast,
           englishTranslation: '',
+          teluguTranslation: '',
           year,
           status: 'missing_translation',
-          statusMessage: 'No englishTranslation (will be skipped)',
+          statusMessage: 'No translation provided (will be skipped)',
         };
       }
 
@@ -163,9 +171,10 @@ export class MovieImporterComponent implements OnInit {
         title,
         cast,
         englishTranslation,
+        teluguTranslation,
         year,
         status: 'valid',
-        statusMessage: 'Ready to import',
+        statusMessage: 'Ready to import / update',
       };
     });
   });
@@ -299,7 +308,7 @@ export class MovieImporterComponent implements OnInit {
         this.rawParsedPayload.set(parsed.movies);
       } else {
         this.parseError.set(
-          'Pasted JSON must be an array of objects: [{ title, cast, englishTranslation, year }].',
+          'Pasted JSON must be an array of objects: [{ title, cast, englishTranslation, teluguTranslation, year }].',
         );
         this.rawParsedPayload.set([]);
       }
@@ -331,7 +340,7 @@ export class MovieImporterComponent implements OnInit {
       next: (res) => {
         this.isUploading.set(false);
         this.uploadResponse.set(res);
-        if (res.stats.insertedCount > 0) {
+        if (res.stats.insertedCount > 0 || (res.stats.updatedCount && res.stats.updatedCount > 0)) {
           this.loadDbMovies();
         }
       },
@@ -395,7 +404,7 @@ export class MovieImporterComponent implements OnInit {
   });
 
   // --- Text-to-Speech Preview ---
-  playSpeech(text: string, id: string): void {
+  playSpeech(text: string, id: string, lang = 'en-US'): void {
     if (!isPlatformBrowser(this.platformId) || !('speechSynthesis' in window)) {
       alert('Speech synthesis is not supported in this browser.');
       return;
@@ -409,7 +418,7 @@ export class MovieImporterComponent implements OnInit {
     }
 
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-US';
+    utterance.lang = lang;
     utterance.rate = 0.95;
 
     utterance.onend = () => {
@@ -426,9 +435,12 @@ export class MovieImporterComponent implements OnInit {
 
   deleteMovie(movie: IMovie): void {
     if (!movie.id) return;
+    const translationHint = movie.teluguTranslation
+      ? `${movie.englishTranslation ? movie.englishTranslation + ' / ' : ''}${movie.teluguTranslation}`
+      : movie.englishTranslation;
     if (
       !confirm(
-        `Are you sure you want to delete "${movie.title}" (${movie.englishTranslation})?`,
+        `Are you sure you want to delete "${movie.title}" (${translationHint})?`,
       )
     ) {
       return;
