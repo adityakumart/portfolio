@@ -7,6 +7,7 @@ export interface UserModules {
   dietHydration: boolean;
   planner?: boolean;
   game?: boolean;
+  movies?: boolean;
 }
 
 export interface User {
@@ -17,6 +18,7 @@ export interface User {
   fullName?: string;
   role?: UserRole;
   admin?: boolean;
+  masterAdmin?: boolean;
   masterFolder?: boolean;
   isEnabled?: boolean;
   is_deleted?: boolean;

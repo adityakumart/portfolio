@@ -11,6 +11,7 @@ import { AiChatComponent } from './components/ai-chat/ai-chat.component';
 import { FileManagerComponent } from './components/file-manager/file-manager.component';
 import { AuthService } from './services/auth';
 import { resolveUserDestination } from './services/user-modules.config';
+import { masterAdminGuard } from './guards/admin.guard';
 
 export const authGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
@@ -239,9 +240,42 @@ const routes: Routes = [
           import(
             '../movie-importer/movie-importer.component'
           ).then((m) => m.MovieImporterComponent),
+        canActivate: [authGuard, createModuleGuard('movies')],
         data: {
           seo: {
             title: 'Movie JSON Importer | Aditya Kumar T Platform',
+            description:
+              'Upload and manage Telugu movies with English translations dataset.',
+            robots: 'noindex, nofollow',
+          },
+        },
+      },
+      {
+        path: 'admin',
+        loadComponent: () =>
+          import(
+            './components/admin-panel/admin-panel.component'
+          ).then((m) => m.AdminPanelComponent),
+        canActivate: [authGuard, masterAdminGuard],
+        data: {
+          seo: {
+            title: 'Master Admin Console | Aditya Kumar T Platform',
+            description:
+              'Master administrative console for user permissions, feature module access, and dataset management.',
+            robots: 'noindex, nofollow',
+          },
+        },
+      },
+      {
+        path: 'admin/importer',
+        loadComponent: () =>
+          import(
+            '../movie-importer/movie-importer.component'
+          ).then((m) => m.MovieImporterComponent),
+        canActivate: [authGuard, masterAdminGuard],
+        data: {
+          seo: {
+            title: 'Telugu Movie JSON Importer | Master Admin',
             description:
               'Upload and manage Telugu movies with English translations dataset.',
             robots: 'noindex, nofollow',

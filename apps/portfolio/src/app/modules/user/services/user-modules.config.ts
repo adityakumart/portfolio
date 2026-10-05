@@ -91,6 +91,19 @@ export const USER_MODULES: UserModuleConfig[] = [
     iconBgClass: 'bg-violet-500/10 border-violet-500/20',
     iconTextClass: 'text-violet-400',
   },
+  {
+    key: 'movies',
+    label: 'Movies Dataset',
+    route: '/user/movies',
+    icon: 'lucideFilm',
+    description:
+      'Manage and explore the movie dataset, review Telugu titles and English translations.',
+    badge: 'Dataset',
+    gradientClass:
+      'bg-gradient-to-r from-amber-600 to-rose-600 hover:from-amber-500 hover:to-rose-500 text-white shadow-md shadow-amber-500/15',
+    iconBgClass: 'bg-amber-500/10 border-amber-500/20',
+    iconTextClass: 'text-amber-500',
+  },
 ];
 
 /**

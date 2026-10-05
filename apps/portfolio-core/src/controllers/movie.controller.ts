@@ -169,3 +169,93 @@ export async function handleDeleteUntranslatedMovies(
   }
 }
 
+/**
+ * Handles creation of a single movie record.
+ */
+export async function handleCreateMovie(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  try {
+    const { title, cast, englishTranslation, teluguTranslation, year } =
+      req.body;
+    if (!title || (!englishTranslation && !teluguTranslation)) {
+      res.status(400).json({
+        success: false,
+        error: 'Bad Request',
+        message:
+          'Title and at least one translation (English or Telugu) are required.',
+      });
+      return;
+    }
+
+    const movie = await movieService.createMovie({
+      title,
+      cast,
+      englishTranslation,
+      teluguTranslation,
+      year: year ? Number(year) : undefined,
+    });
+
+    res.status(201).json({
+      success: true,
+      movie,
+      message: 'Movie created successfully.',
+    });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Error creating movie:', err);
+    res.status(400).json({
+      success: false,
+      error: 'Creation Failed',
+      message: err.message || 'Failed to create movie.',
+    });
+  }
+}
+
+/**
+ * Handles updating of a single movie record by ID.
+ */
+export async function handleUpdateMovie(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  try {
+    const rawId = req.params['id'];
+    const id = Array.isArray(rawId) ? rawId[0] : rawId;
+    if (!id) {
+      res.status(400).json({
+        success: false,
+        error: 'Bad Request',
+        message: 'Movie ID parameter is required.',
+      });
+      return;
+    }
+
+    const updated = await movieService.updateMovie(id, req.body);
+    if (!updated) {
+      res.status(404).json({
+        success: false,
+        error: 'Not Found',
+        message: 'Movie record not found.',
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      movie: updated,
+      message: 'Movie updated successfully.',
+    });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Error updating movie:', err);
+    res.status(400).json({
+      success: false,
+      error: 'Update Failed',
+      message: err.message || 'Failed to update movie.',
+    });
+  }
+}
+
+
