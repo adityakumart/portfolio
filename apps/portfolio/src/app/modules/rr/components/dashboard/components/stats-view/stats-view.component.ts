@@ -475,7 +475,7 @@ export class RRStatsViewComponent implements OnInit {
     if (event && typeof event.stopPropagation === 'function') {
       event.stopPropagation();
     }
-    this.router.navigate(['/user/rr/booking'], {
+    this.router.navigate(['/user/rr/booking/list'], {
       queryParams: { vehicleRegNo: vehicle.regNo, reserve: 'true' },
     });
   }

@@ -85,6 +85,11 @@ export const RR_ROUTES: Routes = [
         },
       },
       {
+        path: 'booking',
+        redirectTo: 'booking/list',
+        pathMatch: 'full',
+      },
+      {
         path: 'booking/list',
         component: RRBookingListComponent,
         data: {
