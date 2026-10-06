@@ -7,6 +7,7 @@ import { RRDashboardComponent } from './components/dashboard/dashboard.component
 // Child components
 import { RRStatsViewComponent } from './components/dashboard/components/stats-view/stats-view.component';
 import { RRBookingListComponent } from './components/dashboard/components/booking-list/booking-list.component';
+import { RRAdvanceBookingListComponent } from './components/dashboard/components/advance-booking-list/advance-booking-list.component';
 import { RRVehicleListComponent } from './components/dashboard/components/vehicle-list/vehicle-list.component';
 import { RREmployeeListComponent } from './components/dashboard/components/employee-list/employee-list.component';
 import { RRHistoryComponent } from './components/dashboard/components/history/history.component';
@@ -84,12 +85,28 @@ export const RR_ROUTES: Routes = [
         },
       },
       {
+        path: 'booking',
+        redirectTo: 'booking/list',
+        pathMatch: 'full',
+      },
+      {
         path: 'booking/list',
         component: RRBookingListComponent,
         data: {
           seo: {
             title: 'Bookings Management | Royal Rentals',
             description: 'Manage current and upcoming rental reservations.',
+            robots: 'noindex, nofollow',
+          },
+        },
+      },
+      {
+        path: 'booking/advance',
+        component: RRAdvanceBookingListComponent,
+        data: {
+          seo: {
+            title: 'Advance Bookings Desk | Royal Rentals',
+            description: 'Manage advance vehicle reservations and deposits.',
             robots: 'noindex, nofollow',
           },
         },

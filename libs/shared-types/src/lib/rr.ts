@@ -81,6 +81,7 @@ export interface IVehicle {
   status: VehicleStatus;
   images: string[];
   bookingId?: string | null;
+  nextAvailableDate?: string;
   createdAt: string;
   updatedAt?: string | null;
   isDeleted?: boolean;
@@ -123,7 +124,7 @@ export interface IVehicleAutocompleteItem {
   type?: string;
 }
 
-export type BookingStatus = 'active' | 'completed' | 'cancelled';
+export type BookingStatus = 'active' | 'completed' | 'cancelled' | 'reserved';
 export type DepositType = 'bike' | 'cash' | 'other' | 'none' | string;
 export type DiscountType = 'percentage' | 'rupee' | string;
 
@@ -276,6 +277,7 @@ export interface IRRDashboardStats {
   pendingPayments: number;
   available?: number;
   contract?: number;
+  reserved?: number;
 }
 
 export interface IRRVehicleAvailability {

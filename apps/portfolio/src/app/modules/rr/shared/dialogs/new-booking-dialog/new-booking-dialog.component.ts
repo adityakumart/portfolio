@@ -35,6 +35,7 @@ import { HlmDropdownMenuImports } from '@spartan-ng/hel/dropdown-menu';
 import {
   IVehicle,
   IVehiclePricing,
+  IBooking,
   ICustomerMembershipDiscount,
   ICustomerAutocompleteItem,
   IRegularCustomerMasked,
@@ -47,6 +48,7 @@ import { RRAadharInputComponent } from '../../components/aadhar-input/aadhar-inp
 export interface NewBookingDialogContext {
   vehicleRegNo?: string;
   vehicles?: IVehicle[];
+  reservation?: IBooking;
 }
 
 @Component({
@@ -541,6 +543,64 @@ export class RRNewBookingDialogComponent implements OnInit {
   }
 
   private applyPreselectedVehicle() {
+    const resv = this.context?.reservation;
+    if (resv) {
+      this.bookingFormGroup.patchValue({
+        vehicleRegNo: resv.vehicleRegNo,
+        vehicleName: resv.vehicleName,
+        vehicleManufacturer: resv.vehicleManufacturer,
+        vehicleModel: resv.vehicleModel,
+        vehicleOdometerStart: resv.vehicleOdometerStart,
+        extraKmPrice: resv.extraKmPrice,
+        extraHourPrice: resv.extraHourPrice,
+        renterFirstName: resv.renterFirstName,
+        renterSecondName: resv.renterSecondName,
+        renterFatherName: resv.renterFatherName,
+        renterAadhar: resv.renterAadhar,
+        renterDL: resv.renterDL,
+        renterPhone: resv.renterPhone,
+        renterAltPhone: resv.renterAltPhone || '',
+        renterAddress: resv.renterAddress,
+        guarFirstName: resv.guarFirstName,
+        guarSecondName: resv.guarSecondName,
+        guarFatherName: resv.guarFatherName,
+        guarAadhar: resv.guarAadhar || '',
+        guarDL: resv.guarDL || '',
+        guarPhone: resv.guarPhone,
+        guarAltPhone: resv.guarAltPhone || '',
+        guarAddress: resv.guarAddress,
+        pickupDateTime: resv.pickupDateTime,
+        durationDays: resv.durationDays,
+        durationHours: resv.durationHours,
+        returnDateTime: resv.returnDateTime,
+        totalKmLimit: resv.totalKmLimit,
+        travelPurpose: resv.travelPurpose,
+        travelFrom: resv.travelFrom,
+        travelTo: resv.travelTo,
+        depositType: resv.depositType,
+        bikeRegNo: resv.bikeRegNo || '',
+        bikeManufacturer: resv.bikeManufacturer || '',
+        bikeModel: resv.bikeModel || '',
+        bikeOwner: resv.bikeOwner || '',
+        cashAmount: resv.cashAmount || '',
+        otherItemName: resv.otherItemName || '',
+        otherItemValue: resv.otherItemValue || '',
+        totalRentalAmount: resv.totalRentalAmount,
+        discount: resv.discount,
+        discountType: resv.discountType,
+        finalRentalAmount: resv.finalRentalAmount,
+        amountPaid: resv.amountPaid,
+        pendingAmount: resv.pendingAmount,
+        paymentMode: resv.paymentMode || 'Cash',
+      });
+      const selected = this.vehicles().find((v) => v.regNo === resv.vehicleRegNo);
+      this.selectedVehicle.set(selected || null);
+      if (selected && (!resv.vehicleOdometerStart || resv.vehicleOdometerStart === '0')) {
+        this.bookingFormGroup.patchValue({ vehicleOdometerStart: selected.odometer });
+      }
+      return;
+    }
+
     const regNo = this.context?.vehicleRegNo;
     if (regNo) {
       this.bookingFormGroup.patchValue({ vehicleRegNo: regNo });
@@ -578,26 +638,10 @@ export class RRNewBookingDialogComponent implements OnInit {
   }
 
   onDurationDaysChange() {
-    const days =
-      parseInt(this.bookingFormGroup.get('durationDays')?.value || '0', 10) || 0;
-    if (days > 0) {
-      this.bookingFormGroup.patchValue(
-        { durationHours: '0' },
-        { emitEvent: false }
-      );
-    }
     this.calculateReturnDate();
   }
 
   onDurationHoursChange() {
-    const hours =
-      parseInt(this.bookingFormGroup.get('durationHours')?.value || '0', 10) || 0;
-    if (hours > 0) {
-      this.bookingFormGroup.patchValue(
-        { durationDays: '0' },
-        { emitEvent: false }
-      );
-    }
     this.calculateReturnDate();
   }
 
@@ -678,6 +722,10 @@ export class RRNewBookingDialogComponent implements OnInit {
       totalRent += count * p3;
       remaining -= count * 4;
     }
+    if (remaining > 0) {
+      const p1 = Number(pricing.h1?.price || (p3 > 0 ? Math.round(p3 / 4) : 0));
+      totalRent += remaining * p1;
+    }
 
     return totalRent;
   }
@@ -704,6 +752,10 @@ export class RRNewBookingDialogComponent implements OnInit {
       const count = Math.floor(remaining / 4);
       totalKm += count * km3;
       remaining -= count * 4;
+    }
+    if (remaining > 0) {
+      const km1 = Number(pricing.h1?.km || (km3 > 0 ? Math.round(km3 / 4) : 0));
+      totalKm += remaining * km1;
     }
 
     return totalKm;
@@ -791,12 +843,20 @@ export class RRNewBookingDialogComponent implements OnInit {
       const currentUser = this.rrApi.currentUser();
       const payload = {
         ...this.bookingFormGroup.value,
+        status: 'active',
         bookedBy: currentUser?.id,
         bookedByName: currentUser ? `${currentUser.firstName} ${currentUser.lastName}`.trim() : undefined,
       };
-      const created = await this.rrApi.createBooking(payload);
-      toast.success('Booking created successfully.');
-      this.dialogRef?.close(created);
+
+      let result: IBooking;
+      if (this.context?.reservation?.id) {
+        result = await this.rrApi.updateBooking(this.context.reservation.id, payload);
+        toast.success(`Reserved booking ${this.context.reservation.id} successfully moved to active rentals.`);
+      } else {
+        result = await this.rrApi.createBooking(payload);
+        toast.success('Booking created successfully.');
+      }
+      this.dialogRef?.close(result);
     } catch (e: any) {
       console.error(e);
       toast.error(e.error?.message || 'Error creating booking.');

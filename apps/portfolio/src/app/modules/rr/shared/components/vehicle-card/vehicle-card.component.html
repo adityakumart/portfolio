@@ -149,9 +149,28 @@
       <!-- Fleet & Stats Variants -->
       <div class="text-[10px] font-extrabold text-cyan-500 tracking-wider uppercase mb-1">{{ vehicle.type }}</div>
       <div class="font-extrabold text-base text-foreground leading-tight mb-1 truncate">{{ vehicle.manufacturer }} {{ vehicle.name }}</div>
-      <div class="font-mono text-xs text-muted-foreground bg-muted/40 px-2 py-0.5 rounded w-fit mb-3">{{ vehicle.regNo }}</div>
+      <div class="font-mono text-xs text-muted-foreground bg-muted/40 px-2 py-0.5 rounded w-fit mb-2">{{ vehicle.regNo }}</div>
 
-      <div class="flex items-center justify-between gap-1.5 mt-auto pt-2 border-t border-border/50">
+      <!-- Reserved Fleet Box (Shown when vehicle has an active advance reservation attached) -->
+      @if (reservation) {
+        <div class="mb-2 p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex flex-col gap-1 text-[11px]">
+          <div class="flex items-center justify-between text-cyan-700 dark:text-cyan-300 font-bold">
+            <span class="inline-flex items-center gap-1">
+              <ng-icon name="lucideCalendarClock" class="text-xs"></ng-icon>
+              <span>Reserved Period</span>
+            </span>
+            <span class="font-mono text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+              ₹{{ reservation.amountPaid || '0' }} Advance
+            </span>
+          </div>
+          <div class="text-[10px] text-muted-foreground flex items-center justify-between font-medium">
+            <span>From: {{ reservation.pickupDateTime | date:'shortDate' }}</span>
+            <span>To: {{ reservation.returnDateTime | date:'shortDate' }}</span>
+          </div>
+        </div>
+      }
+
+      <div class="flex items-center justify-between gap-1.5 mt-auto pt-2 border-t border-border/50 flex-wrap">
         <div class="flex flex-wrap gap-1.5">
           <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-md" hlmTooltip="Capacity">
             <ng-icon name="lucideUsers" class="text-xs"></ng-icon>
@@ -167,18 +186,34 @@
           </span>
         </div>
 
-        <!-- Touch CTA: Book Now for Stats Variant on touch screens -->
-        @if (showBookNowOverlay) {
-          <button
-            hlmBtn
-            size="sm"
-            class="touch-action-trigger bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold rounded-lg shadow-sm text-xs px-3 h-8 shrink-0 flex items-center gap-1 hover:from-cyan-400 hover:to-blue-500 active:scale-95 transition-transform"
-            (click)="onBookNowClick($event)"
-          >
-            <ng-icon name="lucideKey" class="text-xs"></ng-icon>
-            <span>Book</span>
-          </button>
-        }
+        <div class="flex items-center gap-1.5 ml-auto">
+          <!-- Reserve Button for Total Fleet and other lists -->
+          @if (showReserveBtn) {
+            <button
+              hlmBtn
+              size="sm"
+              class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold rounded-lg shadow-sm text-xs px-2.5 h-7.5 shrink-0 flex items-center gap-1 active:scale-95 transition-transform"
+              (click)="onReserveClick($event)"
+              hlmTooltip="Reserve for upcoming date"
+            >
+              <ng-icon name="lucideCalendarClock" class="text-xs"></ng-icon>
+              <span>Reserve</span>
+            </button>
+          }
+
+          <!-- Touch CTA: Book Now for Stats Variant on touch screens -->
+          @if (showBookNowOverlay) {
+            <button
+              hlmBtn
+              size="sm"
+              class="touch-action-trigger bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold rounded-lg shadow-sm text-xs px-3 h-8 shrink-0 flex items-center gap-1 hover:from-cyan-400 hover:to-blue-500 active:scale-95 transition-transform"
+              (click)="onBookNowClick($event)"
+            >
+              <ng-icon name="lucideKey" class="text-xs"></ng-icon>
+              <span>Book</span>
+            </button>
+          }
+        </div>
       </div>
     }
   </div>

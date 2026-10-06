@@ -5,7 +5,7 @@
   </div>
 </div>
 
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-7 gap-4 mb-8">
   <!-- Total Fleet Card -->
   <div
     hlmCard
@@ -81,6 +81,32 @@
     <div class="flex items-center justify-between text-[11px] font-medium text-muted-foreground pt-1 border-t border-border/40">
       <span>On the road</span>
       <ng-icon [name]="activeCategory() === 'bookings' ? 'lucideChevronUp' : 'lucideChevronDown'" class="text-xs transition-transform duration-200" [class.text-orange-500]="activeCategory() === 'bookings'"></ng-icon>
+    </div>
+  </div>
+
+  <!-- Reserved Fleet Card -->
+  <div
+    hlmCard
+    class="p-5 rounded-2xl border border-border bg-card shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border-l-4 border-l-sky-500 relative overflow-hidden flex flex-col justify-between"
+    [class.ring-2]="activeCategory() === 'reserved'"
+    [class.ring-sky-500]="activeCategory() === 'reserved'"
+    [class.bg-sky-500/5]="activeCategory() === 'reserved'"
+    [class.shadow-lg]="activeCategory() === 'reserved'"
+    (click)="toggleCategory('reserved')"
+    [hlmTooltip]="activeCategory() === 'reserved' ? 'Click to collapse' : 'Click to view advance reserved fleet'"
+  >
+    <div>
+      <div class="flex items-center justify-between w-full mb-2.5">
+        <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Reserved Fleet</span>
+        <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-sky-500/10 text-sky-500">
+          <ng-icon name="lucideCalendarClock" class="text-base"></ng-icon>
+        </div>
+      </div>
+      <div class="text-3xl font-black tracking-tight text-foreground leading-none mb-2">{{ stats().reserved || reservedBookingsList.length }}</div>
+    </div>
+    <div class="flex items-center justify-between text-[11px] font-medium text-muted-foreground pt-1 border-t border-border/40">
+      <span>Advance booked</span>
+      <ng-icon [name]="activeCategory() === 'reserved' ? 'lucideChevronUp' : 'lucideChevronDown'" class="text-xs transition-transform duration-200" [class.text-sky-500]="activeCategory() === 'reserved'"></ng-icon>
     </div>
   </div>
 
@@ -175,6 +201,7 @@
             'bg-blue-500/15 text-blue-500 border border-blue-500/30': activeCategory() === 'fleet',
             'bg-emerald-500/15 text-emerald-500 border border-emerald-500/30': activeCategory() === 'available',
             'bg-orange-500/15 text-orange-500 border border-orange-500/30': activeCategory() === 'bookings',
+            'bg-sky-500/15 text-sky-500 border border-sky-500/30': activeCategory() === 'reserved',
             'bg-rose-500/15 text-rose-500 border border-rose-500/30': activeCategory() === 'maintenance',
             'bg-cyan-500/15 text-cyan-500 border border-cyan-500/30': activeCategory() === 'contract',
             'bg-purple-500/15 text-purple-500 border border-purple-500/30': activeCategory() === 'payments'
@@ -188,6 +215,8 @@
                 ? 'lucideCheckCircle'
                 : activeCategory() === 'bookings'
                 ? 'lucideCalendarCheck'
+                : activeCategory() === 'reserved'
+                ? 'lucideCalendarClock'
                 : activeCategory() === 'maintenance'
                 ? 'lucideWrench'
                 : activeCategory() === 'contract'
@@ -208,12 +237,13 @@
                 'text-blue-600 dark:text-blue-400 bg-blue-500/10 border border-blue-500/20': activeCategory() === 'fleet',
                 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20': activeCategory() === 'available',
                 'text-orange-600 dark:text-orange-400 bg-orange-500/10 border border-orange-500/20': activeCategory() === 'bookings',
+                'text-sky-600 dark:text-sky-400 bg-sky-500/10 border border-sky-500/20': activeCategory() === 'reserved',
                 'text-rose-600 dark:text-rose-400 bg-rose-500/10 border border-rose-500/20': activeCategory() === 'maintenance',
                 'text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 border border-cyan-500/20': activeCategory() === 'contract',
                 'text-purple-600 dark:text-purple-400 bg-purple-500/10 border border-purple-500/20': activeCategory() === 'payments'
               }"
             >
-              {{ activeCategoryCount }} {{ isVehicleCategory ? 'Vehicles' : 'Bookings' }}
+              {{ activeCategoryCount }} {{ isVehicleCategory || isReservedCategory ? 'Vehicles' : 'Bookings' }}
             </span>
           </div>
           <p class="text-xs font-medium text-muted-foreground mt-0.5">{{ activeCategoryDescription }}</p>
@@ -296,6 +326,8 @@
                   <app-rr-vehicle-card
                     [vehicle]="v"
                     variant="stats"
+                    [showReserveBtn]="activeCategory() === 'fleet'"
+                    (reserveClick)="reserveVehicle(v)"
                     (bookNow)="bookVehicle($event)"
                     (cardClick)="v.status === 'available' ? bookVehicle($event) : null"
                   />
@@ -327,6 +359,8 @@
                   <app-rr-vehicle-card
                     [vehicle]="v"
                     variant="stats"
+                    [showReserveBtn]="activeCategory() === 'fleet'"
+                    (reserveClick)="reserveVehicle(v)"
                     (bookNow)="bookVehicle($event)"
                     (cardClick)="v.status === 'available' ? bookVehicle($event) : null"
                   />
@@ -344,6 +378,8 @@
                 <app-rr-vehicle-card
                   [vehicle]="v"
                   variant="stats"
+                  [showReserveBtn]="activeCategory() === 'fleet'"
+                  (reserveClick)="reserveVehicle(v)"
                   (bookNow)="bookVehicle($event)"
                   (cardClick)="v.status === 'available' ? bookVehicle($event) : null"
                 />
@@ -366,6 +402,8 @@
                 <app-rr-vehicle-card
                   [vehicle]="v"
                   variant="stats"
+                  [showReserveBtn]="activeCategory() === 'fleet'"
+                  (reserveClick)="reserveVehicle(v)"
                   (bookNow)="bookVehicle($event)"
                   (cardClick)="v.status === 'available' ? bookVehicle($event) : null"
                 />
@@ -482,6 +520,216 @@
           <ng-icon class="text-4xl mx-auto mb-3 text-muted-foreground" name="lucideSearchX"></ng-icon>
           <h4 class="text-base font-bold text-foreground mb-1">No Bookings Found</h4>
           <p class="text-sm text-muted-foreground max-w-md">There are currently no active bookings matching this filter.</p>
+        </div>
+      }
+    }
+
+    <!-- Reserved Fleet Display -->
+    @if (isReservedCategory) {
+      @if (reservedBookingsList.length > 0) {
+        <!-- 'ALL' SEATING FILTER FOR RESERVED -->
+        @if (selectedSeating() === 'all') {
+          <!-- 5-Seater Reserved -->
+          @if (reservedVehicles5Seater.length > 0) {
+            <div class="mb-8">
+              <div class="flex items-center justify-between pb-3 mb-4 border-b border-border/60">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-7 h-7 rounded-lg bg-cyan-500/10 text-cyan-500 font-black text-xs flex items-center justify-center border border-cyan-500/20">
+                    5
+                  </div>
+                  <div>
+                    <h4 class="text-base font-bold text-foreground tracking-tight">5-Seater Reserved Fleet</h4>
+                  </div>
+                </div>
+                <span hlmBadge variant="secondary" class="font-bold text-xs bg-muted/60">
+                  {{ reservedVehicles5Seater.length }} Reserved
+                </span>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                @for (item of reservedVehicles5Seater; track item.reservation.id) {
+                  <div class="flex flex-col">
+                    <app-rr-vehicle-card
+                      [vehicle]="item.vehicle"
+                      variant="stats"
+                      [reservation]="item.reservation"
+                      (cardClick)="bookVehicleFromReservation(item.reservation, $event)"
+                    />
+                    <div class="mt-2 flex items-center justify-between gap-2 px-1">
+                      <button
+                        hlmBtn
+                        size="sm"
+                        variant="outline"
+                        class="text-xs h-7 gap-1 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10 flex-1"
+                        (click)="modifyReservation(item.reservation, $event)"
+                      >
+                        <ng-icon name="lucidePencil" class="text-xs"></ng-icon>
+                        <span>Modify</span>
+                      </button>
+                      <button
+                        hlmBtn
+                        size="sm"
+                        class="text-xs h-7 gap-1 bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-400 hover:to-blue-500 flex-1 font-bold shadow-xs"
+                        (click)="bookVehicleFromReservation(item.reservation, $event)"
+                      >
+                        <ng-icon name="lucideKey" class="text-xs"></ng-icon>
+                        <span>Book Now</span>
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- 7-Seater Reserved -->
+          @if (reservedVehicles7Seater.length > 0) {
+            <div [class.mt-8]="reservedVehicles5Seater.length > 0">
+              <div class="flex items-center justify-between pb-3 mb-4 border-b border-border/60">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-7 h-7 rounded-lg bg-indigo-500/10 text-indigo-500 font-black text-xs flex items-center justify-center border border-indigo-500/20">
+                    7
+                  </div>
+                  <div>
+                    <h4 class="text-base font-bold text-foreground tracking-tight">7-Seater Reserved Fleet</h4>
+                  </div>
+                </div>
+                <span hlmBadge variant="secondary" class="font-bold text-xs bg-muted/60">
+                  {{ reservedVehicles7Seater.length }} Reserved
+                </span>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                @for (item of reservedVehicles7Seater; track item.reservation.id) {
+                  <div class="flex flex-col">
+                    <app-rr-vehicle-card
+                      [vehicle]="item.vehicle"
+                      variant="stats"
+                      [reservation]="item.reservation"
+                      (cardClick)="bookVehicleFromReservation(item.reservation, $event)"
+                    />
+                    <div class="mt-2 flex items-center justify-between gap-2 px-1">
+                      <button
+                        hlmBtn
+                        size="sm"
+                        variant="outline"
+                        class="text-xs h-7 gap-1 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10 flex-1"
+                        (click)="modifyReservation(item.reservation, $event)"
+                      >
+                        <ng-icon name="lucidePencil" class="text-xs"></ng-icon>
+                        <span>Modify</span>
+                      </button>
+                      <button
+                        hlmBtn
+                        size="sm"
+                        class="text-xs h-7 gap-1 bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-400 hover:to-blue-500 flex-1 font-bold shadow-xs"
+                        (click)="bookVehicleFromReservation(item.reservation, $event)"
+                      >
+                        <ng-icon name="lucideKey" class="text-xs"></ng-icon>
+                        <span>Book Now</span>
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        }
+
+        <!-- '5' SEATING FILTER FOR RESERVED -->
+        @if (selectedSeating() === '5') {
+          @if (reservedVehicles5Seater.length > 0) {
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              @for (item of reservedVehicles5Seater; track item.reservation.id) {
+                <div class="flex flex-col">
+                  <app-rr-vehicle-card
+                    [vehicle]="item.vehicle"
+                    variant="stats"
+                    [reservation]="item.reservation"
+                    (cardClick)="bookVehicleFromReservation(item.reservation, $event)"
+                  />
+                  <div class="mt-2 flex items-center justify-between gap-2 px-1">
+                    <button
+                      hlmBtn
+                      size="sm"
+                      variant="outline"
+                      class="text-xs h-7 gap-1 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10 flex-1"
+                      (click)="modifyReservation(item.reservation, $event)"
+                    >
+                      <ng-icon name="lucidePencil" class="text-xs"></ng-icon>
+                      <span>Modify</span>
+                    </button>
+                    <button
+                      hlmBtn
+                      size="sm"
+                      class="text-xs h-7 gap-1 bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-400 hover:to-blue-500 flex-1 font-bold shadow-xs"
+                      (click)="bookVehicleFromReservation(item.reservation, $event)"
+                    >
+                      <ng-icon name="lucideKey" class="text-xs"></ng-icon>
+                      <span>Book Now</span>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="flex flex-col items-center justify-center p-12 border border-border rounded-2xl bg-card text-center my-4 shadow-xs">
+              <ng-icon class="text-4xl mx-auto mb-3 text-muted-foreground" name="lucideSearchX"></ng-icon>
+              <h4 class="text-base font-bold text-foreground mb-1">No 5-Seater Reserved Fleet</h4>
+              <p class="text-sm text-muted-foreground max-w-md">There are no advance reservations for 5-seater vehicles.</p>
+            </div>
+          }
+        }
+
+        <!-- '7' SEATING FILTER FOR RESERVED -->
+        @if (selectedSeating() === '7') {
+          @if (reservedVehicles7Seater.length > 0) {
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              @for (item of reservedVehicles7Seater; track item.reservation.id) {
+                <div class="flex flex-col">
+                  <app-rr-vehicle-card
+                    [vehicle]="item.vehicle"
+                    variant="stats"
+                    [reservation]="item.reservation"
+                    (cardClick)="bookVehicleFromReservation(item.reservation, $event)"
+                  />
+                  <div class="mt-2 flex items-center justify-between gap-2 px-1">
+                    <button
+                      hlmBtn
+                      size="sm"
+                      variant="outline"
+                      class="text-xs h-7 gap-1 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10 flex-1"
+                      (click)="modifyReservation(item.reservation, $event)"
+                    >
+                      <ng-icon name="lucidePencil" class="text-xs"></ng-icon>
+                      <span>Modify</span>
+                    </button>
+                    <button
+                      hlmBtn
+                      size="sm"
+                      class="text-xs h-7 gap-1 bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-400 hover:to-blue-500 flex-1 font-bold shadow-xs"
+                      (click)="bookVehicleFromReservation(item.reservation, $event)"
+                    >
+                      <ng-icon name="lucideKey" class="text-xs"></ng-icon>
+                      <span>Book Now</span>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="flex flex-col items-center justify-center p-12 border border-border rounded-2xl bg-card text-center my-4 shadow-xs">
+              <ng-icon class="text-4xl mx-auto mb-3 text-muted-foreground" name="lucideSearchX"></ng-icon>
+              <h4 class="text-base font-bold text-foreground mb-1">No 7-Seater Reserved Fleet</h4>
+              <p class="text-sm text-muted-foreground max-w-md">There are no advance reservations for 7-seater vehicles.</p>
+            </div>
+          }
+        }
+      } @else {
+        <div class="flex flex-col items-center justify-center p-12 border border-border rounded-2xl bg-card text-center my-4 shadow-xs">
+          <ng-icon class="text-4xl mx-auto mb-3 text-muted-foreground" name="lucideCalendarClock"></ng-icon>
+          <h4 class="text-base font-bold text-foreground mb-1">No Reserved Vehicles</h4>
+          <p class="text-sm text-muted-foreground max-w-md">There are currently no advance vehicle reservations in the fleet.</p>
         </div>
       }
     }

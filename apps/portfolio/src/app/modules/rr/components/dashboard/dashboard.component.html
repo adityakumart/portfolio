@@ -177,6 +177,21 @@
             </li>
             <li
               class="menu-item"
+              [routerLink]="['/user/rr/booking/advance']"
+              routerLinkActive="active-menu"
+              [hlmTooltip]="'Advance Booking'"
+              [tooltipDisabled]="!isSidebarCollapsed()"
+              tooltipPosition="right"
+              (click)="closeMobileSidebar()"
+            >
+              <div class="menu-item-pill"></div>
+              <div class="menu-item-content">
+                <ng-icon name="lucideCalendarClock"></ng-icon>
+                <span>Advance Booking</span>
+              </div>
+            </li>
+            <li
+              class="menu-item"
               [routerLink]="['/user/rr/vehicle/list']"
               routerLinkActive="active-menu"
               [hlmTooltip]="'Vehicles Inventory'"

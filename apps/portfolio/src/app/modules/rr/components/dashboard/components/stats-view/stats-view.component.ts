@@ -37,6 +37,7 @@ import {
   lucideExternalLink,
   lucideMoreVertical,
   lucideDownload,
+  lucideCalendarClock,
 } from '@ng-icons/lucide';
 import { Router, RouterLink } from '@angular/router';
 import { HlmDialogService } from '@spartan-ng/hel/dialog';
@@ -47,6 +48,7 @@ import {
   RRNewBookingDialogComponent,
   RRModifyBookingDialogComponent,
   RREndBookingDialogComponent,
+  RRReserveBookingDialogComponent,
 } from '../../../../shared';
 import { IndianDatePipe } from '../../../../../../shared/pipes/indian-date.pipe';
 
@@ -56,7 +58,8 @@ export type StatCategory =
   | 'contract'
   | 'bookings'
   | 'maintenance'
-  | 'payments';
+  | 'payments'
+  | 'reserved';
 export type SeatingFilter = 'all' | '5' | '7';
 
 @Component({
@@ -104,6 +107,7 @@ export type SeatingFilter = 'all' | '5' | '7';
       lucideExternalLink,
       lucideMoreVertical,
       lucideDownload,
+      lucideCalendarClock,
     }),
   ],
   templateUrl: './stats-view.component.html',
@@ -125,6 +129,7 @@ export class RRStatsViewComponent implements OnInit {
     activeBookings: 0,
     maintenance: 0,
     pendingPayments: 0,
+    reserved: 0,
   });
 
   // Active accordion section
@@ -274,6 +279,8 @@ export class RRStatsViewComponent implements OnInit {
         return 'Fleet In Service & Maintenance';
       case 'payments':
         return 'Bookings with Pending Balances';
+      case 'reserved':
+        return 'Reserved Fleet';
       default:
         return '';
     }
@@ -293,6 +300,8 @@ export class RRStatsViewComponent implements OnInit {
         return 'Vehicles currently undergoing routine servicing, inspection, or repair';
       case 'payments':
         return 'Active rentals with outstanding balance dues and pending settlements';
+      case 'reserved':
+        return 'Fleet vehicles reserved in advance with confirmed advance deposits';
       default:
         return '';
     }
@@ -314,6 +323,8 @@ export class RRStatsViewComponent implements OnInit {
         return this.bookings().filter(
           (b) => b.status === 'active' && Number(b.pendingAmount) > 0,
         ).length;
+      case 'reserved':
+        return this.reservedBookingsList.length;
       default:
         return 0;
     }
@@ -327,6 +338,10 @@ export class RRStatsViewComponent implements OnInit {
       cat === 'contract' ||
       cat === 'maintenance'
     );
+  }
+
+  get isReservedCategory(): boolean {
+    return this.activeCategory() === 'reserved';
   }
 
   get isBookingCategory(): boolean {
@@ -387,6 +402,42 @@ export class RRStatsViewComponent implements OnInit {
     });
   }
 
+  get reservedBookingsList(): { vehicle: IVehicle; reservation: IBooking }[] {
+    const reserved = this.bookings().filter((b) => b.status === 'reserved' && !b.isDeleted);
+    return reserved.map((resv) => {
+      const v = this.vehicles().find((veh) => veh.regNo === resv.vehicleRegNo) || ({
+        regNo: resv.vehicleRegNo,
+        name: resv.vehicleName,
+        manufacturer: resv.vehicleManufacturer,
+        model: resv.vehicleModel,
+        seating: '5',
+        type: 'Sedan',
+        fuelType: 'Petrol',
+        odometer: resv.vehicleOdometerStart || '0',
+        pricing: {} as any,
+        extraKmPrice: resv.extraKmPrice,
+        extraHourPrice: resv.extraHourPrice,
+        allowBooking: true,
+        status: 'reserved',
+        images: [],
+        createdAt: resv.createdAt,
+      } as unknown as IVehicle);
+      return { vehicle: v, reservation: resv };
+    });
+  }
+
+  get reservedVehicles5Seater(): { vehicle: IVehicle; reservation: IBooking }[] {
+    return this.reservedBookingsList.filter(
+      (item) => (item.vehicle.seating || '5') === '5'
+    );
+  }
+
+  get reservedVehicles7Seater(): { vehicle: IVehicle; reservation: IBooking }[] {
+    return this.reservedBookingsList.filter(
+      (item) => (item.vehicle.seating || '5') === '7'
+    );
+  }
+
   get currentCategoryTotalCount(): number {
     return this.activeCategoryCount;
   }
@@ -398,6 +449,9 @@ export class RRStatsViewComponent implements OnInit {
     if (this.isBookingCategory) {
       return this.activeBookings5Seater.length;
     }
+    if (this.isReservedCategory) {
+      return this.reservedVehicles5Seater.length;
+    }
     return 0;
   }
 
@@ -408,14 +462,74 @@ export class RRStatsViewComponent implements OnInit {
     if (this.isBookingCategory) {
       return this.activeBookings7Seater.length;
     }
+    if (this.isReservedCategory) {
+      return this.reservedVehicles7Seater.length;
+    }
     return 0;
   }
 
   private dialog = inject(HlmDialogService);
   private invoicePdf = inject(RRInvoicePdfService);
 
-  bookVehicle(vehicle: IVehicle, event?: Event) {
-    event?.stopPropagation();
+  reserveVehicle(vehicle: IVehicle, event?: any) {
+    if (event && typeof event.stopPropagation === 'function') {
+      event.stopPropagation();
+    }
+    this.router.navigate(['/user/rr/booking/list'], {
+      queryParams: { vehicleRegNo: vehicle.regNo, reserve: 'true' },
+    });
+  }
+
+  bookVehicleFromReservation(resv: IBooking, event?: any) {
+    if (event && typeof event.stopPropagation === 'function') {
+      event.stopPropagation();
+    }
+    const ref = this.dialog.open(RRNewBookingDialogComponent, {
+      context: {
+        vehicleRegNo: resv.vehicleRegNo,
+        vehicles: this.vehicles(),
+        reservation: resv,
+      },
+      contentClass:
+        'max-w-4xl w-full p-6 max-h-[90vh] flex flex-col overflow-hidden',
+    });
+
+    ref.closed$.subscribe((result) => {
+      if (result) {
+        this.loadVehicles();
+        this.loadBookings();
+        this.loadStats();
+      }
+    });
+  }
+
+  modifyReservation(resv: IBooking, event?: any) {
+    if (event && typeof event.stopPropagation === 'function') {
+      event.stopPropagation();
+    }
+    const ref = this.dialog.open(RRReserveBookingDialogComponent, {
+      context: {
+        reservation: resv,
+        vehicles: this.vehicles(),
+        isEditMode: true,
+      },
+      contentClass:
+        'max-w-4xl w-full p-6 max-h-[90vh] flex flex-col overflow-hidden',
+    });
+
+    ref.closed$.subscribe((result) => {
+      if (result) {
+        this.loadVehicles();
+        this.loadBookings();
+        this.loadStats();
+      }
+    });
+  }
+
+  bookVehicle(vehicle: IVehicle, event?: any) {
+    if (event && typeof event.stopPropagation === 'function') {
+      event.stopPropagation();
+    }
     const ref = this.dialog.open(RRNewBookingDialogComponent, {
       context: {
         vehicleRegNo: vehicle.regNo,
