@@ -533,8 +533,9 @@ rrRouter.get('/bookings', authenticateRRToken, async (req: any, res: Response) =
 
     const andConditions: any[] = [];
 
-    // Filter out soft-deleted bookings by default
-    if (req.query.includeDeleted !== 'true') {
+    // Filter out soft-deleted bookings by default, unless explicitly requested or querying cancelled records (e.g. Historical Logs)
+    const hasCancelledStatus = typeof status === 'string' && status.includes('cancelled');
+    if (req.query.includeDeleted !== 'true' && !hasCancelledStatus) {
       andConditions.push({ isDeleted: { $ne: true } });
     }
 
@@ -817,12 +818,31 @@ rrRouter.delete('/bookings/:id', authenticateRRToken, async (req: any, res: Resp
       return;
     }
 
-    if (booking.status !== 'reserved' && req.userRole !== 'admin') {
-      res.status(403).json({ error: 'Forbidden', message: 'Only administrators can delete active or completed rental agreements.' });
+    const body = req.body || {};
+    const deletionReason = body.deletionReason || body.reasonForDeletion || req.query.deletionReason || req.query.reasonForDeletion || null;
+    const returnAmount = body.returnAmount !== undefined ? String(body.returnAmount) : (req.query.returnAmount !== undefined ? String(req.query.returnAmount) : null);
+    const returnAmountMode = body.returnAmountMode || req.query.returnAmountMode || null;
+
+    // Allow admin, or any staff when reason for deletion and refund details are provided, or any staff for reserved bookings
+    const hasDeletionDetails = Boolean(deletionReason && returnAmountMode);
+    if (booking.status !== 'reserved' && req.userRole !== 'admin' && !hasDeletionDetails) {
+      res.status(403).json({ error: 'Forbidden', message: 'Only administrators can delete active or completed rental agreements without deletion details.' });
       return;
     }
 
-    // Soft delete booking
+    // Resolve staff name for audit
+    const empCol = await RRService.getEmployeesCol();
+    let deleterName = 'Administrator';
+    let deleterRole = req.userRole || 'admin';
+    if (req.userId && req.userId !== 'admin') {
+      const emp = await empCol.findOne({ id: req.userId });
+      if (emp) {
+        deleterName = `${emp.firstName || ''} ${emp.lastName || ''}`.trim() || deleterName;
+        deleterRole = emp.role || deleterRole;
+      }
+    }
+
+    // Soft delete booking and transition to cancelled with refund metadata
     await bookingCol.updateOne(
       { id: bookingId },
       {
@@ -830,16 +850,21 @@ rrRouter.delete('/bookings/:id', authenticateRRToken, async (req: any, res: Resp
           isDeleted: true,
           deletedAt: new Date().toISOString(),
           deletedBy: req.userId || 'admin',
+          deletedByName: deleterName,
+          deletedByRole: deleterRole,
           status: 'cancelled',
+          deletionReason: deletionReason,
+          returnAmount: returnAmount,
+          returnAmountMode: returnAmountMode,
           updatedAt: new Date().toISOString()
         }
       }
     );
 
-    // If the vehicle was in_booking for this booking, release it to available
+    // If the vehicle was in_booking or reserved for this booking, release it to available
     if (booking.vehicleRegNo) {
       const veh = await vehCol.findOne({ regNo: booking.vehicleRegNo });
-      if (veh && veh.bookingId === bookingId) {
+      if (veh && (veh.bookingId === bookingId || veh.status === 'in_booking' || veh.status === 'reserved')) {
         await vehCol.updateOne(
           { regNo: booking.vehicleRegNo },
           {
@@ -855,12 +880,19 @@ rrRouter.delete('/bookings/:id', authenticateRRToken, async (req: any, res: Resp
 
     res.json({ message: `Booking ${bookingId} deleted successfully.` });
 
+    const auditDetail = [
+      `Booking ${bookingId} deleted.`,
+      deletionReason ? `Reason: "${deletionReason}".` : '',
+      returnAmount !== null ? `Refund: ₹${returnAmount} via ${returnAmountMode || 'N/A'}.` : '',
+      `Customer: ${booking.renterFirstName} ${booking.renterSecondName} | Vehicle: ${booking.vehicleRegNo}`
+    ].filter(Boolean).join(' ');
+
     RRService.logActivity(
-      `Soft-deleted booking ${bookingId}`,
+      `Deleted active booking ${bookingId}`,
       req.userId,
-      req.userRole,
-      `Booking ${bookingId} soft-deleted. Customer: ${booking.renterFirstName} ${booking.renterSecondName} | Vehicle: ${booking.vehicleRegNo}`
-    ).catch((logErr) => console.error('[AuditLog] Failed to log booking soft-delete:', logErr));
+      deleterRole,
+      auditDetail
+    ).catch((logErr) => console.error('[AuditLog] Failed to log booking delete:', logErr));
   } catch (err: any) {
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }

@@ -230,6 +230,11 @@ export interface IBooking {
   isDeleted?: boolean;
   deletedAt?: string | null;
   deletedBy?: string | null;
+  deletedByName?: string | null;
+  deletedByRole?: string | null;
+  deletionReason?: string | null;
+  returnAmount?: string | null;
+  returnAmountMode?: 'Original method' | 'Cash' | 'UPI Transfer' | 'Bank Transfer' | 'Used for another Booking' | string | null;
 }
 
 export interface ICustomerIntimation {

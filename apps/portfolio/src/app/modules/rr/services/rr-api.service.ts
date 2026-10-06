@@ -266,6 +266,7 @@ export class RRApiService {
     search?: string;
     page?: number;
     limit?: number;
+    includeDeleted?: boolean;
   }): Promise<IBookingsResponse> {
     let httpParams = new HttpParams().set('paginate', 'true');
     if (params?.status) httpParams = httpParams.set('status', params.status);
@@ -276,6 +277,7 @@ export class RRApiService {
     if (params?.search) httpParams = httpParams.set('search', params.search);
     if (params?.page) httpParams = httpParams.set('page', params.page.toString());
     if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
+    if (params?.includeDeleted) httpParams = httpParams.set('includeDeleted', 'true');
 
     return firstValueFrom(
       this.http.get<IBookingsResponse>(`${this.baseUrl}/bookings`, {
@@ -297,9 +299,15 @@ export class RRApiService {
     );
   }
 
-  async deleteBooking(id: string): Promise<{ message: string }> {
+  async deleteBooking(
+    id: string,
+    data?: { deletionReason?: string; returnAmount?: string | number; returnAmountMode?: string }
+  ): Promise<{ message: string }> {
     return firstValueFrom(
-      this.http.delete<{ message: string }>(`${this.baseUrl}/bookings/${id}`, { headers: this.getHeaders() })
+      this.http.delete<{ message: string }>(`${this.baseUrl}/bookings/${id}`, {
+        headers: this.getHeaders(),
+        body: data,
+      })
     );
   }
 
