@@ -333,18 +333,10 @@ export class RRReserveBookingDialogComponent implements OnInit {
   }
 
   onDurationDaysChange() {
-    const days = parseInt(this.reserveFormGroup.get('durationDays')?.value || '0', 10) || 0;
-    if (days > 0) {
-      this.reserveFormGroup.patchValue({ durationHours: '0' }, { emitEvent: false });
-    }
     this.calculateReturnDate();
   }
 
   onDurationHoursChange() {
-    const hours = parseInt(this.reserveFormGroup.get('durationHours')?.value || '0', 10) || 0;
-    if (hours > 0) {
-      this.reserveFormGroup.patchValue({ durationDays: '0' }, { emitEvent: false });
-    }
     this.calculateReturnDate();
   }
 
@@ -509,6 +501,10 @@ export class RRReserveBookingDialogComponent implements OnInit {
       totalRent += count * p3;
       remaining -= count * 4;
     }
+    if (remaining > 0) {
+      const p1 = Number(pricing.h1?.price || (p3 > 0 ? Math.round(p3 / 4) : 0));
+      totalRent += remaining * p1;
+    }
     return totalRent;
   }
 
@@ -533,6 +529,10 @@ export class RRReserveBookingDialogComponent implements OnInit {
       const count = Math.floor(remaining / 4);
       totalKm += count * km3;
       remaining -= count * 4;
+    }
+    if (remaining > 0) {
+      const km1 = Number(pricing.h1?.km || (km3 > 0 ? Math.round(km3 / 4) : 0));
+      totalKm += remaining * km1;
     }
     return totalKm;
   }
