@@ -16,6 +16,8 @@ import {
   lucideEye,
   lucideDownload,
   lucideChevronDown,
+  lucideTrash2,
+  lucideLoader2,
 } from '@ng-icons/lucide';
 import { toast } from '@spartan-ng/hel/sonner';
 import { IBooking, IVehicle, IVehiclePricing } from '@portfolio/shared-types';
@@ -52,6 +54,8 @@ export interface ModifyBookingDialogContext {
       lucideEye,
       lucideDownload,
       lucideChevronDown,
+      lucideTrash2,
+      lucideLoader2,
     }),
   ],
   templateUrl: './modify-booking-dialog.component.html',
@@ -65,12 +69,24 @@ export class RRModifyBookingDialogComponent implements OnInit {
   private invoicePdf = inject(RRInvoicePdfService);
 
   modifyBookingFormGroup!: FormGroup;
+  deleteBookingFormGroup!: FormGroup;
   selectedBooking = signal<IBooking | null>(null);
   vehicles = signal<IVehicle[]>([]);
   isSubmitting = signal(false);
+  showDeleteSection = signal(false);
+  isDeleting = signal(false);
+
+  readonly returnedAmountModes = [
+    'Original method',
+    'Cash',
+    'UPI Transfer',
+    'Bank Transfer',
+    'Used for another Booking',
+  ] as const;
 
   ngOnInit() {
     this.initForm();
+    this.initDeleteForm();
     if (this.data?.booking) {
       this.selectedBooking.set(this.data.booking);
       this.populateForm(this.data.booking);
@@ -96,6 +112,14 @@ export class RRModifyBookingDialogComponent implements OnInit {
       amountPaid: ['0', [Validators.required, Validators.min(0)]],
       pendingAmount: ['0'],
       totalKmLimit: ['0'],
+    });
+  }
+
+  private initDeleteForm() {
+    this.deleteBookingFormGroup = this.fb.group({
+      deletionReason: ['', [Validators.required, Validators.minLength(2)]],
+      returnAmount: ['0', [Validators.required, Validators.min(0)]],
+      returnAmountMode: ['', Validators.required],
     });
   }
 
@@ -370,5 +394,59 @@ export class RRModifyBookingDialogComponent implements OnInit {
 
   closeDialog() {
     this.dialogRef?.close(false);
+  }
+
+  openDeleteSection() {
+    const paidVal =
+      this.modifyBookingFormGroup?.get('amountPaid')?.value ??
+      this.selectedBooking()?.amountPaid ??
+      '0';
+    this.deleteBookingFormGroup.reset({
+      deletionReason: '',
+      returnAmount: paidVal,
+      returnAmountMode: '',
+    });
+    this.showDeleteSection.set(true);
+  }
+
+  cancelDeleteSection() {
+    this.showDeleteSection.set(false);
+    this.deleteBookingFormGroup.reset({
+      deletionReason: '',
+      returnAmount: '0',
+      returnAmountMode: '',
+    });
+  }
+
+  async confirmDeleteBooking() {
+    if (this.deleteBookingFormGroup.invalid) {
+      this.deleteBookingFormGroup.markAllAsTouched();
+      return;
+    }
+
+    const booking = this.selectedBooking();
+    if (!booking) return;
+
+    try {
+      this.isDeleting.set(true);
+      const { deletionReason, returnAmount, returnAmountMode } =
+        this.deleteBookingFormGroup.value;
+
+      await this.rrApi.deleteBooking(booking.id, {
+        deletionReason: deletionReason?.trim(),
+        returnAmount: returnAmount,
+        returnAmountMode: returnAmountMode,
+      });
+
+      toast.success(
+        `Booking #${booking.id} deleted successfully and recorded in Historical Logs.`
+      );
+      this.dialogRef?.close(true);
+    } catch (e: any) {
+      console.error('Failed to delete booking:', e);
+      toast.error(e?.error?.message || 'Failed to delete booking.');
+    } finally {
+      this.isDeleting.set(false);
+    }
   }
 }

@@ -232,6 +232,7 @@ export class RRHistoryComponent implements OnInit {
         to: toIso || undefined,
         page: this.currentPage() + 1,
         limit: this.pageSize(),
+        includeDeleted: true,
       });
       this.bookings.set(res.bookings || []);
       this.totalRecords.set(res.total || 0);
