@@ -471,15 +471,19 @@ export class RRStatsViewComponent implements OnInit {
   private dialog = inject(HlmDialogService);
   private invoicePdf = inject(RRInvoicePdfService);
 
-  reserveVehicle(vehicle: IVehicle, event?: Event) {
-    event?.stopPropagation();
+  reserveVehicle(vehicle: IVehicle, event?: any) {
+    if (event && typeof event.stopPropagation === 'function') {
+      event.stopPropagation();
+    }
     this.router.navigate(['/user/rr/booking'], {
       queryParams: { vehicleRegNo: vehicle.regNo, reserve: 'true' },
     });
   }
 
-  bookVehicleFromReservation(resv: IBooking, event?: Event) {
-    event?.stopPropagation();
+  bookVehicleFromReservation(resv: IBooking, event?: any) {
+    if (event && typeof event.stopPropagation === 'function') {
+      event.stopPropagation();
+    }
     const ref = this.dialog.open(RRNewBookingDialogComponent, {
       context: {
         vehicleRegNo: resv.vehicleRegNo,
@@ -499,8 +503,10 @@ export class RRStatsViewComponent implements OnInit {
     });
   }
 
-  modifyReservation(resv: IBooking, event?: Event) {
-    event?.stopPropagation();
+  modifyReservation(resv: IBooking, event?: any) {
+    if (event && typeof event.stopPropagation === 'function') {
+      event.stopPropagation();
+    }
     const ref = this.dialog.open(RRReserveBookingDialogComponent, {
       context: {
         reservation: resv,
@@ -520,8 +526,10 @@ export class RRStatsViewComponent implements OnInit {
     });
   }
 
-  bookVehicle(vehicle: IVehicle, event?: Event) {
-    event?.stopPropagation();
+  bookVehicle(vehicle: IVehicle, event?: any) {
+    if (event && typeof event.stopPropagation === 'function') {
+      event.stopPropagation();
+    }
     const ref = this.dialog.open(RRNewBookingDialogComponent, {
       context: {
         vehicleRegNo: vehicle.regNo,

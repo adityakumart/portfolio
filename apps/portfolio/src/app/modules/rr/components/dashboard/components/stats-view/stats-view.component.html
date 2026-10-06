@@ -327,7 +327,7 @@
                     [vehicle]="v"
                     variant="stats"
                     [showReserveBtn]="activeCategory() === 'fleet'"
-                    (reserveClick)="reserveVehicle(v, $event)"
+                    (reserveClick)="reserveVehicle(v)"
                     (bookNow)="bookVehicle($event)"
                     (cardClick)="v.status === 'available' ? bookVehicle($event) : null"
                   />
@@ -360,7 +360,7 @@
                     [vehicle]="v"
                     variant="stats"
                     [showReserveBtn]="activeCategory() === 'fleet'"
-                    (reserveClick)="reserveVehicle(v, $event)"
+                    (reserveClick)="reserveVehicle(v)"
                     (bookNow)="bookVehicle($event)"
                     (cardClick)="v.status === 'available' ? bookVehicle($event) : null"
                   />
@@ -379,7 +379,7 @@
                   [vehicle]="v"
                   variant="stats"
                   [showReserveBtn]="activeCategory() === 'fleet'"
-                  (reserveClick)="reserveVehicle(v, $event)"
+                  (reserveClick)="reserveVehicle(v)"
                   (bookNow)="bookVehicle($event)"
                   (cardClick)="v.status === 'available' ? bookVehicle($event) : null"
                 />
@@ -403,7 +403,7 @@
                   [vehicle]="v"
                   variant="stats"
                   [showReserveBtn]="activeCategory() === 'fleet'"
-                  (reserveClick)="reserveVehicle(v, $event)"
+                  (reserveClick)="reserveVehicle(v)"
                   (bookNow)="bookVehicle($event)"
                   (cardClick)="v.status === 'available' ? bookVehicle($event) : null"
                 />
@@ -561,7 +561,7 @@
                         size="sm"
                         variant="outline"
                         class="text-xs h-7 gap-1 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10 flex-1"
-                        (click)="reserveVehicle(item.vehicle, $event)"
+                        (click)="modifyReservation(item.reservation, $event)"
                       >
                         <ng-icon name="lucidePencil" class="text-xs"></ng-icon>
                         <span>Modify</span>
@@ -614,7 +614,7 @@
                         size="sm"
                         variant="outline"
                         class="text-xs h-7 gap-1 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10 flex-1"
-                        (click)="reserveVehicle(item.vehicle, $event)"
+                        (click)="modifyReservation(item.reservation, $event)"
                       >
                         <ng-icon name="lucidePencil" class="text-xs"></ng-icon>
                         <span>Modify</span>
@@ -654,7 +654,7 @@
                       size="sm"
                       variant="outline"
                       class="text-xs h-7 gap-1 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10 flex-1"
-                      (click)="reserveVehicle(item.vehicle, $event)"
+                      (click)="modifyReservation(item.reservation, $event)"
                     >
                       <ng-icon name="lucidePencil" class="text-xs"></ng-icon>
                       <span>Modify</span>
@@ -699,7 +699,7 @@
                       size="sm"
                       variant="outline"
                       class="text-xs h-7 gap-1 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10 flex-1"
-                      (click)="reserveVehicle(item.vehicle, $event)"
+                      (click)="modifyReservation(item.reservation, $event)"
                     >
                       <ng-icon name="lucidePencil" class="text-xs"></ng-icon>
                       <span>Modify</span>
