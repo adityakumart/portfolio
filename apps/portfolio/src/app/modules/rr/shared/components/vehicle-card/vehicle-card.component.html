@@ -68,18 +68,31 @@
       </div>
     }
 
-    <!-- Hover "Book Now" Overlay (Stats Variant for available vehicles - Desktop) -->
-    @if (showBookNowOverlay) {
-      <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center hover-overlay-desktop z-10">
-        <button
-          hlmBtn
-          size="sm"
-          class="bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold rounded-full shadow-lg flex items-center gap-1.5 hover:from-cyan-400 hover:to-blue-500"
-          (click)="onBookNowClick($event)"
-        >
-          <ng-icon name="lucideKey"></ng-icon>
-          <span>Book Now</span>
-        </button>
+    <!-- Hover "Book Now" & "Reserve" Overlay (Desktop) -->
+    @if (showBookNowOverlay || showReserveBtn) {
+      <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center gap-2 hover-overlay-desktop z-10 px-2">
+        @if (showBookNowOverlay) {
+          <button
+            hlmBtn
+            size="sm"
+            class="bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold rounded-full shadow-lg flex items-center gap-1.5 hover:from-cyan-400 hover:to-blue-500 text-xs px-3.5 h-8.5 active:scale-95 transition-all"
+            (click)="onBookNowClick($event)"
+          >
+            <ng-icon name="lucideKey" class="text-xs"></ng-icon>
+            <span>Book Now</span>
+          </button>
+        }
+        @if (showReserveBtn) {
+          <button
+            hlmBtn
+            size="sm"
+            class="bg-slate-900/85 hover:bg-slate-900 text-cyan-400 hover:text-cyan-300 border border-cyan-500/50 hover:border-cyan-400 font-bold rounded-full shadow-lg flex items-center gap-1.5 text-xs px-3.5 h-8.5 active:scale-95 transition-all backdrop-blur-md"
+            (click)="onReserveClick($event)"
+          >
+            <ng-icon name="lucideCalendarClock" class="text-xs text-cyan-400"></ng-icon>
+            <span>Reserve</span>
+          </button>
+        }
       </div>
     }
   </div>
@@ -186,7 +199,8 @@
           </span>
         </div>
 
-        <div class="flex items-center gap-1.5 ml-auto">
+        <!-- Touch-Screen Fallback Actions (Hidden on Desktop hover via .touch-action-trigger) -->
+        <div class="flex items-center gap-1.5 ml-auto touch-action-trigger">
           <!-- Reserve Button for Total Fleet and other lists -->
           @if (showReserveBtn) {
             <button
@@ -206,7 +220,7 @@
             <button
               hlmBtn
               size="sm"
-              class="touch-action-trigger bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold rounded-lg shadow-sm text-xs px-3 h-8 shrink-0 flex items-center gap-1 hover:from-cyan-400 hover:to-blue-500 active:scale-95 transition-transform"
+              class="bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold rounded-lg shadow-sm text-xs px-3 h-7.5 shrink-0 flex items-center gap-1 hover:from-cyan-400 hover:to-blue-500 active:scale-95 transition-transform"
               (click)="onBookNowClick($event)"
             >
               <ng-icon name="lucideKey" class="text-xs"></ng-icon>
