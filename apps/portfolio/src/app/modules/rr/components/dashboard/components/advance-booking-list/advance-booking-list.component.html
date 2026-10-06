@@ -1,0 +1,202 @@
+<div class="page-header flex items-center justify-between mb-6 sm:mb-8 flex-wrap gap-3 sm:gap-4">
+  <div>
+    <div class="text-[11px] sm:text-xs uppercase tracking-wider text-cyan-500 font-extrabold mb-1 inline-flex items-center gap-1.5">
+      <ng-icon class="size-3.5" name="lucideCalendarClock"></ng-icon>
+      <span>Bookings &bull; Advance Reservations Desk</span>
+    </div>
+    <h2 class="m-0 text-xl sm:text-2xl lg:text-3xl font-extrabold text-foreground tracking-tight">Advance Booking</h2>
+  </div>
+
+  <div class="flex items-center gap-2.5">
+    <button
+      hlmBtn
+      class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold flex items-center gap-1.5 shadow-sm rounded-xl px-4 py-2 text-xs sm:text-sm"
+      (click)="openReserveBookingModal()"
+    >
+      <ng-icon name="lucidePlus"></ng-icon>
+      <span>Reserve Booking</span>
+    </button>
+  </div>
+</div>
+
+<!-- Search & Metrics Filter Bar -->
+<div class="flex flex-col sm:flex-row items-center justify-between gap-3 mb-4">
+  <div class="relative w-full sm:w-80">
+    <ng-icon name="lucideSearch" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground size-3.5 pointer-events-none"></ng-icon>
+    <input
+      hlmInput
+      type="text"
+      placeholder="Search reserved vehicle or customer..."
+      [ngModel]="searchQuery()"
+      (ngModelChange)="searchQuery.set($event); currentPage.set(0)"
+      class="w-full pl-9 text-xs h-9 bg-card"
+    />
+  </div>
+
+  <div class="flex items-center gap-2 text-xs font-semibold text-muted-foreground self-start sm:self-auto">
+    <span>Total Reservations:</span>
+    <span hlmBadge variant="secondary" class="font-bold text-foreground">
+      {{ reservedBookings().length }}
+    </span>
+  </div>
+</div>
+
+<div class="border border-border rounded-2xl overflow-hidden shadow-sm bg-card mb-8">
+  <div hlmTableContainer class="max-h-[calc(100vh-280px)] overflow-auto">
+    <table hlmTable class="w-full text-xs">
+      <thead hlmTHead class="sticky top-0 z-10 bg-card backdrop-blur-md">
+        <tr hlmTr>
+          <th hlmTh class="min-w-[180px]">Vehicle Details</th>
+          <th hlmTh class="min-w-[160px]">Customer Name</th>
+          <th hlmTh class="min-w-[150px]">Pickup Schedule</th>
+          <th hlmTh class="min-w-[150px]">Expected Return</th>
+          <th hlmTh class="min-w-[120px]">Advance Amount</th>
+          <th hlmTh class="text-center min-w-[160px]">Actions</th>
+        </tr>
+      </thead>
+      <tbody hlmTBody>
+        @if (pagedBookings().length === 0) {
+          <tr hlmTr>
+            <td hlmTd colspan="6" class="text-center py-12 text-muted-foreground">
+              <div class="flex flex-col items-center justify-center gap-2">
+                <div class="w-12 h-12 rounded-2xl bg-muted/40 flex items-center justify-center text-muted-foreground">
+                  <ng-icon name="lucideCalendarDays" class="text-2xl"></ng-icon>
+                </div>
+                <div class="font-bold text-sm text-foreground">No Advance Bookings Found</div>
+                <div class="text-xs">There are no upcoming reserved fleet bookings. Click "Reserve Booking" to schedule one.</div>
+              </div>
+            </td>
+          </tr>
+        } @else {
+          @for (b of pagedBookings(); track b.id) {
+            <tr hlmTr class="hover:bg-muted/30 transition-colors">
+              <!-- 1. Vehicle Details -->
+              <td hlmTd>
+                <div class="flex items-center gap-2.5">
+                  @if (getVehicleForBooking(b); as v) {
+                    @if (v.images && v.images.length > 0) {
+                      <img [src]="v.images[0]" [alt]="v.name" class="w-10 h-10 object-contain rounded-lg border border-border/60 bg-muted/20 shrink-0 p-0.5" />
+                    }
+                  }
+                  <div>
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                      <span class="font-bold text-foreground">{{ b.vehicleManufacturer }} {{ b.vehicleName }}</span>
+                      <span
+                        hlmBadge
+                        variant="outline"
+                        class="font-bold text-[9px] text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 border-cyan-500/30 px-1.5 py-0.2"
+                      >
+                        RESERVED
+                      </span>
+                    </div>
+                    <div class="font-mono text-muted-foreground text-[11px]">{{ b.vehicleRegNo }}</div>
+                  </div>
+                </div>
+              </td>
+
+              <!-- 2. Customer Name -->
+              <td hlmTd>
+                <div class="font-bold text-foreground">{{ b.renterFirstName }} {{ b.renterSecondName }}</div>
+                <div class="text-muted-foreground text-[11px] font-mono flex items-center gap-1">
+                  <ng-icon name="lucidePhone" class="text-[10px]"></ng-icon>
+                  <span>{{ b.renterPhone }}</span>
+                </div>
+                @if (b.renterAadhar) {
+                  <div class="text-muted-foreground text-[10px] font-mono">
+                    Aadhaar: {{ b.renterAadhar | aadharVisible }}
+                  </div>
+                }
+              </td>
+
+              <!-- 3. Pickup Schedule -->
+              <td hlmTd>
+                <div class="font-semibold text-foreground">{{ b.pickupDateTime | indianDate }}</div>
+                <div class="text-muted-foreground text-[11px] font-mono">{{ b.pickupDateTime | date:'shortTime' }}</div>
+                <div class="text-[10px] text-cyan-600 dark:text-cyan-400 font-medium mt-0.5">
+                  Scheduled Start
+                </div>
+              </td>
+
+              <!-- 4. Expected Return -->
+              <td hlmTd>
+                <div class="font-semibold text-foreground">{{ b.returnDateTime | indianDate }}</div>
+                <div class="text-muted-foreground text-[11px] font-mono">{{ b.returnDateTime | date:'shortTime' }}</div>
+                <div class="text-[10px] text-muted-foreground">
+                  Duration: {{ b.durationDays }}d {{ b.durationHours }}h
+                </div>
+              </td>
+
+              <!-- 5. Advance Amount -->
+              <td hlmTd>
+                <div class="inline-flex flex-col">
+                  <span hlmBadge variant="outline" class="font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/30 w-fit">
+                    ₹{{ b.amountPaid || '0' }} Advance
+                  </span>
+                  <span class="text-[10px] text-muted-foreground mt-0.5 font-mono">
+                    Total: ₹{{ b.finalRentalAmount }}
+                  </span>
+                </div>
+              </td>
+
+              <!-- 6. Actions: Edit/Modify | Book Now | Delete -->
+              <td hlmTd class="text-center whitespace-nowrap">
+                <div class="inline-flex items-center gap-1.5">
+                  <!-- Book Now: Transitions reservation to active rental -->
+                  <button
+                    hlmBtn
+                    size="sm"
+                    class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold h-7 px-2.5 text-xs rounded-lg flex items-center gap-1 shadow-xs"
+                    hlmTooltip="Start Active Rental (Auto-filled)"
+                    (click)="openBookNowModal(b)"
+                  >
+                    <ng-icon name="lucideKey" class="text-xs"></ng-icon>
+                    <span>Book Now</span>
+                  </button>
+
+                  <!-- Edit / Modify Schedule -->
+                  <button
+                    hlmBtn
+                    size="icon"
+                    variant="ghost"
+                    class="h-7 w-7 rounded-lg text-cyan-500 hover:text-cyan-600 hover:bg-cyan-500/10"
+                    hlmTooltip="Edit / Modify Reservation"
+                    (click)="openModifyReservationModal(b)"
+                  >
+                    <ng-icon name="lucidePencil" class="text-sm"></ng-icon>
+                  </button>
+
+                  <!-- Delete Advance Booking -->
+                  <button
+                    hlmBtn
+                    size="icon"
+                    variant="ghost"
+                    class="h-7 w-7 rounded-lg text-destructive hover:text-destructive hover:bg-destructive/10"
+                    hlmTooltip="Delete Reservation"
+                    (click)="deleteReservation(b)"
+                  >
+                    <ng-icon name="lucideTrash2" class="text-sm"></ng-icon>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination Footer -->
+  <div class="flex items-center justify-between p-3 border-t border-border bg-card text-xs">
+    <div class="text-muted-foreground">
+      Showing page {{ currentPage() + 1 }} of {{ totalPages() }}
+    </div>
+    <div class="flex items-center gap-2">
+      <button hlmBtn variant="outline" size="sm" [disabled]="currentPage() === 0" (click)="prevPage()">
+        Previous
+      </button>
+      <button hlmBtn variant="outline" size="sm" [disabled]="currentPage() >= totalPages() - 1" (click)="nextPage()">
+        Next
+      </button>
+    </div>
+  </div>
+</div>

@@ -303,6 +303,14 @@ export class RRApiService {
     );
   }
 
+  async getAdvanceBookings(): Promise<IBooking[]> {
+    return this.getBookings({ status: 'reserved' });
+  }
+
+  async reserveBooking(data: Partial<IBooking>): Promise<IBooking> {
+    return this.createBooking({ ...data, status: 'reserved' });
+  }
+
   async recordCustomerIntimation(
     id: string,
     data: { intimationType: string; notes: string; expectedReturnDateTime?: string }

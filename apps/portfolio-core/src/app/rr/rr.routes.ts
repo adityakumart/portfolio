@@ -664,7 +664,7 @@ rrRouter.get('/bookings', authenticateRRToken, async (req: any, res: Response) =
   }
 });
 
-// POST create booking (Authenticated - records who booked)
+// POST create booking or advance reservation (Authenticated - records who booked)
 rrRouter.post('/bookings', authenticateRRToken, async (req: any, res: Response) => {
   try {
     const bookingData: Omit<IBooking, 'id' | 'createdAt'> = req.body;
@@ -678,9 +678,73 @@ rrRouter.post('/bookings', authenticateRRToken, async (req: any, res: Response) 
       return;
     }
 
-    if (['in_booking', 'rented', 'contract'].includes(selectedVehicle.status)) {
-      res.status(409).json({ error: 'Conflict', message: 'Vehicle is already booked/rented.' });
-      return;
+    const isAdvanceReservation = bookingData.status === 'reserved';
+
+    if (isAdvanceReservation) {
+      if (!bookingData.pickupDateTime || !bookingData.returnDateTime) {
+        res.status(400).json({ error: 'Bad Request', message: 'Pickup and return schedule are required for reservations.' });
+        return;
+      }
+      const reqStart = new Date(bookingData.pickupDateTime).getTime();
+      const reqEnd = new Date(bookingData.returnDateTime).getTime();
+
+      if (isNaN(reqStart) || isNaN(reqEnd) || reqEnd <= reqStart) {
+        res.status(400).json({ error: 'Bad Request', message: 'Return date & time must be after pickup date & time.' });
+        return;
+      }
+
+      // Check overlap with current active booking
+      const activeBooking = await bookingCol.findOne({
+        vehicleRegNo: bookingData.vehicleRegNo,
+        status: 'active',
+        isDeleted: { $ne: true }
+      });
+      if (activeBooking && activeBooking.returnDateTime) {
+        const activeEnd = new Date(activeBooking.returnDateTime).getTime();
+        if (reqStart < activeEnd) {
+          res.status(409).json({
+            error: 'Conflict',
+            message: `Vehicle currently has an active rental until ${activeBooking.returnDateTime}. Reservation pickup must be after current active rental return.`
+          });
+          return;
+        }
+      }
+
+      // Check overlap with other advance bookings for this vehicle
+      const existingReservations = await bookingCol.find({
+        vehicleRegNo: bookingData.vehicleRegNo,
+        status: 'reserved',
+        isDeleted: { $ne: true }
+      }).toArray();
+
+      for (const resv of existingReservations) {
+        const rStart = new Date(resv.pickupDateTime).getTime();
+        const rEnd = new Date(resv.returnDateTime).getTime();
+        if (Math.max(reqStart, rStart) < Math.min(reqEnd, rEnd)) {
+          res.status(409).json({
+            error: 'Conflict',
+            message: `Reservation dates overlap with an existing advance booking (${resv.pickupDateTime} to ${resv.returnDateTime}).`
+          });
+          return;
+        }
+      }
+
+      // Check contract / maintenance availability date
+      if (['maintenance', 'contract', 'in_contract'].includes(selectedVehicle.status) && selectedVehicle.nextAvailableDate) {
+        const nextAvail = new Date(selectedVehicle.nextAvailableDate).getTime();
+        if (!isNaN(nextAvail) && reqStart < nextAvail) {
+          res.status(409).json({
+            error: 'Conflict',
+            message: `Vehicle is currently in ${selectedVehicle.status} and next available on ${selectedVehicle.nextAvailableDate}. Reservation pickup must be on or after next available date.`
+          });
+          return;
+        }
+      }
+    } else {
+      if (['in_booking', 'rented', 'contract'].includes(selectedVehicle.status)) {
+        res.status(409).json({ error: 'Conflict', message: 'Vehicle is already booked/rented.' });
+        return;
+      }
     }
 
     // Generate Booking ID
@@ -695,6 +759,7 @@ rrRouter.post('/bookings', authenticateRRToken, async (req: any, res: Response) 
     const newBooking: IBooking = {
       ...bookingData,
       id: bookingId,
+      status: isAdvanceReservation ? 'reserved' : (bookingData.status || 'active'),
       bookedBy: req.userId || 'RRA001',
       bookedByName: staffName,
       bookedByRole: staffRole,
@@ -710,33 +775,37 @@ rrRouter.post('/bookings', authenticateRRToken, async (req: any, res: Response) 
       });
     }
 
-    // Update main vehicle status to in_booking (odometer remains unchanged until booking is closed)
-    await vehCol.updateOne(
-      { regNo: bookingData.vehicleRegNo },
-      {
-        $set: {
-          status: 'in_booking',
-          bookingId: bookingId,
-          updatedAt: new Date().toISOString()
+    // Update vehicle status to in_booking ONLY for immediate active bookings, not advance reservations
+    if (!isAdvanceReservation) {
+      await vehCol.updateOne(
+        { regNo: bookingData.vehicleRegNo },
+        {
+          $set: {
+            status: 'in_booking',
+            bookingId: bookingId,
+            updatedAt: new Date().toISOString()
+          }
         }
-      }
-    );
+      );
+    }
 
     res.status(201).json(newBooking);
 
     RRService.logActivity(
-      `Started booking ${bookingId}`,
+      isAdvanceReservation ? `Reserved vehicle ${newBooking.vehicleRegNo}` : `Started booking ${bookingId}`,
       req.userId,
       req.userRole,
-      `Booking started for customer ${newBooking.renterFirstName} ${newBooking.renterSecondName} (${newBooking.renterPhone}) | Vehicle: ${newBooking.vehicleRegNo} (${selectedVehicle.manufacturer} ${selectedVehicle.name}) | Pickup: ${newBooking.pickupDateTime} | Return: ${newBooking.returnDateTime} | Total: ₹${newBooking.finalRentalAmount}`
+      isAdvanceReservation
+        ? `Advance reservation created (${bookingId}) for ${newBooking.renterFirstName} ${newBooking.renterSecondName} (${newBooking.renterPhone}) | Vehicle: ${newBooking.vehicleRegNo} | Schedule: ${newBooking.pickupDateTime} to ${newBooking.returnDateTime} | Advance Paid: ₹${newBooking.amountPaid || '0'}`
+        : `Booking started for customer ${newBooking.renterFirstName} ${newBooking.renterSecondName} (${newBooking.renterPhone}) | Vehicle: ${newBooking.vehicleRegNo} (${selectedVehicle.manufacturer} ${selectedVehicle.name}) | Pickup: ${newBooking.pickupDateTime} | Return: ${newBooking.returnDateTime} | Total: ₹${newBooking.finalRentalAmount}`
     ).catch((logErr) => console.error('[AuditLog] Failed to log booking start:', logErr));
   } catch (err: any) {
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }
 });
 
-// DELETE booking (Admin only - Soft delete)
-rrRouter.delete('/bookings/:id', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
+// DELETE booking (Admin only for active/completed, or any staff for reserved bookings - Soft delete)
+rrRouter.delete('/bookings/:id', authenticateRRToken, async (req: any, res: Response) => {
   try {
     const bookingId = req.params.id;
     const bookingCol = await RRService.getBookingsCol();
@@ -745,6 +814,11 @@ rrRouter.delete('/bookings/:id', authenticateRRToken, requireAdmin, async (req: 
     const booking = await bookingCol.findOne({ id: bookingId });
     if (!booking || booking.isDeleted) {
       res.status(404).json({ error: 'Not Found', message: 'Booking not found' });
+      return;
+    }
+
+    if (booking.status !== 'reserved' && req.userRole !== 'admin') {
+      res.status(403).json({ error: 'Forbidden', message: 'Only administrators can delete active or completed rental agreements.' });
       return;
     }
 
@@ -856,13 +930,28 @@ rrRouter.put('/bookings/:id', authenticateRRToken, async (req: any, res: Respons
         { $set: vehicleUpdateDoc }
       );
     } else if (updateData.status === 'cancelled') {
-      // If cancelled, release vehicle back to available without modifying odometer
+      // If cancelled, release vehicle back to available without modifying odometer (only if it was in_booking for this booking)
+      const curVeh = await vehCol.findOne({ regNo: booking.vehicleRegNo });
+      if (curVeh && curVeh.bookingId === bookingId) {
+        await vehCol.updateOne(
+          { regNo: booking.vehicleRegNo },
+          {
+            $set: {
+              status: 'available',
+              bookingId: null,
+              updatedAt: new Date().toISOString()
+            }
+          }
+        );
+      }
+    } else if (booking.status === 'reserved' && updateData.status === 'active') {
+      // Transitioning advance reservation to active rental ("Book Now")
       await vehCol.updateOne(
         { regNo: booking.vehicleRegNo },
         {
           $set: {
-            status: 'available',
-            bookingId: null,
+            status: 'in_booking',
+            bookingId: bookingId,
             updatedAt: new Date().toISOString()
           }
         }
@@ -1210,13 +1299,14 @@ rrRouter.get('/dashboard/stats', authenticateRRToken, async (req: any, res: Resp
     const vehCol = await RRService.getVehiclesCol();
     const bookingCol = await RRService.getBookingsCol();
 
-    const [totalFleet, maintenance, available, contract, activeBookings, pendingPayments] = await Promise.all([
+    const [totalFleet, maintenance, available, contract, activeBookings, pendingPayments, reserved] = await Promise.all([
       vehCol.countDocuments({ isDeleted: { $ne: true } }),
       vehCol.countDocuments({ status: 'maintenance', isDeleted: { $ne: true } }),
       vehCol.countDocuments({ status: 'available', isDeleted: { $ne: true } }),
       vehCol.countDocuments({ status: { $in: ['contract', 'in_contract'] }, isDeleted: { $ne: true } }),
       bookingCol.countDocuments({ status: 'active', isDeleted: { $ne: true } }),
-      bookingCol.countDocuments({ status: 'active', isDeleted: { $ne: true }, pendingAmount: { $nin: ['0', '', null] } } as any)
+      bookingCol.countDocuments({ status: 'active', isDeleted: { $ne: true }, pendingAmount: { $nin: ['0', '', null] } } as any),
+      bookingCol.countDocuments({ status: 'reserved', isDeleted: { $ne: true } }),
     ]);
 
     res.json({
@@ -1225,7 +1315,8 @@ rrRouter.get('/dashboard/stats', authenticateRRToken, async (req: any, res: Resp
       available,
       contract,
       activeBookings,
-      pendingPayments
+      pendingPayments,
+      reserved,
     });
   } catch (err: any) {
     res.status(500).json({ error: 'Internal Server Error', message: err.message });

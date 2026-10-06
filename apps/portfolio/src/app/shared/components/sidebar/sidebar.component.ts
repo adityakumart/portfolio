@@ -42,6 +42,7 @@ import {
   lucideCheckSquare,
   lucideFilm,
   lucideGamepad2,
+  lucideCalendarClock,
 } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
@@ -101,6 +102,7 @@ export interface SidebarItem {
       lucideCheckSquare,
       lucideFilm,
       lucideGamepad2,
+      lucideCalendarClock,
     }),
   ],
   templateUrl: './sidebar.component.html',
@@ -306,6 +308,11 @@ export class SidebarComponent implements OnDestroy {
             label: 'Active Rentals',
             link: '/user/rr/booking/list',
             icon: 'lucideFileText',
+          },
+          {
+            label: 'Advance Booking',
+            link: '/user/rr/booking/advance',
+            icon: 'lucideCalendarClock',
           },
           {
             label: 'Vehicles List',

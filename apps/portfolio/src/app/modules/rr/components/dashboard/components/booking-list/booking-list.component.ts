@@ -34,6 +34,7 @@ import { RRApiService } from '../../../../services/rr-api.service';
 import { RRInvoicePdfService } from '../../../../services/rr-invoice-pdf.service';
 import {
   RRNewBookingDialogComponent,
+  RRReserveBookingDialogComponent,
   RREndBookingDialogComponent,
   RRModifyBookingDialogComponent,
   AadharVisiblePipe,
@@ -113,8 +114,13 @@ export class RRBookingListComponent implements OnInit {
 
     this.route.queryParams.subscribe((params) => {
       const regNo = params['vehicleRegNo'];
+      const isReserve = params['reserve'] === 'true';
       if (regNo) {
-        this.openNewBookingModal(regNo);
+        if (isReserve) {
+          this.openReserveBookingModal(regNo);
+        } else {
+          this.openNewBookingModal(regNo);
+        }
       }
     });
   }
@@ -152,6 +158,24 @@ export class RRBookingListComponent implements OnInit {
   // --- DIALOG MODALS OPEN/CLOSE ---
   openNewBookingModal(vehicleRegNo?: string) {
     const ref = this.dialog.open(RRNewBookingDialogComponent, {
+      context: {
+        vehicleRegNo,
+        vehicles: this.vehicles(),
+      },
+      contentClass:
+        'max-w-4xl w-full p-6 max-h-[90vh] flex flex-col overflow-hidden',
+    });
+
+    ref.closed$.subscribe((result) => {
+      if (result) {
+        this.loadBookings();
+        this.loadVehicles();
+      }
+    });
+  }
+
+  openReserveBookingModal(vehicleRegNo?: string) {
+    const ref = this.dialog.open(RRReserveBookingDialogComponent, {
       context: {
         vehicleRegNo,
         vehicles: this.vehicles(),

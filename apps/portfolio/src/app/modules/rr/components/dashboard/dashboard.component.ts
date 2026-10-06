@@ -19,6 +19,7 @@ import {
   lucideActivity,
   lucideMenu,
   lucideCrown,
+  lucideCalendarClock,
 } from '@ng-icons/lucide';
 import { HlmDialogService } from '@spartan-ng/hel/dialog';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
@@ -62,6 +63,7 @@ import { RRLockScreenComponent } from '../lock-screen/rr-lock-screen.component';
       lucideActivity,
       lucideMenu,
       lucideCrown,
+      lucideCalendarClock,
     }),
   ],
   templateUrl: './dashboard.component.html',

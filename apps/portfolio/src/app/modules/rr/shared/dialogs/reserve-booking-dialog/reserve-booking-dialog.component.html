@@ -1,0 +1,415 @@
+<div class="flex flex-col h-full max-h-[calc(90vh-3rem)] overflow-hidden bg-card text-foreground">
+  <!-- Fixed Header -->
+  <div class="shrink-0 flex items-center justify-between pb-3 border-b border-border">
+    <div class="flex items-center gap-2.5">
+      <div class="w-8 h-8 rounded-lg bg-cyan-500/10 text-cyan-500 flex items-center justify-center border border-cyan-500/20">
+        <ng-icon name="lucideCalendarDays" class="text-lg"></ng-icon>
+      </div>
+      <div>
+        <h3 class="text-lg font-bold text-foreground">
+          {{ isEditMode() ? 'Modify Advance Reservation' : 'Reserve Booking Desk' }}
+        </h3>
+        <p class="text-xs text-muted-foreground">
+          {{ isEditMode() ? 'Update scheduled pickup, return, or advance token' : 'Lock in upcoming vehicle schedule with advance deposit' }}
+        </p>
+      </div>
+    </div>
+    <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 text-muted-foreground hover:text-foreground" (click)="closeDialog()" aria-label="Close dialog">
+      <ng-icon name="lucideX"></ng-icon>
+    </button>
+  </div>
+
+  <form [formGroup]="reserveFormGroup" (ngSubmit)="submitReservation($event)" class="flex flex-col flex-1 min-h-0">
+    <!-- Scrollable Body -->
+    <div class="flex-1 min-h-0 overflow-y-auto py-3 pr-1 space-y-4">
+      <!-- 1. Travel Details (Step 1) -->
+      <div class="p-4 rounded-xl border border-border bg-card/60 space-y-4">
+        <div class="flex items-center justify-between">
+          <h4 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+            <ng-icon name="lucideCar" class="text-primary"></ng-icon>
+            <span>Travel Details (Step 1)</span>
+          </h4>
+          @if (selectedVehicle(); as v) {
+            <span
+              hlmBadge
+              variant="outline"
+              class="text-[10px] font-bold uppercase"
+              [class.text-emerald-500]="v.status === 'available'"
+              [class.text-orange-500]="v.status === 'in_booking' || v.status === 'rented'"
+              [class.text-rose-500]="v.status === 'maintenance'"
+              [class.text-cyan-500]="v.status === 'contract' || v.status === 'in_contract'"
+            >
+              Current Status: {{ (v.status || '').toUpperCase() }}
+            </span>
+          }
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <!-- Vehicle Selector: Displays all vehicles in fleet -->
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Select Fleet Vehicle</label>
+            <select hlmInput formControlName="vehicleRegNo" (change)="onVehicleSelectChange()" class="w-full text-sm">
+              <option value="">-- Select Any Fleet Vehicle --</option>
+              @for (v of vehicles(); track v.regNo) {
+                <option [value]="v.regNo">
+                  {{ v.manufacturer }} {{ v.name }} ({{ v.regNo }}) [{{ (v.status || '').toUpperCase() }}]
+                </option>
+              }
+            </select>
+            @if (reserveFormGroup.get('vehicleRegNo')?.invalid && reserveFormGroup.get('vehicleRegNo')?.touched) {
+              <span class="text-xs text-destructive">Vehicle selection is required.</span>
+            }
+          </div>
+
+          <!-- Pickup Date & Time -->
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Scheduled Pickup Date & Time</label>
+            <input hlmInput type="datetime-local" formControlName="pickupDateTime" (change)="calculateReturnDate()" class="w-full text-sm" />
+            @if (reserveFormGroup.get('pickupDateTime')?.invalid && reserveFormGroup.get('pickupDateTime')?.touched) {
+              <span class="text-xs text-destructive">Pickup schedule is required.</span>
+            }
+          </div>
+
+          <!-- Duration Days -->
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Duration Days</label>
+            <select hlmInput formControlName="durationDays" (change)="onDurationDaysChange()" class="w-full text-sm">
+              <option value="0">0 days</option>
+              @for (day of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,20,30]; track day) {
+                <option [value]="'' + day">{{ day }} day{{ day > 1 ? 's' : '' }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Duration Hours -->
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Duration Hours</label>
+            <select hlmInput formControlName="durationHours" (change)="onDurationHoursChange()" class="w-full text-sm">
+              <option value="0">0 hrs</option>
+              <option value="4">4 hrs</option>
+              <option value="12">12 hrs</option>
+            </select>
+          </div>
+
+          <!-- Return Date & Time (Auto) -->
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Expected Return Schedule (Auto)</label>
+            <input hlmInput type="datetime-local" formControlName="returnDateTime" readonly class="w-full text-sm bg-muted/20" />
+          </div>
+
+          <!-- KM Limit (Auto) -->
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Estimated KM Limit (Auto)</label>
+            <input hlmInput formControlName="totalKmLimit" readonly class="w-full text-sm bg-muted/20" />
+          </div>
+
+          <!-- Travel Purpose -->
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Travel Purpose</label>
+            <input hlmInput formControlName="travelPurpose" placeholder="e.g. Wedding, Outstation trip" class="w-full text-sm" />
+          </div>
+
+          <!-- Travel From -->
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Travel From</label>
+            <input hlmInput formControlName="travelFrom" placeholder="Kakinada" class="w-full text-sm" />
+          </div>
+
+          <!-- Travel To -->
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Travel To</label>
+            <input hlmInput formControlName="travelTo" placeholder="Hyderabad, Vizag" class="w-full text-sm" />
+          </div>
+        </div>
+
+        <!-- Real-Time Schedule Validation Alert Banner -->
+        @if (reserveFormGroup.get('vehicleRegNo')?.value && reserveFormGroup.get('pickupDateTime')?.value) {
+          @if (scheduleConflict().hasConflict) {
+            <div class="p-3 rounded-xl border border-destructive/30 bg-destructive/10 text-destructive flex items-start gap-2.5 text-xs">
+              <ng-icon name="lucideAlertCircle" class="text-base shrink-0 mt-0.5"></ng-icon>
+              <div>
+                <div class="font-bold">Schedule Overlap / Availability Conflict</div>
+                <div class="mt-0.5">{{ scheduleConflict().message }}</div>
+              </div>
+            </div>
+          } @else if (reserveFormGroup.get('returnDateTime')?.value) {
+            <div class="p-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 flex items-center justify-between text-xs">
+              <div class="flex items-center gap-2">
+                <ng-icon name="lucideCalendarCheck" class="text-base"></ng-icon>
+                <span class="font-semibold">Schedule window verified: Vehicle is available for advance booking.</span>
+              </div>
+              <span class="font-mono text-[10px] bg-emerald-500/20 px-2 py-0.5 rounded uppercase font-bold">Clear</span>
+            </div>
+          }
+        }
+      </div>
+
+      <!-- Rest of sections unlocked when Travel Details are valid -->
+      <fieldset [disabled]="!isTravelDetailsConfigured" class="space-y-4 disabled:opacity-50">
+        <!-- 2. Renter Person Details (Step 2) -->
+        <div class="p-4 rounded-xl border border-border bg-card/60 space-y-4">
+          <div class="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-border/40">
+            <h4 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <ng-icon name="lucideUser"></ng-icon>
+              <span>Renter Person Details (Step 2)</span>
+            </h4>
+
+            <!-- Checkbox for Regular Customer Mode -->
+            <label class="inline-flex items-center gap-2 cursor-pointer bg-amber-500/10 hover:bg-amber-500/15 border border-amber-500/30 px-3 py-1 rounded-lg transition-colors select-none">
+              <input
+                type="checkbox"
+                [checked]="isRegularMemberMode()"
+                (change)="toggleRegularMemberMode($event)"
+                class="rounded accent-amber-500 h-4 w-4 cursor-pointer"
+              />
+              <span class="text-xs font-bold text-amber-600 dark:text-amber-400 inline-flex items-center gap-1.5">
+                <ng-icon name="lucideCrown" class="size-3.5"></ng-icon>
+                <span>Existing Regular Member?</span>
+              </span>
+            </label>
+          </div>
+
+          <!-- Regular Member Search & Autocomplete -->
+          @if (isRegularMemberMode()) {
+            @if (!selectedRegularCustomer()) {
+              <div class="space-y-1.5">
+                <label hlmLabel class="text-xs font-semibold text-muted-foreground block">Search Member Directory</label>
+                <div class="relative flex items-center">
+                  <ng-icon name="lucideSearch" class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground size-4 pointer-events-none"></ng-icon>
+                  <input
+                    hlmInput
+                    type="text"
+                    placeholder="Search member name or phone..."
+                    [ngModel]="autocompleteQuery()"
+                    (ngModelChange)="autocompleteQuery.set($event); loadAutocompleteResults($event)"
+                    [ngModelOptions]="{ standalone: true }"
+                    class="w-full pl-9 pr-10 text-sm h-10"
+                  />
+                </div>
+                @if (autocompleteResults().length > 0) {
+                  <div class="border border-border rounded-xl bg-card shadow-lg max-h-48 overflow-y-auto divide-y divide-border/40">
+                    @for (item of autocompleteResults(); track item._id) {
+                      <div (click)="selectRegularCustomer(item)" class="px-3.5 py-2 hover:bg-muted text-xs cursor-pointer flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                          <span class="font-mono font-bold text-primary bg-primary/10 border border-primary/20 px-1.5 py-0.5 rounded text-[11px]">{{ item.membershipId }}</span>
+                          <span class="font-medium">{{ item.name }}</span>
+                        </div>
+                        <span class="text-xs text-muted-foreground">Select</span>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="p-3 rounded-xl border border-amber-500/30 bg-amber-500/10 flex items-center justify-between text-xs">
+                <div>
+                  <span class="font-bold text-amber-600 dark:text-amber-400">Selected Member:</span>
+                  <span class="ml-1 font-semibold">{{ selectedRegularCustomer()?.firstName }} {{ selectedRegularCustomer()?.lastName }} ({{ selectedRegularCustomer()?.phone }})</span>
+                </div>
+                <button hlmBtn variant="ghost" size="sm" type="button" class="text-xs h-7" (click)="selectedRegularCustomer.set(null)">Change</button>
+              </div>
+            }
+          }
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">First Name</label>
+              <input hlmInput formControlName="renterFirstName" class="w-full text-sm" />
+            </div>
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Last Name</label>
+              <input hlmInput formControlName="renterSecondName" class="w-full text-sm" />
+            </div>
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Father's Name</label>
+              <input hlmInput formControlName="renterFatherName" class="w-full text-sm" />
+            </div>
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Aadhaar Number (12 Digits)</label>
+              <rr-aadhar-input formControlName="renterAadhar"></rr-aadhar-input>
+            </div>
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Driving License (DL)</label>
+              <input hlmInput formControlName="renterDL" class="w-full text-sm" />
+            </div>
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Phone Number (10 Digits)</label>
+              <input hlmInput formControlName="renterPhone" maxlength="10" class="w-full text-sm" />
+            </div>
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Alternate Phone</label>
+              <input hlmInput formControlName="renterAltPhone" maxlength="10" class="w-full text-sm" />
+            </div>
+            <div class="sm:col-span-2">
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Address</label>
+              <input hlmInput formControlName="renterAddress" class="w-full text-sm" />
+            </div>
+          </div>
+
+          <!-- Guarantee Person Details -->
+          <div class="pt-3 border-t border-border/40">
+            <h5 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-1.5">
+              <ng-icon name="lucideShieldCheck"></ng-icon>
+              <span>Guarantor Information</span>
+            </h5>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              <div>
+                <label hlmLabel class="text-xs text-muted-foreground block mb-1">Guarantor First Name</label>
+                <input hlmInput formControlName="guarFirstName" class="w-full text-sm" />
+              </div>
+              <div>
+                <label hlmLabel class="text-xs text-muted-foreground block mb-1">Guarantor Last Name</label>
+                <input hlmInput formControlName="guarSecondName" class="w-full text-sm" />
+              </div>
+              <div>
+                <label hlmLabel class="text-xs text-muted-foreground block mb-1">Guarantor Father Name</label>
+                <input hlmInput formControlName="guarFatherName" class="w-full text-sm" />
+              </div>
+              <div>
+                <label hlmLabel class="text-xs text-muted-foreground block mb-1">Guarantor Phone</label>
+                <input hlmInput formControlName="guarPhone" maxlength="10" class="w-full text-sm" />
+              </div>
+              <div>
+                <label hlmLabel class="text-xs text-muted-foreground block mb-1">Guarantor Aadhaar</label>
+                <rr-aadhar-input formControlName="guarAadhar"></rr-aadhar-input>
+              </div>
+              <div>
+                <label hlmLabel class="text-xs text-muted-foreground block mb-1">Guarantor Address</label>
+                <input hlmInput formControlName="guarAddress" class="w-full text-sm" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Security Deposit -->
+          <div class="pt-3 border-t border-border/40">
+            <h5 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5">
+              <ng-icon name="lucidePackage"></ng-icon>
+              <span>Security Deposit Asset</span>
+            </h5>
+            <div class="flex flex-wrap gap-4 text-xs mb-3">
+              <label class="flex items-center gap-1.5 cursor-pointer">
+                <input type="radio" formControlName="depositType" value="none" class="accent-primary" />
+                <span>None Required</span>
+              </label>
+              <label class="flex items-center gap-1.5 cursor-pointer">
+                <input type="radio" formControlName="depositType" value="bike" class="accent-primary" />
+                <span>Two Wheeler Asset</span>
+              </label>
+              <label class="flex items-center gap-1.5 cursor-pointer">
+                <input type="radio" formControlName="depositType" value="cash" class="accent-primary" />
+                <span>Cash Deposit</span>
+              </label>
+              <label class="flex items-center gap-1.5 cursor-pointer">
+                <input type="radio" formControlName="depositType" value="other" class="accent-primary" />
+                <span>Other Asset</span>
+              </label>
+            </div>
+
+            @if (reserveFormGroup.get('depositType')?.value === 'bike') {
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <input hlmInput formControlName="bikeRegNo" placeholder="Bike Plate Reg No" class="text-sm" />
+                <input hlmInput formControlName="bikeManufacturer" placeholder="Manufacturer (e.g. Honda)" class="text-sm" />
+                <input hlmInput formControlName="bikeModel" placeholder="Model (e.g. Activa)" class="text-sm" />
+              </div>
+            }
+            @if (reserveFormGroup.get('depositType')?.value === 'cash') {
+              <div class="max-w-xs">
+                <input hlmInput type="number" formControlName="cashAmount" placeholder="Cash Deposit Amount (Rs.)" class="text-sm" />
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- 3. Financial Billings (Step 3) -->
+        <div class="p-4 rounded-xl border border-border bg-card/60 space-y-4">
+          <h4 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+            <ng-icon name="lucideCreditCard" class="text-primary"></ng-icon>
+            <span>Financial Billings (Step 3)</span>
+          </h4>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Total Estimated Rent (Rs.)</label>
+              <input hlmInput formControlName="totalRentalAmount" readonly class="w-full text-sm bg-muted/20" />
+            </div>
+
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Discount Type</label>
+              <select hlmInput formControlName="discountType" (change)="recalculateFinalAmount()" class="w-full text-sm">
+                <option value="none">None</option>
+                <option value="rupee">Rupee (Rs.)</option>
+                <option value="percentage">Percentage (%)</option>
+              </select>
+            </div>
+
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Discount Value</label>
+              <input hlmInput type="number" formControlName="discount" (input)="recalculateFinalAmount()" [readonly]="reserveFormGroup.get('discountType')?.value === 'none'" class="w-full text-sm" />
+            </div>
+
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Final Rental Amount (Rs.)</label>
+              <input hlmInput formControlName="finalRentalAmount" readonly class="w-full text-sm bg-muted/20 font-bold" />
+            </div>
+
+            <!-- KEY FIELD: Advance Amount Paid -->
+            <div>
+              <label hlmLabel class="text-xs font-bold text-cyan-600 dark:text-cyan-400 block mb-1">
+                Advance Amount Paid (Token Rs.) *
+              </label>
+              <input
+                hlmInput
+                type="number"
+                formControlName="amountPaid"
+                (input)="recalculateFinalAmount()"
+                placeholder="e.g. 1000"
+                class="w-full text-sm border-cyan-500/50 font-bold"
+              />
+              @if (reserveFormGroup.get('amountPaid')?.invalid && reserveFormGroup.get('amountPaid')?.touched) {
+                <span class="text-xs text-destructive">Valid advance amount is required.</span>
+              }
+            </div>
+
+            <!-- Balance Due -->
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Remaining Balance Due (Rs.)</label>
+              <input hlmInput formControlName="pendingAmount" readonly class="w-full text-sm bg-muted/20 font-bold text-amber-600 dark:text-amber-400" />
+            </div>
+
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Payment Mode</label>
+              <select hlmInput formControlName="paymentMode" class="w-full text-sm">
+                <option value="Cash">Cash</option>
+                <option value="UPI">UPI / GPay / PhonePe</option>
+                <option value="Card">Credit / Debit Card</option>
+                <option value="Bank Transfer">Bank Transfer</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+    </div>
+
+    <!-- Fixed Footer -->
+    <div class="shrink-0 pt-3 border-t border-border flex items-center justify-between gap-3">
+      <button hlmBtn variant="outline" type="button" (click)="closeDialog()">
+        Cancel
+      </button>
+
+      <button
+        hlmBtn
+        type="submit"
+        [disabled]="isSubmitting() || !isTravelDetailsConfigured || reserveFormGroup.invalid || scheduleConflict().hasConflict"
+        class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold flex items-center gap-2"
+      >
+        @if (isSubmitting()) {
+          <ng-icon name="lucideRefreshCw" class="animate-spin"></ng-icon>
+          <span>Saving Reservation...</span>
+        } @else {
+          <ng-icon name="lucideCalendarDays"></ng-icon>
+          <span>{{ isEditMode() ? 'Update Reservation' : 'Confirm Reserve Booking' }}</span>
+        }
+      </button>
+    </div>
+  </form>
+</div>

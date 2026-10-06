@@ -27,8 +27,9 @@ import {
   lucidePhone,
   lucideMoreVertical,
   lucideImage,
+  lucideCalendarClock,
 } from '@ng-icons/lucide';
-import { IVehicle, IPublicVehicle } from '@portfolio/shared-types';
+import { IVehicle, IPublicVehicle, IBooking } from '@portfolio/shared-types';
 
 export type VehicleCardVariant = 'fleet' | 'stats' | 'homepage';
 
@@ -57,6 +58,7 @@ export type VehicleCardVariant = 'fleet' | 'stats' | 'homepage';
       lucidePhone,
       lucideMoreVertical,
       lucideImage,
+      lucideCalendarClock,
     }),
   ],
   templateUrl: './vehicle-card.component.html',
@@ -66,6 +68,8 @@ export class RRVehicleCardComponent implements OnInit, OnDestroy {
   @Input({ required: true }) vehicle!: IVehicle | IPublicVehicle | any;
   @Input() variant: VehicleCardVariant = 'fleet';
   @Input() isAdmin = false;
+  @Input() showReserveBtn = false;
+  @Input() reservation?: IBooking | any;
 
   readonly currentImageIndex = signal<number>(0);
   private autoScrollInterval: any = null;
