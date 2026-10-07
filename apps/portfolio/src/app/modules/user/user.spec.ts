@@ -138,6 +138,38 @@ test.describe('User Module - Authentication, Route Guards & Profile Hub', () => 
       await confirmPasswordInput.fill('password123');
       await expect(submitBtn).toBeEnabled();
     });
+
+    test('should show admin approval message, switch to Sign In tab, and not sign in after signup', async ({ page }) => {
+      await page.route('**/auth/signup', async (route) => {
+        await route.fulfill({
+          status: 201,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            message: 'Admin will enable your account, please wait.',
+            user: { id: 'new-user-123', email: 'alice@example.com' },
+          }),
+        });
+      });
+
+      const signUpTab = page.locator('button[hlmTabsTrigger="signup"]');
+      await signUpTab.click();
+
+      await page.locator('#signup-firstName').fill('Alice');
+      await page.locator('#signup-lastName').fill('Smith');
+      await page.locator('#signup-email').fill('alice@example.com');
+      await page.locator('#signup-password').fill('password123');
+      await page.locator('#signup-confirmPassword').fill('password123');
+
+      const submitBtn = page.getByRole('button', { name: 'Create Account', exact: true });
+      await submitBtn.click();
+
+      // Expect switch back to Sign In
+      await expect(page.locator('button[hlmTabsTrigger="login"]')).toBeVisible();
+      // Expect admin approval message in alert or toast
+      await expect(page.getByText('Admin will enable your account, please wait.').first()).toBeVisible();
+      // Ensure we stay on login page and do NOT redirect to /user
+      await expect(page).toHaveURL(/.*\/user\/login/);
+    });
   });
 
   test.describe('Authenticated User Hub & Module Navigation', () => {

@@ -11,17 +11,12 @@ export async function signup(req: Request, res: Response) {
       return;
     }
 
-    // Sign up the user
-    await AuthService.signUp(email, password, first_name, last_name);
+    // Sign up the user (disabled by default, awaiting admin approval)
+    const user = await AuthService.signUp(email, password, first_name, last_name);
 
-    // Automatically log in the user upon successful signup
-    const loggedInUser = await AuthService.login(email, password);
-
-    res.status(200).json({
-      access_token: loggedInUser.access_token,
-      refresh_token: loggedInUser.refresh_token,
-      expires_in: 900,
-      user: loggedInUser
+    res.status(201).json({
+      message: 'Account created successfully. Admin will enable your account, please wait.',
+      user
     });
   } catch (error: unknown) {
     const err = error as Error;
