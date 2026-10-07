@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { AuthenticatedRequest } from '../types/express';
 import { AuthService } from '../services/auth.service';
 import * as jwt from 'jsonwebtoken';
 import { getJwtSecret } from '../config/security';
@@ -123,3 +124,24 @@ export async function updateModules(req: Request, res: Response) {
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }
 }
+
+export async function getPermissions(req: AuthenticatedRequest, res: Response) {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      res.status(401).json({ error: 'Unauthorized', message: 'User not authenticated' });
+      return;
+    }
+
+    const user = await AuthService.getPermissions(userId);
+    res.status(200).json({
+      user,
+      modules: user.modules,
+    });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Get permissions error:', err);
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+}
+
