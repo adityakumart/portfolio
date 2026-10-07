@@ -177,7 +177,9 @@ export class LoginComponent {
     } catch (err: unknown) {
       console.error('Authentication error:', err);
       const errorObj = err as { code?: string; message?: string };
-      const errText = this.getErrorMessage(errorObj.code || errorObj.message || '');
+      const errText = this.getErrorMessage(
+        errorObj.code || errorObj.message || '',
+      );
       this.error.set(errText);
       toast.error(errText);
     } finally {
@@ -204,6 +206,7 @@ export class LoginComponent {
       return 'This email address is already registered.';
     }
     if (lowercaseMsg.includes('disabled')) {
+      return 'Admin will enable your account, please wait.';
       return 'Admin will enable your account, please wait.';
     }
     if (
