@@ -197,6 +197,38 @@ rrRouter.post('/auth/logout', authenticateRRToken, async (req: any, res: Respons
   }
 });
 
+// GET /auth/permissions (Authenticated)
+rrRouter.get('/auth/permissions', authenticateRRToken, async (req: any, res: Response) => {
+  try {
+    const empCol = await RRService.getEmployeesCol();
+    const emp = await empCol.findOne({ id: req.userId, isDeleted: { $ne: true } });
+    if (!emp) {
+      res.status(401).json({ error: 'Unauthorized', message: 'Employee account does not exist or has been removed.' });
+      return;
+    }
+
+    if (!emp.allowLogin) {
+      res.status(403).json({ error: 'Forbidden', message: 'Account access has been revoked by an administrator.' });
+      return;
+    }
+
+    res.json({
+      user: {
+        id: emp.id,
+        firstName: emp.firstName,
+        lastName: emp.lastName,
+        email: emp.email,
+        role: emp.role,
+      },
+      role: emp.role,
+    });
+  } catch (err: any) {
+    console.error('RR permissions router error:', err);
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+
 /* ============================================================
    VEHICLES
 ============================================================ */
