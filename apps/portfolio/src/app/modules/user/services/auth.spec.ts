@@ -81,7 +81,30 @@ describe('AuthService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should refresh permissions from backend and update currentUser and session', async () => {
+  it('should encrypt session in localStorage and decrypt transparently when read', async () => {
+    const session = {
+      access_token: 'valid-token',
+      refresh_token: 'refresh-token',
+      expires_in: 900,
+      user: { id: 'u1', email: 'u1@test.com', modules: { aiSpace: false } },
+    };
+
+    // Store session via internal service setStorageItem
+    (service as any).setStorageItem('portfolio_auth_session', JSON.stringify(session));
+
+    // In raw localStorage, data must be encrypted AES ciphertext, not plaintext JSON
+    const rawStored = mockStorage.getItem('portfolio_auth_session')!;
+    expect(rawStored).toBeTruthy();
+    expect(rawStored.startsWith('{')).toBe(false);
+
+    // Reading through getStorageItem decrypts it properly
+    const decryptedStr = (service as any).getStorageItem('portfolio_auth_session');
+    const decrypted = JSON.parse(decryptedStr!);
+    expect(decrypted.access_token).toBe('valid-token');
+    expect(decrypted.user.email).toBe('u1@test.com');
+  });
+
+  it('should refresh permissions from backend and update currentUser and encrypted session', async () => {
     const session = {
       access_token: 'valid-token',
       refresh_token: 'refresh-token',
@@ -104,9 +127,13 @@ describe('AuthService', () => {
 
     expect(result).toEqual(refreshedUser);
     expect(service.currentUser()).toEqual(refreshedUser);
-    const updatedStored = JSON.parse(
-      mockStorage.getItem('portfolio_auth_session')!,
-    );
+
+    // Raw stored is encrypted
+    const rawStored = mockStorage.getItem('portfolio_auth_session')!;
+    expect(rawStored.startsWith('{')).toBe(false);
+
+    const decryptedStr = (service as any).getStorageItem('portfolio_auth_session');
+    const updatedStored = JSON.parse(decryptedStr!);
     expect(updatedStored.user.masterAdmin).toBe(true);
     expect(updatedStored.user.modules.aiSpace).toBe(true);
   });
@@ -164,17 +191,16 @@ describe('AuthService', () => {
     expect(refreshSpy).toHaveBeenCalled();
   });
 
-  it('should refresh permissions on activity when more than 5 minutes have elapsed', () => {
+  it('should refresh permissions on activity when more than 10 minutes have elapsed', () => {
     const refreshSpy = vi
       .spyOn(service, 'refreshPermissions')
       .mockResolvedValue(null);
 
-    // Set lastPermissionsCheckTime to 6 minutes ago
-    (service as any).lastPermissionsCheckTime = Date.now() - 6 * 60 * 1000;
+    // Set lastPermissionsCheckTime to 11 minutes ago
+    (service as any).lastPermissionsCheckTime = Date.now() - 11 * 60 * 1000;
 
     (service as any).checkActivityPermissionsRefresh();
 
     expect(refreshSpy).toHaveBeenCalled();
   });
 });
-

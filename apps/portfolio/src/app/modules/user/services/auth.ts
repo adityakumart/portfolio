@@ -15,6 +15,7 @@ import {
 import { Router } from '@angular/router';
 import { firstValueFrom, fromEvent, merge, Subscription } from 'rxjs';
 import { throttleTime } from 'rxjs/operators';
+import { AES, enc } from 'crypto-js';
 import { environment } from '../../../../environments/environment';
 import {
   User,
@@ -32,6 +33,7 @@ export class AuthService {
   private ngZone = inject(NgZone);
   private platformId = inject(PLATFORM_ID);
   private readonly STORAGE_KEY = 'portfolio_auth_session';
+  private readonly ENCRYPTION_KEY = 'portfolio_secure_session_v1';
 
   // Expose a read-only signal for tracking user state reactively
   currentUser = signal<User | null | undefined>(undefined);
@@ -42,7 +44,7 @@ export class AuthService {
   private readonly IDLE_TIMEOUT = 3 * 60 * 60 * 1000; // 3 hours in ms
 
   private permissionsIntervalId?: ReturnType<typeof setInterval>;
-  private readonly PERMISSIONS_REFRESH_INTERVAL = 5 * 60 * 1000; // 5 minutes in ms
+  private readonly PERMISSIONS_REFRESH_INTERVAL = 10 * 60 * 1000; // 10 minutes in ms
   private lastPermissionsCheckTime = Date.now();
   private isRefreshingPermissions = false;
   private isInternalStorageWrite = false;
@@ -64,6 +66,37 @@ export class AuthService {
           this.stopPermissionsTimer();
         }
       });
+    }
+  }
+
+  private encryptData(plainText: string): string {
+    try {
+      return AES.encrypt(plainText, this.ENCRYPTION_KEY).toString();
+    } catch (e) {
+      console.error('[Security] Error encrypting session data:', e);
+      return plainText;
+    }
+  }
+
+  private decryptData(cipherText: string): string | null {
+    if (!cipherText) return null;
+
+    // Graceful backward compatibility for plaintext JSON (e.g. initial login migration or test fixtures)
+    const trimmed = cipherText.trim();
+    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+      return cipherText;
+    }
+
+    try {
+      const bytes = AES.decrypt(cipherText, this.ENCRYPTION_KEY);
+      const decrypted = bytes.toString(enc.Utf8);
+      if (!decrypted) {
+        return null;
+      }
+      return decrypted;
+    } catch (e) {
+      console.warn('[Security] Error decrypting session data:', e);
+      return null;
     }
   }
 
@@ -105,7 +138,7 @@ export class AuthService {
             document.visibilityState === 'visible'
           ) {
             const now = Date.now();
-            // If at least 1 minute passed since last check when user returns to tab, refresh permissions
+            // If at least 1 minute passed since last check when user returns to tab
             if (now - this.lastPermissionsCheckTime >= 60 * 1000) {
               this.ngZone.run(() => {
                 this.refreshPermissions();
@@ -171,7 +204,7 @@ export class AuthService {
 
   private checkActivityPermissionsRefresh() {
     const now = Date.now();
-    // If user was idle or inactive for at least 5 minutes since last permissions check, refresh permissions
+    // If user was idle or inactive for at least 10 minutes since last permissions check, refresh permissions
     if (now - this.lastPermissionsCheckTime >= this.PERMISSIONS_REFRESH_INTERVAL) {
       this.ngZone.run(() => {
         this.refreshPermissions();
@@ -229,7 +262,25 @@ export class AuthService {
 
   private getStorageItem(key: string): string | null {
     if (typeof window !== 'undefined' && window.localStorage) {
-      return localStorage.getItem(key);
+      const raw = localStorage.getItem(key);
+      if (!raw) return null;
+
+      if (key === this.STORAGE_KEY) {
+        const decrypted = this.decryptData(raw);
+        if (!decrypted) {
+          console.warn('[Security] Failed to decrypt session data from storage.');
+          return null;
+        }
+
+        // Auto-upgrade plain JSON to encrypted in storage
+        if (raw.trim().startsWith('{')) {
+          this.setStorageItem(key, decrypted);
+        }
+
+        return decrypted;
+      }
+
+      return raw;
     }
     return null;
   }
@@ -238,7 +289,9 @@ export class AuthService {
     if (typeof window !== 'undefined' && window.localStorage) {
       this.isInternalStorageWrite = true;
       try {
-        localStorage.setItem(key, value);
+        const dataToStore =
+          key === this.STORAGE_KEY ? this.encryptData(value) : value;
+        localStorage.setItem(key, dataToStore);
       } finally {
         this.isInternalStorageWrite = false;
       }
