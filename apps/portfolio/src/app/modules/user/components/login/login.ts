@@ -148,20 +148,32 @@ export class LoginComponent {
         setTimeout(() => {
           this.router.navigate(['/user']);
         }, 1000);
+        // Clear input fields
+        this.email.set('');
+        this.password.set('');
+        this.confirmPassword.set('');
+        this.firstName.set('');
+        this.lastName.set('');
       } else {
-        await this.authService.register(emailVal, passwordVal, firstNameVal, lastNameVal);
-        this.success.set('Account created successfully! Redirecting...');
-        toast.success('Account created successfully! Redirecting...');
-        setTimeout(() => {
-          this.router.navigate(['/user']);
-        }, 1500);
+        const res = await this.authService.register(
+          emailVal,
+          passwordVal,
+          firstNameVal,
+          lastNameVal,
+        );
+        const approvalMsg =
+          res?.message || 'Admin will enable your account, please wait.';
+
+        // Switch to sign-in view without auto-login, reset and keep signin fields empty
+        this.mode.set('login');
+        this.email.set('');
+        this.password.set('');
+        this.confirmPassword.set('');
+        this.firstName.set('');
+        this.lastName.set('');
+        this.success.set(approvalMsg);
+        toast.info(approvalMsg);
       }
-      // Clear input fields
-      this.email.set('');
-      this.password.set('');
-      this.confirmPassword.set('');
-      this.firstName.set('');
-      this.lastName.set('');
     } catch (err: unknown) {
       console.error('Authentication error:', err);
       const errorObj = err as { code?: string; message?: string };
@@ -192,7 +204,7 @@ export class LoginComponent {
       return 'This email address is already registered.';
     }
     if (lowercaseMsg.includes('disabled')) {
-      return 'This user account has been disabled.';
+      return 'Admin will enable your account, please wait.';
     }
     if (
       lowercaseMsg.includes('not found') ||

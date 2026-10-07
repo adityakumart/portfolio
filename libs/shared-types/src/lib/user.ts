@@ -38,8 +38,9 @@ export interface AuthSession {
 }
 
 export interface AuthResponse {
-  access_token: string;
-  refresh_token: string;
-  expires_in: number;
+  access_token?: string;
+  refresh_token?: string;
+  expires_in?: number;
   user: User;
+  message?: string;
 }

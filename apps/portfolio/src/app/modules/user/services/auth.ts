@@ -199,6 +199,9 @@ export class AuthService {
           { headers: this.getHeaders() },
         ),
       );
+      if (!res.user) {
+        throw new Error('User not found in refreshed session');
+      }
       this.saveSession(res);
       return res.user;
     } catch (err) {
@@ -229,18 +232,12 @@ export class AuthService {
         ),
       );
 
-      // If direct signup returns a session (auto-confirm is enabled), save it
-      if (res && res.access_token && res.user) {
-        this.saveSession(res);
-        this.currentUser.set(res.user);
-      } else {
-        // If confirmation is required, we may just have a user object
-        this.currentUser.set(res?.user || null);
-      }
-
+      // Signup does not authenticate the user; account requires admin approval
       return {
         user: res?.user || null,
-        session: res?.access_token ? res : null,
+        message:
+          res?.message ||
+          'Admin will enable your account, please wait.',
       };
     } catch (err: unknown) {
       let errorMsg = 'An unknown error occurred';
