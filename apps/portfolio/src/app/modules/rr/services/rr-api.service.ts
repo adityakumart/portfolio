@@ -1,7 +1,10 @@
-import { Injectable, inject, signal, computed } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { Injectable, inject, signal, computed, effect, NgZone, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { HttpClient, HttpHeaders, HttpParams, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, fromEvent, merge, Subscription } from 'rxjs';
+import { throttleTime } from 'rxjs/operators';
+import { AES, enc } from 'crypto-js';
 import { environment } from '../../../../environments/environment';
 import {
   IRRUser,
@@ -16,6 +19,7 @@ import {
   IRRVehicleAvailability,
   IRRLoginRequest,
   IRRLoginResponse,
+  IRRPermissionsResponse,
   ICustomerIntimation,
   IVehicleImageUploadResponse,
   IVehicleUploadedAsset,
@@ -34,6 +38,7 @@ export type {
   IRRVehicleAvailability,
   IRRLoginRequest,
   IRRLoginResponse,
+  IRRPermissionsResponse,
   ICustomerIntimation,
   IVehicleImageUploadResponse,
   IVehicleUploadedAsset,
@@ -45,7 +50,18 @@ export type {
 export class RRApiService {
   private http = inject(HttpClient);
   private router = inject(Router);
+  private ngZone = inject(NgZone);
+  private platformId = inject(PLATFORM_ID);
   private readonly baseUrl = `${environment.APIURL}/rr`;
+  private readonly ENCRYPTION_KEY = 'portfolio_rr_secure_session_v1';
+  private readonly PERMISSIONS_REFRESH_INTERVAL = 10 * 60 * 1000; // 10 minutes in ms
+
+  private permissionsIntervalId?: ReturnType<typeof setInterval>;
+  private idleSubscription?: Subscription;
+  private visibilitySubscription?: Subscription;
+  private lastPermissionsCheckTime = Date.now();
+  private isRefreshingPermissions = false;
+  private isInternalStorageWrite = false;
 
   // Signals
   currentUser = signal<IRRUser | null>(null);
@@ -53,6 +69,21 @@ export class RRApiService {
 
   constructor() {
     this.loadSession();
+
+    if (isPlatformBrowser(this.platformId)) {
+      this.setupStorageTamperListener();
+
+      effect(() => {
+        const user = this.currentUser();
+        if (user) {
+          this.startActivityTracking();
+          this.startPermissionsTimer();
+        } else {
+          this.stopActivityTracking();
+          this.stopPermissionsTimer();
+        }
+      });
+    }
   }
 
   private isPersistentEnvironment(): boolean {
@@ -63,20 +94,95 @@ export class RRApiService {
     return isExtension || isCapacitor || isTauri;
   }
 
+  private encryptData(plainText: string): string {
+    try {
+      return AES.encrypt(plainText, this.ENCRYPTION_KEY).toString();
+    } catch (e) {
+      console.error('[Security] Error encrypting RR session data:', e);
+      return plainText;
+    }
+  }
+
+  private decryptData(cipherText: string): string | null {
+    if (!cipherText) return null;
+
+    // Graceful backward compatibility for plaintext JSON/tokens
+    const trimmed = cipherText.trim();
+    if (trimmed.startsWith('{') || trimmed.startsWith('[') || !trimmed.startsWith('U2FsdGVkX1')) {
+      return cipherText;
+    }
+
+    try {
+      const bytes = AES.decrypt(cipherText, this.ENCRYPTION_KEY);
+      const decrypted = bytes.toString(enc.Utf8);
+      if (!decrypted) {
+        return null;
+      }
+      return decrypted;
+    } catch (e) {
+      console.warn('[Security] Error decrypting RR session data:', e);
+      return null;
+    }
+  }
+
+  private getStorageItem(storage: Storage, key: string): string | null {
+    const raw = storage.getItem(key);
+    if (!raw) return null;
+
+    const decrypted = this.decryptData(raw);
+    if (!decrypted) {
+      return null;
+    }
+
+    // Auto-upgrade plain storage to encrypted in storage
+    if (raw.trim().startsWith('{') || (key === 'rr_token' && !raw.startsWith('U2FsdGVkX1'))) {
+      this.isInternalStorageWrite = true;
+      try {
+        storage.setItem(key, this.encryptData(decrypted));
+      } finally {
+        this.isInternalStorageWrite = false;
+      }
+    }
+
+    return decrypted;
+  }
+
+  private setEncryptedItem(storage: Storage, key: string, value: string): void {
+    this.isInternalStorageWrite = true;
+    try {
+      storage.setItem(key, this.encryptData(value));
+    } finally {
+      this.isInternalStorageWrite = false;
+    }
+  }
+
+  private removeStorageItem(storage: Storage, key: string): void {
+    this.isInternalStorageWrite = true;
+    try {
+      storage.removeItem(key);
+    } finally {
+      this.isInternalStorageWrite = false;
+    }
+  }
+
   private loadSession() {
     if (typeof window !== 'undefined') {
-      let userStr = window.sessionStorage ? sessionStorage.getItem('rr_user') : null;
-      let token = window.sessionStorage ? sessionStorage.getItem('rr_token') : null;
+      let userStr = window.sessionStorage ? this.getStorageItem(sessionStorage, 'rr_user') : null;
+      let token = window.sessionStorage ? this.getStorageItem(sessionStorage, 'rr_token') : null;
 
       // In extension and mobile environments, fallback to localStorage if sessionStorage was wiped on backgrounding
       if ((!userStr || !token) && this.isPersistentEnvironment() && window.localStorage) {
-        userStr = localStorage.getItem('rr_user');
-        token = localStorage.getItem('rr_token');
+        userStr = this.getStorageItem(localStorage, 'rr_user');
+        token = this.getStorageItem(localStorage, 'rr_token');
       }
 
       if (userStr && token) {
         try {
           this.currentUser.set(JSON.parse(userStr));
+          // Verify with backend permissions in background on initialization
+          this.refreshPermissions().catch((e) =>
+            console.error('Initial RR permissions check error:', e),
+          );
         } catch {
           this.clearSession();
         }
@@ -86,21 +192,24 @@ export class RRApiService {
 
   private saveSession(user: IRRUser, token: string) {
     if (typeof window !== 'undefined') {
+      const userJson = JSON.stringify(user);
+      const roleJson = JSON.stringify({ role: user.role, id: user.id });
+
       if (window.sessionStorage) {
-        sessionStorage.setItem('rr_user', JSON.stringify(user));
-        sessionStorage.setItem('rr_token', token);
-        sessionStorage.setItem('loggedInUser', JSON.stringify({ role: user.role, id: user.id }));
+        this.setEncryptedItem(sessionStorage, 'rr_user', userJson);
+        this.setEncryptedItem(sessionStorage, 'rr_token', token);
+        this.setEncryptedItem(sessionStorage, 'loggedInUser', roleJson);
       }
 
       if (this.isPersistentEnvironment()) {
         if (window.localStorage) {
-          localStorage.setItem('rr_user', JSON.stringify(user));
-          localStorage.setItem('rr_token', token);
-          localStorage.setItem('loggedInUser', JSON.stringify({ role: user.role, id: user.id }));
+          this.setEncryptedItem(localStorage, 'rr_user', userJson);
+          this.setEncryptedItem(localStorage, 'rr_token', token);
+          this.setEncryptedItem(localStorage, 'loggedInUser', roleJson);
         }
         (window as any).chrome?.storage?.local?.set({
-          rr_user: JSON.stringify(user),
-          rr_token: token,
+          rr_user: this.encryptData(userJson),
+          rr_token: this.encryptData(token),
         });
       }
     }
@@ -108,18 +217,21 @@ export class RRApiService {
   }
 
   private clearSession() {
+    this.stopPermissionsTimer();
+    this.stopActivityTracking();
+
     if (typeof window !== 'undefined') {
       if (window.sessionStorage) {
-        sessionStorage.removeItem('rr_user');
-        sessionStorage.removeItem('rr_token');
-        sessionStorage.removeItem('loggedInUser');
+        this.removeStorageItem(sessionStorage, 'rr_user');
+        this.removeStorageItem(sessionStorage, 'rr_token');
+        this.removeStorageItem(sessionStorage, 'loggedInUser');
       }
 
       if (this.isPersistentEnvironment()) {
         if (window.localStorage) {
-          localStorage.removeItem('rr_user');
-          localStorage.removeItem('rr_token');
-          localStorage.removeItem('loggedInUser');
+          this.removeStorageItem(localStorage, 'rr_user');
+          this.removeStorageItem(localStorage, 'rr_token');
+          this.removeStorageItem(localStorage, 'loggedInUser');
         }
         (window as any).chrome?.storage?.local?.remove(['rr_user', 'rr_token']);
       }
@@ -127,14 +239,198 @@ export class RRApiService {
     this.currentUser.set(null);
   }
 
+  private startPermissionsTimer() {
+    this.stopPermissionsTimer();
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    this.ngZone.runOutsideAngular(() => {
+      this.permissionsIntervalId = setInterval(() => {
+        this.ngZone.run(() => {
+          this.refreshPermissions();
+        });
+      }, this.PERMISSIONS_REFRESH_INTERVAL);
+    });
+  }
+
+  private stopPermissionsTimer() {
+    if (this.permissionsIntervalId) {
+      clearInterval(this.permissionsIntervalId);
+      this.permissionsIntervalId = undefined;
+    }
+  }
+
+  private startActivityTracking() {
+    this.stopActivityTracking();
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    this.ngZone.runOutsideAngular(() => {
+      const activityEvents$ = merge(
+        fromEvent(window, 'mousemove'),
+        fromEvent(window, 'mousedown'),
+        fromEvent(window, 'keypress'),
+        fromEvent(window, 'scroll'),
+        fromEvent(window, 'touchstart'),
+        fromEvent(window, 'click'),
+      );
+
+      this.idleSubscription = activityEvents$
+        .pipe(throttleTime(2000))
+        .subscribe(() => {
+          const now = Date.now();
+          if (now - this.lastPermissionsCheckTime >= this.PERMISSIONS_REFRESH_INTERVAL) {
+            this.ngZone.run(() => {
+              this.refreshPermissions();
+            });
+          }
+        });
+
+      const visibilityEvents$ = merge(
+        fromEvent(document, 'visibilitychange'),
+        fromEvent(window, 'focus'),
+      );
+
+      this.visibilitySubscription = visibilityEvents$
+        .pipe(throttleTime(5000))
+        .subscribe(() => {
+          if (
+            typeof document !== 'undefined' &&
+            document.visibilityState === 'visible'
+          ) {
+            const now = Date.now();
+            if (now - this.lastPermissionsCheckTime >= 60 * 1000) {
+              this.ngZone.run(() => {
+                this.refreshPermissions();
+              });
+            }
+          }
+        });
+    });
+  }
+
+  private stopActivityTracking() {
+    if (this.idleSubscription) {
+      this.idleSubscription.unsubscribe();
+      this.idleSubscription = undefined;
+    }
+    if (this.visibilitySubscription) {
+      this.visibilitySubscription.unsubscribe();
+      this.visibilitySubscription = undefined;
+    }
+  }
+
+  private setupStorageTamperListener() {
+    if (!isPlatformBrowser(this.platformId) || typeof window === 'undefined') return;
+
+    // 1. Cross-tab storage change
+    window.addEventListener('storage', (event: StorageEvent) => {
+      if (event.key === 'rr_user' || event.key === 'rr_token') {
+        console.warn('[Security] Cross-tab storage change detected for RR session.');
+        this.ngZone.run(() => {
+          this.refreshPermissions();
+        });
+      }
+    });
+
+    // 2. In-tab storage modification monkey-patch
+    try {
+      const self = this;
+      const checkAndReconcile = (key: string) => {
+        if ((key === 'rr_user' || key === 'rr_token') && !self.isInternalStorageWrite) {
+          console.warn('[Security] Direct in-tab storage modification detected for RR session.');
+          self.ngZone.run(() => {
+            self.refreshPermissions();
+          });
+        }
+      };
+
+      const patchStorage = (storage: Storage) => {
+        if (!storage || (storage as any).__rrTamperListenerAttached) return;
+        (storage as any).__rrTamperListenerAttached = true;
+        const originalSetItem = storage.setItem;
+        const originalRemoveItem = storage.removeItem;
+
+        storage.setItem = function (key: string, value: string) {
+          originalSetItem.apply(this, [key, value]);
+          checkAndReconcile(key);
+        };
+
+        storage.removeItem = function (key: string) {
+          originalRemoveItem.apply(this, [key]);
+          if ((key === 'rr_user' || key === 'rr_token') && !self.isInternalStorageWrite) {
+            self.ngZone.run(() => {
+              self.currentUser.set(null);
+              self.logout();
+            });
+          }
+        };
+      };
+
+      if (window.localStorage) patchStorage(window.localStorage);
+      if (window.sessionStorage) patchStorage(window.sessionStorage);
+    } catch (e) {
+      console.error('[Security] Could not attach RR storage tamper listeners:', e);
+    }
+  }
+
+  private validateCurrentRouteAccess(user: IRRUser): void {
+    const currentUrl = this.router.url;
+    // If employee is on admin-only route but their role was revoked from admin
+    if (currentUrl.includes('/user/rr/dashboard/employees') && user.role !== 'admin') {
+      console.warn('[Security] Admin access revoked for current route. Redirecting to desk dashboard.');
+      this.router.navigate(['/user/rr/dashboard']);
+    }
+  }
+
+  // Refresh permissions from backend
+  async refreshPermissions(): Promise<IRRUser | null> {
+    if (this.isRefreshingPermissions) {
+      return this.currentUser() ?? null;
+    }
+
+    const token = this.getToken();
+    if (!token) {
+      return null;
+    }
+
+    this.isRefreshingPermissions = true;
+    const url = `${this.baseUrl}/auth/permissions`;
+    const headers = this.getHeaders();
+
+    try {
+      const res = await firstValueFrom(
+        this.http.get<IRRPermissionsResponse>(url, { headers })
+      );
+
+      this.lastPermissionsCheckTime = Date.now();
+      if (res?.user) {
+        this.saveSession(res.user, token);
+        this.validateCurrentRouteAccess(res.user);
+        return res.user;
+      }
+      return null;
+    } catch (err: unknown) {
+      if (err instanceof HttpErrorResponse) {
+        if (err.status === 401 || err.status === 403) {
+          console.warn('[Security] RR employee account revoked or token expired. Forcing logout.');
+          await this.logout();
+          return null;
+        }
+      }
+      console.error('Error refreshing RR permissions:', err);
+      return null;
+    } finally {
+      this.isRefreshingPermissions = false;
+    }
+  }
+
   getToken(): string | null {
     if (typeof window !== 'undefined') {
       if (window.sessionStorage) {
-        const token = sessionStorage.getItem('rr_token');
+        const token = this.getStorageItem(sessionStorage, 'rr_token');
         if (token) return token;
       }
       if (this.isPersistentEnvironment() && window.localStorage) {
-        return localStorage.getItem('rr_token');
+        return this.getStorageItem(localStorage, 'rr_token');
       }
     }
     return null;
@@ -181,6 +477,7 @@ export class RRApiService {
       this.router.navigate(['/user/rr/login']);
     }
   }
+
 
   // Vehicles
   async getVehicles(params?: { search?: string; limit?: number }): Promise<IVehicle[]> {

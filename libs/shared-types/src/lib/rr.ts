@@ -22,6 +22,11 @@ export interface IRRLoginResponse {
   user: IRRUser;
 }
 
+export interface IRRPermissionsResponse {
+  user: IRRUser;
+  role: RRRole;
+}
+
 export interface IEmployee {
   _id?: ObjectId | string;
   id: string; // Unique ID like 'RRA001'

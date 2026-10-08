@@ -51,14 +51,7 @@ export class NoModulesComponent {
   async refreshPermissions() {
     this.isRefreshing.set(true);
     try {
-      // Re-initialize session to get fresh user profile
-      const sessionStr = localStorage.getItem('portfolio_auth_session');
-      if (sessionStr) {
-        const session = JSON.parse(sessionStr);
-        if (session?.refresh_token) {
-          await this.authService['refreshSession'](session.refresh_token);
-        }
-      }
+      await this.authService.refreshPermissions();
 
       const updatedUser = this.authService.currentUser();
       const destination = resolveUserDestination(updatedUser);

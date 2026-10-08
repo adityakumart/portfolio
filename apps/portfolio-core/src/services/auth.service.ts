@@ -304,4 +304,48 @@ export class AuthService {
       throw err;
     }
   }
+
+  // 6. GET PERMISSIONS
+  static async getPermissions(userId: string) {
+    try {
+      const db = await connectToDatabase();
+      const userCollection = db.collection('user');
+
+      let objId: ObjectId;
+      try {
+        objId = new ObjectId(userId);
+      } catch {
+        throw new Error('Invalid user ID format');
+      }
+
+      const user = await userCollection.findOne({ _id: objId });
+      if (!user) throw new Error('User not found');
+      if (user['is_deleted']) throw new Error('Account has been deleted');
+      if (user['isEnabled'] === false) throw new Error('Account is disabled');
+
+      const safeUser = {
+        id: user._id.toString(),
+        ...user,
+        masterAdmin: Boolean(user['masterAdmin']),
+        modules: {
+          aiSpace: false,
+          aiAssistant: false,
+          fileManager: false,
+          dietHydration: false,
+          planner: false,
+          game: false,
+          movies: false,
+          ...(user['modules'] || {}),
+        },
+      } as unknown as User & { password?: string; _id?: unknown };
+      delete safeUser.password;
+      delete (safeUser as any)._id;
+
+      return safeUser;
+    } catch (err) {
+      console.error('Get Permissions Error:', err);
+      throw err;
+    }
+  }
 }
+

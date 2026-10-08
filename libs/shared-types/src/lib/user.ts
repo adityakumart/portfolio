@@ -44,3 +44,8 @@ export interface AuthResponse {
   user: User;
   message?: string;
 }
+
+export interface RefreshPermissionsResponse {
+  user: User;
+  modules: UserModules;
+}
