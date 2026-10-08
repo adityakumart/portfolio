@@ -334,15 +334,19 @@ export class AuthService {
    */
   private getPreferredStorage(rememberMe?: boolean): Storage | null {
     if (typeof window === 'undefined') return null;
-    if (rememberMe !== undefined) {
-      return rememberMe && window.localStorage
+    try {
+      if (rememberMe !== undefined) {
+        return rememberMe && window.localStorage
+          ? window.localStorage
+          : (window.sessionStorage || window.localStorage);
+      }
+      const isRemembered = window.localStorage?.getItem(this.REMEMBER_ME_KEY) === 'true';
+      return isRemembered && window.localStorage
         ? window.localStorage
         : (window.sessionStorage || window.localStorage);
+    } catch {
+      return null;
     }
-    const isRemembered = window.localStorage?.getItem(this.REMEMBER_ME_KEY) === 'true';
-    return isRemembered && window.localStorage
-      ? window.localStorage
-      : (window.sessionStorage || window.localStorage);
   }
 
   /**
@@ -360,69 +364,78 @@ export class AuthService {
     if (typeof window === 'undefined') return null;
 
     const readFromStorage = (storage: Storage): string | null => {
-      let raw = storage.getItem(key);
-      // Transparent fallback migration from legacy un-obfuscated key
-      if (!raw && key === this.STORAGE_KEY) {
-        raw = storage.getItem(this.LEGACY_STORAGE_KEY);
-        if (raw) {
-          storage.removeItem(this.LEGACY_STORAGE_KEY);
-          this.setStorageItem(key, raw, storage);
+      try {
+        let raw = storage.getItem(key);
+        // Transparent fallback migration from legacy un-obfuscated key
+        if (!raw && key === this.STORAGE_KEY) {
+          raw = storage.getItem(this.LEGACY_STORAGE_KEY);
+          if (raw) {
+            storage.removeItem(this.LEGACY_STORAGE_KEY);
+            this.setStorageItem(key, raw, storage);
+          }
         }
-      }
-      if (!raw) return null;
+        if (!raw) return null;
 
-      if (key === this.STORAGE_KEY) {
-        const decrypted = this.decryptData(raw);
-        if (!decrypted) {
-          console.warn('[Security] Failed to decrypt session data from storage.');
-          return null;
-        }
-
-        try {
-          const parsed = JSON.parse(decrypted);
-          const unwrapped = unwrapStoragePayload(parsed);
-          if (!unwrapped) {
-            console.warn('[Security] Envelope verification failed (expired or tampered). Purging session.');
-            this.isInternalStorageWrite = true;
-            try {
-              storage.removeItem(key);
-              storage.removeItem(this.LEGACY_STORAGE_KEY);
-            } finally {
-              this.isInternalStorageWrite = false;
-            }
+        if (key === this.STORAGE_KEY) {
+          const decrypted = this.decryptData(raw);
+          if (!decrypted) {
+            console.warn('[Security] Failed to decrypt session data from storage.');
             return null;
           }
 
-          const unwrappedStr =
-            typeof unwrapped.payload === 'string'
-              ? unwrapped.payload
-              : JSON.stringify(unwrapped.payload);
+          try {
+            const parsed = JSON.parse(decrypted);
+            const unwrapped = unwrapStoragePayload(parsed);
+            if (!unwrapped) {
+              console.warn('[Security] Envelope verification failed (expired or tampered). Purging session.');
+              this.isInternalStorageWrite = true;
+              try {
+                storage.removeItem(key);
+                storage.removeItem(this.LEGACY_STORAGE_KEY);
+              } finally {
+                this.isInternalStorageWrite = false;
+              }
+              return null;
+            }
 
-          // Auto-upgrade plain JSON or un-enveloped session to encrypted envelope
-          if (!unwrapped.wasEnveloped || raw.trim().startsWith('{')) {
-            this.setStorageItem(key, unwrappedStr, storage);
+            const unwrappedStr =
+              typeof unwrapped.payload === 'string'
+                ? unwrapped.payload
+                : JSON.stringify(unwrapped.payload);
+
+            // Auto-upgrade plain JSON or un-enveloped session to encrypted envelope
+            if (!unwrapped.wasEnveloped || raw.trim().startsWith('{')) {
+              this.setStorageItem(key, unwrappedStr, storage);
+            }
+
+            return unwrappedStr;
+          } catch {
+            return decrypted;
           }
-
-          return unwrappedStr;
-        } catch {
-          return decrypted;
         }
-      }
 
-      return raw;
+        return raw;
+      } catch (err) {
+        console.warn(`[Security] Could not read ${key} from storage:`, err);
+        return null;
+      }
     };
 
     if (specificStorage) {
       return readFromStorage(specificStorage);
     }
 
-    // Default: inspect sessionStorage first, then fallback to localStorage
-    if (window.sessionStorage) {
-      const sessionVal = readFromStorage(window.sessionStorage);
-      if (sessionVal) return sessionVal;
-    }
-    if (window.localStorage) {
-      return readFromStorage(window.localStorage);
+    try {
+      // Default: inspect sessionStorage first, then fallback to localStorage
+      if (window.sessionStorage) {
+        const sessionVal = readFromStorage(window.sessionStorage);
+        if (sessionVal) return sessionVal;
+      }
+      if (window.localStorage) {
+        return readFromStorage(window.localStorage);
+      }
+    } catch (err) {
+      console.warn('[Security] Storage access error:', err);
     }
     return null;
   }
@@ -461,7 +474,11 @@ export class AuthService {
           dataToStore = this.encryptData(JSON.stringify(envelope));
         }
 
-        targetStorage.setItem(key, dataToStore);
+        try {
+          targetStorage.setItem(key, dataToStore);
+        } catch (e) {
+          console.warn('[Security] Could not write to storage (private browsing or quota exceeded):', e);
+        }
       } finally {
         this.isInternalStorageWrite = false;
       }
@@ -472,18 +489,27 @@ export class AuthService {
     if (typeof window === 'undefined') return;
     this.isInternalStorageWrite = true;
     try {
-      if (window.sessionStorage) {
-        window.sessionStorage.removeItem(key);
-        if (key === this.STORAGE_KEY) {
-          window.sessionStorage.removeItem(this.LEGACY_STORAGE_KEY);
+      try {
+        if (window.sessionStorage) {
+          window.sessionStorage.removeItem(key);
+          if (key === this.STORAGE_KEY) {
+            window.sessionStorage.removeItem(this.LEGACY_STORAGE_KEY);
+          }
         }
+      } catch (e) {
+        console.warn('[Security] Could not remove item from sessionStorage:', e);
       }
-      if (window.localStorage) {
-        window.localStorage.removeItem(key);
-        if (key === this.STORAGE_KEY) {
-          window.localStorage.removeItem(this.LEGACY_STORAGE_KEY);
-          window.localStorage.removeItem(this.REMEMBER_ME_KEY);
+
+      try {
+        if (window.localStorage) {
+          window.localStorage.removeItem(key);
+          if (key === this.STORAGE_KEY) {
+            window.localStorage.removeItem(this.LEGACY_STORAGE_KEY);
+            window.localStorage.removeItem(this.REMEMBER_ME_KEY);
+          }
         }
+      } catch (e) {
+        console.warn('[Security] Could not remove item from localStorage:', e);
       }
     } finally {
       this.isInternalStorageWrite = false;

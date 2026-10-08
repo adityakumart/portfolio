@@ -210,63 +210,70 @@ export class RRApiService {
   }
 
   private getStorageItem(storage: Storage, key: string): string | null {
-    let raw = storage.getItem(key);
-    // Transparent migration from legacy un-obfuscated keys
-    if (!raw) {
-      if (key === this.STORAGE_KEY_USER) {
-        raw = storage.getItem(this.LEGACY_KEY_USER);
-        if (raw) {
-          storage.removeItem(this.LEGACY_KEY_USER);
-          this.setEncryptedItem(storage, key, raw);
-        }
-      } else if (key === this.STORAGE_KEY_TOKEN) {
-        raw = storage.getItem(this.LEGACY_KEY_TOKEN);
-        if (raw) {
-          storage.removeItem(this.LEGACY_KEY_TOKEN);
-          this.setEncryptedItem(storage, key, raw);
-        }
-      } else if (key === this.STORAGE_KEY_ROLE) {
-        raw = storage.getItem(this.LEGACY_KEY_ROLE);
-        if (raw) {
-          storage.removeItem(this.LEGACY_KEY_ROLE);
-          this.setEncryptedItem(storage, key, raw);
+    try {
+      let raw = storage.getItem(key);
+      // Transparent migration from legacy un-obfuscated keys
+      if (!raw) {
+        if (key === this.STORAGE_KEY_USER) {
+          raw = storage.getItem(this.LEGACY_KEY_USER);
+          if (raw) {
+            try { storage.removeItem(this.LEGACY_KEY_USER); } catch { /* ignore */ }
+            this.setEncryptedItem(storage, key, raw);
+          }
+        } else if (key === this.STORAGE_KEY_TOKEN) {
+          raw = storage.getItem(this.LEGACY_KEY_TOKEN);
+          if (raw) {
+            try { storage.removeItem(this.LEGACY_KEY_TOKEN); } catch { /* ignore */ }
+            this.setEncryptedItem(storage, key, raw);
+          }
+        } else if (key === this.STORAGE_KEY_ROLE) {
+          raw = storage.getItem(this.LEGACY_KEY_ROLE);
+          if (raw) {
+            try { storage.removeItem(this.LEGACY_KEY_ROLE); } catch { /* ignore */ }
+            this.setEncryptedItem(storage, key, raw);
+          }
         }
       }
-    }
-    if (!raw) return null;
+      if (!raw) return null;
 
-    const decrypted = this.decryptData(raw);
-    if (!decrypted) {
-      return null;
-    }
-
-    try {
-      const parsed = JSON.parse(decrypted);
-      const unwrapped = unwrapStoragePayload(parsed);
-      if (!unwrapped) {
-        console.warn(`[Security] RR storage envelope for ${key} invalid or expired.`);
-        this.isInternalStorageWrite = true;
-        try {
-          storage.removeItem(key);
-        } finally {
-          this.isInternalStorageWrite = false;
-        }
+      const decrypted = this.decryptData(raw);
+      if (!decrypted) {
         return null;
       }
 
-      const unwrappedStr =
-        typeof unwrapped.payload === 'string'
-          ? unwrapped.payload
-          : JSON.stringify(unwrapped.payload);
+      try {
+        const parsed = JSON.parse(decrypted);
+        const unwrapped = unwrapStoragePayload(parsed);
+        if (!unwrapped) {
+          console.warn(`[Security] RR storage envelope for ${key} invalid or expired.`);
+          this.isInternalStorageWrite = true;
+          try {
+            storage.removeItem(key);
+          } catch {
+            /* ignore */
+          } finally {
+            this.isInternalStorageWrite = false;
+          }
+          return null;
+        }
 
-      // Auto-upgrade plain or legacy unenveloped storage to encrypted envelope
-      if (!unwrapped.wasEnveloped || raw.trim().startsWith('{') || !raw.startsWith('U2FsdGVkX1')) {
-        this.setEncryptedItem(storage, key, unwrappedStr);
+        const unwrappedStr =
+          typeof unwrapped.payload === 'string'
+            ? unwrapped.payload
+            : JSON.stringify(unwrapped.payload);
+
+        // Auto-upgrade plain or legacy unenveloped storage to encrypted envelope
+        if (!unwrapped.wasEnveloped || raw.trim().startsWith('{') || !raw.startsWith('U2FsdGVkX1')) {
+          this.setEncryptedItem(storage, key, unwrappedStr);
+        }
+
+        return unwrappedStr;
+      } catch {
+        return decrypted;
       }
-
-      return unwrappedStr;
-    } catch {
-      return decrypted;
+    } catch (err) {
+      console.warn(`[Security] Could not access RR storage for ${key}:`, err);
+      return null;
     }
   }
 
@@ -309,7 +316,11 @@ export class RRApiService {
 
         dataToStore = JSON.stringify(envelope);
       }
-      storage.setItem(key, this.encryptData(dataToStore));
+      try {
+        storage.setItem(key, this.encryptData(dataToStore));
+      } catch (err) {
+        console.warn(`[Security] Could not write ${key} to RR storage:`, err);
+      }
     } finally {
       this.isInternalStorageWrite = false;
     }
@@ -319,6 +330,8 @@ export class RRApiService {
     this.isInternalStorageWrite = true;
     try {
       storage.removeItem(key);
+    } catch (err) {
+      console.warn(`[Security] Could not remove ${key} from RR storage:`, err);
     } finally {
       this.isInternalStorageWrite = false;
     }
@@ -326,13 +339,19 @@ export class RRApiService {
 
   private loadSession() {
     if (typeof window !== 'undefined') {
-      let userStr = window.sessionStorage ? this.getStorageItem(sessionStorage, this.STORAGE_KEY_USER) : null;
-      let token = window.sessionStorage ? this.getStorageItem(sessionStorage, this.STORAGE_KEY_TOKEN) : null;
+      let userStr: string | null = null;
+      let token: string | null = null;
+      try {
+        userStr = window.sessionStorage ? this.getStorageItem(sessionStorage, this.STORAGE_KEY_USER) : null;
+        token = window.sessionStorage ? this.getStorageItem(sessionStorage, this.STORAGE_KEY_TOKEN) : null;
 
-      // In extension and mobile environments, fallback to localStorage if sessionStorage was wiped on backgrounding
-      if ((!userStr || !token) && this.isPersistentEnvironment() && window.localStorage) {
-        userStr = this.getStorageItem(localStorage, this.STORAGE_KEY_USER);
-        token = this.getStorageItem(localStorage, this.STORAGE_KEY_TOKEN);
+        // In extension and mobile environments, fallback to localStorage if sessionStorage was wiped on backgrounding
+        if ((!userStr || !token) && this.isPersistentEnvironment() && window.localStorage) {
+          userStr = this.getStorageItem(localStorage, this.STORAGE_KEY_USER);
+          token = this.getStorageItem(localStorage, this.STORAGE_KEY_TOKEN);
+        }
+      } catch (err) {
+        console.warn('[Security] Could not read session from storage:', err);
       }
 
       if (userStr && token) {
