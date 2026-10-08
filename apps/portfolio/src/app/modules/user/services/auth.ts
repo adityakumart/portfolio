@@ -17,12 +17,15 @@ import { firstValueFrom, fromEvent, merge, Subscription } from 'rxjs';
 import { throttleTime } from 'rxjs/operators';
 import { AES, enc } from 'crypto-js';
 import { environment } from '../../../../environments/environment';
+import { maskToken } from '../../../shared/utils/security.utils';
 import {
   User,
   AuthSession,
   AuthResponse,
   RefreshPermissionsResponse,
 } from '@portfolio/shared-types';
+
+export { maskToken };
 
 @Injectable({
   providedIn: 'root',
@@ -32,7 +35,9 @@ export class AuthService {
   private router = inject(Router);
   private ngZone = inject(NgZone);
   private platformId = inject(PLATFORM_ID);
-  private readonly STORAGE_KEY = 'portfolio_auth_session';
+  private readonly STORAGE_KEY = '_app_ctx_sig_v1';
+  private readonly LEGACY_STORAGE_KEY = 'portfolio_auth_session';
+  private readonly REMEMBER_ME_KEY = '_app_pref_rm';
   private readonly ENCRYPTION_KEY = 'portfolio_secure_session_v1';
 
   // Expose a read-only signal for tracking user state reactively
@@ -122,13 +127,23 @@ export class AuthService {
 
     try {
       const key = this.getDeviceBoundKey();
-      let bytes = AES.decrypt(cipherText, key);
-      let decrypted = bytes.toString(enc.Utf8);
+      let decrypted = '';
+
+      try {
+        const bytes = AES.decrypt(cipherText, key);
+        decrypted = bytes.toString(enc.Utf8);
+      } catch {
+        // Mismatched key throws Malformed UTF-8 data; fall through to static key check
+      }
 
       // Backward compatibility fallback: decrypt older sessions created with static ENCRYPTION_KEY
       if (!decrypted && key !== this.ENCRYPTION_KEY) {
-        bytes = AES.decrypt(cipherText, this.ENCRYPTION_KEY);
-        decrypted = bytes.toString(enc.Utf8);
+        try {
+          const bytes = AES.decrypt(cipherText, this.ENCRYPTION_KEY);
+          decrypted = bytes.toString(enc.Utf8);
+        } catch {
+          // Malformed or invalid key
+        }
       }
 
       if (!decrypted) {
@@ -258,7 +273,7 @@ export class AuthService {
 
     // 1. Cross-tab storage change listener
     window.addEventListener('storage', (event: StorageEvent) => {
-      if (event.key === this.STORAGE_KEY) {
+      if (event.key === this.STORAGE_KEY || event.key === this.LEGACY_STORAGE_KEY) {
         console.warn('[Security] Cross-tab localStorage change detected for auth session.');
         this.ngZone.run(() => {
           this.refreshPermissions();
@@ -277,8 +292,8 @@ export class AuthService {
 
         storageProto.setItem = function (key: string, value: string) {
           originalSetItem.apply(this, [key, value]);
-          if (key === self.STORAGE_KEY && !self.isInternalStorageWrite) {
-            console.warn('[Security] Direct in-tab localStorage modification detected for auth session.');
+          if ((key === self.STORAGE_KEY || key === self.LEGACY_STORAGE_KEY) && !self.isInternalStorageWrite) {
+            console.warn('[Security] Direct in-tab storage modification detected for auth session.');
             self.ngZone.run(() => {
               self.refreshPermissions();
             });
@@ -287,8 +302,8 @@ export class AuthService {
 
         storageProto.removeItem = function (key: string) {
           originalRemoveItem.apply(this, [key]);
-          if (key === self.STORAGE_KEY && !self.isInternalStorageWrite) {
-            console.warn('[Security] Direct in-tab localStorage removal detected for auth session.');
+          if ((key === self.STORAGE_KEY || key === self.LEGACY_STORAGE_KEY) && !self.isInternalStorageWrite) {
+            console.warn('[Security] Direct in-tab storage removal detected for auth session.');
             self.ngZone.run(() => {
               self.currentUser.set(null);
               self.logout();
@@ -301,9 +316,36 @@ export class AuthService {
     }
   }
 
-  private getStorageItem(key: string): string | null {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      const raw = localStorage.getItem(key);
+  /**
+   * Remember Me Architecture: Default to sessionStorage (destroyed when tab closes).
+   * Persist to localStorage only if rememberMe is enabled.
+   */
+  private getPreferredStorage(rememberMe?: boolean): Storage | null {
+    if (typeof window === 'undefined') return null;
+    if (rememberMe !== undefined) {
+      return rememberMe && window.localStorage
+        ? window.localStorage
+        : (window.sessionStorage || window.localStorage);
+    }
+    const isRemembered = window.localStorage?.getItem(this.REMEMBER_ME_KEY) === 'true';
+    return isRemembered && window.localStorage
+      ? window.localStorage
+      : (window.sessionStorage || window.localStorage);
+  }
+
+  private getStorageItem(key: string, specificStorage?: Storage): string | null {
+    if (typeof window === 'undefined') return null;
+
+    const readFromStorage = (storage: Storage): string | null => {
+      let raw = storage.getItem(key);
+      // Transparent fallback migration from legacy un-obfuscated key
+      if (!raw && key === this.STORAGE_KEY) {
+        raw = storage.getItem(this.LEGACY_STORAGE_KEY);
+        if (raw) {
+          storage.removeItem(this.LEGACY_STORAGE_KEY);
+          this.setStorageItem(key, raw, storage);
+        }
+      }
       if (!raw) return null;
 
       if (key === this.STORAGE_KEY) {
@@ -315,24 +357,41 @@ export class AuthService {
 
         // Auto-upgrade plain JSON to encrypted in storage
         if (raw.trim().startsWith('{')) {
-          this.setStorageItem(key, decrypted);
+          this.setStorageItem(key, decrypted, storage);
         }
 
         return decrypted;
       }
 
       return raw;
+    };
+
+    if (specificStorage) {
+      return readFromStorage(specificStorage);
+    }
+
+    // Default: inspect sessionStorage first, then fallback to localStorage
+    if (window.sessionStorage) {
+      const sessionVal = readFromStorage(window.sessionStorage);
+      if (sessionVal) return sessionVal;
+    }
+    if (window.localStorage) {
+      return readFromStorage(window.localStorage);
     }
     return null;
   }
 
-  private setStorageItem(key: string, value: string): void {
-    if (typeof window !== 'undefined' && window.localStorage) {
+  private setStorageItem(key: string, value: string, specificStorage?: Storage): void {
+    if (typeof window === 'undefined') return;
+    const targetStorage = specificStorage || this.getPreferredStorage();
+    if (targetStorage) {
       this.isInternalStorageWrite = true;
       try {
         const dataToStore =
-          key === this.STORAGE_KEY ? this.encryptData(value) : value;
-        localStorage.setItem(key, dataToStore);
+          key === this.STORAGE_KEY || key === this.LEGACY_STORAGE_KEY
+            ? this.encryptData(value)
+            : value;
+        targetStorage.setItem(key, dataToStore);
       } finally {
         this.isInternalStorageWrite = false;
       }
@@ -340,13 +399,24 @@ export class AuthService {
   }
 
   private removeStorageItem(key: string): void {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      this.isInternalStorageWrite = true;
-      try {
-        localStorage.removeItem(key);
-      } finally {
-        this.isInternalStorageWrite = false;
+    if (typeof window === 'undefined') return;
+    this.isInternalStorageWrite = true;
+    try {
+      if (window.sessionStorage) {
+        window.sessionStorage.removeItem(key);
+        if (key === this.STORAGE_KEY) {
+          window.sessionStorage.removeItem(this.LEGACY_STORAGE_KEY);
+        }
       }
+      if (window.localStorage) {
+        window.localStorage.removeItem(key);
+        if (key === this.STORAGE_KEY) {
+          window.localStorage.removeItem(this.LEGACY_STORAGE_KEY);
+          window.localStorage.removeItem(this.REMEMBER_ME_KEY);
+        }
+      }
+    } finally {
+      this.isInternalStorageWrite = false;
     }
   }
 
@@ -459,7 +529,7 @@ export class AuthService {
     }
   }
 
-  private saveSession(res: Partial<AuthResponse>) {
+  private saveSession(res: Partial<AuthResponse>, rememberMe = true) {
     if (res && res.access_token && res.user) {
       const now = Math.floor(Date.now() / 1000);
       const session: AuthSession = {
@@ -469,7 +539,27 @@ export class AuthService {
         expires_at: now + (res.expires_in || 0),
         user: this.minimizeUser(res.user),
       };
-      this.setStorageItem(this.STORAGE_KEY, JSON.stringify(session));
+
+      if (typeof window !== 'undefined') {
+        if (rememberMe && window.localStorage) {
+          window.localStorage.setItem(this.REMEMBER_ME_KEY, 'true');
+          if (window.sessionStorage) {
+            window.sessionStorage.removeItem(this.STORAGE_KEY);
+            window.sessionStorage.removeItem(this.LEGACY_STORAGE_KEY);
+          }
+          this.setStorageItem(this.STORAGE_KEY, JSON.stringify(session), window.localStorage);
+        } else {
+          if (window.localStorage) {
+            window.localStorage.removeItem(this.REMEMBER_ME_KEY);
+            window.localStorage.removeItem(this.STORAGE_KEY);
+            window.localStorage.removeItem(this.LEGACY_STORAGE_KEY);
+          }
+          const storage = window.sessionStorage || window.localStorage;
+          if (storage) {
+            this.setStorageItem(this.STORAGE_KEY, JSON.stringify(session), storage);
+          }
+        }
+      }
       this.currentUser.set(res.user);
     }
   }
@@ -514,7 +604,7 @@ export class AuthService {
 
     try {
       const res = await firstValueFrom(
-        this.http.get<RefreshPermissionsResponse>(url, { headers }),
+        this.http.get<RefreshPermissionsResponse>(url, { headers, withCredentials: true }),
       );
 
       this.lastPermissionsCheckTime = Date.now();
@@ -539,7 +629,7 @@ export class AuthService {
     }
   }
 
-  // Refresh user session using refresh token
+  // Refresh user session using refresh token (HttpOnly cookie aware)
   private async refreshSession(refreshToken: string): Promise<User> {
     const url = `${environment.APIURL}/auth/refresh`;
     try {
@@ -547,13 +637,15 @@ export class AuthService {
         this.http.post<AuthResponse>(
           url,
           { refresh_token: refreshToken },
-          { headers: this.getHeaders() },
+          { headers: this.getHeaders(), withCredentials: true },
         ),
       );
       if (!res.user) {
         throw new Error('User not found in refreshed session');
       }
-      this.saveSession(res);
+      const isRemembered = typeof window !== 'undefined' && window.localStorage?.getItem(this.REMEMBER_ME_KEY) === 'true';
+      this.saveSession(res, isRemembered);
+      console.debug(`[Auth] Refreshed session for user with token ${maskToken(res.access_token)}`);
       return res.user;
     } catch (err) {
       this.clearSession();
@@ -605,20 +697,21 @@ export class AuthService {
     }
   }
 
-  // Sign in existing user
-  async login(email: string, password: string) {
+  // Sign in existing user (supporting Remember Me architecture and HttpOnly cookies)
+  async login(email: string, password: string, rememberMe = true) {
     const url = `${environment.APIURL}/auth/login`;
     try {
       const res = await firstValueFrom(
         this.http.post<AuthResponse>(
           url,
           { email, password },
-          { headers: this.getHeaders() },
+          { headers: this.getHeaders(), withCredentials: true },
         ),
       );
 
-      this.saveSession(res);
+      this.saveSession(res, rememberMe);
       this.currentUser.set(res.user);
+      console.debug(`[Auth] Authenticated session for user with token ${maskToken(res.access_token)}`);
 
       return {
         user: res.user,
@@ -657,13 +750,8 @@ export class AuthService {
     }
 
     try {
-      if (token) {
-        const headers = this.getHeaders().set(
-          'Authorization',
-          `Bearer ${token}`,
-        );
-        await firstValueFrom(this.http.post<unknown>(url, {}, { headers }));
-      }
+      const headers = token ? this.getHeaders().set('Authorization', `Bearer ${token}`) : this.getHeaders();
+      await firstValueFrom(this.http.post<unknown>(url, {}, { headers, withCredentials: true }));
     } catch (err) {
       console.error('Error calling logout API:', err);
     } finally {
