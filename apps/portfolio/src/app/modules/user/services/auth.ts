@@ -350,12 +350,30 @@ export class AuthService {
     }
   }
 
+  /**
+   * Data Minimization: Strips sensitive PII (email, names, personal info) before writing to browser storage.
+   * Only non-sensitive authorization flags (id, role, masterAdmin, masterFolder, isEnabled, modules) are persisted.
+   * Full user profiles remain strictly in Angular reactive memory (currentUser signal).
+   */
+  private minimizeUser(user: User): User {
+    const minimized: Partial<User> = {
+      id: user.id,
+      role: user.role,
+      admin: user.admin,
+      masterAdmin: user.masterAdmin,
+      masterFolder: user.masterFolder,
+      isEnabled: user.isEnabled,
+      modules: user.modules,
+    };
+    return minimized as User;
+  }
+
   private updateStoredUser(updatedUser: User): void {
     const sessionStr = this.getStorageItem(this.STORAGE_KEY);
     if (sessionStr) {
       try {
         const session = JSON.parse(sessionStr) as AuthSession;
-        session.user = updatedUser;
+        session.user = this.minimizeUser(updatedUser);
         this.setStorageItem(this.STORAGE_KEY, JSON.stringify(session));
       } catch (e) {
         console.error('Error updating session user in storage:', e);
@@ -412,6 +430,12 @@ export class AuthService {
       const session = JSON.parse(sessionStr) as AuthSession;
       const now = Math.floor(Date.now() / 1000);
 
+      // Data minimization: sanitize legacy stored session if it contains sensitive PII
+      if (session.user && ('email' in session.user || 'first_name' in session.user)) {
+        session.user = this.minimizeUser(session.user);
+        this.setStorageItem(this.STORAGE_KEY, JSON.stringify(session));
+      }
+
       // If expired or expiring in less than 60 seconds, try to refresh
       if (session.expires_at && session.expires_at - now < 60) {
         if (session.refresh_token) {
@@ -443,9 +467,10 @@ export class AuthService {
         refresh_token: res.refresh_token || '',
         expires_in: res.expires_in || 0,
         expires_at: now + (res.expires_in || 0),
-        user: res.user,
+        user: this.minimizeUser(res.user),
       };
       this.setStorageItem(this.STORAGE_KEY, JSON.stringify(session));
+      this.currentUser.set(res.user);
     }
   }
 

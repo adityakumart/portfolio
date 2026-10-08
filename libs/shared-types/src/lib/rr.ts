@@ -4,9 +4,9 @@ export type RRRole = 'admin' | 'employee';
 
 export interface IRRUser {
   id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
   role: RRRole;
 }
 

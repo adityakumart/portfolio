@@ -107,6 +107,8 @@ private verifyEnvelope<T>(envelope: SecureStorageEnvelope<T>): T | null {
 
 ### Measure 3: Data Minimization (Never Store Sensitive PII)
 
+> **Status:** **Completed**
+
 #### The Principle
 *What is never stored on the client disk can never be extracted by an attacker.*
 
@@ -225,6 +227,7 @@ Set-Cookie: refresh_token=eyJhbGci...; HttpOnly; Secure; SameSite=Strict; Path=/
 | **Phase 1** | AES Encryption for Local Storage & Periodic Check | Medium | High | **Completed** |
 | **Phase 2** | Obfuscate Storage Key Names | Low | Medium | Pending Review |
 | **Phase 3** | Device-Bound Encryption Key Salting | Low | High | **Completed** |
+| **Measure 3** | Data Minimization (Never Store Sensitive PII) | Low | High | **Completed** |
 | **Phase 4** | Signed Storage Envelope with Client TTL | Medium | High | Pending Review |
 | **Phase 5** | Strict Content Security Policy (CSP) | Medium | Critical | Pending Review |
 | **Phase 6** | `HttpOnly` Cookie Migration for Refresh Token | High | Critical | Long-term Architecture |

@@ -219,8 +219,20 @@ export class RRApiService {
 
       if (userStr && token) {
         try {
-          this.currentUser.set(JSON.parse(userStr));
-          // Verify with backend permissions in background on initialization
+          const storedUser = JSON.parse(userStr);
+          // Data minimization: if stored session contains legacy PII, sanitize storage
+          if (storedUser && ('email' in storedUser || 'firstName' in storedUser)) {
+            const sanitized = this.minimizeRRUser(storedUser as IRRUser);
+            if (window.sessionStorage) {
+              this.setEncryptedItem(sessionStorage, 'rr_user', JSON.stringify(sanitized));
+            }
+            if (this.isPersistentEnvironment() && window.localStorage) {
+              this.setEncryptedItem(localStorage, 'rr_user', JSON.stringify(sanitized));
+            }
+          }
+
+          this.currentUser.set(storedUser);
+          // Verify with backend permissions in background on initialization to fetch full user profile into reactive memory
           this.refreshPermissions().catch((e) =>
             console.error('Initial RR permissions check error:', e),
           );
@@ -231,9 +243,22 @@ export class RRApiService {
     }
   }
 
+  /**
+   * Data Minimization: Strips sensitive PII (firstName, lastName, email) before writing to browser storage.
+   * Only non-sensitive authorization context (id, role) is persisted.
+   * Full user profiles remain strictly in Angular reactive memory (currentUser signal).
+   */
+  private minimizeRRUser(user: IRRUser): Partial<IRRUser> {
+    return {
+      id: user.id,
+      role: user.role,
+    };
+  }
+
   private saveSession(user: IRRUser, token: string) {
     if (typeof window !== 'undefined') {
-      const userJson = JSON.stringify(user);
+      const minimizedUser = this.minimizeRRUser(user);
+      const userJson = JSON.stringify(minimizedUser);
       const roleJson = JSON.stringify({ role: user.role, id: user.id });
 
       if (window.sessionStorage) {

@@ -210,6 +210,51 @@ describe('AuthService', () => {
     const updatedStored = JSON.parse(decryptedStr!);
     expect(updatedStored.user.masterAdmin).toBe(true);
     expect(updatedStored.user.modules.aiSpace).toBe(true);
+    // Data minimization: PII (email, names) is never saved to storage
+    expect(updatedStored.user.email).toBeUndefined();
+  });
+
+  it('should enforce data minimization by keeping full user profile in memory and stripping PII from storage on login', async () => {
+    const fullUser = {
+      id: 'u-123',
+      email: 'sensitive-pii@example.com',
+      first_name: 'John',
+      last_name: 'Doe',
+      fullName: 'John Doe',
+      role: 'admin' as const,
+      masterAdmin: true,
+      modules: { aiSpace: true, aiAssistant: false, fileManager: true, dietHydration: false },
+    };
+
+    vi.spyOn(mockHttpClient, 'post').mockReturnValue(
+      of({
+        access_token: 'auth-jwt-token',
+        refresh_token: 'auth-refresh-token',
+        expires_in: 3600,
+        user: fullUser,
+      }),
+    );
+
+    const loginRes = await service.login('sensitive-pii@example.com', 'password123');
+
+    // 1. Reactive memory retains full user profile including PII
+    expect(loginRes.user).toEqual(fullUser);
+    expect(service.currentUser()?.email).toBe('sensitive-pii@example.com');
+    expect(service.currentUser()?.fullName).toBe('John Doe');
+
+    // 2. Storage contains ONLY minimized authorization context without PII
+    const rawCipher = mockStorage.getItem('portfolio_auth_session')!;
+    expect(rawCipher).toBeTruthy();
+    const decryptedStr = (service as any).getStorageItem('portfolio_auth_session');
+    const storedSession = JSON.parse(decryptedStr!);
+
+    expect(storedSession.user.id).toBe('u-123');
+    expect(storedSession.user.role).toBe('admin');
+    expect(storedSession.user.masterAdmin).toBe(true);
+    expect(storedSession.user.email).toBeUndefined();
+    expect(storedSession.user.first_name).toBeUndefined();
+    expect(storedSession.user.last_name).toBeUndefined();
+    expect(storedSession.user.fullName).toBeUndefined();
   });
 
   it('should force logout when permissions API returns 401 or 403', async () => {
