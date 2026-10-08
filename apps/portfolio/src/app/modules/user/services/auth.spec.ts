@@ -5,6 +5,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { of, throwError, Observable } from 'rxjs';
 import { AES } from 'crypto-js';
+import { maskToken } from '../../../shared/utils/security.utils';
 import { AuthService } from './auth';
 
 class MockStorage {
@@ -90,19 +91,41 @@ describe('AuthService', () => {
       user: { id: 'u1', email: 'u1@test.com', modules: { aiSpace: false } },
     };
 
-    // Store session via internal service setStorageItem
-    (service as any).setStorageItem('portfolio_auth_session', JSON.stringify(session));
+    const storageKey = (service as any).STORAGE_KEY;
+    // Store session via internal service setStorageItem under obfuscated key
+    (service as any).setStorageItem(storageKey, JSON.stringify(session));
 
     // In raw localStorage, data must be encrypted AES ciphertext, not plaintext JSON
-    const rawStored = mockStorage.getItem('portfolio_auth_session')!;
+    const rawStored = mockStorage.getItem(storageKey)!;
     expect(rawStored).toBeTruthy();
     expect(rawStored.startsWith('{')).toBe(false);
 
     // Reading through getStorageItem decrypts it properly
-    const decryptedStr = (service as any).getStorageItem('portfolio_auth_session');
+    const decryptedStr = (service as any).getStorageItem(storageKey);
     const decrypted = JSON.parse(decryptedStr!);
     expect(decrypted.access_token).toBe('valid-token');
     expect(decrypted.user.email).toBe('u1@test.com');
+  });
+
+  it('should transparently migrate legacy portfolio_auth_session key to obfuscated _app_ctx_sig_v1 key on read', () => {
+    const session = {
+      access_token: 'migrated-token',
+      refresh_token: 'refresh-token',
+      expires_in: 900,
+      user: { id: 'u1', role: 'admin' },
+    };
+
+    // Store legacy un-obfuscated session directly in mockStorage
+    mockStorage.setItem('portfolio_auth_session', JSON.stringify(session));
+
+    // Reading through getStorageItem with obfuscated key finds and migrates it
+    const decrypted = (service as any).getStorageItem('_app_ctx_sig_v1');
+    expect(decrypted).toBeTruthy();
+    expect(JSON.parse(decrypted!).access_token).toBe('migrated-token');
+
+    // Legacy key must be cleaned up and new obfuscated key created
+    expect(mockStorage.getItem('portfolio_auth_session')).toBeNull();
+    expect(mockStorage.getItem('_app_ctx_sig_v1')).toBeTruthy();
   });
 
   it('should derive device-bound encryption key and reject ciphertext from another device/browser', () => {
@@ -203,13 +226,97 @@ describe('AuthService', () => {
     expect(service.currentUser()).toEqual(refreshedUser);
 
     // Raw stored is encrypted
-    const rawStored = mockStorage.getItem('portfolio_auth_session')!;
+    const rawStored = mockStorage.getItem('_app_ctx_sig_v1')!;
     expect(rawStored.startsWith('{')).toBe(false);
 
-    const decryptedStr = (service as any).getStorageItem('portfolio_auth_session');
+    const decryptedStr = (service as any).getStorageItem('_app_ctx_sig_v1');
     const updatedStored = JSON.parse(decryptedStr!);
     expect(updatedStored.user.masterAdmin).toBe(true);
     expect(updatedStored.user.modules.aiSpace).toBe(true);
+    // Data minimization: PII (email, names) is never saved to storage
+    expect(updatedStored.user.email).toBeUndefined();
+  });
+
+  it('should enforce data minimization by keeping full user profile in memory and stripping PII from storage on login', async () => {
+    const fullUser = {
+      id: 'u-123',
+      email: 'sensitive-pii@example.com',
+      first_name: 'John',
+      last_name: 'Doe',
+      fullName: 'John Doe',
+      role: 'admin' as const,
+      masterAdmin: true,
+      modules: { aiSpace: true, aiAssistant: false, fileManager: true, dietHydration: false },
+    };
+
+    vi.spyOn(mockHttpClient, 'post').mockReturnValue(
+      of({
+        access_token: 'auth-jwt-token',
+        refresh_token: 'auth-refresh-token',
+        expires_in: 3600,
+        user: fullUser,
+      }),
+    );
+
+    const loginRes = await service.login('sensitive-pii@example.com', 'password123');
+
+    // 1. Reactive memory retains full user profile including PII
+    expect(loginRes.user).toEqual(fullUser);
+    expect(service.currentUser()?.email).toBe('sensitive-pii@example.com');
+    expect(service.currentUser()?.fullName).toBe('John Doe');
+
+    // 2. Storage contains ONLY minimized authorization context without PII
+    const rawCipher = mockStorage.getItem('_app_ctx_sig_v1')!;
+    expect(rawCipher).toBeTruthy();
+    const decryptedStr = (service as any).getStorageItem('_app_ctx_sig_v1');
+    const storedSession = JSON.parse(decryptedStr!);
+
+    expect(storedSession.user.id).toBe('u-123');
+    expect(storedSession.user.role).toBe('admin');
+    expect(storedSession.user.masterAdmin).toBe(true);
+    expect(storedSession.user.email).toBeUndefined();
+    expect(storedSession.user.first_name).toBeUndefined();
+    expect(storedSession.user.last_name).toBeUndefined();
+    expect(storedSession.user.fullName).toBeUndefined();
+  });
+
+  it('should support Remember Me architecture: sessionStorage when false, localStorage when true', async () => {
+    const mockSession = new MockStorage();
+    (global as any).window.sessionStorage = mockSession;
+
+    const fullUser = {
+      id: 'u-456',
+      email: 'remember@test.com',
+      role: 'user' as const,
+    };
+
+    vi.spyOn(mockHttpClient, 'post').mockReturnValue(
+      of({
+        access_token: 'tok-1',
+        refresh_token: 'ref-1',
+        expires_in: 3600,
+        user: fullUser,
+      }),
+    );
+
+    // 1. Login with rememberMe = false -> saves to sessionStorage
+    await service.login('remember@test.com', 'password', false);
+    expect(mockSession.getItem('_app_ctx_sig_v1')).toBeTruthy();
+    expect(mockStorage.getItem('_app_ctx_sig_v1')).toBeNull();
+
+    // 2. Login with rememberMe = true -> saves to localStorage
+    await service.login('remember@test.com', 'password', true);
+    expect(mockStorage.getItem('_app_ctx_sig_v1')).toBeTruthy();
+    expect(mockStorage.getItem('_app_pref_rm')).toBe('true');
+  });
+
+  it('should sanitize tokens in logging via maskToken', () => {
+    expect(maskToken(null)).toBe('null');
+    expect(maskToken(undefined)).toBe('null');
+    expect(maskToken('short')).toBe('***');
+    expect(maskToken('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyMyJ9.signature')).toBe(
+      'eyJhbG...ture',
+    );
   });
 
   it('should force logout when permissions API returns 401 or 403', async () => {
@@ -276,5 +383,58 @@ describe('AuthService', () => {
     (service as any).checkActivityPermissionsRefresh();
 
     expect(refreshSpy).toHaveBeenCalled();
+  });
+
+  describe('Signed Storage Envelope & Client-Side TTL (Phase 4 / Measure 2)', () => {
+    it('should package payload into signed envelope and verify integrity', () => {
+      const payload = { userId: 'usr-123', role: 'admin' };
+      const envelope = service.createEnvelope(payload, 2 * 60 * 60 * 1000);
+
+      expect(envelope.payload).toEqual(payload);
+      expect(typeof envelope.storedAt).toBe('number');
+      expect(envelope.ttlMs).toBe(7200000);
+      expect(typeof envelope.checksum).toBe('string');
+      expect(envelope.checksum.length).toBe(64); // SHA-256 hex string
+
+      const verified = service.verifyEnvelope(envelope);
+      expect(verified).toEqual(payload);
+    });
+
+    it('should reject expired storage envelope and purge data from storage', () => {
+      const payload = { access_token: 'old-token', user: { id: 'usr-exp' } };
+      // Expired envelope: stored 3 hours ago with 1-hour TTL
+      const expiredEnvelope = {
+        payload,
+        storedAt: Date.now() - 3 * 60 * 60 * 1000,
+        ttlMs: 60 * 60 * 1000,
+        checksum: (service as any).createEnvelope(payload, 60 * 60 * 1000).checksum,
+      };
+
+      const encrypted = (service as any).encryptData(JSON.stringify(expiredEnvelope));
+      mockStorage.setItem((service as any).STORAGE_KEY, encrypted);
+
+      const result = (service as any).getStorageItem((service as any).STORAGE_KEY);
+      expect(result).toBeNull();
+      // Should purge expired key from storage
+      expect(mockStorage.getItem((service as any).STORAGE_KEY)).toBeNull();
+    });
+
+    it('should detect envelope checksum mismatch when payload is tampered with and purge storage', () => {
+      const payload = { access_token: 'token-123', user: { id: 'usr-tamper', role: 'viewer' } };
+      const validEnvelope = service.createEnvelope(payload, 3600000);
+
+      // Maliciously tamper with payload without valid signature
+      const tamperedEnvelope = {
+        ...validEnvelope,
+        payload: { ...payload, user: { ...payload.user, role: 'superadmin' } },
+      };
+
+      const encrypted = (service as any).encryptData(JSON.stringify(tamperedEnvelope));
+      mockStorage.setItem((service as any).STORAGE_KEY, encrypted);
+
+      const result = (service as any).getStorageItem((service as any).STORAGE_KEY);
+      expect(result).toBeNull();
+      expect(mockStorage.getItem((service as any).STORAGE_KEY)).toBeNull();
+    });
   });
 });

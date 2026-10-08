@@ -126,6 +126,19 @@
                 }
               </div>
 
+              <div class="flex items-center justify-between py-1">
+                <label class="flex items-center gap-2 cursor-pointer text-xs text-muted-foreground hover:text-foreground">
+                  <input
+                    type="checkbox"
+                    [ngModel]="rememberMe()"
+                    (ngModelChange)="rememberMe.set($event)"
+                    name="rememberMe"
+                    class="rounded border-input text-primary focus:ring-ring h-4 w-4"
+                  />
+                  <span>Remember me on this device</span>
+                </label>
+              </div>
+
               <button
                 hlmBtn
                 class="w-full h-11 font-semibold rounded-xl"

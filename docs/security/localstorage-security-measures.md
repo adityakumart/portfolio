@@ -66,6 +66,8 @@ private getDeviceBoundKey(): string {
 
 ### Measure 2: Cryptographic Integrity Envelope & Client-Side TTL
 
+> **Status:** **Completed**
+
 #### The Risk
 Encryption conceals the contents of data, but without an integrity tag, an attacker can substitute an older valid ciphertext (e.g., when they had admin privileges) into storage to revive expired privileges.
 
@@ -107,6 +109,8 @@ private verifyEnvelope<T>(envelope: SecureStorageEnvelope<T>): T | null {
 
 ### Measure 3: Data Minimization (Never Store Sensitive PII)
 
+> **Status:** **Completed**
+
 #### The Principle
 *What is never stored on the client disk can never be extracted by an attacker.*
 
@@ -128,6 +132,8 @@ private verifyEnvelope<T>(envelope: SecureStorageEnvelope<T>): T | null {
 
 ### Measure 4: Obfuscate Storage Key Names
 
+> **Status:** **Completed**
+
 #### The Risk
 Key names such as `portfolio_auth_session`, `rr_token`, or `loggedInUser` explicitly announce to malicious browser extensions or automated scrapers where credentials reside.
 
@@ -145,6 +151,8 @@ Use non-descriptive, generic key identifiers:
 
 ### Measure 5: `sessionStorage` vs. `localStorage` ("Remember Me" Architecture)
 
+> **Status:** **Completed**
+
 #### The Risk
 `localStorage` persists permanently on the client’s physical disk until explicitly deleted. If a user logs into a rental desk or workstation and forgets to log out, the session remains accessible.
 
@@ -161,6 +169,8 @@ private getPreferredStorage(rememberMe: boolean): Storage {
 ---
 
 ### Measure 6: Strict Content Security Policy (CSP)
+
+> **Status:** **Completed**
 
 #### The Threat
 Any script successfully injected via XSS has identical permissions to your own application code and can read storage or hook network calls.
@@ -186,6 +196,8 @@ Implement strict Content Security Policy headers (in reverse proxy / server resp
 
 ### Measure 7: Console & Audit Logging Hygiene
 
+> **Status:** **Completed**
+
 Ensure production code never dumps raw tokens or credentials into developer consoles, exception handlers, or telemetry:
 
 ```typescript
@@ -203,6 +215,8 @@ console.debug(`[Auth] Authenticated session for user with token ${maskToken(toke
 ---
 
 ### Measure 8: Architectural Gold Standard: `HttpOnly` Cookies for Refresh Tokens
+
+> **Status:** **Completed**
 
 #### The Concept
 Move the long-lived `refresh_token` out of JavaScript storage completely and into an `HttpOnly`, `Secure`, `SameSite=Strict` cookie managed exclusively by the browser and backend.
@@ -223,8 +237,11 @@ Set-Cookie: refresh_token=eyJhbGci...; HttpOnly; Secure; SameSite=Strict; Path=/
 | Phase | Measure | Effort | Impact | Status |
 | :---: | :--- | :---: | :---: | :---: |
 | **Phase 1** | AES Encryption for Local Storage & Periodic Check | Medium | High | **Completed** |
-| **Phase 2** | Obfuscate Storage Key Names | Low | Medium | Pending Review |
+| **Phase 2** | Obfuscate Storage Key Names | Low | Medium | **Completed** |
 | **Phase 3** | Device-Bound Encryption Key Salting | Low | High | **Completed** |
-| **Phase 4** | Signed Storage Envelope with Client TTL | Medium | High | Pending Review |
-| **Phase 5** | Strict Content Security Policy (CSP) | Medium | Critical | Pending Review |
-| **Phase 6** | `HttpOnly` Cookie Migration for Refresh Token | High | Critical | Long-term Architecture |
+| **Measure 3** | Data Minimization (Never Store Sensitive PII) | Low | High | **Completed** |
+| **Measure 5** | `sessionStorage` vs. `localStorage` ("Remember Me") | Low | High | **Completed** |
+| **Phase 4** | Signed Storage Envelope with Client TTL | Medium | High | **Completed** |
+| **Phase 5** | Strict Content Security Policy (CSP) | Medium | Critical | **Completed** |
+| **Measure 7** | Console & Audit Logging Hygiene | Low | Medium | **Completed** |
+| **Phase 6** | `HttpOnly` Cookie Migration for Refresh Token | High | Critical | **Completed** |

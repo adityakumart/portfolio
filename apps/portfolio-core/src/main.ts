@@ -34,7 +34,17 @@ app.set('trust proxy', 1);
 
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: (requestOrigin, callback) => {
+      if (!requestOrigin) return callback(null, true);
+      if (allowedOrigins === '*') {
+        return callback(null, requestOrigin);
+      }
+      if (Array.isArray(allowedOrigins) && allowedOrigins.includes(requestOrigin)) {
+        return callback(null, requestOrigin);
+      }
+      return callback(null, requestOrigin);
+    },
+    credentials: true,
     exposedHeaders: [
       'authToken',
       'RateLimit',

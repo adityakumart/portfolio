@@ -26,6 +26,17 @@ export async function signup(req: Request, res: Response) {
   }
 }
 
+const isProduction = process.env['NODE_ENV'] === 'production';
+const getRefreshCookieOptions = (maxAge?: number) => ({
+  httpOnly: true,
+  secure: isProduction,
+  // In production, 'none' is required for cross-site cookie transmission (e.g. GitHub Pages -> Vercel API).
+  // In local development, 'lax' avoids rejection on unencrypted HTTP.
+  sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax',
+  path: '/api/auth/refresh',
+  ...(maxAge !== undefined ? { maxAge } : {}),
+});
+
 export async function login(req: Request, res: Response) {
   try {
     const { email, password } = req.body;
@@ -35,6 +46,11 @@ export async function login(req: Request, res: Response) {
     }
 
     const loggedInUser = await AuthService.login(email, password);
+
+    // Architectural Gold Standard: Set HttpOnly, Secure cookie for refresh token
+    if (loggedInUser.refresh_token) {
+      res.cookie('refresh_token', loggedInUser.refresh_token, getRefreshCookieOptions(7 * 24 * 60 * 60 * 1000));
+    }
 
     res.status(200).json({
       access_token: loggedInUser.access_token,
@@ -51,6 +67,9 @@ export async function login(req: Request, res: Response) {
 
 export async function logout(req: Request, res: Response) {
   try {
+    // Clear HttpOnly refresh token cookie
+    res.clearCookie('refresh_token', getRefreshCookieOptions());
+
     const authHeader = req.headers['authorization'];
     if (!authHeader) {
       res.status(400).json({ error: 'Authorization header is required' });
@@ -77,13 +96,29 @@ export async function logout(req: Request, res: Response) {
 
 export async function refresh(req: Request, res: Response) {
   try {
-    const { refresh_token } = req.body;
+    // Check HttpOnly cookie first, then fallback to request body for non-browser/mobile/test clients
+    let cookieRefreshToken: string | undefined;
+    const cookieHeader = req.headers.cookie;
+    if (cookieHeader) {
+      const match = cookieHeader.match(/(?:^|;\s*)refresh_token=([^;]+)/);
+      if (match) {
+        cookieRefreshToken = decodeURIComponent(match[1]);
+      }
+    }
+
+    const refresh_token = cookieRefreshToken || (req as any).cookies?.['refresh_token'] || req.body?.refresh_token;
     if (!refresh_token) {
       res.status(400).json({ error: 'Refresh token is required' });
       return;
     }
 
     const result = await AuthService.refresh(refresh_token);
+
+    // Refresh rotation: set updated HttpOnly cookie
+    if (result.refresh_token) {
+      res.cookie('refresh_token', result.refresh_token, getRefreshCookieOptions(7 * 24 * 60 * 60 * 1000));
+    }
+
     res.status(200).json({
       access_token: result.access_token,
       refresh_token: result.refresh_token,
@@ -92,8 +127,8 @@ export async function refresh(req: Request, res: Response) {
     });
   } catch (error: unknown) {
     const err = error as Error;
-    console.error('Token refresh error:', err);
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+    console.error('Refresh error:', err);
+    res.status(401).json({ error: 'Unauthorized', message: err.message });
   }
 }
 

@@ -7,6 +7,13 @@ import { throttleTime } from 'rxjs/operators';
 import { AES, enc } from 'crypto-js';
 import { environment } from '../../../../environments/environment';
 import {
+  maskToken,
+  createStorageEnvelope,
+  verifyStorageEnvelope,
+  unwrapStoragePayload,
+  SecureStorageEnvelope,
+} from '../../../shared/utils/security.utils';
+import {
   IRRUser,
   IVehicle,
   IVehicleAutocompleteItem,
@@ -24,6 +31,14 @@ import {
   IVehicleImageUploadResponse,
   IVehicleUploadedAsset,
 } from '@portfolio/shared-types';
+
+export {
+  maskToken,
+  createStorageEnvelope,
+  verifyStorageEnvelope,
+  unwrapStoragePayload,
+};
+export type { SecureStorageEnvelope };
 
 export type {
   IRRUser,
@@ -54,6 +69,13 @@ export class RRApiService {
   private platformId = inject(PLATFORM_ID);
   private readonly baseUrl = `${environment.APIURL}/rr`;
   private readonly ENCRYPTION_KEY = 'portfolio_rr_secure_session_v1';
+  private readonly STORAGE_KEY_USER = '_rr_state_u';
+  private readonly STORAGE_KEY_TOKEN = '_rr_sec_tk';
+  private readonly STORAGE_KEY_ROLE = '_rr_pref_meta';
+
+  private readonly LEGACY_KEY_USER = 'rr_user';
+  private readonly LEGACY_KEY_TOKEN = 'rr_token';
+  private readonly LEGACY_KEY_ROLE = 'loggedInUser';
   private readonly PERMISSIONS_REFRESH_INTERVAL = 10 * 60 * 1000; // 10 minutes in ms
 
   private permissionsIntervalId?: ReturnType<typeof setInterval>;
@@ -147,13 +169,23 @@ export class RRApiService {
 
     try {
       const key = this.getDeviceBoundKey();
-      let bytes = AES.decrypt(cipherText, key);
-      let decrypted = bytes.toString(enc.Utf8);
+      let decrypted = '';
+
+      try {
+        const bytes = AES.decrypt(cipherText, key);
+        decrypted = bytes.toString(enc.Utf8);
+      } catch {
+        // Mismatched key throws Malformed UTF-8 data; fall through to static key check
+      }
 
       // Backward compatibility fallback: decrypt older sessions created with static ENCRYPTION_KEY
       if (!decrypted && key !== this.ENCRYPTION_KEY) {
-        bytes = AES.decrypt(cipherText, this.ENCRYPTION_KEY);
-        decrypted = bytes.toString(enc.Utf8);
+        try {
+          const bytes = AES.decrypt(cipherText, this.ENCRYPTION_KEY);
+          decrypted = bytes.toString(enc.Utf8);
+        } catch {
+          // Malformed or invalid key
+        }
       }
 
       if (!decrypted) {
@@ -166,32 +198,129 @@ export class RRApiService {
     }
   }
 
-  private getStorageItem(storage: Storage, key: string): string | null {
-    const raw = storage.getItem(key);
-    if (!raw) return null;
+  /**
+   * Measure 2 & Phase 4: Cryptographic Integrity Envelope & Client-Side TTL
+   */
+  createEnvelope<T>(payload: T, ttlMs?: number): SecureStorageEnvelope<T> {
+    return createStorageEnvelope(payload, ttlMs);
+  }
 
-    const decrypted = this.decryptData(raw);
-    if (!decrypted) {
+  verifyEnvelope<T>(envelope: SecureStorageEnvelope<T>): T | null {
+    return verifyStorageEnvelope(envelope);
+  }
+
+  private getStorageItem(storage: Storage, key: string): string | null {
+    try {
+      let raw = storage.getItem(key);
+      // Transparent migration from legacy un-obfuscated keys
+      if (!raw) {
+        if (key === this.STORAGE_KEY_USER) {
+          raw = storage.getItem(this.LEGACY_KEY_USER);
+          if (raw) {
+            try { storage.removeItem(this.LEGACY_KEY_USER); } catch { /* ignore */ }
+            this.setEncryptedItem(storage, key, raw);
+          }
+        } else if (key === this.STORAGE_KEY_TOKEN) {
+          raw = storage.getItem(this.LEGACY_KEY_TOKEN);
+          if (raw) {
+            try { storage.removeItem(this.LEGACY_KEY_TOKEN); } catch { /* ignore */ }
+            this.setEncryptedItem(storage, key, raw);
+          }
+        } else if (key === this.STORAGE_KEY_ROLE) {
+          raw = storage.getItem(this.LEGACY_KEY_ROLE);
+          if (raw) {
+            try { storage.removeItem(this.LEGACY_KEY_ROLE); } catch { /* ignore */ }
+            this.setEncryptedItem(storage, key, raw);
+          }
+        }
+      }
+      if (!raw) return null;
+
+      const decrypted = this.decryptData(raw);
+      if (!decrypted) {
+        return null;
+      }
+
+      try {
+        const parsed = JSON.parse(decrypted);
+        const unwrapped = unwrapStoragePayload(parsed);
+        if (!unwrapped) {
+          console.warn(`[Security] RR storage envelope for ${key} invalid or expired.`);
+          this.isInternalStorageWrite = true;
+          try {
+            storage.removeItem(key);
+          } catch {
+            /* ignore */
+          } finally {
+            this.isInternalStorageWrite = false;
+          }
+          return null;
+        }
+
+        const unwrappedStr =
+          typeof unwrapped.payload === 'string'
+            ? unwrapped.payload
+            : JSON.stringify(unwrapped.payload);
+
+        // Auto-upgrade plain or legacy unenveloped storage to encrypted envelope
+        if (!unwrapped.wasEnveloped || raw.trim().startsWith('{') || !raw.startsWith('U2FsdGVkX1')) {
+          this.setEncryptedItem(storage, key, unwrappedStr);
+        }
+
+        return unwrappedStr;
+      } catch {
+        return decrypted;
+      }
+    } catch (err) {
+      console.warn(`[Security] Could not access RR storage for ${key}:`, err);
       return null;
     }
-
-    // Auto-upgrade plain storage to encrypted in storage
-    if (raw.trim().startsWith('{') || (key === 'rr_token' && !raw.startsWith('U2FsdGVkX1'))) {
-      this.isInternalStorageWrite = true;
-      try {
-        storage.setItem(key, this.encryptData(decrypted));
-      } finally {
-        this.isInternalStorageWrite = false;
-      }
-    }
-
-    return decrypted;
   }
 
   private setEncryptedItem(storage: Storage, key: string, value: string): void {
     this.isInternalStorageWrite = true;
     try {
-      storage.setItem(key, this.encryptData(value));
+      let dataToStore = value;
+      if (
+        key === this.STORAGE_KEY_USER ||
+        key === this.STORAGE_KEY_TOKEN ||
+        key === this.STORAGE_KEY_ROLE ||
+        key === this.LEGACY_KEY_USER ||
+        key === this.LEGACY_KEY_TOKEN ||
+        key === this.LEGACY_KEY_ROLE
+      ) {
+        let parsed: unknown = null;
+        try {
+          parsed = JSON.parse(value);
+        } catch {
+          parsed = value;
+        }
+
+        let envelope: SecureStorageEnvelope<unknown>;
+        if (
+          parsed &&
+          typeof parsed === 'object' &&
+          'payload' in parsed &&
+          'storedAt' in parsed &&
+          'checksum' in parsed &&
+          'ttlMs' in parsed
+        ) {
+          envelope = parsed as SecureStorageEnvelope<unknown>;
+        } else {
+          // RR session TTL: 24h for persistent environments, 2h default
+          const ttlMs = this.isPersistentEnvironment()
+            ? 24 * 60 * 60 * 1000
+            : 2 * 60 * 60 * 1000;
+          envelope = createStorageEnvelope(parsed, ttlMs);
+        }
+
+        dataToStore = JSON.stringify(envelope);
+      }
+      try {
+        storage.setItem(key, this.encryptData(dataToStore));
+      } catch (err) {
+        console.warn(`[Security] Could not write ${key} to RR storage:`, err);
+      }
     } finally {
       this.isInternalStorageWrite = false;
     }
@@ -201,6 +330,8 @@ export class RRApiService {
     this.isInternalStorageWrite = true;
     try {
       storage.removeItem(key);
+    } catch (err) {
+      console.warn(`[Security] Could not remove ${key} from RR storage:`, err);
     } finally {
       this.isInternalStorageWrite = false;
     }
@@ -208,19 +339,37 @@ export class RRApiService {
 
   private loadSession() {
     if (typeof window !== 'undefined') {
-      let userStr = window.sessionStorage ? this.getStorageItem(sessionStorage, 'rr_user') : null;
-      let token = window.sessionStorage ? this.getStorageItem(sessionStorage, 'rr_token') : null;
+      let userStr: string | null = null;
+      let token: string | null = null;
+      try {
+        userStr = window.sessionStorage ? this.getStorageItem(sessionStorage, this.STORAGE_KEY_USER) : null;
+        token = window.sessionStorage ? this.getStorageItem(sessionStorage, this.STORAGE_KEY_TOKEN) : null;
 
-      // In extension and mobile environments, fallback to localStorage if sessionStorage was wiped on backgrounding
-      if ((!userStr || !token) && this.isPersistentEnvironment() && window.localStorage) {
-        userStr = this.getStorageItem(localStorage, 'rr_user');
-        token = this.getStorageItem(localStorage, 'rr_token');
+        // In extension and mobile environments, fallback to localStorage if sessionStorage was wiped on backgrounding
+        if ((!userStr || !token) && this.isPersistentEnvironment() && window.localStorage) {
+          userStr = this.getStorageItem(localStorage, this.STORAGE_KEY_USER);
+          token = this.getStorageItem(localStorage, this.STORAGE_KEY_TOKEN);
+        }
+      } catch (err) {
+        console.warn('[Security] Could not read session from storage:', err);
       }
 
       if (userStr && token) {
         try {
-          this.currentUser.set(JSON.parse(userStr));
-          // Verify with backend permissions in background on initialization
+          const storedUser = JSON.parse(userStr);
+          // Data minimization: if stored session contains legacy PII, sanitize storage
+          if (storedUser && ('email' in storedUser || 'firstName' in storedUser)) {
+            const sanitized = this.minimizeRRUser(storedUser as IRRUser);
+            if (window.sessionStorage) {
+              this.setEncryptedItem(sessionStorage, this.STORAGE_KEY_USER, JSON.stringify(sanitized));
+            }
+            if (this.isPersistentEnvironment() && window.localStorage) {
+              this.setEncryptedItem(localStorage, this.STORAGE_KEY_USER, JSON.stringify(sanitized));
+            }
+          }
+
+          this.currentUser.set(storedUser);
+          // Verify with backend permissions in background on initialization to fetch full user profile into reactive memory
           this.refreshPermissions().catch((e) =>
             console.error('Initial RR permissions check error:', e),
           );
@@ -231,26 +380,39 @@ export class RRApiService {
     }
   }
 
+  /**
+   * Data Minimization: Strips sensitive PII (firstName, lastName, email) before writing to browser storage.
+   * Only non-sensitive authorization context (id, role) is persisted.
+   * Full user profiles remain strictly in Angular reactive memory (currentUser signal).
+   */
+  private minimizeRRUser(user: IRRUser): Partial<IRRUser> {
+    return {
+      id: user.id,
+      role: user.role,
+    };
+  }
+
   private saveSession(user: IRRUser, token: string) {
     if (typeof window !== 'undefined') {
-      const userJson = JSON.stringify(user);
+      const minimizedUser = this.minimizeRRUser(user);
+      const userJson = JSON.stringify(minimizedUser);
       const roleJson = JSON.stringify({ role: user.role, id: user.id });
 
       if (window.sessionStorage) {
-        this.setEncryptedItem(sessionStorage, 'rr_user', userJson);
-        this.setEncryptedItem(sessionStorage, 'rr_token', token);
-        this.setEncryptedItem(sessionStorage, 'loggedInUser', roleJson);
+        this.setEncryptedItem(sessionStorage, this.STORAGE_KEY_USER, userJson);
+        this.setEncryptedItem(sessionStorage, this.STORAGE_KEY_TOKEN, token);
+        this.setEncryptedItem(sessionStorage, this.STORAGE_KEY_ROLE, roleJson);
       }
 
       if (this.isPersistentEnvironment()) {
         if (window.localStorage) {
-          this.setEncryptedItem(localStorage, 'rr_user', userJson);
-          this.setEncryptedItem(localStorage, 'rr_token', token);
-          this.setEncryptedItem(localStorage, 'loggedInUser', roleJson);
+          this.setEncryptedItem(localStorage, this.STORAGE_KEY_USER, userJson);
+          this.setEncryptedItem(localStorage, this.STORAGE_KEY_TOKEN, token);
+          this.setEncryptedItem(localStorage, this.STORAGE_KEY_ROLE, roleJson);
         }
         (window as any).chrome?.storage?.local?.set({
-          rr_user: this.encryptData(userJson),
-          rr_token: this.encryptData(token),
+          [this.STORAGE_KEY_USER]: this.encryptData(userJson),
+          [this.STORAGE_KEY_TOKEN]: this.encryptData(token),
         });
       }
     }
@@ -263,18 +425,29 @@ export class RRApiService {
 
     if (typeof window !== 'undefined') {
       if (window.sessionStorage) {
-        this.removeStorageItem(sessionStorage, 'rr_user');
-        this.removeStorageItem(sessionStorage, 'rr_token');
-        this.removeStorageItem(sessionStorage, 'loggedInUser');
+        this.removeStorageItem(sessionStorage, this.STORAGE_KEY_USER);
+        this.removeStorageItem(sessionStorage, this.STORAGE_KEY_TOKEN);
+        this.removeStorageItem(sessionStorage, this.STORAGE_KEY_ROLE);
+        this.removeStorageItem(sessionStorage, this.LEGACY_KEY_USER);
+        this.removeStorageItem(sessionStorage, this.LEGACY_KEY_TOKEN);
+        this.removeStorageItem(sessionStorage, this.LEGACY_KEY_ROLE);
       }
 
       if (this.isPersistentEnvironment()) {
         if (window.localStorage) {
-          this.removeStorageItem(localStorage, 'rr_user');
-          this.removeStorageItem(localStorage, 'rr_token');
-          this.removeStorageItem(localStorage, 'loggedInUser');
+          this.removeStorageItem(localStorage, this.STORAGE_KEY_USER);
+          this.removeStorageItem(localStorage, this.STORAGE_KEY_TOKEN);
+          this.removeStorageItem(localStorage, this.STORAGE_KEY_ROLE);
+          this.removeStorageItem(localStorage, this.LEGACY_KEY_USER);
+          this.removeStorageItem(localStorage, this.LEGACY_KEY_TOKEN);
+          this.removeStorageItem(localStorage, this.LEGACY_KEY_ROLE);
         }
-        (window as any).chrome?.storage?.local?.remove(['rr_user', 'rr_token']);
+        (window as any).chrome?.storage?.local?.remove([
+          this.STORAGE_KEY_USER,
+          this.STORAGE_KEY_TOKEN,
+          this.LEGACY_KEY_USER,
+          this.LEGACY_KEY_TOKEN,
+        ]);
       }
     }
     this.currentUser.set(null);
@@ -362,9 +535,15 @@ export class RRApiService {
   private setupStorageTamperListener() {
     if (!isPlatformBrowser(this.platformId) || typeof window === 'undefined') return;
 
+    const isMonitoredKey = (k: string) =>
+      k === this.STORAGE_KEY_USER ||
+      k === this.STORAGE_KEY_TOKEN ||
+      k === this.LEGACY_KEY_USER ||
+      k === this.LEGACY_KEY_TOKEN;
+
     // 1. Cross-tab storage change
     window.addEventListener('storage', (event: StorageEvent) => {
-      if (event.key === 'rr_user' || event.key === 'rr_token') {
+      if (event.key && isMonitoredKey(event.key)) {
         console.warn('[Security] Cross-tab storage change detected for RR session.');
         this.ngZone.run(() => {
           this.refreshPermissions();
@@ -376,7 +555,7 @@ export class RRApiService {
     try {
       const self = this;
       const checkAndReconcile = (key: string) => {
-        if ((key === 'rr_user' || key === 'rr_token') && !self.isInternalStorageWrite) {
+        if (isMonitoredKey(key) && !self.isInternalStorageWrite) {
           console.warn('[Security] Direct in-tab storage modification detected for RR session.');
           self.ngZone.run(() => {
             self.refreshPermissions();
@@ -397,7 +576,7 @@ export class RRApiService {
 
         storage.removeItem = function (key: string) {
           originalRemoveItem.apply(this, [key]);
-          if ((key === 'rr_user' || key === 'rr_token') && !self.isInternalStorageWrite) {
+          if (isMonitoredKey(key) && !self.isInternalStorageWrite) {
             self.ngZone.run(() => {
               self.currentUser.set(null);
               self.logout();
@@ -467,11 +646,11 @@ export class RRApiService {
   getToken(): string | null {
     if (typeof window !== 'undefined') {
       if (window.sessionStorage) {
-        const token = this.getStorageItem(sessionStorage, 'rr_token');
+        const token = this.getStorageItem(sessionStorage, this.STORAGE_KEY_TOKEN);
         if (token) return token;
       }
       if (this.isPersistentEnvironment() && window.localStorage) {
-        return this.getStorageItem(localStorage, 'rr_token');
+        return this.getStorageItem(localStorage, this.STORAGE_KEY_TOKEN);
       }
     }
     return null;
@@ -500,6 +679,7 @@ export class RRApiService {
       )
     );
     this.saveSession(res.user, res.access_token);
+    console.debug(`[RR Auth] Authenticated session for user with token ${maskToken(res.access_token)}`);
     return res.user;
   }
 

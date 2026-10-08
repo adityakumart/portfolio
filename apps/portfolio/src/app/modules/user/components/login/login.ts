@@ -91,6 +91,7 @@ export class LoginComponent {
   email = signal('');
   password = signal('');
   confirmPassword = signal('');
+  rememberMe = signal(true);
 
   loading = signal(false);
   error = signal<string | null>(null);
@@ -142,7 +143,7 @@ export class LoginComponent {
 
     try {
       if (this.mode() === 'login') {
-        await this.authService.login(emailVal, passwordVal);
+        await this.authService.login(emailVal, passwordVal, this.rememberMe());
         this.success.set('Successfully logged in! Redirecting...');
         toast.success('Successfully logged in! Redirecting...');
         setTimeout(() => {
