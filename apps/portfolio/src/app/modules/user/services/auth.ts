@@ -17,7 +17,13 @@ import { firstValueFrom, fromEvent, merge, Subscription } from 'rxjs';
 import { throttleTime } from 'rxjs/operators';
 import { AES, enc } from 'crypto-js';
 import { environment } from '../../../../environments/environment';
-import { maskToken } from '../../../shared/utils/security.utils';
+import {
+  maskToken,
+  createStorageEnvelope,
+  verifyStorageEnvelope,
+  unwrapStoragePayload,
+  SecureStorageEnvelope,
+} from '../../../shared/utils/security.utils';
 import {
   User,
   AuthSession,
@@ -25,7 +31,13 @@ import {
   RefreshPermissionsResponse,
 } from '@portfolio/shared-types';
 
-export { maskToken };
+export {
+  maskToken,
+  createStorageEnvelope,
+  verifyStorageEnvelope,
+  unwrapStoragePayload,
+};
+export type { SecureStorageEnvelope };
 
 @Injectable({
   providedIn: 'root',
@@ -333,6 +345,17 @@ export class AuthService {
       : (window.sessionStorage || window.localStorage);
   }
 
+  /**
+   * Measure 2 & Phase 4: Cryptographic Integrity Envelope & Client-Side TTL
+   */
+  createEnvelope<T>(payload: T, ttlMs?: number): SecureStorageEnvelope<T> {
+    return createStorageEnvelope(payload, ttlMs);
+  }
+
+  verifyEnvelope<T>(envelope: SecureStorageEnvelope<T>): T | null {
+    return verifyStorageEnvelope(envelope);
+  }
+
   private getStorageItem(key: string, specificStorage?: Storage): string | null {
     if (typeof window === 'undefined') return null;
 
@@ -355,12 +378,35 @@ export class AuthService {
           return null;
         }
 
-        // Auto-upgrade plain JSON to encrypted in storage
-        if (raw.trim().startsWith('{')) {
-          this.setStorageItem(key, decrypted, storage);
-        }
+        try {
+          const parsed = JSON.parse(decrypted);
+          const unwrapped = unwrapStoragePayload(parsed);
+          if (!unwrapped) {
+            console.warn('[Security] Envelope verification failed (expired or tampered). Purging session.');
+            this.isInternalStorageWrite = true;
+            try {
+              storage.removeItem(key);
+              storage.removeItem(this.LEGACY_STORAGE_KEY);
+            } finally {
+              this.isInternalStorageWrite = false;
+            }
+            return null;
+          }
 
-        return decrypted;
+          const unwrappedStr =
+            typeof unwrapped.payload === 'string'
+              ? unwrapped.payload
+              : JSON.stringify(unwrapped.payload);
+
+          // Auto-upgrade plain JSON or un-enveloped session to encrypted envelope
+          if (!unwrapped.wasEnveloped || raw.trim().startsWith('{')) {
+            this.setStorageItem(key, unwrappedStr, storage);
+          }
+
+          return unwrappedStr;
+        } catch {
+          return decrypted;
+        }
       }
 
       return raw;
@@ -387,10 +433,34 @@ export class AuthService {
     if (targetStorage) {
       this.isInternalStorageWrite = true;
       try {
-        const dataToStore =
-          key === this.STORAGE_KEY || key === this.LEGACY_STORAGE_KEY
-            ? this.encryptData(value)
-            : value;
+        let dataToStore = value;
+        if (key === this.STORAGE_KEY || key === this.LEGACY_STORAGE_KEY) {
+          let parsed: unknown = null;
+          try {
+            parsed = JSON.parse(value);
+          } catch {
+            parsed = value;
+          }
+
+          let envelope: SecureStorageEnvelope<unknown>;
+          if (
+            parsed &&
+            typeof parsed === 'object' &&
+            'payload' in parsed &&
+            'storedAt' in parsed &&
+            'checksum' in parsed &&
+            'ttlMs' in parsed
+          ) {
+            envelope = parsed as SecureStorageEnvelope<unknown>;
+          } else {
+            const isRemembered = targetStorage === (typeof window !== 'undefined' ? window.localStorage : null);
+            const ttlMs = isRemembered ? 7 * 24 * 60 * 60 * 1000 : 3 * 60 * 60 * 1000;
+            envelope = createStorageEnvelope(parsed, ttlMs);
+          }
+
+          dataToStore = this.encryptData(JSON.stringify(envelope));
+        }
+
         targetStorage.setItem(key, dataToStore);
       } finally {
         this.isInternalStorageWrite = false;

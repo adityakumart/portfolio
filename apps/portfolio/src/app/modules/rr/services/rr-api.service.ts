@@ -6,7 +6,13 @@ import { firstValueFrom, fromEvent, merge, Subscription } from 'rxjs';
 import { throttleTime } from 'rxjs/operators';
 import { AES, enc } from 'crypto-js';
 import { environment } from '../../../../environments/environment';
-import { maskToken } from '../../../shared/utils/security.utils';
+import {
+  maskToken,
+  createStorageEnvelope,
+  verifyStorageEnvelope,
+  unwrapStoragePayload,
+  SecureStorageEnvelope,
+} from '../../../shared/utils/security.utils';
 import {
   IRRUser,
   IVehicle,
@@ -26,7 +32,13 @@ import {
   IVehicleUploadedAsset,
 } from '@portfolio/shared-types';
 
-export { maskToken };
+export {
+  maskToken,
+  createStorageEnvelope,
+  verifyStorageEnvelope,
+  unwrapStoragePayload,
+};
+export type { SecureStorageEnvelope };
 
 export type {
   IRRUser,
@@ -186,6 +198,17 @@ export class RRApiService {
     }
   }
 
+  /**
+   * Measure 2 & Phase 4: Cryptographic Integrity Envelope & Client-Side TTL
+   */
+  createEnvelope<T>(payload: T, ttlMs?: number): SecureStorageEnvelope<T> {
+    return createStorageEnvelope(payload, ttlMs);
+  }
+
+  verifyEnvelope<T>(envelope: SecureStorageEnvelope<T>): T | null {
+    return verifyStorageEnvelope(envelope);
+  }
+
   private getStorageItem(storage: Storage, key: string): string | null {
     let raw = storage.getItem(key);
     // Transparent migration from legacy un-obfuscated keys
@@ -217,23 +240,76 @@ export class RRApiService {
       return null;
     }
 
-    // Auto-upgrade plain storage to encrypted in storage
-    if (raw.trim().startsWith('{') || ((key === this.STORAGE_KEY_TOKEN || key === this.LEGACY_KEY_TOKEN) && !raw.startsWith('U2FsdGVkX1'))) {
-      this.isInternalStorageWrite = true;
-      try {
-        storage.setItem(key, this.encryptData(decrypted));
-      } finally {
-        this.isInternalStorageWrite = false;
+    try {
+      const parsed = JSON.parse(decrypted);
+      const unwrapped = unwrapStoragePayload(parsed);
+      if (!unwrapped) {
+        console.warn(`[Security] RR storage envelope for ${key} invalid or expired.`);
+        this.isInternalStorageWrite = true;
+        try {
+          storage.removeItem(key);
+        } finally {
+          this.isInternalStorageWrite = false;
+        }
+        return null;
       }
-    }
 
-    return decrypted;
+      const unwrappedStr =
+        typeof unwrapped.payload === 'string'
+          ? unwrapped.payload
+          : JSON.stringify(unwrapped.payload);
+
+      // Auto-upgrade plain or legacy unenveloped storage to encrypted envelope
+      if (!unwrapped.wasEnveloped || raw.trim().startsWith('{') || !raw.startsWith('U2FsdGVkX1')) {
+        this.setEncryptedItem(storage, key, unwrappedStr);
+      }
+
+      return unwrappedStr;
+    } catch {
+      return decrypted;
+    }
   }
 
   private setEncryptedItem(storage: Storage, key: string, value: string): void {
     this.isInternalStorageWrite = true;
     try {
-      storage.setItem(key, this.encryptData(value));
+      let dataToStore = value;
+      if (
+        key === this.STORAGE_KEY_USER ||
+        key === this.STORAGE_KEY_TOKEN ||
+        key === this.STORAGE_KEY_ROLE ||
+        key === this.LEGACY_KEY_USER ||
+        key === this.LEGACY_KEY_TOKEN ||
+        key === this.LEGACY_KEY_ROLE
+      ) {
+        let parsed: unknown = null;
+        try {
+          parsed = JSON.parse(value);
+        } catch {
+          parsed = value;
+        }
+
+        let envelope: SecureStorageEnvelope<unknown>;
+        if (
+          parsed &&
+          typeof parsed === 'object' &&
+          'payload' in parsed &&
+          'storedAt' in parsed &&
+          'checksum' in parsed &&
+          'ttlMs' in parsed
+        ) {
+          envelope = parsed as SecureStorageEnvelope<unknown>;
+        } else {
+          // RR session TTL: 24h for persistent environments, 2h default
+          const ttlMs = this.isPersistentEnvironment()
+            ? 24 * 60 * 60 * 1000
+            : 2 * 60 * 60 * 1000;
+          envelope = createStorageEnvelope(parsed, ttlMs);
+        }
+
+        dataToStore = JSON.stringify(envelope);
+      }
+      storage.setItem(key, this.encryptData(dataToStore));
     } finally {
       this.isInternalStorageWrite = false;
     }

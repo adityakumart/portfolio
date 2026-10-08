@@ -384,4 +384,57 @@ describe('AuthService', () => {
 
     expect(refreshSpy).toHaveBeenCalled();
   });
+
+  describe('Signed Storage Envelope & Client-Side TTL (Phase 4 / Measure 2)', () => {
+    it('should package payload into signed envelope and verify integrity', () => {
+      const payload = { userId: 'usr-123', role: 'admin' };
+      const envelope = service.createEnvelope(payload, 2 * 60 * 60 * 1000);
+
+      expect(envelope.payload).toEqual(payload);
+      expect(typeof envelope.storedAt).toBe('number');
+      expect(envelope.ttlMs).toBe(7200000);
+      expect(typeof envelope.checksum).toBe('string');
+      expect(envelope.checksum.length).toBe(64); // SHA-256 hex string
+
+      const verified = service.verifyEnvelope(envelope);
+      expect(verified).toEqual(payload);
+    });
+
+    it('should reject expired storage envelope and purge data from storage', () => {
+      const payload = { access_token: 'old-token', user: { id: 'usr-exp' } };
+      // Expired envelope: stored 3 hours ago with 1-hour TTL
+      const expiredEnvelope = {
+        payload,
+        storedAt: Date.now() - 3 * 60 * 60 * 1000,
+        ttlMs: 60 * 60 * 1000,
+        checksum: (service as any).createEnvelope(payload, 60 * 60 * 1000).checksum,
+      };
+
+      const encrypted = (service as any).encryptData(JSON.stringify(expiredEnvelope));
+      mockStorage.setItem((service as any).STORAGE_KEY, encrypted);
+
+      const result = (service as any).getStorageItem((service as any).STORAGE_KEY);
+      expect(result).toBeNull();
+      // Should purge expired key from storage
+      expect(mockStorage.getItem((service as any).STORAGE_KEY)).toBeNull();
+    });
+
+    it('should detect envelope checksum mismatch when payload is tampered with and purge storage', () => {
+      const payload = { access_token: 'token-123', user: { id: 'usr-tamper', role: 'viewer' } };
+      const validEnvelope = service.createEnvelope(payload, 3600000);
+
+      // Maliciously tamper with payload without valid signature
+      const tamperedEnvelope = {
+        ...validEnvelope,
+        payload: { ...payload, user: { ...payload.user, role: 'superadmin' } },
+      };
+
+      const encrypted = (service as any).encryptData(JSON.stringify(tamperedEnvelope));
+      mockStorage.setItem((service as any).STORAGE_KEY, encrypted);
+
+      const result = (service as any).getStorageItem((service as any).STORAGE_KEY);
+      expect(result).toBeNull();
+      expect(mockStorage.getItem((service as any).STORAGE_KEY)).toBeNull();
+    });
+  });
 });
