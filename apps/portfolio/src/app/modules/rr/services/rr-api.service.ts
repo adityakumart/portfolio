@@ -94,9 +94,42 @@ export class RRApiService {
     return isExtension || isCapacitor || isTauri;
   }
 
+  /**
+   * Derives a device/browser-bound cryptographic key using hardware and environment entropy.
+   * Prevents stolen ciphertext from being decrypted on another device, browser profile, or origin.
+   */
+  private getDeviceBoundKey(): string {
+    if (!isPlatformBrowser(this.platformId) || typeof window === 'undefined') {
+      return this.ENCRYPTION_KEY;
+    }
+
+    try {
+      const screenWidth = typeof screen !== 'undefined' ? screen.width : 0;
+      const screenHeight = typeof screen !== 'undefined' ? screen.height : 0;
+      // Normalize screen dimensions so mobile device rotation between portrait and landscape does not invalidate the key
+      const screenDim = `${Math.max(screenWidth, screenHeight)}x${Math.min(screenWidth, screenHeight)}`;
+      const colorDepth = typeof screen !== 'undefined' ? screen.colorDepth : 24;
+      const concurrency = typeof navigator !== 'undefined' ? navigator.hardwareConcurrency || 2 : 2;
+      const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown';
+      const origin = window.location ? window.location.origin : '';
+
+      const deviceEntropy = [
+        origin,
+        userAgent,
+        screenDim,
+        colorDepth,
+        concurrency,
+      ].join('::');
+
+      return `${this.ENCRYPTION_KEY}::${deviceEntropy}`;
+    } catch {
+      return this.ENCRYPTION_KEY;
+    }
+  }
+
   private encryptData(plainText: string): string {
     try {
-      return AES.encrypt(plainText, this.ENCRYPTION_KEY).toString();
+      return AES.encrypt(plainText, this.getDeviceBoundKey()).toString();
     } catch (e) {
       console.error('[Security] Error encrypting RR session data:', e);
       return plainText;
@@ -113,8 +146,16 @@ export class RRApiService {
     }
 
     try {
-      const bytes = AES.decrypt(cipherText, this.ENCRYPTION_KEY);
-      const decrypted = bytes.toString(enc.Utf8);
+      const key = this.getDeviceBoundKey();
+      let bytes = AES.decrypt(cipherText, key);
+      let decrypted = bytes.toString(enc.Utf8);
+
+      // Backward compatibility fallback: decrypt older sessions created with static ENCRYPTION_KEY
+      if (!decrypted && key !== this.ENCRYPTION_KEY) {
+        bytes = AES.decrypt(cipherText, this.ENCRYPTION_KEY);
+        decrypted = bytes.toString(enc.Utf8);
+      }
+
       if (!decrypted) {
         return null;
       }

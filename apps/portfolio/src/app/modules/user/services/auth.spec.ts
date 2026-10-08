@@ -4,6 +4,7 @@ import { Injector, PLATFORM_ID, NgZone } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { of, throwError, Observable } from 'rxjs';
+import { AES } from 'crypto-js';
 import { AuthService } from './auth';
 
 class MockStorage {
@@ -102,6 +103,79 @@ describe('AuthService', () => {
     const decrypted = JSON.parse(decryptedStr!);
     expect(decrypted.access_token).toBe('valid-token');
     expect(decrypted.user.email).toBe('u1@test.com');
+  });
+
+  it('should derive device-bound encryption key and reject ciphertext from another device/browser', () => {
+    (service as any).platformId = 'browser';
+    (global as any).window = {
+      location: { origin: 'http://localhost:4200' },
+      localStorage: mockStorage,
+    };
+    Object.defineProperty(globalThis, 'screen', {
+      value: { width: 1920, height: 1080, colorDepth: 24 },
+      configurable: true,
+      writable: true,
+    });
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { userAgent: 'Chrome/120', hardwareConcurrency: 8 },
+      configurable: true,
+      writable: true,
+    });
+
+    const key = (service as any).getDeviceBoundKey();
+    expect(key).toContain('portfolio_secure_session_v1');
+    expect(key).toContain('http://localhost:4200');
+    expect(key).toContain('1920x1080');
+
+    // Encrypt on Device A
+    const plainText = JSON.stringify({ token: 'device-bound-secret' });
+    const encrypted = (service as any).encryptData(plainText);
+    expect(encrypted).toBeTruthy();
+
+    // Successfully decrypts on Device A
+    expect((service as any).decryptData(encrypted)).toBe(plainText);
+
+    // Simulate attacker copying ciphertext to Device B (different user-agent and screen)
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { userAgent: 'AttackerBrowser/1.0', hardwareConcurrency: 4 },
+      configurable: true,
+      writable: true,
+    });
+    Object.defineProperty(globalThis, 'screen', {
+      value: { width: 1366, height: 768, colorDepth: 24 },
+      configurable: true,
+      writable: true,
+    });
+
+    // Decryption must fail (returns null) on Device B
+    const compromisedDecrypted = (service as any).decryptData(encrypted);
+    expect(compromisedDecrypted).toBeNull();
+  });
+
+  it('should maintain backward compatibility and decrypt sessions created with static encryption key', () => {
+    (service as any).platformId = 'browser';
+    (global as any).window = {
+      location: { origin: 'http://localhost:4200' },
+      localStorage: mockStorage,
+    };
+    Object.defineProperty(globalThis, 'screen', {
+      value: { width: 1920, height: 1080, colorDepth: 24 },
+      configurable: true,
+      writable: true,
+    });
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { userAgent: 'Chrome/120', hardwareConcurrency: 8 },
+      configurable: true,
+      writable: true,
+    });
+
+    // Ciphertext created with legacy static key
+    const legacyPlain = JSON.stringify({ access_token: 'legacy-token' });
+    const legacyCipher = AES.encrypt(legacyPlain, 'portfolio_secure_session_v1').toString();
+
+    // Must gracefully decrypt through fallback
+    const decrypted = (service as any).decryptData(legacyCipher);
+    expect(decrypted).toBe(legacyPlain);
   });
 
   it('should refresh permissions from backend and update currentUser and encrypted session', async () => {
