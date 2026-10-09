@@ -258,7 +258,7 @@ test.describe('User Module - Authentication, Route Guards & Profile Hub', () => 
         page.getByRole('heading', { name: 'Diet & Hydration' }),
       ).toBeVisible();
       await expect(
-        page.getByRole('heading', { name: 'Notes & Planner' }),
+        page.getByRole('heading', { name: 'Planner' }),
       ).toBeVisible();
     });
 

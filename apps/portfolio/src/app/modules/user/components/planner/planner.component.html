@@ -22,7 +22,7 @@
           <ng-icon name="lucideCheckSquare" class="header-icon"></ng-icon>
         </div>
         <div>
-          <h1 class="page-title">Notes & Planner</h1>
+          <h1 class="page-title">Planner</h1>
           <p class="page-subtitle">
             Capture thoughts, organize checklists, and stay on top of notifications
           </p>
@@ -70,8 +70,9 @@
 
         <button
           hlmBtn
-          variant="outline"
+          [variant]="state.activeTab() === 'notes' ? 'default' : 'outline'"
           size="sm"
+          [class.primary-add-btn]="state.activeTab() === 'notes'"
           class="shortcut-btn"
           (click)="openNoteModal()"
           title="New Note (Ctrl+N)"
@@ -83,9 +84,10 @@
 
         <button
           hlmBtn
-          variant="default"
+          [variant]="state.activeTab() === 'todos' ? 'default' : 'outline'"
           size="sm"
-          class="primary-add-btn shortcut-btn"
+          [class.primary-add-btn]="state.activeTab() === 'todos'"
+          class="shortcut-btn"
           (click)="openTodoModal()"
           title="New Task (Ctrl+T)"
         >
@@ -105,7 +107,7 @@
           #searchInput
           id="planner-search-input"
           type="text"
-          placeholder="Search notes and tasks... (Ctrl+F)"
+          [placeholder]="state.activeTab() === 'notes' ? 'Search notes... (Ctrl+F)' : 'Search tasks... (Ctrl+F)'"
           [value]="state.searchQuery()"
           (input)="state.searchQuery.set($any($event.target).value)"
           class="search-input"
@@ -122,31 +124,31 @@
         }
       </div>
 
-      <!-- Mobile View Segmented Tabs -->
-      <div class="segmented-tabs">
+      <!-- Navigation Tabs: To-do List & Notes -->
+      <div class="segmented-tabs" role="tablist" aria-label="Planner views">
         <button
           type="button"
-          class="seg-tab"
-          [class.active]="state.activeTab() === 'all'"
-          (click)="state.activeTab.set('all')"
-        >
-          Overview
-        </button>
-        <button
-          type="button"
-          class="seg-tab"
-          [class.active]="state.activeTab() === 'notes'"
-          (click)="state.activeTab.set('notes')"
-        >
-          Notes ({{ state.notes().length }})
-        </button>
-        <button
-          type="button"
+          role="tab"
+          [attr.aria-selected]="state.activeTab() === 'todos'"
           class="seg-tab"
           [class.active]="state.activeTab() === 'todos'"
-          (click)="state.activeTab.set('todos')"
+          (click)="setTab('todos')"
         >
-          Tasks ({{ state.pendingTodos().length }})
+          <ng-icon name="lucideCheckSquare" class="tab-icon"></ng-icon>
+          <span>To-do List</span>
+          <span class="tab-count">{{ state.pendingTodos().length }}</span>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          [attr.aria-selected]="state.activeTab() === 'notes'"
+          class="seg-tab"
+          [class.active]="state.activeTab() === 'notes'"
+          (click)="setTab('notes')"
+        >
+          <ng-icon name="lucideStickyNote" class="tab-icon"></ng-icon>
+          <span>Notes</span>
+          <span class="tab-count">{{ state.notes().length }}</span>
         </button>
       </div>
     </div>
@@ -182,8 +184,8 @@
       [class.view-notes]="state.activeTab() === 'notes'"
       [class.view-todos]="state.activeTab() === 'todos'"
     >
-      <!-- LEFT COLUMN: NOTES & SCRATCHPAD -->
-      @if (state.activeTab() === 'all' || state.activeTab() === 'notes') {
+      <!-- NOTES PANEL -->
+      @if (state.activeTab() === 'notes') {
         <section class="notes-panel">
           <div class="panel-header">
             <div class="panel-title-wrap">
@@ -251,8 +253,8 @@
         </section>
       }
 
-      <!-- RIGHT COLUMN: TO-DO TASKS & REMINDERS (LIST OR KANBAN) -->
-      @if (state.activeTab() === 'all' || state.activeTab() === 'todos') {
+      <!-- TO-DO LIST PANEL (LIST OR KANBAN) -->
+      @if (state.activeTab() === 'todos') {
         <section class="todos-panel" [class.full-kanban-panel]="state.tasksViewMode() === 'kanban'">
           <div class="panel-header">
             <div class="panel-title-wrap">

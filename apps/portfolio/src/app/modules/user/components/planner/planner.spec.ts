@@ -88,20 +88,25 @@ test.describe('User Module - Planner (Notes, To-Dos & Multi-Platform Reminders)'
       await page.waitForLoadState('domcontentloaded');
     });
 
-    test('should render planner header, search bar, and both split panels', async ({ page }) => {
-      await expect(page.locator('.page-title')).toHaveText('Notes & Planner');
+    test('should render planner header, search bar, and separate To-do List and Notes tabs', async ({ page }) => {
+      await expect(page.locator('.page-title')).toHaveText('Planner');
       await expect(page.locator('#planner-search-input')).toBeVisible();
 
-      // Saved Notes panel
-      const notesPanel = page.locator('.notes-panel');
-      await expect(notesPanel).toBeVisible();
-      await expect(notesPanel.getByText('Architecture Strategy')).toBeVisible();
+      const segTabs = page.locator('.segmented-tabs');
+      await expect(segTabs).toBeVisible();
 
-      // To-Do List panel
+      // To-Do List panel initially active
       const todosPanel = page.locator('.todos-panel');
       await expect(todosPanel).toBeVisible();
       await expect(todosPanel.getByText('Deploy Phase 2 build')).toBeVisible();
       await expect(todosPanel.getByText('urgent')).toBeVisible();
+
+      // Switch to Notes tab
+      await segTabs.getByRole('button', { name: /Notes/ }).click();
+      const notesPanel = page.locator('.notes-panel');
+      await expect(notesPanel).toBeVisible();
+      await expect(notesPanel.getByText('Architecture Strategy')).toBeVisible();
+      await expect(page.locator('.todos-panel')).not.toBeVisible();
     });
 
     test('should open Note modal and create note', async ({ page }) => {
@@ -197,8 +202,8 @@ test.describe('User Module - Planner (Notes, To-Dos & Multi-Platform Reminders)'
       await expect(page.locator('.notes-panel')).toBeVisible();
       await expect(page.locator('.todos-panel')).not.toBeVisible();
 
-      // Click Tasks tab
-      await segTabs.getByRole('button', { name: /Tasks/ }).click();
+      // Click To-do List tab
+      await segTabs.getByRole('button', { name: /To-do List/ }).click();
       await expect(page.locator('.todos-panel')).toBeVisible();
       await expect(page.locator('.notes-panel')).not.toBeVisible();
 
@@ -221,6 +226,9 @@ test.describe('User Module - Planner (Notes, To-Dos & Multi-Platform Reminders)'
     });
 
     test('should render and toggle interactive markdown checklist items in notes', async ({ page }) => {
+      // Switch to Notes tab
+      await page.locator('.segmented-tabs').getByRole('button', { name: /Notes/ }).click();
+
       // Seed note with checklist syntax
       await page.route('**/api/user/planner/notes/mock-note-1', async (route) => {
         if (route.request().method() === 'PUT') {
