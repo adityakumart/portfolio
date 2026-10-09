@@ -41,7 +41,8 @@ export interface IEmployee {
   address: string;
   allowLogin: boolean;
   role: RRRole;
-  passwordHash?: string; // Only for admin
+  password?: string; // Optional raw password passed from registration form (hidden field)
+  passwordHash?: string; // Bcrypt hashed password
   createdAt: string;
   isDeleted?: boolean;
   deletedAt?: string | null;

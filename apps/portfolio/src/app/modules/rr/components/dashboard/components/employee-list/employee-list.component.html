@@ -99,7 +99,7 @@
     <div class="shrink-0 flex items-center justify-between pb-3 border-b">
       <h3 class="text-lg font-bold flex items-center gap-2">
         <ng-icon name="lucideBadgeCheck" class="text-primary"></ng-icon>
-        <span>{{ editingEmployeeMode() ? 'Modify Staff Record' : 'Register New Desk Agent' }}</span>
+        <span>{{ editingEmployeeMode() ? 'Modify Staff Record' : 'Register New Employee' }}</span>
       </h3>
       <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 text-muted-foreground hover:text-foreground" (click)="closeEmployeeFormModal()" aria-label="Close dialog">
         <ng-icon name="lucideX"></ng-icon>
@@ -107,6 +107,9 @@
     </div>
 
     <form [formGroup]="employeeFormGroup" class="flex flex-col flex-1 min-h-0">
+      <!-- Hidden password field (encrypted using bcrypt in API) -->
+      <input type="hidden" formControlName="password" id="staffPassword" />
+
       <!-- Scrollable Body -->
       <div class="flex-1 min-h-0 overflow-y-auto py-3 pr-1 space-y-4">
       <div class="p-4 rounded-xl border bg-card space-y-4">
@@ -116,6 +119,11 @@
         </h4>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="sm:col-span-2">
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Employee ID</label>
+            <input hlmInput formControlName="id" class="w-full text-sm font-mono bg-muted/40" [placeholder]="editingEmployeeMode() ? '' : 'Auto-generated on save (e.g. RRA003)'" [readonly]="true" />
+          </div>
+
           <div>
             <label hlmLabel class="text-xs text-muted-foreground block mb-1">First Name</label>
             <input hlmInput formControlName="firstName" class="w-full text-sm" />
