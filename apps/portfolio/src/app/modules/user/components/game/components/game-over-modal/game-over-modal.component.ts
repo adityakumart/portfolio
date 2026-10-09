@@ -199,6 +199,7 @@ export class GameOverModalComponent {
   onPlayAgain(): void {
     const settings = this.engine.state().settings;
     this.engine.startGame({
+      turnDurationSeconds: settings.turnDurationSeconds,
       durationSeconds: settings.durationSeconds,
       playerNames: settings.players.map((p) => p.name),
     });

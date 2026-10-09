@@ -66,7 +66,7 @@ import { HlmBadgeImports } from '@spartan-ng/hel/badge';
 
       <!-- Settings Card -->
       <div class="bg-card/90 border border-border/80 rounded-2xl p-6 md:p-8 shadow-xl backdrop-blur-md space-y-8">
-        <!-- 1. Custom Time Selector (00:30 to 59:30) -->
+        <!-- 1. Turn Time Per Player Selector -->
         <div class="space-y-4">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
@@ -74,53 +74,54 @@ import { HlmBadgeImports } from '@spartan-ng/hel/badge';
                 <ng-icon name="lucideClock" class="text-base"></ng-icon>
               </div>
               <div>
-                <h2 class="text-sm md:text-base font-bold text-foreground">Game Duration</h2>
-                <p class="text-xs text-muted-foreground">Select session time (00:30 to 59:30)</p>
+                <h2 class="text-sm md:text-base font-bold text-foreground">Turn Time Per Player</h2>
+                <p class="text-xs text-muted-foreground">Each player gets this selected time to guess movies on their turn.</p>
               </div>
             </div>
 
             <!-- Calculated Word Formula Badge -->
             <div class="px-3 py-1 rounded-xl bg-muted/60 border border-border/80 text-xs font-mono font-medium text-foreground">
               <span class="text-indigo-400 font-bold font-mono">{{ estimatedWordCount() }}</span> words
-              <span class="text-muted-foreground text-[10px] hidden sm:inline">(1 word / 5s)</span>
+              <span class="text-muted-foreground text-[10px] hidden sm:inline">(buffered for all turns)</span>
             </div>
           </div>
 
           <!-- Time Display & Stepper Controls -->
           <div class="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-xl bg-muted/30 border border-border/60">
             <div class="text-4xl font-extrabold font-mono text-indigo-400 tracking-wider">
-              {{ formattedTime() }}
+              {{ formattedTurnTime() }}
+              <span class="text-xs font-sans text-muted-foreground font-semibold">/ player</span>
             </div>
 
             <div class="flex items-center gap-2 flex-wrap justify-center sm:ml-auto">
               <button
                 type="button"
                 (click)="adjustTime(-30)"
-                [disabled]="durationSeconds() <= 30"
+                [disabled]="turnDurationSeconds() <= 30"
                 class="px-2.5 py-1.5 rounded-lg border border-border bg-card hover:bg-muted text-xs font-semibold text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-all"
               >
                 -30s
               </button>
               <button
                 type="button"
-                (click)="adjustTime(-60)"
-                [disabled]="durationSeconds() <= 60"
+                (click)="adjustTime(-15)"
+                [disabled]="turnDurationSeconds() <= 15"
                 class="px-2.5 py-1.5 rounded-lg border border-border bg-card hover:bg-muted text-xs font-semibold text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-all"
               >
-                -1m
+                -15s
               </button>
               <button
                 type="button"
-                (click)="adjustTime(60)"
-                [disabled]="durationSeconds() >= 3510"
+                (click)="adjustTime(15)"
+                [disabled]="turnDurationSeconds() >= 300"
                 class="px-2.5 py-1.5 rounded-lg border border-border bg-card hover:bg-muted text-xs font-semibold text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-all"
               >
-                +1m
+                +15s
               </button>
               <button
                 type="button"
                 (click)="adjustTime(30)"
-                [disabled]="durationSeconds() >= 3570"
+                [disabled]="turnDurationSeconds() >= 300"
                 class="px-2.5 py-1.5 rounded-lg border border-border bg-card hover:bg-muted text-xs font-semibold text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-all"
               >
                 +30s
@@ -128,16 +129,48 @@ import { HlmBadgeImports } from '@spartan-ng/hel/badge';
             </div>
           </div>
 
+          <!-- Presets Quick Select -->
+          <div class="flex items-center gap-2 flex-wrap pt-1">
+            <span class="text-xs font-semibold text-muted-foreground mr-1">Quick Select:</span>
+            @for (preset of presets; track preset) {
+              <button
+                type="button"
+                (click)="setTurnDuration(preset)"
+                [class.border-indigo-500]="turnDurationSeconds() === preset"
+                [class.bg-indigo-500/20]="turnDurationSeconds() === preset"
+                [class.text-indigo-400]="turnDurationSeconds() === preset"
+                class="px-3 py-1 rounded-lg border border-border/80 bg-card hover:bg-muted text-xs font-bold text-foreground transition-all cursor-pointer"
+              >
+                {{ preset }}s
+              </button>
+            }
+          </div>
+
           <!-- Range Slider -->
           <input
             type="range"
-            min="30"
-            max="3570"
-            step="30"
-            [ngModel]="durationSeconds()"
+            min="15"
+            max="300"
+            step="15"
+            [ngModel]="turnDurationSeconds()"
             (ngModelChange)="onSliderChange($event)"
             class="w-full accent-indigo-500 cursor-pointer h-2 bg-muted rounded-lg"
           />
+
+          <!-- Match Summary Indicator -->
+          <div class="p-3.5 rounded-xl bg-indigo-500/10 border border-indigo-500/25 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs">
+            <div class="flex items-center gap-2 text-indigo-300 font-medium">
+              <ng-icon name="lucideSparkles" class="text-sm text-indigo-400"></ng-icon>
+              <span>
+                <strong class="text-foreground">{{ playersList().length }} Players</strong> &times;
+                <strong class="text-foreground">{{ turnDurationSeconds() }}s</strong> per player =
+                <strong class="text-indigo-400 font-mono text-sm ml-1">{{ formattedTotalMatchTime() }}</strong> Total Match Duration
+              </span>
+            </div>
+            <span class="text-[11px] text-muted-foreground font-mono">
+              Sequentially timed turns
+            </span>
+          </div>
         </div>
 
         <!-- 2. Dynamic Player Registration Form -->
@@ -202,7 +235,7 @@ import { HlmBadgeImports } from '@spartan-ng/hel/badge';
             class="w-full py-4 rounded-xl font-bold text-base text-white bg-gradient-to-r from-indigo-600 via-purple-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 shadow-xl shadow-indigo-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
           >
             <ng-icon name="lucidePlay" class="text-lg"></ng-icon>
-            <span>Start Guessing Game ({{ formattedTime() }})</span>
+            <span>Start Guessing Game ({{ turnDurationSeconds() }}s per player)</span>
           </button>
         </div>
       </div>
@@ -212,37 +245,55 @@ import { HlmBadgeImports } from '@spartan-ng/hel/badge';
 })
 export class GameDashboardComponent {
   @Output() startGame = new EventEmitter<{
+    turnDurationSeconds: number;
     durationSeconds: number;
     playerNames: string[];
   }>();
 
-  durationSeconds = signal<number>(120);
+  readonly presets = [30, 45, 60, 90, 120];
+
+  turnDurationSeconds = signal<number>(60);
 
   playersList = signal<Array<{ id: string; name: string }>>([
     { id: '1', name: 'Player 1' },
     { id: '2', name: 'Player 2' },
   ]);
 
-  formattedTime = computed(() => {
-    const total = this.durationSeconds();
+  formattedTurnTime = computed(() => {
+    const total = this.turnDurationSeconds();
+    const mins = Math.floor(total / 60);
+    const secs = total % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  });
+
+  totalMatchDurationSeconds = computed(() => {
+    return this.turnDurationSeconds() * this.playersList().length;
+  });
+
+  formattedTotalMatchTime = computed(() => {
+    const total = this.totalMatchDurationSeconds();
     const mins = Math.floor(total / 60);
     const secs = total % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   });
 
   estimatedWordCount = computed(() => {
-    return Math.ceil(this.durationSeconds() / 5);
+    return Math.ceil((this.turnDurationSeconds() * this.playersList().length) / 5);
   });
 
+  setTurnDuration(seconds: number): void {
+    this.turnDurationSeconds.set(Math.min(300, Math.max(15, seconds)));
+  }
+
   adjustTime(deltaSeconds: number): void {
-    const next = this.durationSeconds() + deltaSeconds;
-    this.durationSeconds.set(Math.min(3570, Math.max(30, next)));
+    const next = this.turnDurationSeconds() + deltaSeconds;
+    this.turnDurationSeconds.set(Math.min(300, Math.max(15, next)));
   }
 
   onSliderChange(value: number): void {
     const val = Number(value);
     if (!isNaN(val)) {
-      this.durationSeconds.set(Math.min(3570, Math.max(30, val)));
+      this.turnDurationSeconds.set(Math.min(300, Math.max(15, val)));
     }
   }
 
@@ -271,7 +322,8 @@ export class GameDashboardComponent {
       (p, i) => p.name.trim() || `Player ${i + 1}`,
     );
     this.startGame.emit({
-      durationSeconds: this.durationSeconds(),
+      turnDurationSeconds: this.turnDurationSeconds(),
+      durationSeconds: this.totalMatchDurationSeconds(),
       playerNames,
     });
   }

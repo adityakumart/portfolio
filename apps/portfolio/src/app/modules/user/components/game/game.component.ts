@@ -49,7 +49,11 @@ import { GameOverModalComponent } from './components/game-over-modal/game-over-m
 export class GameComponent {
   readonly engine = inject(GameEngineService);
 
-  onStartGame(config: { durationSeconds: number; playerNames: string[] }): void {
+  onStartGame(config: {
+    turnDurationSeconds?: number;
+    durationSeconds?: number;
+    playerNames: string[];
+  }): void {
     this.engine.startGame(config);
   }
 }
