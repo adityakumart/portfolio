@@ -19,6 +19,7 @@ import {
 } from '@portfolio/shared-types';
 
 const INITIAL_SETTINGS: IGameSettings = {
+  turnDurationSeconds: 60,
   durationSeconds: 120,
   targetWordCount: 24,
   players: [
@@ -44,7 +45,9 @@ const INITIAL_SETTINGS: IGameSettings = {
 const INITIAL_STATE: IGameSessionState = {
   status: 'setup',
   settings: INITIAL_SETTINGS,
-  remainingSeconds: 120,
+  remainingSeconds: 60,
+  turnState: 'playing',
+  completedPlayerIds: [],
   activePlayerIndex: 0,
   activeWord: null,
   queue: [],
@@ -80,12 +83,21 @@ export class GameEngineService implements OnDestroy {
   // Computed helper signals
   readonly status = computed(() => this.state().status);
   readonly remainingSeconds = computed(() => this.state().remainingSeconds);
+  readonly turnState = computed(() => this.state().turnState);
+  readonly isTurnHandover = computed(() => this.state().turnState === 'turn_handover');
+  readonly completedPlayerIds = computed(() => this.state().completedPlayerIds);
   readonly activePlayerIndex = computed(() => this.state().activePlayerIndex);
   readonly players = computed(() => this.state().settings.players);
   readonly activePlayer = computed<IGamePlayer | undefined>(() => {
     const list = this.players();
     const idx = this.activePlayerIndex();
     return list[idx] || list[0];
+  });
+  readonly previousPlayer = computed<IGamePlayer | undefined>(() => {
+    const list = this.players();
+    const currentIdx = this.activePlayerIndex();
+    const prevIdx = currentIdx - 1;
+    return prevIdx >= 0 && prevIdx < list.length ? list[prevIdx] : undefined;
   });
   readonly activeWord = computed(() => this.state().activeWord);
   readonly queueLength = computed(() => this.state().queue.length);
@@ -115,17 +127,24 @@ export class GameEngineService implements OnDestroy {
 
   /**
    * Prepares and starts a new game session:
-   * 1. Calculates target word count (1 word per 5 seconds).
-   * 2. Clears seen word IDs and word queue.
-   * 3. Fetches initial batch of words (up to 10).
-   * 4. Starts drift-corrected countdown timer and background pre-fetch polling.
+   * 1. Configures dedicated turn duration per player.
+   * 2. Calculates target word count for all player turns combined.
+   * 3. Clears seen word IDs and word queue.
+   * 4. Fetches initial batch of words (up to 10).
+   * 5. Starts active player's turn timer and background pre-fetch polling.
    */
   startGame(customSettings: {
-    durationSeconds: number;
+    turnDurationSeconds?: number;
+    durationSeconds?: number;
     playerNames: string[];
   }): void {
-    const duration = Math.min(3570, Math.max(30, customSettings.durationSeconds));
-    const targetWordCount = Math.ceil(duration / 5);
+    const turnDuration = Math.min(
+      3570,
+      Math.max(15, customSettings.turnDurationSeconds ?? customSettings.durationSeconds ?? 60),
+    );
+    const playerCount = Math.max(1, customSettings.playerNames.length);
+    const targetWordCount = Math.ceil((turnDuration * playerCount) / 5);
+    const totalMatchDuration = turnDuration * playerCount;
 
     const playerPalette = [
       { colorClass: 'text-violet-400 border-violet-500/30 bg-violet-500/10', badgeBgClass: 'bg-violet-500/20 text-violet-300' },
@@ -151,7 +170,8 @@ export class GameEngineService implements OnDestroy {
     });
 
     const settings: IGameSettings = {
-      durationSeconds: duration,
+      turnDurationSeconds: turnDuration,
+      durationSeconds: totalMatchDuration,
       targetWordCount,
       players,
     };
@@ -163,7 +183,9 @@ export class GameEngineService implements OnDestroy {
       ...s,
       status: 'in_progress',
       settings,
-      remainingSeconds: duration,
+      remainingSeconds: turnDuration,
+      turnState: 'playing',
+      completedPlayerIds: [],
       activePlayerIndex: 0,
       activeWord: null,
       queue: [],
@@ -198,25 +220,31 @@ export class GameEngineService implements OnDestroy {
           this.speechService.speak(active.englishTranslation);
         }
 
-        // Start countdown and background poller
-        this.startTimerLoop(duration);
+        // Start active player's countdown and background poller
+        this.startTurnTimer(turnDuration);
         this.startBackgroundPoller();
       },
       error: (err) => {
         console.error('Failed to fetch initial game words batch:', err);
         this.updateState((s) => ({ ...s, isFetchingWords: false }));
-        this.startTimerLoop(duration);
+        this.startTurnTimer(turnDuration);
       },
     });
   }
 
   /**
-   * Drift-corrected countdown timer using performance.now()
+   * Drift-corrected turn timer using performance.now()
    */
-  private startTimerLoop(durationSeconds: number): void {
+  private startTurnTimer(durationSeconds?: number): void {
     if (!isPlatformBrowser(this.platformId)) return;
 
-    this.gameEndTimeMs = performance.now() + durationSeconds * 1000;
+    if (this.timerSub) {
+      this.timerSub.unsubscribe();
+      this.timerSub = null;
+    }
+
+    const duration = durationSeconds ?? this.state$.value.remainingSeconds;
+    this.gameEndTimeMs = performance.now() + duration * 1000;
 
     this.timerSub = timer(0, 250).subscribe(() => {
       const now = performance.now();
@@ -229,9 +257,83 @@ export class GameEngineService implements OnDestroy {
       }));
 
       if (remainingSec <= 0) {
-        this.endGame();
+        this.handleTurnTimeUp();
       }
     });
+  }
+
+  /**
+   * Invoked when active player's turn clock reaches 0.
+   * If subsequent players remain, switches to 'turn_handover'.
+   * If all players finished, ends game.
+   */
+  private handleTurnTimeUp(): void {
+    if (this.timerSub) {
+      this.timerSub.unsubscribe();
+      this.timerSub = null;
+    }
+
+    const state = this.state$.value;
+    const currentPlayers = state.settings.players;
+    const currentPlayer = currentPlayers[state.activePlayerIndex];
+    const nextPlayerIndex = state.activePlayerIndex + 1;
+    const updatedCompleted = currentPlayer
+      ? [...state.completedPlayerIds, currentPlayer.id]
+      : state.completedPlayerIds;
+
+    if (currentPlayer) {
+      this.speechService.speak(`Time's up for ${currentPlayer.name}!`);
+    }
+
+    if (nextPlayerIndex < currentPlayers.length) {
+      // Transition to Turn Handover intermission screen
+      this.updateState((s) => ({
+        ...s,
+        turnState: 'turn_handover',
+        completedPlayerIds: updatedCompleted,
+        activePlayerIndex: nextPlayerIndex,
+        remainingSeconds: s.settings.turnDurationSeconds,
+      }));
+    } else {
+      // All players completed their turns
+      this.updateState((s) => ({
+        ...s,
+        completedPlayerIds: updatedCompleted,
+      }));
+      this.endGame();
+    }
+  }
+
+  /**
+   * Resumes gameplay when handover screen "Start Turn" is clicked for the next player.
+   */
+  startNextPlayerTurn(): void {
+    const state = this.state$.value;
+    if (state.status !== 'in_progress' || state.turnState !== 'turn_handover') return;
+
+    let active = state.activeWord;
+    let queue = state.queue;
+
+    // Advance word if currently empty and queue has elements
+    if (!active && queue.length > 0) {
+      active = queue[0];
+      queue = queue.slice(1);
+    }
+
+    this.updateState((s) => ({
+      ...s,
+      turnState: 'playing',
+      remainingSeconds: s.settings.turnDurationSeconds,
+      activeWord: active,
+      queue,
+      currentWordStartTimeMs: Date.now(),
+    }));
+
+    if (active) {
+      this.speechService.speak(active.englishTranslation);
+    }
+
+    this.startTurnTimer(state.settings.turnDurationSeconds);
   }
 
   /**
@@ -305,14 +407,14 @@ export class GameEngineService implements OnDestroy {
 
   /**
    * Records user action: Green (Correct) or Red (Pass).
-   * - Increments score if correct.
-   * - Advances active player turn (round-robin).
+   * - Increments active player's score or passedCount.
+   * - Keeps active player active (does NOT switch players until timer expires).
    * - Advances queue and triggers Web Speech API for new word.
    * - Checks consumption velocity and triggers emergency background pre-fetch if buffer is low.
    */
   recordAnswer(result: 'correct' | 'pass'): void {
     const state = this.state$.value;
-    if (state.status !== 'in_progress' || !state.activeWord) return;
+    if (state.status !== 'in_progress' || state.turnState !== 'playing' || !state.activeWord) return;
 
     const currentWord = state.activeWord;
     const activePlayerIndex = state.activePlayerIndex;
@@ -345,9 +447,7 @@ export class GameEngineService implements OnDestroy {
       responseTimeMs,
     };
 
-    // Cycle next player: (current + 1) % totalPlayers
-    const nextPlayerIndex = (activePlayerIndex + 1) % updatedPlayers.length;
-
+    // The active player remains the same! (Dedicated sequential turn)
     // Pop next word from queue
     const nextWord = state.queue.length > 0 ? state.queue[0] : null;
     const nextQueue = state.queue.slice(1);
@@ -358,7 +458,7 @@ export class GameEngineService implements OnDestroy {
         ...s.settings,
         players: updatedPlayers,
       },
-      activePlayerIndex: nextPlayerIndex,
+      // activePlayerIndex remains unchanged
       activeWord: nextWord,
       queue: nextQueue,
       history: [historyEntry, ...s.history],
@@ -370,14 +470,13 @@ export class GameEngineService implements OnDestroy {
       this.speechService.speak(nextWord.englishTranslation);
     }
 
-    // --- Dynamic Speed Monitoring & Emergency Pre-fetch Check ---
+    // Dynamic Speed Monitoring & Emergency Pre-fetch Check
     this.checkSpeedAndBufferStatus(nextQueue.length);
   }
 
   /**
    * Speed monitoring mathematical logic:
    * V_actual = W_consumed / t_elapsed
-   * Baseline = 0.20 words/sec (1 word every 5 sec)
    * Trigger emergency fetch if queue <= 3, or if V_actual >= 0.26 and queue <= 6.
    */
   private checkSpeedAndBufferStatus(currentQueueLength: number): void {
@@ -386,8 +485,11 @@ export class GameEngineService implements OnDestroy {
       return;
     }
 
-    const elapsedSeconds =
-      state.settings.durationSeconds - state.remainingSeconds;
+    const turnDuration = state.settings.turnDurationSeconds;
+    const currentTurnElapsed = turnDuration - state.remainingSeconds;
+    const completedTurnsElapsed = state.completedPlayerIds.length * turnDuration;
+    const elapsedSeconds = completedTurnsElapsed + currentTurnElapsed;
+
     const wordsConsumed = state.history.length;
     const actualVelocity =
       elapsedSeconds > 0 ? wordsConsumed / elapsedSeconds : 0.2;

@@ -17,12 +17,14 @@ export interface IGamePlayer {
 }
 
 export interface IGameSettings {
-  durationSeconds: number;
-  targetWordCount: number;
+  turnDurationSeconds: number; // Selected clock time for EACH player (e.g. 60s)
+  durationSeconds?: number;    // Deprecated / total match duration
+  targetWordCount: number;     // Buffer target: Math.ceil((turnDurationSeconds * players.length) / 5)
   players: IGamePlayer[];
 }
 
 export type GameStatus = 'setup' | 'countdown' | 'in_progress' | 'paused' | 'completed';
+export type GameTurnState = 'playing' | 'turn_handover';
 
 export interface IGameWordHistoryItem {
   wordId: string;
@@ -38,7 +40,9 @@ export interface IGameWordHistoryItem {
 export interface IGameSessionState {
   status: GameStatus;
   settings: IGameSettings;
-  remainingSeconds: number;
+  remainingSeconds: number;        // Active player's countdown seconds
+  turnState: GameTurnState;        // 'playing' vs 'turn_handover'
+  completedPlayerIds: string[];    // IDs of players who finished their turn
   activePlayerIndex: number;
   activeWord: IMovieWordDto | null;
   queue: IMovieWordDto[];
