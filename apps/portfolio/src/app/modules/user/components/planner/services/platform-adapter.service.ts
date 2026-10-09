@@ -1,6 +1,8 @@
 import { Injectable, inject, PLATFORM_ID, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 
+import { NetworkStatusService } from '../../../../../shared/services/network-status.service';
+
 export type HapticType = 'light' | 'medium' | 'heavy' | 'selection' | 'success' | 'warning' | 'error';
 
 export interface ShortcutHandlers {
@@ -15,16 +17,14 @@ export interface ShortcutHandlers {
 })
 export class PlatformAdapterService {
   private platformId = inject(PLATFORM_ID);
+  private networkStatus = inject(NetworkStatusService);
   private keydownListener: ((e: KeyboardEvent) => void) | null = null;
   private baseTitle = 'Notes & Planner';
 
-  readonly isOnline = signal<boolean>(true);
+  readonly isOnline = this.networkStatus.isOnline;
 
   constructor() {
     if (this.isBrowser) {
-      this.isOnline.set(navigator.onLine);
-      window.addEventListener('online', () => this.isOnline.set(true));
-      window.addEventListener('offline', () => this.isOnline.set(false));
       this.baseTitle = document.title || 'Notes & Planner';
     }
   }
