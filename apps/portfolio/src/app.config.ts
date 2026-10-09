@@ -16,9 +16,12 @@ import { formatToIndianDate, parseIndianDate } from './app/shared/pipes/indian-d
 import { AppRoutes } from './app/app-routing.module';
 import { errorInterceptor } from './app/shared/interceptors/error.interceptor';
 
+import { provideNetworkToast } from './app/shared/components/network-toast/network-toast.provider';
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideSpartanHlm(),
+    provideNetworkToast(),
     provideHlmDatePickerConfig<Date>({
       formatDate: (date: Date) => formatToIndianDate(date),
       formatInputDate: (date: Date) => formatToIndianDate(date),
