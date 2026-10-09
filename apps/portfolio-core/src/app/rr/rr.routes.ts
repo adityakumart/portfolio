@@ -78,14 +78,18 @@ rrRouter.post('/auth/login', authRateLimiter, async (req: Request, res: Response
         return;
       }
 
-      if (emp.role === 'admin' && emp.passwordHash) {
+      if (emp.passwordHash) {
         const isMatch = await bcrypt.compare(password, emp.passwordHash);
         if (!isMatch) {
-          await handleFailedLogin(emp, 'Invalid password');
-          return;
+          if (emp.role !== 'admin' && emp.dob === password) {
+            // Permitted fallback for employee DOB match
+          } else {
+            await handleFailedLogin(emp, 'Invalid password');
+            return;
+          }
         }
       } else {
-        // If they are an employee but logging in with username/password, we verify against DOB
+        // If they are an employee without passwordHash, verify against DOB
         if (emp.dob !== password) {
           await handleFailedLogin(emp, 'Invalid password');
           return;
@@ -1184,11 +1188,17 @@ rrRouter.post('/employees', authenticateRRToken, requireAdmin, async (req: any, 
     const newId = 'RRA' + String(maxNumber + 1).padStart(3, '0');
 
     let passwordHash = undefined;
-    if (data.role === 'admin') {
+    const rawPassword = data.password && typeof data.password === 'string' && data.password.trim()
+      ? data.password.trim()
+      : (data.role === 'admin' ? 'AdminPD' : undefined);
+
+    if (rawPassword) {
       const saltRounds = 10;
-      // Default admin password: AdminPD
-      passwordHash = await bcrypt.hash('AdminPD', saltRounds);
+      passwordHash = await bcrypt.hash(rawPassword, saltRounds);
     }
+
+    // Remove raw password so it is never stored in DB
+    delete data.password;
 
     const newEmp: IEmployee = {
       ...data,
@@ -1227,6 +1237,12 @@ rrRouter.put('/employees/:id', authenticateRRToken, requireAdmin, async (req: an
     delete updateData._id;
     delete updateData.id;
     delete updateData.createdAt;
+
+    if (updateData.password && typeof updateData.password === 'string' && updateData.password.trim()) {
+      const saltRounds = 10;
+      updateData.passwordHash = await bcrypt.hash(updateData.password.trim(), saltRounds);
+    }
+    delete updateData.password;
 
     await col.updateOne({ id: empId }, { $set: updateData });
 

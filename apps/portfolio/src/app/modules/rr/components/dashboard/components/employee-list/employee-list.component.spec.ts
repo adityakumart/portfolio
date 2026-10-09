@@ -56,6 +56,11 @@ test.describe('RR Module - Staff Registry Employee List Component', () => {
     await expect(dialog.locator('input[formcontrolname="firstName"]')).toBeVisible();
     await expect(dialog.locator('input[formcontrolname="lastName"]')).toBeVisible();
 
+    // Hidden password input
+    const hiddenPasswordInput = dialog.locator('input[formcontrolname="password"]');
+    await expect(hiddenPasswordInput).toBeAttached();
+    await expect(hiddenPasswordInput).toHaveAttribute('type', 'hidden');
+
     // Close modal
     const closeBtn = dialog.locator('button[aria-label="Close dialog"], button:has([name="lucideX"]), button:has-text("Cancel")').first();
     if (await closeBtn.isVisible()) {

@@ -100,7 +100,19 @@ export class RREmployeeListComponent implements OnInit {
       dl: ['', [Validators.required, Validators.pattern(/^[A-Za-z0-9]{16}$/)]],
       role: ['employee', Validators.required],
       allowLogin: [true],
-      address: ['', Validators.required]
+      address: ['', Validators.required],
+      password: ['RoadReady@123']
+    });
+
+    this.employeeFormGroup.get('role')?.valueChanges.subscribe((role) => {
+      if (!this.editingEmployeeMode()) {
+        const currentPass = this.employeeFormGroup.get('password')?.value;
+        if (!currentPass || currentPass === 'AdminPD' || currentPass === 'RoadReady@123') {
+          this.employeeFormGroup.patchValue({
+            password: role === 'admin' ? 'AdminPD' : 'RoadReady@123'
+          }, { emitEvent: false });
+        }
+      }
     });
   }
 
@@ -118,8 +130,10 @@ export class RREmployeeListComponent implements OnInit {
   openAddEmployeeModal() {
     this.editingEmployeeMode.set(false);
     this.employeeFormGroup.reset({
+      id: '',
       role: 'employee',
-      allowLogin: true
+      allowLogin: true,
+      password: 'RoadReady@123'
     });
     this.dialog.open(this.employeeFormDialog, {
       contentClass: 'max-w-3xl w-full p-6 max-h-[85vh] flex flex-col overflow-hidden',
@@ -140,7 +154,8 @@ export class RREmployeeListComponent implements OnInit {
       dl: e.dl,
       role: e.role,
       allowLogin: e.allowLogin,
-      address: e.address
+      address: e.address,
+      password: ''
     });
     this.dialog.open(this.employeeFormDialog, {
       contentClass: 'max-w-3xl w-full p-6 max-h-[85vh] flex flex-col overflow-hidden',
@@ -160,6 +175,10 @@ export class RREmployeeListComponent implements OnInit {
       ...formVal,
       dob: toISODateString(formVal.dob as IndianDateInput),
     };
+
+    if (!payload.password) {
+      delete payload.password;
+    }
 
     try {
       if (this.editingEmployeeMode()) {
