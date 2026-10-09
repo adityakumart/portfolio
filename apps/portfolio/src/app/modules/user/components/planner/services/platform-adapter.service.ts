@@ -19,13 +19,13 @@ export class PlatformAdapterService {
   private platformId = inject(PLATFORM_ID);
   private networkStatus = inject(NetworkStatusService);
   private keydownListener: ((e: KeyboardEvent) => void) | null = null;
-  private baseTitle = 'Notes & Planner';
+  private baseTitle = 'Planner';
 
   readonly isOnline = this.networkStatus.isOnline;
 
   constructor() {
     if (this.isBrowser) {
-      this.baseTitle = document.title || 'Notes & Planner';
+      this.baseTitle = document.title || 'Planner';
     }
   }
 

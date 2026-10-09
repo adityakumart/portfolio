@@ -29,8 +29,29 @@ export class PlannerStateService {
   readonly isSaving = signal<boolean>(false);
   readonly searchQuery = signal<string>('');
   readonly selectedTag = signal<string | null>(null);
-  readonly activeTab = signal<'all' | 'notes' | 'todos'>('all');
+  readonly activeTab = signal<'todos' | 'notes'>(this.getInitialTab());
   readonly todoFilter = signal<'all' | 'today' | 'upcoming' | 'completed'>('all');
+
+  private getInitialTab(): 'todos' | 'notes' {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        const stored = localStorage.getItem('portfolio_planner_active_tab');
+        if (stored === 'notes' || stored === 'todos') {
+          return stored;
+        }
+      } catch {}
+    }
+    return 'todos';
+  }
+
+  setActiveTab(tab: 'todos' | 'notes'): void {
+    this.activeTab.set(tab);
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        localStorage.setItem('portfolio_planner_active_tab', tab);
+      } catch {}
+    }
+  }
 
   // View modes (Phase 3: List vs Kanban Board for Tasks, Grid vs List for Notes)
   readonly tasksViewMode = signal<'list' | 'kanban'>('list');

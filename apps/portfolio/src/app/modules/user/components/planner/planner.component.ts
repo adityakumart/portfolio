@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideCheckSquare,
@@ -115,6 +116,8 @@ export class PlannerComponent implements OnInit, OnDestroy {
   readonly reminderService = inject(PlannerReminderService);
   readonly platform = inject(PlatformAdapterService);
   readonly layout = inject(PlannerLayoutService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
 
   readonly searchInputRef = viewChild<ElementRef<HTMLInputElement>>('searchInput');
   readonly fileInputRef = viewChild<ElementRef<HTMLInputElement>>('fileInput');
@@ -135,6 +138,11 @@ export class PlannerComponent implements OnInit, OnDestroy {
   private pasteListener: ((e: ClipboardEvent) => void) | null = null;
 
   ngOnInit(): void {
+    const tabParam = this.route.snapshot.queryParamMap.get('tab');
+    if (tabParam === 'notes' || tabParam === 'todos') {
+      this.state.setActiveTab(tabParam);
+    }
+
     this.state.loadDashboard();
     this.reminderService.init();
 
@@ -212,8 +220,19 @@ export class PlannerComponent implements OnInit, OnDestroy {
     this.quickTaskTitle.set('');
   }
 
+  setTab(tab: 'todos' | 'notes'): void {
+    this.state.setActiveTab(tab);
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { tab },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+  }
+
   // Note Modal Actions
   openNoteModal(noteToEdit?: INote): void {
+    this.state.setActiveTab('notes');
     this.activeNote.set(noteToEdit || null);
     this.isNoteModalOpen.set(true);
   }
@@ -245,6 +264,7 @@ export class PlannerComponent implements OnInit, OnDestroy {
 
   // Todo Modal Actions
   openTodoModal(todoToEdit?: ITodoItem): void {
+    this.state.setActiveTab('todos');
     this.activeTodo.set(todoToEdit || null);
     this.isTodoModalOpen.set(true);
   }

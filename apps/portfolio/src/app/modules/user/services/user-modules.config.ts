@@ -67,7 +67,7 @@ export const USER_MODULES: UserModuleConfig[] = [
   },
   {
     key: 'planner',
-    label: 'Notes & Planner',
+    label: 'Planner',
     route: '/user/planner',
     icon: 'lucideCheckSquare',
     description:
