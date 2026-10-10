@@ -33,6 +33,9 @@ describe('AuthService', () => {
   let mockRouter: { navigate: () => void; url: string };
   let mockStorage: MockStorage;
 
+  const originalProtoSetItem = MockStorage.prototype.setItem;
+  const originalProtoRemoveItem = MockStorage.prototype.removeItem;
+
   beforeEach(() => {
     mockStorage = new MockStorage();
 
@@ -77,6 +80,9 @@ describe('AuthService', () => {
 
   afterEach(() => {
     mockStorage.clear();
+    MockStorage.prototype.setItem = originalProtoSetItem;
+    MockStorage.prototype.removeItem = originalProtoRemoveItem;
+    delete (MockStorage.prototype as any).__tamperListenerAttached;
   });
 
   it('should be created', () => {
@@ -308,6 +314,29 @@ describe('AuthService', () => {
     await service.login('remember@test.com', 'password', true);
     expect(mockStorage.getItem('_app_ctx_sig_v1')).toBeTruthy();
     expect(mockStorage.getItem('_app_pref_rm')).toBe('true');
+  });
+
+  it('should not trigger logout during login even when storage tamper listener is active', async () => {
+    (service as any).platformId = 'browser';
+    (service as any).setupStorageTamperListener();
+
+    const mockSession = new MockStorage();
+    (global as any).window.sessionStorage = mockSession;
+
+    vi.spyOn(mockHttpClient, 'post').mockReturnValue(
+      of({
+        access_token: 'new-valid-token',
+        user: { id: 'u1', email: 'test@example.com', modules: {} },
+      }),
+    );
+
+    const logoutSpy = vi.spyOn(service, 'logout');
+
+    await service.login('test@example.com', 'password', true);
+
+    expect(logoutSpy).not.toHaveBeenCalled();
+    expect(service.currentUser()).toBeTruthy();
+    expect(mockStorage.getItem('_app_ctx_sig_v1')).toBeTruthy();
   });
 
   it('should sanitize tokens in logging via maskToken', () => {
