@@ -303,7 +303,19 @@ export class AuthService {
       if (event.key === this.STORAGE_KEY || event.key === this.LEGACY_STORAGE_KEY) {
         console.warn('[Security] Cross-tab localStorage change detected for auth session.');
         this.ngZone.run(() => {
-          this.refreshPermissions();
+          if (!event.newValue) {
+            // Other tab logged out or cleared session
+            this.clearSession();
+            const currentUrl = this.router.url;
+            if (
+              currentUrl.startsWith('/user') &&
+              !currentUrl.startsWith('/user/login')
+            ) {
+              this.router.navigate(['/user/login']);
+            }
+          } else {
+            this.refreshPermissions();
+          }
         });
       }
     });
@@ -345,8 +357,11 @@ export class AuthService {
           ) {
             console.warn('[Security] Direct in-tab storage removal detected for auth session.');
             activeService.ngZone.run(() => {
+              const wasLoggedIn = Boolean(activeService.currentUser());
               activeService.currentUser.set(null);
-              activeService.logout();
+              if (wasLoggedIn) {
+                activeService.logout();
+              }
             });
           }
         };
@@ -597,6 +612,8 @@ export class AuthService {
     } else if (currentUrl.startsWith('/user/planner') && !modules.planner) {
       hasAccess = false;
     } else if (currentUrl.startsWith('/user/movies') && !modules.movies) {
+      hasAccess = false;
+    } else if (currentUrl.startsWith('/user/game') && !modules.game) {
       hasAccess = false;
     }
 

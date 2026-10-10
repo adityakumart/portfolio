@@ -83,7 +83,20 @@ export class RRApiService {
   private visibilitySubscription?: Subscription;
   private lastPermissionsCheckTime = Date.now();
   private isRefreshingPermissions = false;
-  private isInternalStorageWrite = false;
+  private internalStorageWriteDepth = 0;
+
+  get isInternalStorageWrite(): boolean {
+    return this.internalStorageWriteDepth > 0;
+  }
+
+  private withInternalStorageWrite<T>(action: () => T): T {
+    this.internalStorageWriteDepth++;
+    try {
+      return action();
+    } finally {
+      this.internalStorageWriteDepth--;
+    }
+  }
 
   // Signals
   currentUser = signal<IRRUser | null>(null);
@@ -278,8 +291,7 @@ export class RRApiService {
   }
 
   private setEncryptedItem(storage: Storage, key: string, value: string): void {
-    this.isInternalStorageWrite = true;
-    try {
+    this.withInternalStorageWrite(() => {
       let dataToStore = value;
       if (
         key === this.STORAGE_KEY_USER ||
@@ -321,20 +333,17 @@ export class RRApiService {
       } catch (err) {
         console.warn(`[Security] Could not write ${key} to RR storage:`, err);
       }
-    } finally {
-      this.isInternalStorageWrite = false;
-    }
+    });
   }
 
   private removeStorageItem(storage: Storage, key: string): void {
-    this.isInternalStorageWrite = true;
-    try {
-      storage.removeItem(key);
-    } catch (err) {
-      console.warn(`[Security] Could not remove ${key} from RR storage:`, err);
-    } finally {
-      this.isInternalStorageWrite = false;
-    }
+    this.withInternalStorageWrite(() => {
+      try {
+        storage.removeItem(key);
+      } catch (err) {
+        console.warn(`[Security] Could not remove ${key} from RR storage:`, err);
+      }
+    });
   }
 
   private loadSession() {
@@ -546,7 +555,15 @@ export class RRApiService {
       if (event.key && isMonitoredKey(event.key)) {
         console.warn('[Security] Cross-tab storage change detected for RR session.');
         this.ngZone.run(() => {
-          this.refreshPermissions();
+          if (!event.newValue) {
+            this.clearSession();
+            const currentUrl = this.router.url;
+            if (currentUrl.includes('/user/rr') && !currentUrl.includes('/user/rr/login')) {
+              this.router.navigate(['/user/rr/login']);
+            }
+          } else {
+            this.refreshPermissions();
+          }
         });
       }
     });
@@ -575,11 +592,15 @@ export class RRApiService {
         };
 
         storage.removeItem = function (key: string) {
+          const itemExisted = Boolean(this.getItem(key));
           originalRemoveItem.apply(this, [key]);
-          if (isMonitoredKey(key) && !self.isInternalStorageWrite) {
+          if (itemExisted && isMonitoredKey(key) && !self.isInternalStorageWrite) {
             self.ngZone.run(() => {
+              const wasLoggedIn = Boolean(self.currentUser());
               self.currentUser.set(null);
-              self.logout();
+              if (wasLoggedIn) {
+                self.logout();
+              }
             });
           }
         };
