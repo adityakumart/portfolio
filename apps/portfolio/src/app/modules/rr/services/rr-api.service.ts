@@ -59,6 +59,19 @@ export type {
   IVehicleUploadedAsset,
 };
 
+interface ExtensionWindow extends Window {
+  chrome?: {
+    runtime?: { id?: string };
+    storage?: {
+      local?: {
+        set: (items: Record<string, string>) => void;
+        remove: (keys: string[]) => void;
+      };
+    };
+  };
+  Capacitor?: { isNativePlatform?: () => boolean };
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -123,8 +136,9 @@ export class RRApiService {
 
   private isPersistentEnvironment(): boolean {
     if (typeof window === 'undefined') return false;
-    const isExtension = !!(window as any).chrome?.runtime?.id;
-    const isCapacitor = !!(window as any).Capacitor?.isNativePlatform?.();
+    const win = window as ExtensionWindow;
+    const isExtension = !!win.chrome?.runtime?.id;
+    const isCapacitor = !!win.Capacitor?.isNativePlatform?.();
     const isTauri = '__TAURI_INTERNALS__' in window || '__TAURI__' in window;
     return isExtension || isCapacitor || isTauri;
   }
@@ -259,14 +273,7 @@ export class RRApiService {
         const unwrapped = unwrapStoragePayload(parsed);
         if (!unwrapped) {
           console.warn(`[Security] RR storage envelope for ${key} invalid or expired.`);
-          this.isInternalStorageWrite = true;
-          try {
-            storage.removeItem(key);
-          } catch {
-            /* ignore */
-          } finally {
-            this.isInternalStorageWrite = false;
-          }
+          this.removeStorageItem(storage, key);
           return null;
         }
 
@@ -419,7 +426,7 @@ export class RRApiService {
           this.setEncryptedItem(localStorage, this.STORAGE_KEY_TOKEN, token);
           this.setEncryptedItem(localStorage, this.STORAGE_KEY_ROLE, roleJson);
         }
-        (window as any).chrome?.storage?.local?.set({
+        (window as ExtensionWindow).chrome?.storage?.local?.set({
           [this.STORAGE_KEY_USER]: this.encryptData(userJson),
           [this.STORAGE_KEY_TOKEN]: this.encryptData(token),
         });
@@ -451,7 +458,7 @@ export class RRApiService {
           this.removeStorageItem(localStorage, this.LEGACY_KEY_TOKEN);
           this.removeStorageItem(localStorage, this.LEGACY_KEY_ROLE);
         }
-        (window as any).chrome?.storage?.local?.remove([
+        (window as ExtensionWindow).chrome?.storage?.local?.remove([
           this.STORAGE_KEY_USER,
           this.STORAGE_KEY_TOKEN,
           this.LEGACY_KEY_USER,
@@ -570,19 +577,33 @@ export class RRApiService {
 
     // 2. In-tab storage modification monkey-patch
     try {
-      const self = this;
       const checkAndReconcile = (key: string) => {
-        if (isMonitoredKey(key) && !self.isInternalStorageWrite) {
+        if (isMonitoredKey(key) && !this.isInternalStorageWrite) {
           console.warn('[Security] Direct in-tab storage modification detected for RR session.');
-          self.ngZone.run(() => {
-            self.refreshPermissions();
+          this.ngZone.run(() => {
+            this.refreshPermissions();
           });
         }
       };
 
+      const handleStorageRemoval = (key: string) => {
+        if (isMonitoredKey(key) && !this.isInternalStorageWrite) {
+          this.ngZone.run(() => {
+            const wasLoggedIn = Boolean(this.currentUser());
+            this.currentUser.set(null);
+            if (wasLoggedIn) {
+              this.logout();
+            }
+          });
+        }
+      };
+
+      type MonitoredStorage = Storage & { __rrTamperListenerAttached?: boolean };
+
       const patchStorage = (storage: Storage) => {
-        if (!storage || (storage as any).__rrTamperListenerAttached) return;
-        (storage as any).__rrTamperListenerAttached = true;
+        const monitoredStorage = storage as MonitoredStorage;
+        if (!monitoredStorage || monitoredStorage.__rrTamperListenerAttached) return;
+        monitoredStorage.__rrTamperListenerAttached = true;
         const originalSetItem = storage.setItem;
         const originalRemoveItem = storage.removeItem;
 
@@ -594,14 +615,8 @@ export class RRApiService {
         storage.removeItem = function (key: string) {
           const itemExisted = Boolean(this.getItem(key));
           originalRemoveItem.apply(this, [key]);
-          if (itemExisted && isMonitoredKey(key) && !self.isInternalStorageWrite) {
-            self.ngZone.run(() => {
-              const wasLoggedIn = Boolean(self.currentUser());
-              self.currentUser.set(null);
-              if (wasLoggedIn) {
-                self.logout();
-              }
-            });
+          if (itemExisted) {
+            handleStorageRemoval(key);
           }
         };
       };
