@@ -59,6 +59,19 @@ export type {
   IVehicleUploadedAsset,
 };
 
+interface ExtensionWindow extends Window {
+  chrome?: {
+    runtime?: { id?: string };
+    storage?: {
+      local?: {
+        set: (items: Record<string, string>) => void;
+        remove: (keys: string[]) => void;
+      };
+    };
+  };
+  Capacitor?: { isNativePlatform?: () => boolean };
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -83,7 +96,20 @@ export class RRApiService {
   private visibilitySubscription?: Subscription;
   private lastPermissionsCheckTime = Date.now();
   private isRefreshingPermissions = false;
-  private isInternalStorageWrite = false;
+  private internalStorageWriteDepth = 0;
+
+  get isInternalStorageWrite(): boolean {
+    return this.internalStorageWriteDepth > 0;
+  }
+
+  private withInternalStorageWrite<T>(action: () => T): T {
+    this.internalStorageWriteDepth++;
+    try {
+      return action();
+    } finally {
+      this.internalStorageWriteDepth--;
+    }
+  }
 
   // Signals
   currentUser = signal<IRRUser | null>(null);
@@ -110,8 +136,9 @@ export class RRApiService {
 
   private isPersistentEnvironment(): boolean {
     if (typeof window === 'undefined') return false;
-    const isExtension = !!(window as any).chrome?.runtime?.id;
-    const isCapacitor = !!(window as any).Capacitor?.isNativePlatform?.();
+    const win = window as ExtensionWindow;
+    const isExtension = !!win.chrome?.runtime?.id;
+    const isCapacitor = !!win.Capacitor?.isNativePlatform?.();
     const isTauri = '__TAURI_INTERNALS__' in window || '__TAURI__' in window;
     return isExtension || isCapacitor || isTauri;
   }
@@ -246,14 +273,7 @@ export class RRApiService {
         const unwrapped = unwrapStoragePayload(parsed);
         if (!unwrapped) {
           console.warn(`[Security] RR storage envelope for ${key} invalid or expired.`);
-          this.isInternalStorageWrite = true;
-          try {
-            storage.removeItem(key);
-          } catch {
-            /* ignore */
-          } finally {
-            this.isInternalStorageWrite = false;
-          }
+          this.removeStorageItem(storage, key);
           return null;
         }
 
@@ -278,8 +298,7 @@ export class RRApiService {
   }
 
   private setEncryptedItem(storage: Storage, key: string, value: string): void {
-    this.isInternalStorageWrite = true;
-    try {
+    this.withInternalStorageWrite(() => {
       let dataToStore = value;
       if (
         key === this.STORAGE_KEY_USER ||
@@ -321,20 +340,17 @@ export class RRApiService {
       } catch (err) {
         console.warn(`[Security] Could not write ${key} to RR storage:`, err);
       }
-    } finally {
-      this.isInternalStorageWrite = false;
-    }
+    });
   }
 
   private removeStorageItem(storage: Storage, key: string): void {
-    this.isInternalStorageWrite = true;
-    try {
-      storage.removeItem(key);
-    } catch (err) {
-      console.warn(`[Security] Could not remove ${key} from RR storage:`, err);
-    } finally {
-      this.isInternalStorageWrite = false;
-    }
+    this.withInternalStorageWrite(() => {
+      try {
+        storage.removeItem(key);
+      } catch (err) {
+        console.warn(`[Security] Could not remove ${key} from RR storage:`, err);
+      }
+    });
   }
 
   private loadSession() {
@@ -410,7 +426,7 @@ export class RRApiService {
           this.setEncryptedItem(localStorage, this.STORAGE_KEY_TOKEN, token);
           this.setEncryptedItem(localStorage, this.STORAGE_KEY_ROLE, roleJson);
         }
-        (window as any).chrome?.storage?.local?.set({
+        (window as ExtensionWindow).chrome?.storage?.local?.set({
           [this.STORAGE_KEY_USER]: this.encryptData(userJson),
           [this.STORAGE_KEY_TOKEN]: this.encryptData(token),
         });
@@ -442,7 +458,7 @@ export class RRApiService {
           this.removeStorageItem(localStorage, this.LEGACY_KEY_TOKEN);
           this.removeStorageItem(localStorage, this.LEGACY_KEY_ROLE);
         }
-        (window as any).chrome?.storage?.local?.remove([
+        (window as ExtensionWindow).chrome?.storage?.local?.remove([
           this.STORAGE_KEY_USER,
           this.STORAGE_KEY_TOKEN,
           this.LEGACY_KEY_USER,
@@ -546,26 +562,48 @@ export class RRApiService {
       if (event.key && isMonitoredKey(event.key)) {
         console.warn('[Security] Cross-tab storage change detected for RR session.');
         this.ngZone.run(() => {
-          this.refreshPermissions();
+          if (!event.newValue) {
+            this.clearSession();
+            const currentUrl = this.router.url;
+            if (currentUrl.includes('/user/rr') && !currentUrl.includes('/user/rr/login')) {
+              this.router.navigate(['/user/rr/login']);
+            }
+          } else {
+            this.refreshPermissions();
+          }
         });
       }
     });
 
     // 2. In-tab storage modification monkey-patch
     try {
-      const self = this;
       const checkAndReconcile = (key: string) => {
-        if (isMonitoredKey(key) && !self.isInternalStorageWrite) {
+        if (isMonitoredKey(key) && !this.isInternalStorageWrite) {
           console.warn('[Security] Direct in-tab storage modification detected for RR session.');
-          self.ngZone.run(() => {
-            self.refreshPermissions();
+          this.ngZone.run(() => {
+            this.refreshPermissions();
           });
         }
       };
 
+      const handleStorageRemoval = (key: string) => {
+        if (isMonitoredKey(key) && !this.isInternalStorageWrite) {
+          this.ngZone.run(() => {
+            const wasLoggedIn = Boolean(this.currentUser());
+            this.currentUser.set(null);
+            if (wasLoggedIn) {
+              this.logout();
+            }
+          });
+        }
+      };
+
+      type MonitoredStorage = Storage & { __rrTamperListenerAttached?: boolean };
+
       const patchStorage = (storage: Storage) => {
-        if (!storage || (storage as any).__rrTamperListenerAttached) return;
-        (storage as any).__rrTamperListenerAttached = true;
+        const monitoredStorage = storage as MonitoredStorage;
+        if (!monitoredStorage || monitoredStorage.__rrTamperListenerAttached) return;
+        monitoredStorage.__rrTamperListenerAttached = true;
         const originalSetItem = storage.setItem;
         const originalRemoveItem = storage.removeItem;
 
@@ -575,12 +613,10 @@ export class RRApiService {
         };
 
         storage.removeItem = function (key: string) {
+          const itemExisted = Boolean(this.getItem(key));
           originalRemoveItem.apply(this, [key]);
-          if (isMonitoredKey(key) && !self.isInternalStorageWrite) {
-            self.ngZone.run(() => {
-              self.currentUser.set(null);
-              self.logout();
-            });
+          if (itemExisted) {
+            handleStorageRemoval(key);
           }
         };
       };

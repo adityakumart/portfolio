@@ -9,7 +9,6 @@ import {
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideShieldAlert,
@@ -62,7 +61,6 @@ export type AdminTab = 'overview' | 'users' | 'movies' | 'importer';
   imports: [
     CommonModule,
     FormsModule,
-    RouterLink,
     NgIconComponent,
     HlmButtonImports,
     HlmCardImports,
@@ -187,9 +185,10 @@ export class AdminPanelComponent implements OnInit {
   });
 
   // In-app Notifications
-  toastNotification = signal<{ text: string; type: 'success' | 'error' } | null>(
-    null,
-  );
+  toastNotification = signal<{
+    text: string;
+    type: 'success' | 'error';
+  } | null>(null);
   private toastTimer?: ReturnType<typeof setTimeout>;
 
   ngOnInit(): void {
@@ -249,7 +248,10 @@ export class AdminPanelComponent implements OnInit {
         },
         error: (err) => {
           this.isLoadingUsers.set(false);
-          this.showToast(err.error?.message || 'Failed to fetch users', 'error');
+          this.showToast(
+            err.error?.message || 'Failed to fetch users',
+            'error',
+          );
         },
       });
   }
@@ -364,7 +366,10 @@ export class AdminPanelComponent implements OnInit {
         this.loadDashboardStats();
       },
       error: (err) => {
-        this.showToast(err.error?.message || 'Failed to deactivate user', 'error');
+        this.showToast(
+          err.error?.message || 'Failed to deactivate user',
+          'error',
+        );
       },
     });
   }
@@ -388,7 +393,10 @@ export class AdminPanelComponent implements OnInit {
         },
         error: (err) => {
           this.isLoadingMovies.set(false);
-          this.showToast(err.error?.message || 'Failed to load movies', 'error');
+          this.showToast(
+            err.error?.message || 'Failed to load movies',
+            'error',
+          );
         },
       });
   }
@@ -515,7 +523,10 @@ export class AdminPanelComponent implements OnInit {
       },
       error: (err) => {
         this.isSavingMovie.set(false);
-        this.showToast(err.error?.message || 'Failed to update movie.', 'error');
+        this.showToast(
+          err.error?.message || 'Failed to update movie.',
+          'error',
+        );
       },
     });
   }
@@ -537,7 +548,10 @@ export class AdminPanelComponent implements OnInit {
         this.loadDashboardStats();
       },
       error: (err) => {
-        this.showToast(err.error?.message || 'Failed to delete movie.', 'error');
+        this.showToast(
+          err.error?.message || 'Failed to delete movie.',
+          'error',
+        );
       },
     });
   }

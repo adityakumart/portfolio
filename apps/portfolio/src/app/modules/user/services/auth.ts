@@ -43,6 +43,7 @@ export type { SecureStorageEnvelope };
   providedIn: 'root',
 })
 export class AuthService {
+  static activeInstance: AuthService | null = null;
   private http = inject(HttpClient);
   private router = inject(Router);
   private ngZone = inject(NgZone);
@@ -64,9 +65,23 @@ export class AuthService {
   private readonly PERMISSIONS_REFRESH_INTERVAL = 10 * 60 * 1000; // 10 minutes in ms
   private lastPermissionsCheckTime = Date.now();
   private isRefreshingPermissions = false;
-  private isInternalStorageWrite = false;
+  private internalStorageWriteDepth = 0;
+
+  get isInternalStorageWrite(): boolean {
+    return this.internalStorageWriteDepth > 0;
+  }
+
+  private withInternalStorageWrite<T>(action: () => T): T {
+    this.internalStorageWriteDepth++;
+    try {
+      return action();
+    } finally {
+      this.internalStorageWriteDepth--;
+    }
+  }
 
   constructor() {
+    AuthService.activeInstance = this;
     this.initSession();
 
     // Set up auto-logout effect, periodic permissions timer, and tamper detection if in browser
@@ -288,7 +303,19 @@ export class AuthService {
       if (event.key === this.STORAGE_KEY || event.key === this.LEGACY_STORAGE_KEY) {
         console.warn('[Security] Cross-tab localStorage change detected for auth session.');
         this.ngZone.run(() => {
-          this.refreshPermissions();
+          if (!event.newValue) {
+            // Other tab logged out or cleared session
+            this.clearSession();
+            const currentUrl = this.router.url;
+            if (
+              currentUrl.startsWith('/user') &&
+              !currentUrl.startsWith('/user/login')
+            ) {
+              this.router.navigate(['/user/login']);
+            }
+          } else {
+            this.refreshPermissions();
+          }
         });
       }
     });
@@ -296,6 +323,7 @@ export class AuthService {
     // 2. In-tab storage modification monkey-patch
     try {
       const storageProto = Storage.prototype;
+      (storageProto as any).__activeAuthService = this;
       if (!(storageProto as any).__tamperListenerAttached) {
         (storageProto as any).__tamperListenerAttached = true;
         const originalSetItem = storageProto.setItem;
@@ -304,21 +332,36 @@ export class AuthService {
 
         storageProto.setItem = function (key: string, value: string) {
           originalSetItem.apply(this, [key, value]);
-          if ((key === self.STORAGE_KEY || key === self.LEGACY_STORAGE_KEY) && !self.isInternalStorageWrite) {
+          const activeService: AuthService =
+            AuthService.activeInstance || (storageProto as any).__activeAuthService || self;
+          if (
+            (key === activeService.STORAGE_KEY || key === activeService.LEGACY_STORAGE_KEY) &&
+            !activeService.isInternalStorageWrite
+          ) {
             console.warn('[Security] Direct in-tab storage modification detected for auth session.');
-            self.ngZone.run(() => {
-              self.refreshPermissions();
+            activeService.ngZone.run(() => {
+              activeService.refreshPermissions();
             });
           }
         };
 
         storageProto.removeItem = function (key: string) {
+          const activeService: AuthService =
+            AuthService.activeInstance || (storageProto as any).__activeAuthService || self;
+          const itemExisted = Boolean(this.getItem(key));
           originalRemoveItem.apply(this, [key]);
-          if ((key === self.STORAGE_KEY || key === self.LEGACY_STORAGE_KEY) && !self.isInternalStorageWrite) {
+          if (
+            itemExisted &&
+            (key === activeService.STORAGE_KEY || key === activeService.LEGACY_STORAGE_KEY) &&
+            !activeService.isInternalStorageWrite
+          ) {
             console.warn('[Security] Direct in-tab storage removal detected for auth session.');
-            self.ngZone.run(() => {
-              self.currentUser.set(null);
-              self.logout();
+            activeService.ngZone.run(() => {
+              const wasLoggedIn = Boolean(activeService.currentUser());
+              activeService.currentUser.set(null);
+              if (wasLoggedIn) {
+                activeService.logout();
+              }
             });
           }
         };
@@ -370,7 +413,9 @@ export class AuthService {
         if (!raw && key === this.STORAGE_KEY) {
           raw = storage.getItem(this.LEGACY_STORAGE_KEY);
           if (raw) {
-            storage.removeItem(this.LEGACY_STORAGE_KEY);
+            this.withInternalStorageWrite(() => {
+              storage.removeItem(this.LEGACY_STORAGE_KEY);
+            });
             this.setStorageItem(key, raw, storage);
           }
         }
@@ -388,13 +433,10 @@ export class AuthService {
             const unwrapped = unwrapStoragePayload(parsed);
             if (!unwrapped) {
               console.warn('[Security] Envelope verification failed (expired or tampered). Purging session.');
-              this.isInternalStorageWrite = true;
-              try {
+              this.withInternalStorageWrite(() => {
                 storage.removeItem(key);
                 storage.removeItem(this.LEGACY_STORAGE_KEY);
-              } finally {
-                this.isInternalStorageWrite = false;
-              }
+              });
               return null;
             }
 
@@ -444,8 +486,7 @@ export class AuthService {
     if (typeof window === 'undefined') return;
     const targetStorage = specificStorage || this.getPreferredStorage();
     if (targetStorage) {
-      this.isInternalStorageWrite = true;
-      try {
+      this.withInternalStorageWrite(() => {
         let dataToStore = value;
         if (key === this.STORAGE_KEY || key === this.LEGACY_STORAGE_KEY) {
           let parsed: unknown = null;
@@ -479,16 +520,13 @@ export class AuthService {
         } catch (e) {
           console.warn('[Security] Could not write to storage (private browsing or quota exceeded):', e);
         }
-      } finally {
-        this.isInternalStorageWrite = false;
-      }
+      });
     }
   }
 
   private removeStorageItem(key: string): void {
     if (typeof window === 'undefined') return;
-    this.isInternalStorageWrite = true;
-    try {
+    this.withInternalStorageWrite(() => {
       try {
         if (window.sessionStorage) {
           window.sessionStorage.removeItem(key);
@@ -511,9 +549,7 @@ export class AuthService {
       } catch (e) {
         console.warn('[Security] Could not remove item from localStorage:', e);
       }
-    } finally {
-      this.isInternalStorageWrite = false;
-    }
+    });
   }
 
   /**
@@ -577,6 +613,8 @@ export class AuthService {
       hasAccess = false;
     } else if (currentUrl.startsWith('/user/movies') && !modules.movies) {
       hasAccess = false;
+    } else if (currentUrl.startsWith('/user/game') && !modules.game) {
+      hasAccess = false;
     }
 
     if (!hasAccess) {
@@ -637,24 +675,26 @@ export class AuthService {
       };
 
       if (typeof window !== 'undefined') {
-        if (rememberMe && window.localStorage) {
-          window.localStorage.setItem(this.REMEMBER_ME_KEY, 'true');
-          if (window.sessionStorage) {
-            window.sessionStorage.removeItem(this.STORAGE_KEY);
-            window.sessionStorage.removeItem(this.LEGACY_STORAGE_KEY);
+        this.withInternalStorageWrite(() => {
+          if (rememberMe && window.localStorage) {
+            window.localStorage.setItem(this.REMEMBER_ME_KEY, 'true');
+            if (window.sessionStorage) {
+              window.sessionStorage.removeItem(this.STORAGE_KEY);
+              window.sessionStorage.removeItem(this.LEGACY_STORAGE_KEY);
+            }
+            this.setStorageItem(this.STORAGE_KEY, JSON.stringify(session), window.localStorage);
+          } else {
+            if (window.localStorage) {
+              window.localStorage.removeItem(this.REMEMBER_ME_KEY);
+              window.localStorage.removeItem(this.STORAGE_KEY);
+              window.localStorage.removeItem(this.LEGACY_STORAGE_KEY);
+            }
+            const storage = window.sessionStorage || window.localStorage;
+            if (storage) {
+              this.setStorageItem(this.STORAGE_KEY, JSON.stringify(session), storage);
+            }
           }
-          this.setStorageItem(this.STORAGE_KEY, JSON.stringify(session), window.localStorage);
-        } else {
-          if (window.localStorage) {
-            window.localStorage.removeItem(this.REMEMBER_ME_KEY);
-            window.localStorage.removeItem(this.STORAGE_KEY);
-            window.localStorage.removeItem(this.LEGACY_STORAGE_KEY);
-          }
-          const storage = window.sessionStorage || window.localStorage;
-          if (storage) {
-            this.setStorageItem(this.STORAGE_KEY, JSON.stringify(session), storage);
-          }
-        }
+        });
       }
       this.currentUser.set(res.user);
     }
