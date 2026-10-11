@@ -29,6 +29,8 @@ import {
   lucideDownload,
   lucideCalendar,
   lucideTag,
+  lucideAlertCircle,
+  lucideCalendarCheck,
 } from '@ng-icons/lucide';
 import { toast } from '@spartan-ng/hel/sonner';
 import { HlmDropdownMenuImports } from '@spartan-ng/hel/dropdown-menu';
@@ -45,10 +47,13 @@ import { RRInvoicePdfService } from '../../../services/rr-invoice-pdf.service';
 import { RRCustomerApiService } from '../../../services/rr-customer-api.service';
 import { RRAadharInputComponent } from '../../components/aadhar-input/aadhar-input.component';
 
+import { ScheduleConflict } from '../reserve-booking-dialog/reserve-booking-dialog.component';
+
 export interface NewBookingDialogContext {
   vehicleRegNo?: string;
   vehicles?: IVehicle[];
   reservation?: IBooking;
+  bookings?: IBooking[];
 }
 
 @Component({
@@ -89,6 +94,8 @@ export interface NewBookingDialogContext {
       lucideDownload,
       lucideCalendar,
       lucideTag,
+      lucideAlertCircle,
+      lucideCalendarCheck,
     }),
   ],
   templateUrl: './new-booking-dialog.component.html',
@@ -103,10 +110,14 @@ export class RRNewBookingDialogComponent implements OnInit {
   private invoicePdf = inject(RRInvoicePdfService);
 
   vehicles = signal<IVehicle[]>([]);
+  allBookings = signal<IBooking[]>([]);
   selectedVehicle = signal<IVehicle | null>(null);
   overrideOdometer = false;
   isSubmitting = signal(false);
   membershipDiscount = signal<ICustomerMembershipDiscount | null>(null);
+
+  // Real-time schedule conflict status against advance reservations
+  scheduleConflict = signal<ScheduleConflict>({ hasConflict: false });
 
   // Autocomplete & Regular Member Mode State
   isRegularMemberMode = signal<boolean>(false);
@@ -126,12 +137,19 @@ export class RRNewBookingDialogComponent implements OnInit {
     const pickup = this.bookingFormGroup.get('pickupDateTime')?.value;
     const returnDt = this.bookingFormGroup.get('returnDateTime')?.value;
     const odo = this.bookingFormGroup.get('vehicleOdometerStart')?.value;
-    return !!(regNo && pickup && returnDt && odo !== null && odo !== '');
+    return !!(
+      regNo &&
+      pickup &&
+      returnDt &&
+      odo !== null &&
+      odo !== '' &&
+      !this.scheduleConflict().hasConflict
+    );
   }
 
   ngOnInit() {
     this.initForm();
-    this.loadVehicles();
+    this.loadData();
   }
 
   private initForm() {
@@ -526,20 +544,26 @@ export class RRNewBookingDialogComponent implements OnInit {
     }
   }
 
-  async loadVehicles() {
-    if (this.context?.vehicles && this.context.vehicles.length > 0) {
-      this.vehicles.set(this.context.vehicles);
-      this.applyPreselectedVehicle();
-      return;
-    }
-
+  async loadData() {
     try {
-      const data = await this.rrApi.getVehicles();
-      this.vehicles.set(data);
+      const [vehList, bookList] = await Promise.all([
+        this.context?.vehicles && this.context.vehicles.length > 0
+          ? Promise.resolve(this.context.vehicles)
+          : this.rrApi.getVehicles(),
+        this.context?.bookings && this.context.bookings.length > 0
+          ? Promise.resolve(this.context.bookings)
+          : this.rrApi.getBookings(),
+      ]);
+      this.vehicles.set(vehList);
+      this.allBookings.set(bookList);
       this.applyPreselectedVehicle();
     } catch (e) {
-      console.error('Error loading vehicles for new booking dialog:', e);
+      console.error('Error loading data for new booking dialog:', e);
     }
+  }
+
+  async loadVehicles() {
+    await this.loadData();
   }
 
   private applyPreselectedVehicle() {
@@ -598,6 +622,7 @@ export class RRNewBookingDialogComponent implements OnInit {
       if (selected && (!resv.vehicleOdometerStart || resv.vehicleOdometerStart === '0')) {
         this.bookingFormGroup.patchValue({ vehicleOdometerStart: selected.odometer });
       }
+      this.validateScheduleOverlap();
       return;
     }
 
@@ -635,6 +660,7 @@ export class RRNewBookingDialogComponent implements OnInit {
     }
 
     this.calculateReturnDate();
+    this.validateScheduleOverlap();
   }
 
   onDurationDaysChange() {
@@ -659,6 +685,7 @@ export class RRNewBookingDialogComponent implements OnInit {
         totalKmLimit: '0',
       });
       this.recalculateFinalAmount();
+      this.validateScheduleOverlap();
       return;
     }
 
@@ -697,6 +724,115 @@ export class RRNewBookingDialogComponent implements OnInit {
     }
 
     this.recalculateFinalAmount();
+    this.validateScheduleOverlap();
+  }
+
+  /**
+   * Schedule Validation for Active Rentals:
+   * Prevents creating an active rental if the vehicle has an advance reservation
+   * (status: 'reserved') during the requested pickup-return window.
+   */
+  validateScheduleOverlap() {
+    if (!this.bookingFormGroup) return;
+
+    const regNo = this.bookingFormGroup.get('vehicleRegNo')?.value;
+    const pickupVal = this.bookingFormGroup.get('pickupDateTime')?.value;
+    const returnVal = this.bookingFormGroup.get('returnDateTime')?.value;
+
+    if (!regNo || !pickupVal || !returnVal) {
+      this.scheduleConflict.set({ hasConflict: false });
+      return;
+    }
+
+    const reqStart = new Date(pickupVal).getTime();
+    const reqEnd = new Date(returnVal).getTime();
+
+    if (isNaN(reqStart) || isNaN(reqEnd) || reqEnd <= reqStart) {
+      this.scheduleConflict.set({
+        hasConflict: true,
+        message: 'Expected Return schedule must be strictly after the Pickup schedule.',
+      });
+      return;
+    }
+
+    const vehicle = this.vehicles().find((v) => v.regNo === regNo);
+    const existingBookings = this.allBookings().filter(
+      (b) =>
+        b.vehicleRegNo === regNo &&
+        !b.isDeleted &&
+        b.id !== this.context?.reservation?.id
+    );
+
+    // 1. Check Overlap with Advance Bookings (status: 'reserved')
+    const reservedBookings = existingBookings.filter((b) => b.status === 'reserved');
+    for (const resv of reservedBookings) {
+      const rStart = new Date(resv.pickupDateTime).getTime();
+      const rEnd = new Date(resv.returnDateTime).getTime();
+
+      // Interval overlap check: max(startA, startB) < min(endA, endB)
+      if (Math.max(reqStart, rStart) < Math.min(reqEnd, rEnd)) {
+        const startStr = new Date(resv.pickupDateTime).toLocaleString('en-IN');
+        const endStr = new Date(resv.returnDateTime).toLocaleString('en-IN');
+        this.scheduleConflict.set({
+          hasConflict: true,
+          type: 'advance_booking',
+          conflictingBooking: resv,
+          message: `Schedule overlaps with an existing Advance Reservation (${resv.id ? '#' + resv.id + ': ' : ''}${startStr} to ${endStr}). Cannot book this vehicle for overlapping dates and times.`,
+        });
+        return;
+      }
+    }
+
+    // 2. Check Overlap with ongoing Active Rentals (status: 'active')
+    const activeBooking = existingBookings.find((b) => b.status === 'active');
+    if (activeBooking && activeBooking.returnDateTime) {
+      const activeStart = new Date(activeBooking.pickupDateTime).getTime();
+      const activeEnd = new Date(activeBooking.returnDateTime).getTime();
+      if (Math.max(reqStart, activeStart) < Math.min(reqEnd, activeEnd)) {
+        this.scheduleConflict.set({
+          hasConflict: true,
+          type: 'active_booking',
+          conflictingBooking: activeBooking,
+          message: `Vehicle currently has an ongoing Active Rental until ${new Date(activeBooking.returnDateTime).toLocaleString('en-IN')}. Pickup schedule must be set after the current return time.`,
+        });
+        return;
+      }
+    }
+
+    // 3. Check Contract / Maintenance Next Available Date
+    if (vehicle && ['maintenance', 'contract', 'in_contract'].includes(vehicle.status)) {
+      if (vehicle.nextAvailableDate) {
+        const nextAvail = new Date(vehicle.nextAvailableDate).getTime();
+        if (!isNaN(nextAvail) && reqStart < nextAvail) {
+          this.scheduleConflict.set({
+            hasConflict: true,
+            type: vehicle.status === 'maintenance' ? 'maintenance' : 'contract',
+            message: `Vehicle is currently in ${vehicle.status === 'maintenance' ? 'Maintenance / Service' : 'Corporate Contract'} and next available on ${new Date(vehicle.nextAvailableDate).toLocaleDateString('en-IN')}.`,
+          });
+          return;
+        }
+      }
+    }
+
+    // All clear!
+    this.scheduleConflict.set({ hasConflict: false });
+  }
+
+  getVehicleUpcomingReservations(regNo: string): IBooking[] {
+    if (!regNo) return [];
+    return this.allBookings().filter(
+      (b) =>
+        b.vehicleRegNo === regNo &&
+        b.status === 'reserved' &&
+        !b.isDeleted &&
+        b.id !== this.context?.reservation?.id
+    );
+  }
+
+  getVehicleReservationsSummary(regNo: string): string {
+    const resvs = this.getVehicleUpcomingReservations(regNo);
+    if (resvs.length === 0) return '';
+    return `[${resvs.length} Advance Reservation${resvs.length > 1 ? 's' : ''}]`;
   }
 
   calculateSlabRent(hours: number, pricing: IVehiclePricing): number {
@@ -836,7 +972,15 @@ export class RRNewBookingDialogComponent implements OnInit {
 
   async createBooking(event: Event) {
     event.preventDefault();
-    if (this.bookingFormGroup.invalid) return;
+    if (this.bookingFormGroup.invalid || this.scheduleConflict().hasConflict) {
+      if (this.scheduleConflict().hasConflict) {
+        toast.error(
+          this.scheduleConflict().message ||
+            'Cannot create booking: Selected schedule conflicts with an advance booking.'
+        );
+      }
+      return;
+    }
 
     try {
       this.isSubmitting.set(true);

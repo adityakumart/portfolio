@@ -161,6 +161,7 @@ export class RRBookingListComponent implements OnInit {
       context: {
         vehicleRegNo,
         vehicles: this.vehicles(),
+        bookings: this.bookings(),
       },
       contentClass:
         'max-w-4xl w-full p-6 max-h-[90vh] flex flex-col overflow-hidden',
