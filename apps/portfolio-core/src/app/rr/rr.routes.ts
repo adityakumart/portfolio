@@ -782,6 +782,32 @@ rrRouter.post('/bookings', authenticateRRToken, async (req: any, res: Response) 
         res.status(409).json({ error: 'Conflict', message: 'Vehicle is already booked/rented.' });
         return;
       }
+
+      // Check overlap with advance bookings for this vehicle
+      if (bookingData.pickupDateTime && bookingData.returnDateTime) {
+        const reqStart = new Date(bookingData.pickupDateTime).getTime();
+        const reqEnd = new Date(bookingData.returnDateTime).getTime();
+
+        if (!isNaN(reqStart) && !isNaN(reqEnd) && reqEnd > reqStart) {
+          const existingReservations = await bookingCol.find({
+            vehicleRegNo: bookingData.vehicleRegNo,
+            status: 'reserved',
+            isDeleted: { $ne: true }
+          }).toArray();
+
+          for (const resv of existingReservations) {
+            const rStart = new Date(resv.pickupDateTime).getTime();
+            const rEnd = new Date(resv.returnDateTime).getTime();
+            if (Math.max(reqStart, rStart) < Math.min(reqEnd, rEnd)) {
+              res.status(409).json({
+                error: 'Conflict',
+                message: `Rental schedule overlaps with an existing advance booking (${resv.pickupDateTime} to ${resv.returnDateTime}).`
+              });
+              return;
+            }
+          }
+        }
+      }
     }
 
     // Generate Booking ID
@@ -952,6 +978,39 @@ rrRouter.put('/bookings/:id', authenticateRRToken, async (req: any, res: Respons
     delete updateData._id;
     delete updateData.id;
     delete updateData.createdAt;
+
+    // Check overlap with other advance reservations when transitioning to or updating active rentals
+    if (updateData.status === 'active' || (booking.status === 'active' && (updateData.pickupDateTime || updateData.returnDateTime))) {
+      const pTime = updateData.pickupDateTime || booking.pickupDateTime;
+      const rTime = updateData.returnDateTime || booking.returnDateTime;
+      const vehReg = updateData.vehicleRegNo || booking.vehicleRegNo;
+
+      if (pTime && rTime && vehReg) {
+        const reqStart = new Date(pTime).getTime();
+        const reqEnd = new Date(rTime).getTime();
+
+        if (!isNaN(reqStart) && !isNaN(reqEnd) && reqEnd > reqStart) {
+          const otherReservations = await bookingCol.find({
+            vehicleRegNo: vehReg,
+            id: { $ne: bookingId },
+            status: 'reserved',
+            isDeleted: { $ne: true }
+          }).toArray();
+
+          for (const resv of otherReservations) {
+            const rStart = new Date(resv.pickupDateTime).getTime();
+            const rEnd = new Date(resv.returnDateTime).getTime();
+            if (Math.max(reqStart, rStart) < Math.min(reqEnd, rEnd)) {
+              res.status(409).json({
+                error: 'Conflict',
+                message: `Schedule overlaps with an existing advance booking (${resv.pickupDateTime} to ${resv.returnDateTime}).`
+              });
+              return;
+            }
+          }
+        }
+      }
+    }
 
     const isClosing = updateData.status === 'completed' || updateData.status === 'cancelled';
     let enderName: string | undefined = undefined;

@@ -3,6 +3,7 @@ import {
   setupRRRouteMocks,
   injectRRSession,
   MOCK_EMPLOYEE_USER,
+  MOCK_BOOKINGS,
 } from '../../../../rr-test.helper';
 
 test.describe('RR Module - Active Rentals Booking List Component', () => {
@@ -91,5 +92,59 @@ test.describe('RR Module - Active Rentals Booking List Component', () => {
     if (await saveBtn.isVisible()) {
       await saveBtn.click();
     }
+  });
+
+  test('should display schedule overlap conflict and prevent creating booking when vehicle has an advance reservation', async ({ page }) => {
+    // Add advance reservation for vehicle AP-05-AA-1234
+    const advanceReservation = {
+      ...MOCK_BOOKINGS[0],
+      _id: 'book-resv-1',
+      id: 'RRB-RESV-99',
+      vehicleRegNo: 'AP-05-AA-1234',
+      status: 'reserved' as const,
+      pickupDateTime: '2026-10-15T09:00',
+      returnDateTime: '2026-10-17T18:00',
+      durationDays: '2',
+      durationHours: '9',
+    };
+
+    await setupRRRouteMocks(page, {
+      bookings: [...MOCK_BOOKINGS, advanceReservation],
+    });
+    await injectRRSession(page, { user: MOCK_EMPLOYEE_USER });
+    await page.goto('/user/rr/booking/list');
+    await page.waitForLoadState('domcontentloaded');
+
+    // Click Create New Booking button
+    const createBtn = page.getByRole('button', { name: 'Create New Booking' });
+    await createBtn.click();
+
+    const dialog = page.locator('div[role="dialog"], .fixed.inset-0.z-50').first();
+    await expect(dialog).toBeVisible({ timeout: 5000 });
+
+    // Select vehicle AP-05-AA-1234
+    const vehicleSelect = dialog.locator('select[formcontrolname="vehicleRegNo"]');
+    await vehicleSelect.selectOption('AP-05-AA-1234');
+
+    // Fill pickup date inside the advance reservation window
+    const pickupInput = dialog.locator('input[formcontrolname="pickupDateTime"]');
+    await pickupInput.fill('2026-10-16T10:00');
+    await pickupInput.dispatchEvent('change');
+
+    // Set duration
+    const daysSelect = dialog.locator('select[formcontrolname="durationDays"]');
+    await daysSelect.selectOption('1');
+
+    // Assert that the schedule overlap conflict alert banner is visible
+    await expect(dialog.getByText(/Schedule Overlap \/ Availability Conflict/i)).toBeVisible();
+    await expect(dialog.getByText(/overlaps with an existing Advance Reservation/i)).toBeVisible();
+
+    // Verify step 2 fieldset is disabled
+    const step2Fieldset = dialog.locator('fieldset').first();
+    await expect(step2Fieldset).toBeDisabled();
+
+    // Verify submit button is disabled
+    const submitBtn = dialog.getByRole('button', { name: /Create Booking/i });
+    await expect(submitBtn).toBeDisabled();
   });
 });
