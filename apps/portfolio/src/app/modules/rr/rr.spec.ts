@@ -89,13 +89,13 @@ test.describe('RoadReady (RR) Module - End-to-End Suite', () => {
       await expect(page).toHaveURL(/.*\/user\/rr\/login/);
     });
 
-    test('should complete desk staff authentication flow using demo credentials', async ({ page }) => {
+    test('should complete desk staff authentication flow', async ({ page }) => {
       await page.goto('/user/rr/login');
       await page.waitForLoadState('domcontentloaded');
 
-      // Click Demo Desk Staff
-      const demoBtn = page.getByRole('button', { name: 'Demo Desk Staff' });
-      await demoBtn.click();
+      // Fill desk staff credentials
+      await page.locator('#empId').fill('RRA002');
+      await page.locator('#dob').fill('15-05-1990');
 
       // Submit login form
       const submitBtn = page.locator('div[hlmTabsContent="employee"] button[type="submit"]');
@@ -115,12 +115,12 @@ test.describe('RoadReady (RR) Module - End-to-End Suite', () => {
       await page.goto('/user/rr/login');
       await page.waitForLoadState('domcontentloaded');
 
-      // Switch to admin tab and use Demo Admin
+      // Switch to admin tab and fill admin credentials
       const adminTab = page.locator('button[hlmTabsTrigger="admin"]');
       await adminTab.click();
 
-      const demoAdminBtn = page.getByRole('button', { name: 'Demo Admin' });
-      await demoAdminBtn.click();
+      await page.locator('#adminUsername').fill('admin@rams-cars.com');
+      await page.locator('#adminPassword').fill('AdminPD');
 
       const submitBtn = page.locator('div[hlmTabsContent="admin"] button[type="submit"]');
       await submitBtn.click();
@@ -255,9 +255,9 @@ test.describe('RoadReady (RR) Module - End-to-End Suite', () => {
         localStorage.setItem('rr_session_last_active', String(Date.now() - 600000));
       });
 
-      // Click Demo Desk Staff
-      const demoBtn = page.getByRole('button', { name: 'Demo Desk Staff' });
-      await demoBtn.click();
+      // Fill desk staff credentials
+      await page.locator('#empId').fill('RRA002');
+      await page.locator('#dob').fill('15-05-1990');
 
       // Submit login form
       const submitBtn = page.locator('div[hlmTabsContent="employee"] button[type="submit"]');

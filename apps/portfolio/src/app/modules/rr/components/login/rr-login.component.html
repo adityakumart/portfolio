@@ -191,32 +191,6 @@
               </button>
             </hlm-tabs-list>
 
-            <!-- Demo Helper Buttons -->
-            <div class="flex items-center justify-center gap-2 pt-3">
-              <button
-                hlmBtn
-                variant="outline"
-                size="sm"
-                type="button"
-                (click)="fillDemoEmployee()"
-                class="h-7 text-[11px] px-2.5 rounded-lg border-dashed border-cyan-500/40 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10"
-              >
-                <ng-icon name="lucideZap" class="mr-1 text-xs"></ng-icon>
-                Demo Desk Staff
-              </button>
-              <button
-                hlmBtn
-                variant="outline"
-                size="sm"
-                type="button"
-                (click)="fillDemoAdmin()"
-                class="h-7 text-[11px] px-2.5 rounded-lg border-dashed border-border text-muted-foreground hover:bg-muted"
-              >
-                <ng-icon name="lucideZap" class="mr-1 text-xs"></ng-icon>
-                Demo Admin
-              </button>
-            </div>
-
             <!-- Global Feedback Alert -->
             @if (authError()) {
               <div

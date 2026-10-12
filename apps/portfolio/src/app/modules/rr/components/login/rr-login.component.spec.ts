@@ -68,16 +68,17 @@ test.describe('RR Module - Login Component', () => {
     await expect(page.getByText('ID must follow pattern like RRA001')).not.toBeVisible();
   });
 
-  test('should quick-fill desk staff credentials with Demo button and login successfully', async ({ page }) => {
-    const demoEmployeeBtn = page.getByRole('button', { name: 'Demo Desk Staff' });
-    await expect(demoEmployeeBtn).toBeVisible();
+  test('should not display demo desk staff or demo admin shortcut buttons', async ({ page }) => {
+    await expect(page.getByRole('button', { name: 'Demo Desk Staff' })).not.toBeVisible();
+    await expect(page.getByRole('button', { name: 'Demo Admin' })).not.toBeVisible();
+  });
 
-    // Click demo button
-    await demoEmployeeBtn.click();
-
-    // Verify input populated
+  test('should fill desk staff credentials and login successfully', async ({ page }) => {
     const empIdInput = page.locator('#empId');
-    await expect(empIdInput).toHaveValue('RRA002');
+    const dobInput = page.locator('#dob');
+
+    await empIdInput.fill('RRA002');
+    await dobInput.fill('15-05-1990');
 
     // Submit employee login
     const submitBtn = page.locator('div[hlmTabsContent="employee"] button[type="submit"]');
@@ -89,7 +90,7 @@ test.describe('RR Module - Login Component', () => {
     await expect(page).toHaveURL(/.*\/user\/rr\/dashboard/);
   });
 
-  test('should validate admin credentials, toggle password visibility, and login via Demo Admin', async ({ page }) => {
+  test('should validate admin credentials, toggle password visibility, and login successfully', async ({ page }) => {
     // Switch to admin tab
     const adminTab = page.locator('button[hlmTabsTrigger="admin"]');
     await adminTab.click();
@@ -114,12 +115,9 @@ test.describe('RR Module - Login Component', () => {
     await hideBtn.click();
     await expect(passwordInput).toHaveAttribute('type', 'password');
 
-    // Use Demo Admin button
-    const demoAdminBtn = page.getByRole('button', { name: 'Demo Admin' });
-    await demoAdminBtn.click();
-
-    await expect(usernameInput).toHaveValue('admin@rams-cars.com');
-    await expect(passwordInput).toHaveValue('AdminPD');
+    // Fill valid admin credentials
+    await usernameInput.fill('admin@rams-cars.com');
+    await passwordInput.fill('AdminPD');
     await expect(submitBtn).toBeEnabled();
 
     // Submit admin login
@@ -140,8 +138,8 @@ test.describe('RR Module - Login Component', () => {
       });
     });
 
-    const demoEmployeeBtn = page.getByRole('button', { name: 'Demo Desk Staff' });
-    await demoEmployeeBtn.click();
+    await page.locator('#empId').fill('RRA002');
+    await page.locator('#dob').fill('15-05-1990');
 
     const submitBtn = page.locator('div[hlmTabsContent="employee"] button[type="submit"]');
     await submitBtn.click();
