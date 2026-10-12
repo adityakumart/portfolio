@@ -10,6 +10,7 @@ import {
   handleUpdateMovie,
 } from '../controllers/movie.controller';
 import { requireMasterAdmin } from '../middlewares/admin.middleware';
+import { uploadRateLimiter } from '../middlewares/rate-limit.middleware';
 
 export const movieRouter = Router();
 
@@ -23,7 +24,7 @@ movieRouter.get('/', handleGetMovies);
 // Mutating transactions protected with live masterAdmin DB check
 movieRouter.post('/', requireMasterAdmin, handleCreateMovie);
 movieRouter.put('/:id', requireMasterAdmin, handleUpdateMovie);
-movieRouter.post('/upload', requireMasterAdmin, handleUploadMovies);
+movieRouter.post('/upload', requireMasterAdmin, uploadRateLimiter, handleUploadMovies);
 movieRouter.delete('/untranslated', requireMasterAdmin, handleDeleteUntranslatedMovies);
 movieRouter.delete('/:id', requireMasterAdmin, handleDeleteMovie);
 

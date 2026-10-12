@@ -206,8 +206,14 @@ export class LoginComponent {
     ) {
       return 'This email address is already registered.';
     }
+    if (
+      lowercaseMsg.includes('too many') ||
+      lowercaseMsg.includes('rate limit') ||
+      lowercaseMsg.includes('try again')
+    ) {
+      return msg || 'Too many authentication attempts. Please wait a few minutes before trying again.';
+    }
     if (lowercaseMsg.includes('disabled')) {
-      return 'Admin will enable your account, please wait.';
       return 'Admin will enable your account, please wait.';
     }
     if (
