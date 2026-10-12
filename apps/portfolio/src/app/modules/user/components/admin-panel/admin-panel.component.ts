@@ -36,6 +36,7 @@ import {
   lucideMessageSquare,
   lucideCheckSquare,
   lucideGamepad2,
+  lucideList,
 } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmCardImports } from '@spartan-ng/hel/card';
@@ -54,6 +55,7 @@ import {
 import { MovieImporterComponent } from '../../../movie-importer/movie-importer.component';
 
 export type AdminTab = 'overview' | 'users' | 'movies' | 'importer';
+export type MovieSubTab = 'importer' | 'list';
 
 @Component({
   selector: 'app-admin-panel',
@@ -95,6 +97,7 @@ export type AdminTab = 'overview' | 'users' | 'movies' | 'importer';
       lucideMessageSquare,
       lucideCheckSquare,
       lucideGamepad2,
+      lucideList,
     }),
   ],
   templateUrl: './admin-panel.component.html',
@@ -110,6 +113,7 @@ export class AdminPanelComponent implements OnInit {
 
   // Navigation
   activeTab = signal<AdminTab>('overview');
+  activeMovieSubTab = signal<MovieSubTab>('importer');
 
   // Stats State
   stats = signal<AdminDashboardStats | null>(null);
@@ -199,11 +203,30 @@ export class AdminPanelComponent implements OnInit {
     }
   }
 
-  setTab(tab: AdminTab): void {
+  setTab(tab: AdminTab, movieSubTab?: MovieSubTab): void {
+    if (tab === 'importer') {
+      this.activeTab.set('movies');
+      this.activeMovieSubTab.set('importer');
+      return;
+    }
     this.activeTab.set(tab);
     if (tab === 'overview') this.loadDashboardStats();
     if (tab === 'users') this.loadUsers();
-    if (tab === 'movies') this.loadMovies();
+    if (tab === 'movies') {
+      if (movieSubTab) {
+        this.activeMovieSubTab.set(movieSubTab);
+      }
+      if (this.activeMovieSubTab() === 'list') {
+        this.loadMovies();
+      }
+    }
+  }
+
+  setMovieSubTab(subTab: MovieSubTab): void {
+    this.activeMovieSubTab.set(subTab);
+    if (subTab === 'list') {
+      this.loadMovies();
+    }
   }
 
   showToast(text: string, type: 'success' | 'error' = 'success'): void {
