@@ -144,6 +144,7 @@ export class RRDashboardComponent implements OnInit {
 
   logout() {
     this.closeProfilePopup();
+    this.inactivityService.clearStorageState();
     this.rrApi.logout();
   }
 }

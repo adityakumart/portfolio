@@ -499,6 +499,7 @@ export async function clearRRSession(page: Page) {
     localStorage.removeItem('rr_token');
     localStorage.removeItem('loggedInUser');
     localStorage.removeItem('rr_session_is_locked');
+    localStorage.removeItem('rr_session_last_active');
     localStorage.removeItem('portfolio_auth_session');
   });
 }
@@ -685,6 +686,18 @@ export async function setupRRRouteMocks(
       body: JSON.stringify({
         access_token: 'mock-jwt-token-login-flow',
         user: resolvedUser,
+      }),
+    });
+  });
+
+  // Auth Permissions endpoint
+  await page.route('**/api/rr/auth/permissions*', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        success: true,
+        user: MOCK_EMPLOYEE_USER,
       }),
     });
   });

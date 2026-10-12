@@ -465,6 +465,7 @@ export class RRApiService {
           this.LEGACY_KEY_TOKEN,
         ]);
       }
+      this.clearInactivityStorage();
     }
     this.currentUser.set(null);
   }
@@ -715,8 +716,40 @@ export class RRApiService {
       )
     );
     this.saveSession(res.user, res.access_token);
+    this.resetInactivityStorage();
     console.debug(`[RR Auth] Authenticated session for user with token ${maskToken(res.access_token)}`);
     return res.user;
+  }
+
+  private resetInactivityStorage(): void {
+    if (typeof window === 'undefined') return;
+    try {
+      if (window.localStorage) {
+        localStorage.setItem('rr_session_is_locked', 'false');
+        localStorage.setItem('rr_session_last_active', Date.now().toString());
+      }
+      const win = window as ExtensionWindow;
+      win.chrome?.storage?.local?.set({
+        rr_session_is_locked: 'false',
+        rr_session_last_active: Date.now().toString(),
+      });
+    } catch (err) {
+      console.warn('[Security] Could not reset RR inactivity storage:', err);
+    }
+  }
+
+  private clearInactivityStorage(): void {
+    if (typeof window === 'undefined') return;
+    try {
+      if (window.localStorage) {
+        localStorage.removeItem('rr_session_is_locked');
+        localStorage.removeItem('rr_session_last_active');
+      }
+      const win = window as ExtensionWindow;
+      win.chrome?.storage?.local?.remove(['rr_session_is_locked', 'rr_session_last_active']);
+    } catch (err) {
+      console.warn('[Security] Could not clear RR inactivity storage:', err);
+    }
   }
 
   // Auth Logout
