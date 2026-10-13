@@ -674,6 +674,7 @@ export async function handleAddStage(
       color: body.color || '#64748b',
       order: project.stages.length,
       isDefault: false,
+      allowedTransitions: Array.isArray(body.allowedTransitions) ? body.allowedTransitions : [],
     };
 
     project.stages.push(newStage);
@@ -724,6 +725,9 @@ export async function handleUpdateStage(
     }
     if (body.color) {
       stage.color = body.color;
+    }
+    if (Array.isArray(body.allowedTransitions)) {
+      stage.allowedTransitions = body.allowedTransitions;
     }
 
     await project.save();
@@ -836,9 +840,12 @@ export async function handleDeleteStage(
     }
 
     project.stages = project.stages.filter((s) => s.id !== stageId);
-    // Re-index orders
+    // Re-index orders and prune deleted stageId from allowedTransitions
     project.stages.forEach((s, idx) => {
       s.order = idx;
+      if (Array.isArray(s.allowedTransitions)) {
+        s.allowedTransitions = s.allowedTransitions.filter((id) => id !== stageId);
+      }
     });
 
     await project.save();
@@ -1082,6 +1089,21 @@ export async function handleTransitionTodoStage(
       const targetStage = project.stages.find((s) => s.id === stageId);
       if (!targetStage) {
         res.status(400).json({ error: 'Bad Request', message: 'Target stage does not exist in project.' });
+        return;
+      }
+
+      // Validate workflow transition rules if source stage defines allowedTransitions
+      const currentStage = project.stages.find((s) => s.id === todo.stageId);
+      if (
+        currentStage &&
+        Array.isArray(currentStage.allowedTransitions) &&
+        currentStage.allowedTransitions.length > 0 &&
+        !currentStage.allowedTransitions.includes(stageId)
+      ) {
+        res.status(400).json({
+          error: 'Bad Request',
+          message: `Invalid stage transition. Tasks in "${currentStage.name}" cannot be moved to "${targetStage.name}".`,
+        });
         return;
       }
 

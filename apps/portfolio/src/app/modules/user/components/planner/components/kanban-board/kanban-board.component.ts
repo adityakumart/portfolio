@@ -10,6 +10,8 @@ import { FormsModule } from '@angular/forms';
 import {
   DragDropModule,
   CdkDragDrop,
+  CdkDrag,
+  CdkDropList,
   moveItemInArray,
   transferArrayItem,
 } from '@angular/cdk/drag-drop';
@@ -111,6 +113,24 @@ export class KanbanBoardComponent {
     return this.projectCards.filter((card) => card.stageId === stageId);
   }
 
+  isTransitionAllowed(sourceStageId: string | undefined, targetStageId: string): boolean {
+    if (!sourceStageId || sourceStageId === targetStageId) return true;
+    const sourceStage = this.stages.find((s) => s.id === sourceStageId);
+    if (!sourceStage) return true;
+    if (!sourceStage.allowedTransitions || sourceStage.allowedTransitions.length === 0) {
+      return true;
+    }
+    return sourceStage.allowedTransitions.includes(targetStageId);
+  }
+
+  canEnterStagePredicate(targetStageId: string) {
+    return (drag: CdkDrag<ITodoItem>, _drop: CdkDropList) => {
+      const todo = drag.data;
+      if (!todo) return true;
+      return this.isTransitionAllowed(todo.stageId, targetStageId);
+    };
+  }
+
   onDrop(event: CdkDragDrop<ITodoItem[]>, targetStageId: string): void {
     if (!this.canMoveCards) return;
 
@@ -122,6 +142,10 @@ export class KanbanBoardComponent {
       );
     } else {
       const movedItem = event.previousContainer.data[event.previousIndex];
+      if (movedItem && !this.isTransitionAllowed(movedItem.stageId, targetStageId)) {
+        return;
+      }
+
       transferArrayItem(
         event.previousContainer.data,
         event.container.data,
@@ -139,6 +163,7 @@ export class KanbanBoardComponent {
 
   onMoveToStage(todo: ITodoItem, targetStageId: string): void {
     if (!this.canMoveCards || todo.stageId === targetStageId) return;
+    if (!this.isTransitionAllowed(todo.stageId, targetStageId)) return;
     this.transitionStage.emit({ todoId: todo.id, stageId: targetStageId });
   }
 

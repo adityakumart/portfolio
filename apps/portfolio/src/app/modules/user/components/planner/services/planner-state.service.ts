@@ -720,19 +720,25 @@ export class PlannerStateService {
     });
   }
 
-  updateProject(id: string, dto: IUpdateProjectDto): void {
-    this.api.updateProject(id, dto).subscribe({
-      next: (updated) => {
-        this.selectedProject.set(updated);
-        this.myProjects.update((prev) =>
-          prev.map((p) => (p.id === id ? updated : p))
-        );
-        this.collaborativeProjects.update((prev) =>
-          prev.map((p) => (p.id === id ? updated : p))
-        );
-        toast.success('Project updated.');
-      },
-      error: (err) => toast.error(err.error?.message || 'Failed to update project'),
+  updateProject(id: string, dto: IUpdateProjectDto): Promise<IPlannerProject> {
+    return new Promise((resolve, reject) => {
+      this.api.updateProject(id, dto).subscribe({
+        next: (updated) => {
+          this.selectedProject.set(updated);
+          this.myProjects.update((prev) =>
+            prev.map((p) => (p.id === id ? updated : p))
+          );
+          this.collaborativeProjects.update((prev) =>
+            prev.map((p) => (p.id === id ? updated : p))
+          );
+          toast.success('Project updated.');
+          resolve(updated);
+        },
+        error: (err) => {
+          toast.error(err.error?.message || 'Failed to update project');
+          reject(err);
+        },
+      });
     });
   }
 
@@ -803,8 +809,13 @@ export class PlannerStateService {
     });
   }
 
-  addStage(projectId: string, name: string, color?: string): void {
-    this.api.addStage(projectId, { name, color }).subscribe({
+  addStage(
+    projectId: string,
+    name: string,
+    color?: string,
+    allowedTransitions?: string[]
+  ): void {
+    this.api.addStage(projectId, { name, color, allowedTransitions }).subscribe({
       next: (updated) => {
         this.selectedProject.set(updated);
         toast.success(`Stage "${name}" added.`);
@@ -813,8 +824,12 @@ export class PlannerStateService {
     });
   }
 
-  updateStage(projectId: string, stageId: string, name: string, color?: string): void {
-    this.api.updateStage(projectId, stageId, { name, color }).subscribe({
+  updateStage(
+    projectId: string,
+    stageId: string,
+    dto: IUpdateStageDto
+  ): void {
+    this.api.updateStage(projectId, stageId, dto).subscribe({
       next: (updated) => {
         this.selectedProject.set(updated);
         toast.success('Stage updated.');

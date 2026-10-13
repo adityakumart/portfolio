@@ -205,6 +205,7 @@ export function mapProjectDoc(doc: IPlannerProjectDocument): IPlannerProject {
         color: s.color,
         order: s.order,
         isDefault: Boolean(s.isDefault),
+        allowedTransitions: s.allowedTransitions || [],
       })),
     archived: Boolean(doc.archived),
     createdAt: doc.createdAt?.toISOString() || new Date().toISOString(),

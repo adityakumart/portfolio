@@ -21,12 +21,14 @@ import {
   lucideLogOut,
   lucideClock,
   lucideSparkles,
+  lucideEdit3,
 } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmCardImports } from '@spartan-ng/hel/card';
 import { HlmInputImports } from '@spartan-ng/hel/input';
 import { PlannerStateService } from '../../services/planner-state.service';
 import { IPlannerProject } from '@portfolio/shared-types';
+import { ProjectSettingsDialogComponent } from '../project-settings-dialog/project-settings-dialog.component';
 
 @Component({
   selector: 'app-planner-projects-list',
@@ -38,6 +40,7 @@ import { IPlannerProject } from '@portfolio/shared-types';
     HlmButtonImports,
     HlmCardImports,
     HlmInputImports,
+    ProjectSettingsDialogComponent,
   ],
   providers: [
     provideIcons({
@@ -54,6 +57,7 @@ import { IPlannerProject } from '@portfolio/shared-types';
       lucideLogOut,
       lucideClock,
       lucideSparkles,
+      lucideEdit3,
     }),
   ],
   templateUrl: './projects-list.component.html',
@@ -67,6 +71,9 @@ export class ProjectsListComponent {
   readonly isCreateModalOpen = signal<boolean>(false);
   newProjectTitle = '';
   newProjectDescription = '';
+
+  // Modal signal for editing project
+  readonly projectToEdit = signal<IPlannerProject | null>(null);
 
   openCreateModal(): void {
     this.newProjectTitle = '';
@@ -99,6 +106,11 @@ export class ProjectsListComponent {
 
   onOpenProject(project: IPlannerProject): void {
     this.state.selectProject(project);
+  }
+
+  onEditProject(project: IPlannerProject, event: Event): void {
+    event.stopPropagation();
+    this.projectToEdit.set(project);
   }
 
   onAcceptInvite(project: IPlannerProject, event: Event): void {

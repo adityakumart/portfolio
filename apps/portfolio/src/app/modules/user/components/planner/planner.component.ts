@@ -74,6 +74,7 @@ import {
   lucideShield,
   lucideUserCheck,
   lucideCheck,
+  lucideEdit3,
 } from '@ng-icons/lucide';
 
 @Component({
@@ -124,6 +125,7 @@ import {
       lucideShield,
       lucideUserCheck,
       lucideCheck,
+      lucideEdit3,
     }),
   ],
   templateUrl: './planner.component.html',
@@ -146,6 +148,7 @@ export class PlannerComponent implements OnInit, OnDestroy {
   readonly isTodoModalOpen = signal<boolean>(false);
   readonly isReminderDialogOpen = signal<boolean>(false);
   readonly isProjectSettingsOpen = signal<boolean>(false);
+  readonly projectSettingsInitialTab = signal<'general' | 'collaborators' | 'stages' | 'roles'>('general');
   readonly projectTaskModalStageId = signal<string | null>(null);
 
   // Active items for editing
@@ -335,7 +338,8 @@ export class PlannerComponent implements OnInit, OnDestroy {
   }
 
   // Project Actions
-  openProjectSettings(): void {
+  openProjectSettings(tab: 'general' | 'collaborators' | 'stages' | 'roles' = 'general'): void {
+    this.projectSettingsInitialTab.set(tab);
     this.isProjectSettingsOpen.set(true);
   }
 

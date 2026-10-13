@@ -23,6 +23,7 @@ export interface IProjectStageDoc {
   color?: string;
   order: number;
   isDefault?: boolean;
+  allowedTransitions?: string[];
 }
 
 export interface IProjectCustomRoleDoc {
@@ -69,6 +70,7 @@ const ProjectStageSchema = new Schema(
     color: { type: String, trim: true },
     order: { type: Number, required: true, default: 0 },
     isDefault: { type: Boolean, default: false },
+    allowedTransitions: { type: [String], default: [] },
   },
   { _id: false }
 );

@@ -3,6 +3,7 @@ import {
   Input,
   Output,
   EventEmitter,
+  OnInit,
   inject,
   signal,
   ChangeDetectionStrategy,
@@ -25,13 +26,14 @@ import {
   lucideMail,
   lucideUserCheck,
   lucideAlertTriangle,
+  lucideSave,
+  lucideMoveRight,
 } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmInputImports } from '@spartan-ng/hel/input';
 import { PlannerStateService } from '../../services/planner-state.service';
 import {
   IPlannerProject,
-  IProjectMember,
   IProjectStage,
   IProjectCustomRole,
   FixedProjectRole,
@@ -57,30 +59,47 @@ import {
       lucideMail,
       lucideUserCheck,
       lucideAlertTriangle,
+      lucideSave,
+      lucideMoveRight,
     }),
   ],
   templateUrl: './project-settings-dialog.component.html',
   styleUrls: ['./project-settings-dialog.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProjectSettingsDialogComponent {
+export class ProjectSettingsDialogComponent implements OnInit {
   readonly state = inject(PlannerStateService);
 
   @Input({ required: true }) project!: IPlannerProject;
+  @Input() initialTab?: 'general' | 'collaborators' | 'stages' | 'roles';
   @Output() close = new EventEmitter<void>();
 
-  readonly activeTab = signal<'collaborators' | 'stages' | 'roles'>('collaborators');
+  readonly activeTab = signal<'general' | 'collaborators' | 'stages' | 'roles'>('general');
+
+  // General Tab Form State
+  editTitle = '';
+  editDescription = '';
+  isSavingProject = signal<boolean>(false);
 
   // Collaborator Invite Form State (Strictly manual email, no autocomplete)
   inviteEmail = '';
   inviteRole: string = 'member';
   isInviting = signal<boolean>(false);
 
-  // Stage Form State
+  // Stage Form State (Adding)
   newStageName = '';
   newStageColor = '#3b82f6';
+  newStageAllowAllTransitions = true;
+  newStageTransitions: string[] = [];
   deleteStageTargetId: string | null = null;
   stageToDelete: IProjectStage | null = null;
+
+  // Editing Existing Stage State
+  editingStage: IProjectStage | null = null;
+  editingStageName = '';
+  editingStageColor = '#64748b';
+  editingStageAllowAllTransitions = true;
+  editingStageTransitions: string[] = [];
 
   // Custom Role Form State
   isCreatingRole = signal<boolean>(false);
@@ -106,6 +125,14 @@ export class ProjectSettingsDialogComponent {
     { id: 'viewer', label: 'Viewer / Read-Only', desc: 'Can view board and cards without modifying data.' },
   ];
 
+  ngOnInit(): void {
+    if (this.initialTab) {
+      this.activeTab.set(this.initialTab);
+    }
+    this.editTitle = this.project?.title || '';
+    this.editDescription = this.project?.description || '';
+  }
+
   canManage(): boolean {
     const perms = this.state.activeProjectPermissions();
     return Boolean(this.state.isProjectOwner() || perms?.canManageProject);
@@ -126,6 +153,20 @@ export class ProjectSettingsDialogComponent {
     return Boolean(this.state.isProjectOwner() || perms?.canManageRoles);
   }
 
+  // General tab: Save project details
+  async handleSaveProject(): Promise<void> {
+    if (!this.editTitle.trim()) return;
+    this.isSavingProject.set(true);
+    try {
+      await this.state.updateProject(this.project.id, {
+        title: this.editTitle.trim(),
+        description: this.editDescription.trim(),
+      });
+    } finally {
+      this.isSavingProject.set(false);
+    }
+  }
+
   // Invite action
   handleInviteSubmit(): void {
     if (!this.inviteEmail.trim()) return;
@@ -135,11 +176,78 @@ export class ProjectSettingsDialogComponent {
     this.isInviting.set(false);
   }
 
-  // Stage actions
+  // Stage actions: Add
   handleAddStage(): void {
     if (!this.newStageName.trim()) return;
-    this.state.addStage(this.project.id, this.newStageName.trim(), this.newStageColor);
+    const targetTransitions = this.newStageAllowAllTransitions
+      ? []
+      : [...this.newStageTransitions];
+
+    this.state.addStage(
+      this.project.id,
+      this.newStageName.trim(),
+      this.newStageColor,
+      targetTransitions
+    );
     this.newStageName = '';
+    this.newStageColor = '#3b82f6';
+    this.newStageAllowAllTransitions = true;
+    this.newStageTransitions = [];
+  }
+
+  toggleNewStageTransition(targetStageId: string): void {
+    if (this.newStageTransitions.includes(targetStageId)) {
+      this.newStageTransitions = this.newStageTransitions.filter((id) => id !== targetStageId);
+    } else {
+      this.newStageTransitions = [...this.newStageTransitions, targetStageId];
+    }
+  }
+
+  // Stage actions: Edit existing
+  startEditStage(stage: IProjectStage): void {
+    this.editingStage = stage;
+    this.editingStageName = stage.name;
+    this.editingStageColor = stage.color || '#64748b';
+    this.editingStageAllowAllTransitions =
+      !stage.allowedTransitions || stage.allowedTransitions.length === 0;
+    this.editingStageTransitions = stage.allowedTransitions
+      ? [...stage.allowedTransitions]
+      : [];
+  }
+
+  cancelEditStage(): void {
+    this.editingStage = null;
+    this.editingStageTransitions = [];
+  }
+
+  toggleEditStageTransition(targetStageId: string): void {
+    if (this.editingStageTransitions.includes(targetStageId)) {
+      this.editingStageTransitions = this.editingStageTransitions.filter(
+        (id) => id !== targetStageId
+      );
+    } else {
+      this.editingStageTransitions = [...this.editingStageTransitions, targetStageId];
+    }
+  }
+
+  handleSaveEditedStage(): void {
+    if (!this.editingStage || !this.editingStageName.trim()) return;
+    const targetTransitions = this.editingStageAllowAllTransitions
+      ? []
+      : [...this.editingStageTransitions];
+
+    this.state.updateStage(this.project.id, this.editingStage.id, {
+      name: this.editingStageName.trim(),
+      color: this.editingStageColor,
+      allowedTransitions: targetTransitions,
+    });
+    this.editingStage = null;
+    this.editingStageTransitions = [];
+  }
+
+  getStageNameById(stageId: string): string {
+    const s = this.project.stages.find((st) => st.id === stageId);
+    return s ? s.name : stageId;
   }
 
   handleMoveStage(stageIndex: number, direction: 'up' | 'down'): void {

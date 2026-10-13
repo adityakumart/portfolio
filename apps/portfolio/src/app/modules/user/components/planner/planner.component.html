@@ -462,10 +462,23 @@
                     variant="outline"
                     size="sm"
                     class="h-8 text-xs rounded-lg flex items-center gap-1.5"
-                    (click)="openProjectSettings()"
+                    (click)="openProjectSettings('general')"
+                    title="Edit project details"
+                  >
+                    <ng-icon name="lucideEdit3" class="size-3.5"></ng-icon>
+                    <span>Edit Project</span>
+                  </button>
+
+                  <button
+                    hlmBtn
+                    variant="outline"
+                    size="sm"
+                    class="h-8 text-xs rounded-lg flex items-center gap-1.5"
+                    (click)="openProjectSettings('stages')"
+                    title="Settings, workflow stages & RBAC"
                   >
                     <ng-icon name="lucideSettings" class="size-3.5"></ng-icon>
-                    <span>Settings & RBAC</span>
+                    <span>Settings & Stages</span>
                   </button>
                 </div>
               </div>
@@ -564,6 +577,7 @@
     @if (isProjectSettingsOpen() && state.selectedProject()) {
       <app-planner-project-settings-dialog
         [project]="state.selectedProject()!"
+        [initialTab]="projectSettingsInitialTab()"
         (close)="closeProjectSettings()"
       ></app-planner-project-settings-dialog>
     }

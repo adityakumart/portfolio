@@ -44,6 +44,7 @@ export interface IProjectStage {
   color?: string;
   order: number;
   isDefault?: boolean;
+  allowedTransitions?: string[];
 }
 
 export interface IPlannerProject {
@@ -64,7 +65,7 @@ export interface IPlannerProject {
 export interface ICreateProjectDto {
   title: string;
   description?: string;
-  stages?: Array<{ name: string; color?: string }>;
+  stages?: Array<{ name: string; color?: string; allowedTransitions?: string[] }>;
 }
 
 export interface IUpdateProjectDto {
@@ -97,11 +98,13 @@ export interface IUpdateCustomRoleDto {
 export interface ICreateStageDto {
   name: string;
   color?: string;
+  allowedTransitions?: string[];
 }
 
 export interface IUpdateStageDto {
   name?: string;
   color?: string;
+  allowedTransitions?: string[];
 }
 
 export interface IReorderStagesDto {
