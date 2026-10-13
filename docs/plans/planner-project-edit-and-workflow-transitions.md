@@ -65,8 +65,12 @@ graph TD
   - Enabled only for Project Owners and users with `canManageProject` permission.
 
 ### 4.2. Workflow Stages & Multi-Target Transition Interface
+- **Add Project Modal (Stage Customization)**:
+  - Users are presented with the default stages (`Backlog`, `In Progress`, `In Review`, `Done`) and can directly add custom stages (name, color) and delete/reorder stages before creating the project.
+- **Edit Project (General Tab Integration)**:
+  - Inside the Edit Project / General settings tab, users can see the project's current stages and add new custom stages directly without switching tabs.
 - **Default Behavior**:
-  - Newly created projects continue to initialize with standard default stages: `Backlog`, `In Progress`, `In Review`, `Done`.
+  - Newly created projects initialize with standard default stages if not modified, or with the custom stages defined by the user.
   - Default stages start with flexible transitions (or logical presets: `Backlog` -> `In Progress`, `In Progress` -> `In Review` / `Backlog`, `In Review` -> `Done` / `In Progress`, `Done` -> `In Progress`).
   - Users can choose **"Any stage allowed"** (unrestricted) or restrict to specific target stages.
 - **Stage Addition ("Add Stage" Form)**:

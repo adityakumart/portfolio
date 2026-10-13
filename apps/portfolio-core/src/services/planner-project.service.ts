@@ -81,6 +81,7 @@ export function getDefaultStages(): IProjectStageDoc[] {
       color: '#64748b',
       order: 0,
       isDefault: true,
+      allowedTransitions: ['in_progress'],
     },
     {
       id: 'in_progress',
@@ -88,6 +89,7 @@ export function getDefaultStages(): IProjectStageDoc[] {
       color: '#3b82f6',
       order: 1,
       isDefault: true,
+      allowedTransitions: ['in_review'],
     },
     {
       id: 'in_review',
@@ -95,6 +97,7 @@ export function getDefaultStages(): IProjectStageDoc[] {
       color: '#f59e0b',
       order: 2,
       isDefault: true,
+      allowedTransitions: ['done'],
     },
     {
       id: 'done',
@@ -102,6 +105,7 @@ export function getDefaultStages(): IProjectStageDoc[] {
       color: '#10b981',
       order: 3,
       isDefault: true,
+      allowedTransitions: [],
     },
   ];
 }
