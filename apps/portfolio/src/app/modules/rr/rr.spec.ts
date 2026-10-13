@@ -243,5 +243,36 @@ test.describe('RoadReady (RR) Module - End-to-End Suite', () => {
       await expect(lockOverlay).not.toBeVisible({ timeout: 5000 });
       await expect(page.getByRole('heading', { name: 'Overview Dashboard' })).toBeVisible();
     });
+
+    test('should reset stale lock and inactivity timestamp on login and show dashboard without prompting for password', async ({ page }) => {
+      await setupRRRouteMocks(page);
+      await page.goto('/user/rr/login');
+      await page.waitForLoadState('domcontentloaded');
+
+      // Inject stale lock state as if user was previously inactive or locked
+      await page.evaluate(() => {
+        localStorage.setItem('rr_session_is_locked', 'true');
+        localStorage.setItem('rr_session_last_active', String(Date.now() - 600000));
+      });
+
+      // Click Demo Desk Staff
+      const demoBtn = page.getByRole('button', { name: 'Demo Desk Staff' });
+      await demoBtn.click();
+
+      // Submit login form
+      const submitBtn = page.locator('div[hlmTabsContent="employee"] button[type="submit"]');
+      await submitBtn.click();
+
+      // Redirection to dashboard
+      await page.waitForURL(/.*\/user\/rr\/dashboard/, { timeout: 10000 });
+      await expect(page).toHaveURL(/.*\/user\/rr\/dashboard/);
+
+      // Verify lock screen overlay is NOT visible
+      const lockOverlay = page.locator('div[aria-labelledby="lock-screen-title"]');
+      await expect(lockOverlay).not.toBeVisible();
+
+      // Verify dashboard content is visible
+      await expect(page.getByRole('heading', { name: 'Overview Dashboard' })).toBeVisible();
+    });
   });
 });

@@ -23,7 +23,7 @@
         "outputPath": {
           "base": "dist/apps/portfolio"
         },
-        "baseHref": "/portfolio/",
+        "baseHref": "/",
         "index": "apps/portfolio/src/index.html",
         "polyfills": [],
         "tsConfig": "apps/portfolio/tsconfig.app.json",
@@ -115,6 +115,7 @@
           ]
         },
         "development": {
+          "baseHref": "/",
           "optimization": false,
           "extractLicenses": false,
           "sourceMap": true,

@@ -414,11 +414,13 @@ export class RRInactivityService implements OnDestroy {
   }
 
   /**
-   * Restores session state after successful unlock
+   * Fully resets inactivity session tracking upon fresh authentication or login
    */
-  unlockSession(): void {
+  resetSessionState(): void {
     this.isLocked.set(false);
     this.errorMessage.set(null);
+    this.remainingSeconds.set(Math.floor(this.timeoutMs() / 1000));
+    this.lastActiveTimestamp = Date.now();
     this.recordActivityNow();
     if (typeof window !== 'undefined' && window.localStorage) {
       localStorage.setItem(STORAGE_KEY_IS_LOCKED, 'false');
@@ -435,9 +437,16 @@ export class RRInactivityService implements OnDestroy {
   }
 
   /**
+   * Restores session state after successful unlock
+   */
+  unlockSession(): void {
+    this.resetSessionState();
+  }
+
+  /**
    * Clears inactivity tracking storage
    */
-  private clearStorageState(): void {
+  clearStorageState(): void {
     if (typeof window !== 'undefined' && window.localStorage) {
       localStorage.removeItem(STORAGE_KEY_LAST_ACTIVE);
       localStorage.removeItem(STORAGE_KEY_IS_LOCKED);

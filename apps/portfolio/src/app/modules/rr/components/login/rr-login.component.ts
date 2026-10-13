@@ -1,4 +1,4 @@
-import { Component, inject, signal, effect } from '@angular/core';
+import { Component, inject, signal, effect, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -30,6 +30,7 @@ import {
   lucideSparkles,
 } from '@ng-icons/lucide';
 import { RRApiService } from '../../services/rr-api.service';
+import { RRInactivityService } from '../../services/rr-inactivity.service';
 
 @Component({
   selector: 'app-rr-login',
@@ -69,8 +70,9 @@ import { RRApiService } from '../../services/rr-api.service';
   templateUrl: './rr-login.component.html',
   styleUrl: './rr-login.component.scss',
 })
-export class RRLoginComponent {
+export class RRLoginComponent implements OnInit {
   rrApi = inject(RRApiService);
+  inactivityService = inject(RRInactivityService);
   private router = inject(Router);
 
   // Form Groups
@@ -102,6 +104,11 @@ export class RRLoginComponent {
     });
   }
 
+  ngOnInit(): void {
+    // Clean up any stale inactivity lock or timestamps from previous sessions
+    this.inactivityService.clearStorageState();
+  }
+
   setRole(role: 'employee' | 'admin') {
     this.selectedRole.set(role);
     this.error.set(null);
@@ -126,6 +133,7 @@ export class RRLoginComponent {
 
     try {
       await this.rrApi.login({ empId: enteredId, dob: enteredDob });
+      this.inactivityService.resetSessionState();
       this.success.set('Login successful! Redirecting...');
       toast.success('Login successful! Redirecting to fleet console...');
       setTimeout(() => {
@@ -153,6 +161,7 @@ export class RRLoginComponent {
 
     try {
       await this.rrApi.login({ username, password });
+      this.inactivityService.resetSessionState();
       this.success.set('Admin login successful! Redirecting...');
       toast.success('Admin login successful! Redirecting to fleet console...');
       setTimeout(() => {
