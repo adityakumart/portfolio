@@ -1102,7 +1102,7 @@ export async function handleTransitionTodoStage(
         if (isMovingForward) {
           const allowedForward = Array.isArray(currentStage.allowedTransitions)
             ? currentStage.allowedTransitions
-            : [];
+            : project.stages.filter((s) => s.order === currentStage.order + 1).map((s) => s.id);
 
           if (!allowedForward.includes(stageId)) {
             res.status(400).json({
