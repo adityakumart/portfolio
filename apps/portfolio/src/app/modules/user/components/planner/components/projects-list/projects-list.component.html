@@ -1,0 +1,322 @@
+<div class="projects-container">
+  <!-- Projects Header & Action Bar -->
+  <div class="projects-header-bar flex items-center justify-between pb-4 border-b border-border mb-6">
+    <div>
+      <h2 class="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
+        <ng-icon name="lucideFolderKanban" class="text-primary size-5.5"></ng-icon>
+        Projects
+      </h2>
+      <p class="text-xs text-muted-foreground mt-0.5">
+        Collaborative GitHub Projects boards with custom RBAC and dynamic workflows
+      </p>
+    </div>
+
+    <button
+      hlmBtn
+      size="sm"
+      class="bg-primary text-primary-foreground hover:bg-primary/90 font-medium rounded-xl shadow-sm flex items-center gap-1.5"
+      (click)="openCreateModal()"
+    >
+      <ng-icon name="lucidePlus" class="size-4"></ng-icon>
+      <span>+ New Project</span>
+    </button>
+  </div>
+
+  <!-- SECTION 1: PENDING INVITATIONS (Prominent Alert Banner) -->
+  @if (state.pendingInvitations().length > 0) {
+    <div class="mb-8">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="relative flex h-2.5 w-2.5">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500"></span>
+        </span>
+        <h3 class="text-sm font-bold uppercase tracking-wider text-blue-500">
+          Pending Invitations ({{ state.pendingInvitations().length }})
+        </h3>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        @for (project of state.pendingInvitations(); track project.id) {
+          <div class="p-4 rounded-xl border border-blue-500/30 bg-blue-500/5 hover:border-blue-500/50 transition-all flex flex-col justify-between">
+            <div>
+              <div class="flex items-start justify-between gap-2">
+                <h4 class="font-bold text-sm text-foreground truncate">{{ project.title }}</h4>
+                <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-500/20 text-blue-500 shrink-0">
+                  Invite
+                </span>
+              </div>
+              <p class="text-xs text-muted-foreground mt-1 line-clamp-2">
+                {{ project.description || 'You have been invited to collaborate on this project.' }}
+              </p>
+
+              <div class="flex items-center gap-3 text-[11px] text-muted-foreground mt-3">
+                <span class="flex items-center gap-1">
+                  <ng-icon name="lucideLayers" class="size-3.5"></ng-icon>
+                  {{ project.stages.length }} stages
+                </span>
+                <span class="flex items-center gap-1">
+                  <ng-icon name="lucideUsers" class="size-3.5"></ng-icon>
+                  {{ project.members.length + 1 }} members
+                </span>
+              </div>
+            </div>
+
+            <!-- Prominent [Accept] and [Decline] Action Buttons -->
+            <div class="mt-4 pt-3 border-t border-blue-500/20 flex items-center gap-2">
+              <button
+                hlmBtn
+                size="sm"
+                class="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg text-xs font-semibold h-8"
+                (click)="onAcceptInvite(project, $event)"
+              >
+                <ng-icon name="lucideCheck" class="mr-1 size-3.5"></ng-icon>
+                <span>Accept Invite</span>
+              </button>
+              <button
+                hlmBtn
+                variant="outline"
+                size="sm"
+                class="text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg h-8"
+                (click)="onDeclineInvite(project, $event)"
+              >
+                <span>Decline</span>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- SECTION 2: MY PROJECTS (Owned by user) -->
+  <div class="mb-8">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+        My Projects ({{ state.myProjects().length }})
+      </h3>
+    </div>
+
+    @if (state.myProjects().length === 0) {
+      <div class="p-8 border border-dashed border-border rounded-2xl text-center flex flex-col items-center justify-center bg-card/40">
+        <div class="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3">
+          <ng-icon name="lucideFolderKanban" class="size-6"></ng-icon>
+        </div>
+        <h4 class="text-sm font-semibold text-foreground">No projects created yet</h4>
+        <p class="text-xs text-muted-foreground mt-1 max-w-[280px]">
+          Create custom projects with dynamic kanban boards and invite your team.
+        </p>
+        <button
+          hlmBtn
+          size="sm"
+          class="mt-4 bg-primary text-primary-foreground hover:bg-primary/90 text-xs rounded-xl"
+          (click)="openCreateModal()"
+        >
+          <ng-icon name="lucidePlus" class="mr-1 size-3.5"></ng-icon>
+          <span>Create Project</span>
+        </button>
+      </div>
+    } @else {
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        @for (project of state.myProjects(); track project.id) {
+          <div
+            class="project-card group p-4 rounded-2xl border border-border bg-card hover:border-primary/50 hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col justify-between"
+            (click)="onOpenProject(project)"
+          >
+            <div>
+              <div class="flex items-start justify-between gap-2">
+                <h4 class="font-bold text-sm text-foreground group-hover:text-primary transition-colors truncate">
+                  {{ project.title }}
+                </h4>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/15 text-primary shrink-0">
+                  Owner
+                </span>
+              </div>
+              <p class="text-xs text-muted-foreground mt-1 line-clamp-2 min-h-[32px]">
+                {{ project.description || 'No description provided.' }}
+              </p>
+
+              <!-- Stages & Members Badges -->
+              <div class="flex items-center gap-2 mt-3 flex-wrap">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-muted text-muted-foreground">
+                  <ng-icon name="lucideLayers" class="size-3.5"></ng-icon>
+                  {{ project.stages.length }} Stages
+                </span>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-muted text-muted-foreground">
+                  <ng-icon name="lucideUsers" class="size-3.5"></ng-icon>
+                  {{ project.members.length + 1 }} {{ (project.members.length + 1) === 1 ? 'Member' : 'Members' }}
+                </span>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-border/60 flex items-center justify-between">
+              <span class="text-xs text-primary font-semibold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                Open Board
+                <ng-icon name="lucideArrowRight" class="size-3.5"></ng-icon>
+              </span>
+              <button
+                hlmBtn
+                variant="ghost"
+                size="icon"
+                class="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg"
+                (click)="onDeleteProject(project, $event)"
+                title="Archive project"
+              >
+                <ng-icon name="lucideTrash2" class="size-3.5"></ng-icon>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- SECTION 3: COLLABORATIVE PROJECTS (Accepted membership) -->
+  @if (state.collaborativeProjects().length > 0) {
+    <div>
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          Collaborative Projects ({{ state.collaborativeProjects().length }})
+        </h3>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        @for (project of state.collaborativeProjects(); track project.id) {
+          <div
+            class="project-card group p-4 rounded-2xl border border-border bg-card hover:border-primary/50 hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col justify-between"
+            (click)="onOpenProject(project)"
+          >
+            <div>
+              <div class="flex items-start justify-between gap-2">
+                <h4 class="font-bold text-sm text-foreground group-hover:text-primary transition-colors truncate">
+                  {{ project.title }}
+                </h4>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-secondary text-secondary-foreground shrink-0">
+                  Collaborator
+                </span>
+              </div>
+              <p class="text-xs text-muted-foreground mt-1 line-clamp-2 min-h-[32px]">
+                {{ project.description || 'Shared collaborative workflow project.' }}
+              </p>
+
+              <div class="flex items-center gap-2 mt-3 flex-wrap">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-muted text-muted-foreground">
+                  <ng-icon name="lucideLayers" class="size-3.5"></ng-icon>
+                  {{ project.stages.length }} Stages
+                </span>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-muted text-muted-foreground">
+                  <ng-icon name="lucideUsers" class="size-3.5"></ng-icon>
+                  {{ project.members.length + 1 }} Members
+                </span>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-border/60 flex items-center justify-between">
+              <span class="text-xs text-primary font-semibold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                Open Board
+                <ng-icon name="lucideArrowRight" class="size-3.5"></ng-icon>
+              </span>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>
+
+<!-- CREATE PROJECT DIALOG -->
+@if (isCreateModalOpen()) {
+  <div class="fixed inset-0 bg-black/60 backdrop-blur-xs z-[140] flex items-center justify-center p-4">
+    <div
+      class="w-full max-w-md bg-card border border-border rounded-2xl p-6 shadow-2xl animate-in fade-in-0 zoom-in-95 duration-150"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div class="flex items-center justify-between pb-3 border-b border-border mb-4">
+        <div class="flex items-center gap-2">
+          <div class="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+            <ng-icon name="lucideFolderKanban" class="size-4.5"></ng-icon>
+          </div>
+          <div>
+            <h3 class="font-bold text-base text-foreground">Create New Project</h3>
+            <p class="text-xs text-muted-foreground">Initializes with standard vertical workflow columns</p>
+          </div>
+        </div>
+        <button
+          hlmBtn
+          variant="ghost"
+          size="icon"
+          class="h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground"
+          (click)="closeCreateModal()"
+        >
+          <ng-icon name="lucideX" class="size-4"></ng-icon>
+        </button>
+      </div>
+
+      <form (ngSubmit)="handleCreateSubmit()" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-foreground mb-1.5">Project Title *</label>
+          <input
+            hlmInput
+            type="text"
+            required
+            maxlength="150"
+            [(ngModel)]="newProjectTitle"
+            name="title"
+            placeholder="e.g. Q4 Web Redesign, Sprint 14, Roadmap..."
+            class="w-full"
+            autofocus
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-foreground mb-1.5">Description (Optional)</label>
+          <textarea
+            hlmInput
+            rows="3"
+            maxlength="500"
+            [(ngModel)]="newProjectDescription"
+            name="description"
+            placeholder="Brief goals and scope of this project..."
+            class="w-full text-xs py-2 resize-none"
+          ></textarea>
+        </div>
+
+        <!-- Initial stages template preview -->
+        <div class="p-3 rounded-xl bg-muted/40 border border-border">
+          <span class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block mb-2">
+            Default Workflow Stages:
+          </span>
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-500/15 text-slate-400">Backlog</span>
+            <span class="text-muted-foreground text-xs">→</span>
+            <span class="px-2 py-0.5 rounded-md text-[11px] font-medium bg-blue-500/15 text-blue-400">In Progress</span>
+            <span class="text-muted-foreground text-xs">→</span>
+            <span class="px-2 py-0.5 rounded-md text-[11px] font-medium bg-amber-500/15 text-amber-400">In Review</span>
+            <span class="text-muted-foreground text-xs">→</span>
+            <span class="px-2 py-0.5 rounded-md text-[11px] font-medium bg-emerald-500/15 text-emerald-400">Done</span>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-border">
+          <button
+            hlmBtn
+            variant="ghost"
+            type="button"
+            class="text-xs"
+            (click)="closeCreateModal()"
+          >
+            Cancel
+          </button>
+          <button
+            hlmBtn
+            type="submit"
+            [disabled]="!newProjectTitle.trim()"
+            class="bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold rounded-xl"
+          >
+            Create Project
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

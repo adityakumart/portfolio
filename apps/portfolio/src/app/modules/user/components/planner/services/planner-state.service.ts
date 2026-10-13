@@ -8,6 +8,16 @@ import {
   IUpdateTodoDto,
   ISubtask,
   TodoStatus,
+  IPlannerProject,
+  IProjectPermissions,
+  ICreateProjectDto,
+  IUpdateProjectDto,
+  IInviteMemberDto,
+  IUpdateMemberRoleDto,
+  ICreateStageDto,
+  IUpdateStageDto,
+  ICreateCustomRoleDto,
+  IUpdateCustomRoleDto,
 } from '@portfolio/shared-types';
 import { PlannerApiService } from './planner-api.service';
 import { PlatformAdapterService } from './platform-adapter.service';
@@ -29,23 +39,38 @@ export class PlannerStateService {
   readonly isSaving = signal<boolean>(false);
   readonly searchQuery = signal<string>('');
   readonly selectedTag = signal<string | null>(null);
-  readonly activeTab = signal<'todos' | 'notes'>(this.getInitialTab());
+  readonly activeTab = signal<'todos' | 'notes' | 'projects'>(this.getInitialTab());
   readonly todoFilter = signal<'all' | 'today' | 'upcoming' | 'completed'>('all');
 
-  private getInitialTab(): 'todos' | 'notes' {
+  // Collaborative Projects Signals
+  readonly myProjects = signal<IPlannerProject[]>([]);
+  readonly collaborativeProjects = signal<IPlannerProject[]>([]);
+  readonly pendingInvitations = signal<IPlannerProject[]>([]);
+  readonly selectedProject = signal<IPlannerProject | null>(null);
+  readonly activeProjectRole = signal<string | null>(null);
+  readonly activeProjectPermissions = signal<IProjectPermissions | null>(null);
+  readonly isProjectOwner = signal<boolean>(false);
+  readonly isPendingProjectAccess = signal<boolean>(false);
+  readonly projectTodos = signal<ITodoItem[]>([]);
+  readonly isLoadingProjects = signal<boolean>(false);
+
+  private getInitialTab(): 'todos' | 'notes' | 'projects' {
     if (typeof window !== 'undefined' && window.localStorage) {
       try {
         const stored = localStorage.getItem('portfolio_planner_active_tab');
-        if (stored === 'notes' || stored === 'todos') {
-          return stored;
+        if (stored === 'notes' || stored === 'todos' || stored === 'projects') {
+          return stored as any;
         }
       } catch {}
     }
     return 'todos';
   }
 
-  setActiveTab(tab: 'todos' | 'notes'): void {
+  setActiveTab(tab: 'todos' | 'notes' | 'projects'): void {
     this.activeTab.set(tab);
+    if (tab === 'projects') {
+      this.loadProjects();
+    }
     if (typeof window !== 'undefined' && window.localStorage) {
       try {
         localStorage.setItem('portfolio_planner_active_tab', tab);
@@ -614,5 +639,289 @@ export class PlannerStateService {
       notes: this.notes(),
       todos: this.todos(),
     });
+  }
+
+  // -------------------------------------------------------------------------
+  // Collaborative Projects Actions
+  // -------------------------------------------------------------------------
+  loadProjects(): void {
+    this.isLoadingProjects.set(true);
+    this.api.getProjects().subscribe({
+      next: (res) => {
+        this.myProjects.set(res.myProjects || []);
+        this.collaborativeProjects.set(res.collaborativeProjects || []);
+        this.pendingInvitations.set(res.pendingInvitations || []);
+        this.isLoadingProjects.set(false);
+      },
+      error: (err) => {
+        this.isLoadingProjects.set(false);
+        console.error('Failed to load projects:', err);
+      },
+    });
+  }
+
+  selectProject(project: IPlannerProject): void {
+    this.selectedProject.set(project);
+    this.isPendingProjectAccess.set(false);
+
+    this.api.getProject(project.id).subscribe({
+      next: (res) => {
+        this.selectedProject.set(res.project);
+        this.activeProjectPermissions.set(res.permissions);
+        this.activeProjectRole.set(res.role);
+        this.isProjectOwner.set(res.isOwner);
+        this.loadProjectTodos(project.id);
+      },
+      error: (err) => {
+        if (err.status === 403 && err.error?.invitation) {
+          this.isPendingProjectAccess.set(true);
+          this.activeProjectRole.set(err.error.invitation.role);
+        } else {
+          toast.error(err.error?.message || 'Failed to open project');
+        }
+      },
+    });
+  }
+
+  clearSelectedProject(): void {
+    this.selectedProject.set(null);
+    this.activeProjectRole.set(null);
+    this.activeProjectPermissions.set(null);
+    this.isProjectOwner.set(false);
+    this.isPendingProjectAccess.set(false);
+    this.projectTodos.set([]);
+  }
+
+  loadProjectTodos(projectId: string): void {
+    this.api.getProjectTodos(projectId).subscribe({
+      next: (cards) => {
+        this.projectTodos.set(cards || []);
+      },
+      error: (err) => {
+        console.error('Failed to load project cards:', err);
+      },
+    });
+  }
+
+  async createProject(dto: ICreateProjectDto): Promise<IPlannerProject> {
+    return new Promise((resolve, reject) => {
+      this.api.createProject(dto).subscribe({
+        next: (created) => {
+          this.myProjects.update((prev) => [created, ...prev]);
+          toast.success(`Project "${created.title}" created successfully!`);
+          this.selectProject(created);
+          resolve(created);
+        },
+        error: (err) => {
+          toast.error(err.error?.message || 'Failed to create project');
+          reject(err);
+        },
+      });
+    });
+  }
+
+  updateProject(id: string, dto: IUpdateProjectDto): void {
+    this.api.updateProject(id, dto).subscribe({
+      next: (updated) => {
+        this.selectedProject.set(updated);
+        this.myProjects.update((prev) =>
+          prev.map((p) => (p.id === id ? updated : p))
+        );
+        this.collaborativeProjects.update((prev) =>
+          prev.map((p) => (p.id === id ? updated : p))
+        );
+        toast.success('Project updated.');
+      },
+      error: (err) => toast.error(err.error?.message || 'Failed to update project'),
+    });
+  }
+
+  deleteProject(id: string): void {
+    this.api.deleteProject(id).subscribe({
+      next: () => {
+        this.myProjects.update((prev) => prev.filter((p) => p.id !== id));
+        this.collaborativeProjects.update((prev) => prev.filter((p) => p.id !== id));
+        this.clearSelectedProject();
+        toast.success('Project archived.');
+      },
+      error: (err) => toast.error(err.error?.message || 'Failed to archive project'),
+    });
+  }
+
+  inviteMember(projectId: string, email: string, role: string): void {
+    this.api.inviteMember(projectId, { email, role }).subscribe({
+      next: (res) => {
+        this.selectedProject.set(res.project);
+        toast.success(`Invitation dispatched to ${email}!`);
+      },
+      error: (err) => toast.error(err.error?.message || 'Failed to invite collaborator'),
+    });
+  }
+
+  acceptProjectInvite(projectId: string): void {
+    this.api.acceptInvitation(projectId).subscribe({
+      next: (res) => {
+        toast.success('Invitation accepted!');
+        this.pendingInvitations.update((prev) => prev.filter((p) => p.id !== projectId));
+        this.collaborativeProjects.update((prev) => [res.project, ...prev]);
+        this.selectProject(res.project);
+      },
+      error: (err) => toast.error(err.error?.message || 'Failed to accept invitation'),
+    });
+  }
+
+  declineProjectInvite(projectId: string): void {
+    this.api.declineInvitation(projectId).subscribe({
+      next: () => {
+        toast.info('Invitation declined.');
+        this.pendingInvitations.update((prev) => prev.filter((p) => p.id !== projectId));
+        if (this.selectedProject()?.id === projectId) {
+          this.clearSelectedProject();
+        }
+      },
+      error: (err) => toast.error(err.error?.message || 'Failed to decline invitation'),
+    });
+  }
+
+  updateMemberRole(projectId: string, userId: string, role: string): void {
+    this.api.updateMemberRole(projectId, userId, { role }).subscribe({
+      next: (updated) => {
+        this.selectedProject.set(updated);
+        toast.success('Collaborator role updated.');
+      },
+      error: (err) => toast.error(err.error?.message || 'Failed to update role'),
+    });
+  }
+
+  removeMember(projectId: string, userId: string): void {
+    this.api.removeMember(projectId, userId).subscribe({
+      next: (res) => {
+        this.selectedProject.set(res.project);
+        toast.success('Collaborator removed.');
+      },
+      error: (err) => toast.error(err.error?.message || 'Failed to remove collaborator'),
+    });
+  }
+
+  addStage(projectId: string, name: string, color?: string): void {
+    this.api.addStage(projectId, { name, color }).subscribe({
+      next: (updated) => {
+        this.selectedProject.set(updated);
+        toast.success(`Stage "${name}" added.`);
+      },
+      error: (err) => toast.error(err.error?.message || 'Failed to add stage'),
+    });
+  }
+
+  updateStage(projectId: string, stageId: string, name: string, color?: string): void {
+    this.api.updateStage(projectId, stageId, { name, color }).subscribe({
+      next: (updated) => {
+        this.selectedProject.set(updated);
+        toast.success('Stage updated.');
+      },
+      error: (err) => toast.error(err.error?.message || 'Failed to update stage'),
+    });
+  }
+
+  reorderStages(projectId: string, stageIds: string[]): void {
+    // Optimistic UI update
+    const proj = this.selectedProject();
+    if (proj) {
+      const stageMap = new Map(proj.stages.map((s) => [s.id, s]));
+      const reordered = stageIds.map((id, idx) => ({ ...stageMap.get(id)!, order: idx }));
+      this.selectedProject.set({ ...proj, stages: reordered });
+    }
+
+    this.api.reorderStages(projectId, { stageIds }).subscribe({
+      next: (updated) => {
+        this.selectedProject.set(updated);
+      },
+      error: (err) => {
+        toast.error('Failed to reorder stages');
+        if (proj) this.selectedProject.set(proj);
+      },
+    });
+  }
+
+  deleteStage(projectId: string, stageId: string, fallbackStageId?: string): void {
+    this.api.deleteStage(projectId, stageId, fallbackStageId).subscribe({
+      next: (updated) => {
+        this.selectedProject.set(updated);
+        this.loadProjectTodos(projectId);
+        toast.success('Stage deleted.');
+      },
+      error: (err) => toast.error(err.error?.message || 'Failed to delete stage'),
+    });
+  }
+
+  createCustomRole(projectId: string, dto: ICreateCustomRoleDto): void {
+    this.api.createCustomRole(projectId, dto).subscribe({
+      next: (updated) => {
+        this.selectedProject.set(updated);
+        toast.success(`Custom role "${dto.name}" created!`);
+      },
+      error: (err) => toast.error(err.error?.message || 'Failed to create role'),
+    });
+  }
+
+  updateCustomRole(projectId: string, roleId: string, dto: IUpdateCustomRoleDto): void {
+    this.api.updateCustomRole(projectId, roleId, dto).subscribe({
+      next: (updated) => {
+        this.selectedProject.set(updated);
+        toast.success('Custom role updated.');
+      },
+      error: (err) => toast.error(err.error?.message || 'Failed to update role'),
+    });
+  }
+
+  deleteCustomRole(projectId: string, roleId: string): void {
+    this.api.deleteCustomRole(projectId, roleId).subscribe({
+      next: (updated) => {
+        this.selectedProject.set(updated);
+        toast.success('Custom role deleted.');
+      },
+      error: (err) => toast.error(err.error?.message || 'Failed to delete role'),
+    });
+  }
+
+  transitionProjectCard(todoId: string, stageId: string): void {
+    // Optimistic card update
+    this.projectTodos.update((prev) =>
+      prev.map((t) => (t.id === todoId ? { ...t, stageId } : t))
+    );
+
+    this.api.transitionTodoStage(todoId, stageId).subscribe({
+      next: (updated) => {
+        this.projectTodos.update((prev) =>
+          prev.map((t) => (t.id === todoId ? updated : t))
+        );
+      },
+      error: (err) => {
+        toast.error(err.error?.message || 'Failed to move card');
+        const proj = this.selectedProject();
+        if (proj) this.loadProjectTodos(proj.id);
+      },
+    });
+  }
+
+  createProjectCard(stageId: string, title: string, priority: any = 'medium', description = ''): void {
+    const proj = this.selectedProject();
+    if (!proj) return;
+
+    this.api
+      .createTodo({
+        title,
+        description,
+        projectId: proj.id,
+        stageId,
+        priority,
+      })
+      .subscribe({
+        next: (created) => {
+          this.projectTodos.update((prev) => [created, ...prev]);
+          toast.success('Card added to stage.');
+        },
+        error: (err) => toast.error(err.error?.message || 'Failed to add card'),
+      });
   }
 }

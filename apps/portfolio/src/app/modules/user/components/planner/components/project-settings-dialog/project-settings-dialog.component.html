@@ -1,0 +1,610 @@
+<div class="fixed inset-0 bg-black/60 backdrop-blur-xs z-[140] flex items-center justify-center p-4">
+  <div
+    class="w-full max-w-2xl bg-card border border-border rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-in fade-in-0 zoom-in-95 duration-150"
+    role="dialog"
+    aria-modal="true"
+  >
+    <!-- Modal Header -->
+    <div class="flex items-center justify-between px-6 py-4 border-b border-border bg-card/90 shrink-0">
+      <div class="flex items-center gap-2.5">
+        <div class="h-9 w-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+          <ng-icon name="lucideSettings" class="size-5"></ng-icon>
+        </div>
+        <div>
+          <h3 class="font-bold text-base text-foreground">Project Settings: {{ project.title }}</h3>
+          <p class="text-xs text-muted-foreground">Manage collaborators, workflow stages, and custom roles</p>
+        </div>
+      </div>
+      <button
+        hlmBtn
+        variant="ghost"
+        size="icon"
+        class="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
+        (click)="close.emit()"
+      >
+        <ng-icon name="lucideX" class="size-4"></ng-icon>
+      </button>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="flex border-b border-border px-6 shrink-0 bg-muted/20">
+      <button
+        type="button"
+        class="py-3 px-4 text-xs font-semibold border-b-2 transition-colors flex items-center gap-1.5"
+        [class.border-primary]="activeTab() === 'collaborators'"
+        [class.text-primary]="activeTab() === 'collaborators'"
+        [class.border-transparent]="activeTab() !== 'collaborators'"
+        [class.text-muted-foreground]="activeTab() !== 'collaborators'"
+        (click)="activeTab.set('collaborators')"
+      >
+        <ng-icon name="lucideUsers" class="size-4"></ng-icon>
+        <span>Collaborators ({{ project.members.length + 1 }})</span>
+      </button>
+
+      <button
+        type="button"
+        class="py-3 px-4 text-xs font-semibold border-b-2 transition-colors flex items-center gap-1.5"
+        [class.border-primary]="activeTab() === 'stages'"
+        [class.text-primary]="activeTab() === 'stages'"
+        [class.border-transparent]="activeTab() !== 'stages'"
+        [class.text-muted-foreground]="activeTab() !== 'stages'"
+        (click)="activeTab.set('stages')"
+      >
+        <ng-icon name="lucideLayers" class="size-4"></ng-icon>
+        <span>Workflow Stages ({{ project.stages.length }})</span>
+      </button>
+
+      <button
+        type="button"
+        class="py-3 px-4 text-xs font-semibold border-b-2 transition-colors flex items-center gap-1.5"
+        [class.border-primary]="activeTab() === 'roles'"
+        [class.text-primary]="activeTab() === 'roles'"
+        [class.border-transparent]="activeTab() !== 'roles'"
+        [class.text-muted-foreground]="activeTab() !== 'roles'"
+        (click)="activeTab.set('roles')"
+      >
+        <ng-icon name="lucideShield" class="size-4"></ng-icon>
+        <span>Custom Roles ({{ project.customRoles.length }})</span>
+      </button>
+    </div>
+
+    <!-- Tab Contents (Scrollable) -->
+    <div class="flex-1 overflow-y-auto p-6 space-y-6">
+
+      <!-- ================================================================= -->
+      <!-- TAB 1: COLLABORATORS & INVITATIONS (STRICTLY NO AUTOCOMPLETE) -->
+      <!-- ================================================================= -->
+      @if (activeTab() === 'collaborators') {
+        <div>
+          <!-- Invite Box (Admins only) -->
+          @if (canInvite()) {
+            <div class="p-4 rounded-xl border border-border bg-muted/30 mb-6">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-foreground mb-1 flex items-center gap-1.5">
+                <ng-icon name="lucideMail" class="size-3.5 text-primary"></ng-icon>
+                Invite Collaborator by Email
+              </h4>
+              <p class="text-xs text-muted-foreground mb-3">
+                Invited users must explicitly accept their invitation before accessing this project.
+              </p>
+
+              <form (ngSubmit)="handleInviteSubmit()" class="flex flex-col sm:flex-row gap-2.5">
+                <!-- STRICTLY MANUAL EMAIL INPUT (NO AUTOCOMPLETE, NO TYPEAHEAD) -->
+                <input
+                  hlmInput
+                  type="email"
+                  autocomplete="off"
+                  autocorrect="off"
+                  autocapitalize="off"
+                  spellcheck="false"
+                  required
+                  [(ngModel)]="inviteEmail"
+                  name="email"
+                  placeholder="collaborator@example.com"
+                  class="flex-1 text-xs"
+                />
+
+                <!-- Role Selector (5 fixed roles + project custom roles) -->
+                <select
+                  hlmInput
+                  [(ngModel)]="inviteRole"
+                  name="role"
+                  class="w-full sm:w-44 text-xs bg-background"
+                >
+                  <optgroup label="Fixed System Roles">
+                    @for (r of fixedRoles; track r.id) {
+                      <option [value]="r.id">{{ r.label }}</option>
+                    }
+                  </optgroup>
+                  @if (project.customRoles.length > 0) {
+                    <optgroup label="Custom Roles">
+                      @for (cr of project.customRoles; track cr.id) {
+                        <option [value]="cr.id">{{ cr.name }}</option>
+                      }
+                    </optgroup>
+                  }
+                </select>
+
+                <button
+                  hlmBtn
+                  type="submit"
+                  size="sm"
+                  [disabled]="!inviteEmail.trim() || isInviting()"
+                  class="bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold rounded-xl shrink-0 h-9"
+                >
+                  <span>Send Invite</span>
+                </button>
+              </form>
+            </div>
+          }
+
+          <!-- Collaborators List -->
+          <div>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
+              Project Members & Pending Invites
+            </h4>
+
+            <div class="divide-y divide-border border border-border rounded-xl overflow-hidden bg-card">
+              <!-- Owner Row -->
+              <div class="p-3.5 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <div class="h-8 w-8 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center shrink-0">
+                    👑
+                  </div>
+                  <div class="truncate">
+                    <p class="text-xs font-semibold text-foreground truncate">Project Creator</p>
+                    <p class="text-[11px] text-muted-foreground">Owner</p>
+                  </div>
+                </div>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/15 text-primary">
+                  Owner
+                </span>
+              </div>
+
+              <!-- Members Rows -->
+              @for (member of project.members; track member.userId) {
+                <div class="p-3.5 flex items-center justify-between gap-3">
+                  <div class="flex items-center gap-2.5 min-w-0">
+                    <div class="h-8 w-8 rounded-full bg-muted font-bold text-xs flex items-center justify-center shrink-0 text-foreground">
+                      {{ (member.name || member.email).charAt(0).toUpperCase() }}
+                    </div>
+                    <div class="truncate">
+                      <p class="text-xs font-semibold text-foreground truncate">{{ member.name || member.email }}</p>
+                      <p class="text-[11px] text-muted-foreground truncate">{{ member.email }}</p>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-2 shrink-0">
+                    <!-- Status Badge -->
+                    @if (member.status === 'pending') {
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/15 text-amber-500">
+                        Pending
+                      </span>
+                    } @else {
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/15 text-emerald-500">
+                        Accepted
+                      </span>
+                    }
+
+                    <!-- Role Pill or Dropdown (if admin) -->
+                    @if (canInvite()) {
+                      <select
+                        hlmInput
+                        [ngModel]="member.role"
+                        (ngModelChange)="state.updateMemberRole(project.id, member.userId, $event)"
+                        class="h-7 text-[11px] py-0 px-2 w-32 bg-background"
+                      >
+                        <optgroup label="Fixed Roles">
+                          @for (r of fixedRoles; track r.id) {
+                            <option [value]="r.id">{{ r.label }}</option>
+                          }
+                        </optgroup>
+                        @if (project.customRoles.length > 0) {
+                          <optgroup label="Custom Roles">
+                            @for (cr of project.customRoles; track cr.id) {
+                              <option [value]="cr.id">{{ cr.name }}</option>
+                            }
+                          </optgroup>
+                        }
+                      </select>
+
+                      <button
+                        hlmBtn
+                        variant="ghost"
+                        size="icon"
+                        class="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg"
+                        (click)="state.removeMember(project.id, member.userId)"
+                        title="Remove member"
+                      >
+                        <ng-icon name="lucideTrash2" class="size-3.5"></ng-icon>
+                      </button>
+                    } @else {
+                      <span class="px-2 py-0.5 rounded-md text-[11px] font-medium bg-muted text-muted-foreground uppercase">
+                        {{ member.role }}
+                      </span>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- ================================================================= -->
+      <!-- TAB 2: DYNAMIC STAGES (ADD, RENAME, REORDER, DELETE W/ MIGRATION) -->
+      <!-- ================================================================= -->
+      @if (activeTab() === 'stages') {
+        <div>
+          <!-- Add Stage Row (Admin only) -->
+          @if (canManageStages()) {
+            <div class="p-4 rounded-xl border border-border bg-muted/30 mb-6">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-foreground mb-3 flex items-center gap-1.5">
+                <ng-icon name="lucidePlus" class="size-3.5 text-primary"></ng-icon>
+                Add Workflow Stage Column
+              </h4>
+
+              <div class="flex flex-col sm:flex-row gap-2.5">
+                <input
+                  hlmInput
+                  type="text"
+                  [(ngModel)]="newStageName"
+                  placeholder="e.g. In QA, Blocked, Ready for Deploy..."
+                  class="flex-1 text-xs"
+                />
+                <input
+                  type="color"
+                  [(ngModel)]="newStageColor"
+                  class="h-9 w-12 rounded-lg border border-border p-1 bg-background cursor-pointer shrink-0"
+                  title="Stage accent color"
+                />
+                <button
+                  hlmBtn
+                  size="sm"
+                  [disabled]="!newStageName.trim()"
+                  (click)="handleAddStage()"
+                  class="bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold rounded-xl h-9 shrink-0"
+                >
+                  <span>Add Stage</span>
+                </button>
+              </div>
+            </div>
+          }
+
+          <!-- Stages List -->
+          <div>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
+              Vertical Columns Order (Left to Right)
+            </h4>
+
+            <div class="divide-y divide-border border border-border rounded-xl overflow-hidden bg-card">
+              @for (stage of project.stages; track stage.id; let idx = $index) {
+                <div class="p-3.5 flex items-center justify-between gap-3">
+                  <div class="flex items-center gap-3">
+                    <span
+                      class="h-3 w-3 rounded-full shrink-0"
+                      [style.backgroundColor]="stage.color || '#64748b'"
+                    ></span>
+                    <span class="text-xs font-semibold text-foreground">{{ stage.name }}</span>
+                    <span class="text-[10px] text-muted-foreground">#{{ idx + 1 }}</span>
+                  </div>
+
+                  @if (canManageStages()) {
+                    <div class="flex items-center gap-1">
+                      <!-- Reorder Up/Down -->
+                      <button
+                        hlmBtn
+                        variant="ghost"
+                        size="icon"
+                        class="h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground"
+                        [disabled]="idx === 0"
+                        (click)="handleMoveStage(idx, 'up')"
+                        title="Move Left"
+                      >
+                        <ng-icon name="lucideArrowUp" class="size-3.5"></ng-icon>
+                      </button>
+                      <button
+                        hlmBtn
+                        variant="ghost"
+                        size="icon"
+                        class="h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground"
+                        [disabled]="idx === project.stages.length - 1"
+                        (click)="handleMoveStage(idx, 'down')"
+                        title="Move Right"
+                      >
+                        <ng-icon name="lucideArrowDown" class="size-3.5"></ng-icon>
+                      </button>
+
+                      <!-- Delete Stage -->
+                      <button
+                        hlmBtn
+                        variant="ghost"
+                        size="icon"
+                        class="h-7 w-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                        [disabled]="project.stages.length <= 1"
+                        (click)="promptDeleteStage(stage)"
+                        title="Delete stage"
+                      >
+                        <ng-icon name="lucideTrash2" class="size-3.5"></ng-icon>
+                      </button>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Stage Deletion with Fallback Target Migration Safeguard -->
+          @if (stageToDelete) {
+            <div class="p-4 rounded-xl border border-destructive/40 bg-destructive/5 mt-4">
+              <h5 class="text-xs font-bold text-destructive flex items-center gap-1.5 mb-1">
+                <ng-icon name="lucideAlertTriangle" class="size-4"></ng-icon>
+                Delete Stage "{{ stageToDelete.name }}"
+              </h5>
+              <p class="text-xs text-muted-foreground mb-3">
+                Any existing cards in this column will be migrated to the target stage selected below:
+              </p>
+
+              <div class="flex flex-col sm:flex-row items-center gap-2 mb-3">
+                <label class="text-xs text-foreground font-semibold shrink-0">Migrate cards to:</label>
+                <select
+                  hlmInput
+                  [(ngModel)]="deleteStageTargetId"
+                  class="flex-1 text-xs bg-background h-8"
+                >
+                  @for (s of project.stages; track s.id) {
+                    @if (s.id !== stageToDelete.id) {
+                      <option [value]="s.id">{{ s.name }}</option>
+                    }
+                  }
+                </select>
+              </div>
+
+              <div class="flex items-center justify-end gap-2">
+                <button
+                  hlmBtn
+                  variant="ghost"
+                  size="sm"
+                  class="text-xs h-7"
+                  (click)="cancelDeleteStage()"
+                >
+                  Cancel
+                </button>
+                <button
+                  hlmBtn
+                  size="sm"
+                  class="bg-destructive text-destructive-foreground hover:bg-destructive/90 text-xs font-semibold h-7 rounded-lg"
+                  (click)="confirmDeleteStage()"
+                >
+                  Confirm Delete & Migrate
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- ================================================================= -->
+      <!-- TAB 3: CUSTOM ROLES (PROJECT RBAC) -->
+      <!-- ================================================================= -->
+      @if (activeTab() === 'roles') {
+        <div>
+          <!-- Fixed System Roles Information -->
+          <div class="p-4 rounded-xl border border-border bg-muted/20 mb-6">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
+              Fixed System Roles (Immutable)
+            </h4>
+            <div class="space-y-2">
+              @for (r of fixedRoles; track r.id) {
+                <div class="text-xs flex items-start gap-2">
+                  <span class="font-bold text-foreground w-28 shrink-0">{{ r.label }}:</span>
+                  <span class="text-muted-foreground">{{ r.desc }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Create Custom Role Trigger -->
+          @if (canManageRoles() && !isCreatingRole()) {
+            <div class="flex justify-end mb-4">
+              <button
+                hlmBtn
+                size="sm"
+                class="bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold rounded-xl"
+                (click)="isCreatingRole.set(true)"
+              >
+                <ng-icon name="lucidePlus" class="mr-1 size-3.5"></ng-icon>
+                <span>+ Create Custom Role</span>
+              </button>
+            </div>
+          }
+
+          <!-- Create Custom Role Form -->
+          @if (isCreatingRole()) {
+            <div class="p-4 rounded-xl border border-primary/40 bg-card shadow-sm mb-6 space-y-4">
+              <div class="flex items-center justify-between pb-2 border-b border-border">
+                <h4 class="text-xs font-bold text-foreground">New Custom Role</h4>
+                <button
+                  hlmBtn
+                  variant="ghost"
+                  size="icon"
+                  class="h-6 w-6 text-muted-foreground hover:text-foreground"
+                  (click)="isCreatingRole.set(false)"
+                >
+                  <ng-icon name="lucideX" class="size-3.5"></ng-icon>
+                </button>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-foreground mb-1">Role Name *</label>
+                <input
+                  hlmInput
+                  type="text"
+                  required
+                  [(ngModel)]="newRoleName"
+                  placeholder="e.g. QA Specialist, Product Owner, Stakeholder..."
+                  class="w-full text-xs"
+                />
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-foreground mb-1">Description</label>
+                <input
+                  hlmInput
+                  type="text"
+                  [(ngModel)]="newRoleDesc"
+                  placeholder="Scope and purpose of this custom role..."
+                  class="w-full text-xs"
+                />
+              </div>
+
+              <!-- Granular Capability Flags -->
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
+                  Permissions Matrix:
+                </label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" [(ngModel)]="newRolePermissions.canCreateCards" class="rounded text-primary" />
+                    <span>Create Cards</span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" [(ngModel)]="newRolePermissions.canEditCards" class="rounded text-primary" />
+                    <span>Edit Cards</span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" [(ngModel)]="newRolePermissions.canMoveCards" class="rounded text-primary" />
+                    <span>Move Cards Across Stages</span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" [(ngModel)]="newRolePermissions.canDeleteCards" class="rounded text-primary" />
+                    <span>Delete Cards</span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" [(ngModel)]="newRolePermissions.canComment" class="rounded text-primary" />
+                    <span>Add Comments</span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" [(ngModel)]="newRolePermissions.canInviteMembers" class="rounded text-primary" />
+                    <span>Invite Members</span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" [(ngModel)]="newRolePermissions.canManageStages" class="rounded text-primary" />
+                    <span>Manage Workflow Stages</span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" [(ngModel)]="newRolePermissions.canManageRoles" class="rounded text-primary" />
+                    <span>Manage Roles</span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" [(ngModel)]="newRolePermissions.canManageProject" class="rounded text-primary" />
+                    <span>Manage Project Settings</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-end gap-2 pt-2 border-t border-border">
+                <button
+                  hlmBtn
+                  variant="ghost"
+                  size="sm"
+                  class="text-xs"
+                  (click)="isCreatingRole.set(false)"
+                >
+                  Cancel
+                </button>
+                <button
+                  hlmBtn
+                  size="sm"
+                  [disabled]="!newRoleName.trim()"
+                  (click)="handleCreateRoleSubmit()"
+                  class="bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold rounded-xl"
+                >
+                  Save Role
+                </button>
+              </div>
+            </div>
+          }
+
+          <!-- Existing Custom Roles List -->
+          <div>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
+              Defined Custom Roles ({{ project.customRoles.length }})
+            </h4>
+
+            @if (project.customRoles.length === 0) {
+              <div class="p-6 border border-dashed border-border rounded-xl text-center text-xs text-muted-foreground">
+                No custom roles created yet. Use custom roles to define tailored permissions beyond the 5 system roles.
+              </div>
+            } @else {
+              <div class="space-y-3">
+                @for (role of project.customRoles; track role.id) {
+                  <div class="p-4 rounded-xl border border-border bg-card flex items-start justify-between gap-3">
+                    <div>
+                      <div class="flex items-center gap-2">
+                        <span class="font-bold text-xs text-foreground">{{ role.name }}</span>
+                        <span class="px-1.5 py-0.2 rounded-full text-[10px] font-semibold bg-primary/10 text-primary">
+                          Custom
+                        </span>
+                      </div>
+                      @if (role.description) {
+                        <p class="text-xs text-muted-foreground mt-0.5">{{ role.description }}</p>
+                      }
+
+                      <!-- Permissions chips -->
+                      <div class="flex items-center gap-1.5 flex-wrap mt-2">
+                        @if (role.permissions.canCreateCards) {
+                          <span class="px-1.5 py-0.5 rounded text-[10px] bg-muted text-muted-foreground">Create Cards</span>
+                        }
+                        @if (role.permissions.canEditCards) {
+                          <span class="px-1.5 py-0.5 rounded text-[10px] bg-muted text-muted-foreground">Edit Cards</span>
+                        }
+                        @if (role.permissions.canMoveCards) {
+                          <span class="px-1.5 py-0.5 rounded text-[10px] bg-muted text-muted-foreground">Move Cards</span>
+                        }
+                        @if (role.permissions.canDeleteCards) {
+                          <span class="px-1.5 py-0.5 rounded text-[10px] bg-muted text-muted-foreground">Delete Cards</span>
+                        }
+                        @if (role.permissions.canInviteMembers) {
+                          <span class="px-1.5 py-0.5 rounded text-[10px] bg-muted text-muted-foreground">Invite Members</span>
+                        }
+                        @if (role.permissions.canManageStages) {
+                          <span class="px-1.5 py-0.5 rounded text-[10px] bg-muted text-muted-foreground">Manage Stages</span>
+                        }
+                      </div>
+                    </div>
+
+                    @if (canManageRoles()) {
+                      <button
+                        hlmBtn
+                        variant="ghost"
+                        size="icon"
+                        class="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg shrink-0"
+                        (click)="handleDeleteRole(role)"
+                        title="Delete custom role"
+                      >
+                        <ng-icon name="lucideTrash2" class="size-3.5"></ng-icon>
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="px-6 py-3 border-t border-border bg-card flex items-center justify-end shrink-0">
+      <button
+        hlmBtn
+        variant="ghost"
+        size="sm"
+        class="text-xs"
+        (click)="close.emit()"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+</div>

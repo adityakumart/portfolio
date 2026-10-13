@@ -43,6 +43,7 @@ import {
   lucideFilm,
   lucideGamepad2,
   lucideCalendarClock,
+  lucideBell,
 } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
@@ -53,6 +54,8 @@ import { ThemeService } from '../../../theme.service';
 import { devToolsRoutingList } from '../../data/routes';
 import { RRApiService } from '../../../modules/rr/services/rr-api.service';
 import { getAssignedUserModules } from '../../../modules/user/services/user-modules.config';
+import { PlannerNotificationService } from '../../services/planner-notification.service';
+import { NotificationInboxComponent } from '../notification-inbox/notification-inbox.component';
 
 export interface SidebarItem {
   label: string;
@@ -71,6 +74,7 @@ export interface SidebarItem {
     HlmTooltipImports,
     HlmDropdownMenuImports,
     HlmAvatarImports,
+    NotificationInboxComponent,
   ],
   providers: [
     provideIcons({
@@ -103,6 +107,7 @@ export interface SidebarItem {
       lucideFilm,
       lucideGamepad2,
       lucideCalendarClock,
+      lucideBell,
     }),
   ],
   templateUrl: './sidebar.component.html',
@@ -114,7 +119,14 @@ export class SidebarComponent implements OnDestroy {
   private authService = inject(AuthService);
   private themeService = inject(ThemeService);
   private rrApiService = inject(RRApiService);
+  private notificationService = inject(PlannerNotificationService);
   private elementRef = inject(ElementRef);
+
+  unreadNotificationCount = computed(() => this.notificationService.unreadCount());
+
+  toggleNotificationInbox(): void {
+    this.notificationService.toggleInbox();
+  }
 
   // Active hover tracking signals for fly-out panel visibility control
   activeLevel0Item = signal<SidebarItem | null>(null);

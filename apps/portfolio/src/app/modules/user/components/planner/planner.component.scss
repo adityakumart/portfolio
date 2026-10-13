@@ -297,6 +297,9 @@
   &.view-todos {
     grid-template-columns: 1fr;
   }
+  &.view-projects {
+    grid-template-columns: 1fr;
+  }
 }
 
 // Panels
@@ -306,6 +309,10 @@
   border: 1px solid var(--border, #27272a);
   border-radius: 1rem;
   padding: 1.25rem;
+}
+
+.projects-panel {
+  width: 100%;
 }
 
 .panel-header {

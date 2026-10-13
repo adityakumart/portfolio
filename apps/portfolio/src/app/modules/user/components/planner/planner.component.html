@@ -124,7 +124,7 @@
         }
       </div>
 
-      <!-- Navigation Tabs: To-do List & Notes -->
+      <!-- Navigation Tabs: To-do List, Notes, & Projects -->
       <div class="segmented-tabs" role="tablist" aria-label="Planner views">
         <button
           type="button"
@@ -149,6 +149,18 @@
           <ng-icon name="lucideStickyNote" class="tab-icon"></ng-icon>
           <span>Notes</span>
           <span class="tab-count">{{ state.notes().length }}</span>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          [attr.aria-selected]="state.activeTab() === 'projects'"
+          class="seg-tab"
+          [class.active]="state.activeTab() === 'projects'"
+          (click)="setTab('projects')"
+        >
+          <ng-icon name="lucideFolderKanban" class="tab-icon"></ng-icon>
+          <span>Projects</span>
+          <span class="tab-count">{{ state.myProjects().length + state.collaborativeProjects().length + state.pendingInvitations().length }}</span>
         </button>
       </div>
     </div>
@@ -404,6 +416,115 @@
           }
         </section>
       }
+
+      <!-- PROJECTS PANEL -->
+      @if (state.activeTab() === 'projects') {
+        <section class="projects-panel w-full">
+          @if (!state.selectedProject()) {
+            <!-- Dedicated Projects List View -->
+            <app-planner-projects-list></app-planner-projects-list>
+          } @else {
+            <!-- Active Project View -->
+            <div class="active-project-board-view space-y-4">
+              <!-- Active Project Header & Breadcrumb -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border">
+                <div class="flex items-center gap-3">
+                  <button
+                    hlmBtn
+                    variant="outline"
+                    size="sm"
+                    class="h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground rounded-lg"
+                    (click)="state.clearSelectedProject()"
+                  >
+                    <ng-icon name="lucideArrowLeft" class="mr-1 size-3.5"></ng-icon>
+                    <span>Back to Projects</span>
+                  </button>
+
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <h2 class="text-base font-bold text-foreground">{{ state.selectedProject()!.title }}</h2>
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/15 text-primary">
+                        {{ state.isProjectOwner() ? 'Owner' : (state.activeProjectRole() || 'Member') }}
+                      </span>
+                    </div>
+                    @if (state.selectedProject()!.description) {
+                      <p class="text-xs text-muted-foreground line-clamp-1">{{ state.selectedProject()!.description }}</p>
+                    }
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-muted-foreground hidden sm:inline">
+                    {{ state.selectedProject()!.stages.length }} Stages • {{ state.projectTodos().length }} Tasks
+                  </span>
+                  <button
+                    hlmBtn
+                    variant="outline"
+                    size="sm"
+                    class="h-8 text-xs rounded-lg flex items-center gap-1.5"
+                    (click)="openProjectSettings()"
+                  >
+                    <ng-icon name="lucideSettings" class="size-3.5"></ng-icon>
+                    <span>Settings & RBAC</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Project Access Gating / Invitation Banner (Section 3.4) -->
+              @if (state.isPendingProjectAccess()) {
+                <div class="p-6 rounded-2xl border border-blue-500/40 bg-blue-500/10 flex flex-col items-center justify-center text-center gap-3">
+                  <div class="h-12 w-12 rounded-full bg-blue-500/20 text-blue-500 flex items-center justify-center">
+                    <ng-icon name="lucideUserCheck" class="size-6"></ng-icon>
+                  </div>
+                  <div>
+                    <h3 class="text-base font-bold text-foreground">Project Invitation Pending</h3>
+                    <p class="text-xs text-muted-foreground mt-1 max-w-md">
+                      You've been invited to join this project as <strong class="text-foreground uppercase">{{ state.activeProjectRole() || 'Collaborator' }}</strong>.
+                      Accept the invitation to unlock access to the Kanban board and tasks.
+                    </p>
+                  </div>
+                  <div class="flex items-center gap-3 mt-2">
+                    <button
+                      hlmBtn
+                      size="sm"
+                      class="bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold px-4 py-2 rounded-xl"
+                      (click)="state.acceptProjectInvite(state.selectedProject()!.id)"
+                    >
+                      <ng-icon name="lucideCheck" class="mr-1 size-3.5"></ng-icon>
+                      <span>Accept Invitation</span>
+                    </button>
+                    <button
+                      hlmBtn
+                      variant="outline"
+                      size="sm"
+                      class="text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 px-4 py-2 rounded-xl"
+                      (click)="state.declineProjectInvite(state.selectedProject()!.id)"
+                    >
+                      <span>Decline</span>
+                    </button>
+                  </div>
+                </div>
+              } @else {
+                <!-- Dynamic Kanban Board -->
+                <app-planner-kanban-board
+                  [stages]="state.selectedProject()!.stages"
+                  [projectCards]="state.projectTodos()"
+                  [canMoveCards]="state.activeProjectPermissions()?.canMoveCards !== false"
+                  [canCreateCards]="state.activeProjectPermissions()?.canCreateCards !== false"
+                  [canEditCards]="state.activeProjectPermissions()?.canEditCards !== false"
+                  [canDeleteCards]="state.activeProjectPermissions()?.canDeleteCards !== false"
+                  [canManageStages]="state.activeProjectPermissions()?.canManageStages === true || state.isProjectOwner()"
+                  (transitionStage)="onTransitionStage($event)"
+                  (openNewTask)="openProjectTaskModal($event)"
+                  (edit)="openTodoModal($event)"
+                  (delete)="state.deleteTodo($event)"
+                  (addStage)="openProjectSettings()"
+                ></app-planner-kanban-board>
+              }
+            </div>
+          }
+        </section>
+      }
     </div>
 
     <!-- Mobile Floating Action Button (FAB) -->
@@ -438,5 +559,13 @@
       (updateReminder)="handleUpdateReminder($event)"
       (snooze)="handleSnooze($event)"
     ></app-planner-reminder-dialog>
+
+    <!-- Project Settings & Custom Roles Dialog -->
+    @if (isProjectSettingsOpen() && state.selectedProject()) {
+      <app-planner-project-settings-dialog
+        [project]="state.selectedProject()!"
+        (close)="closeProjectSettings()"
+      ></app-planner-project-settings-dialog>
+    }
   </div>
 }

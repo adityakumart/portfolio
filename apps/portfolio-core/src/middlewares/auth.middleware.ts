@@ -12,19 +12,15 @@ export async function authenticateToken(
 ): Promise<void> {
   try {
     const authHeader = req.headers['authorization'];
-    if (!authHeader) {
-      res.status(401).json({
-        error: 'Unauthorized',
-        message: 'Authorization header is required.',
-      });
-      return;
+    let token = authHeader ? authHeader.split(' ')[1] : undefined;
+    if (!token && req.query['token'] && typeof req.query['token'] === 'string') {
+      token = req.query['token'];
     }
 
-    const token = authHeader.split(' ')[1];
     if (!token) {
       res.status(401).json({
         error: 'Unauthorized',
-        message: 'Bearer token format is invalid.',
+        message: 'Authorization token is required.',
       });
       return;
     }

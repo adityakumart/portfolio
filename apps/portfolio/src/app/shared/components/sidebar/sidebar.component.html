@@ -21,7 +21,7 @@
     </div>
 
     <div class="flex items-center gap-2">
-      <!-- Theme toggle -->
+      <!-- 1. Theme toggle -->
       <button
         hlmBtn
         variant="ghost"
@@ -33,7 +33,29 @@
         <ng-icon [name]="isDarkMode() ? 'lucideSun' : 'lucideMoon'" class="size-4.5" />
       </button>
 
-      <!-- User avatar dropdown -->
+      <!-- 2. Notification icon (PLACED IN BETWEEN) -->
+      @if (isLoggedIn()) {
+        <div class="relative">
+          <button
+            hlmBtn
+            variant="ghost"
+            size="icon"
+            class="relative text-muted-foreground hover:text-foreground hover:bg-muted h-8 w-8 rounded-full"
+            (click)="toggleNotificationInbox()"
+            aria-label="View notifications"
+          >
+            <ng-icon name="lucideBell" class="size-4.5" />
+            @if (unreadNotificationCount() > 0) {
+              <span class="absolute top-1 right-1 flex h-2 w-2">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+              </span>
+            }
+          </button>
+        </div>
+      }
+
+      <!-- 3. User avatar dropdown -->
       @if (isLoggedIn()) {
         <hlm-avatar
           class="cursor-pointer size-8 border border-border"
@@ -302,7 +324,7 @@
     <!-- Footer Settings & Account -->
     <div class="sidebar-footer w-full mt-auto pt-3 border-t border-border flex flex-col items-center gap-3">
       <div class="footer-actions flex flex-col items-center gap-3 w-full">
-        <!-- Theme toggle -->
+        <!-- 1. Theme toggle -->
         <button
           hlmBtn
           variant="ghost"
@@ -315,7 +337,30 @@
           <ng-icon [name]="isDarkMode() ? 'lucideSun' : 'lucideMoon'" class="size-5" />
         </button>
 
-        <!-- User account avatar -->
+        <!-- 2. Notification icon (PLACED IN BETWEEN) -->
+        @if (isLoggedIn()) {
+          <div class="relative">
+            <button
+              hlmBtn
+              variant="ghost"
+              size="icon"
+              class="footer-btn text-muted-foreground hover:text-foreground hover:bg-muted size-9 rounded-full relative"
+              (click)="toggleNotificationInbox()"
+              [hlmTooltip]="'Notifications (' + unreadNotificationCount() + ')'"
+              tooltipPosition="right"
+            >
+              <ng-icon name="lucideBell" class="size-5" />
+              @if (unreadNotificationCount() > 0) {
+                <span class="absolute top-1.5 right-1.5 flex h-2 w-2">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                </span>
+              }
+            </button>
+          </div>
+        }
+
+        <!-- 3. User account avatar -->
         @if (isLoggedIn()) {
           <hlm-avatar
             class="cursor-pointer size-9 border border-border transition-colors hover:opacity-90"
@@ -350,4 +395,7 @@
   <main class="app-main-viewport flex-1 h-full overflow-y-auto min-w-0">
     <ng-content></ng-content>
   </main>
+
+  <!-- Real-Time Notification Inbox Popover -->
+  <app-notification-inbox></app-notification-inbox>
 </div>
