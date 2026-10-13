@@ -26,7 +26,6 @@ import {
   lucideEyeOff,
   lucideEye,
   lucideArrowLeft,
-  lucideZap,
   lucideSparkles,
 } from '@ng-icons/lucide';
 import { RRApiService } from '../../services/rr-api.service';
@@ -63,7 +62,6 @@ import { RRInactivityService } from '../../services/rr-inactivity.service';
       lucideEyeOff,
       lucideEye,
       lucideArrowLeft,
-      lucideZap,
       lucideSparkles,
     }),
   ],
@@ -175,21 +173,5 @@ export class RRLoginComponent implements OnInit {
     } finally {
       this.loading.set(false);
     }
-  }
-
-  fillDemoAdmin() {
-    this.setRole('admin');
-    this.adminFormGroup.patchValue({
-      adminUsername: 'admin@rams-cars.com',
-      adminPassword: 'AdminPD',
-    });
-  }
-
-  fillDemoEmployee() {
-    this.setRole('employee');
-    this.employeeFormGroup.patchValue({
-      empId: 'RRA002',
-      dob: new Date('1990-05-15'),
-    });
   }
 }
