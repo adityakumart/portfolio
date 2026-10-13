@@ -144,17 +144,13 @@ export class LoginComponent {
     try {
       if (this.mode() === 'login') {
         await this.authService.login(emailVal, passwordVal, this.rememberMe());
-        this.success.set('Successfully logged in! Redirecting...');
-        toast.success('Successfully logged in! Redirecting...');
-        setTimeout(() => {
-          this.router.navigate(['/user']);
-        }, 1000);
         // Clear input fields
         this.email.set('');
         this.password.set('');
         this.confirmPassword.set('');
         this.firstName.set('');
         this.lastName.set('');
+        await this.router.navigate(['/user']);
       } else {
         const res = await this.authService.register(
           emailVal,
