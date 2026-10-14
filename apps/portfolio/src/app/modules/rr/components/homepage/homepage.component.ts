@@ -27,6 +27,11 @@ import {
   lucideCopy,
   lucideCheck,
   lucideExternalLink,
+  lucideSparkles,
+  lucideShield,
+  lucideMegaphone,
+  lucideTag,
+  lucideCalendar,
 } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmBadgeImports } from '@spartan-ng/hel/badge';
@@ -36,7 +41,12 @@ import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
 import { HlmToggleGroupImports } from '@spartan-ng/hel/toggle-group';
 import { HlmEmptyImports } from '@spartan-ng/hel/empty';
 import { toast } from '@spartan-ng/hel/sonner';
-import { IPublicVehicle } from '@portfolio/shared-types';
+import {
+  IPublicVehicle,
+  IRRAnnouncementItem,
+  IRRScrollingTicker,
+  RRAnnouncementCategory,
+} from '@portfolio/shared-types';
 import { RRVehicleCardComponent, RRCarLoaderComponent, RRVehicleImageCarouselComponent } from '../../shared';
 
 @Component({
@@ -81,6 +91,11 @@ import { RRVehicleCardComponent, RRCarLoaderComponent, RRVehicleImageCarouselCom
       lucideCopy,
       lucideCheck,
       lucideExternalLink,
+      lucideSparkles,
+      lucideShield,
+      lucideMegaphone,
+      lucideTag,
+      lucideCalendar,
     }),
   ],
   templateUrl: './homepage.component.html',
@@ -112,6 +127,12 @@ export class RRHomepageComponent implements OnInit, OnDestroy {
   loadingProgress = signal<number>(14);
   loadingStatus = signal<string>('Igniting engines...');
   private loaderTimers: ReturnType<typeof setTimeout>[] = [];
+
+  // Announcements & Scrolling Ticker Signals
+  ticker = signal<IRRScrollingTicker | null>(null);
+  announcements = signal<IRRAnnouncementItem[]>([]);
+  selectedAnnouncementCategory = signal<string>('all');
+  copiedPromoCode = signal<string | null>(null);
 
   // Computed lists
   filteredVehicles = computed(() => {
@@ -153,10 +174,30 @@ export class RRHomepageComponent implements OnInit, OnDestroy {
 
   currentUser = computed(() => this.rrApi.currentUser());
 
+  // Filtered announcements list
+  filteredAnnouncements = computed(() => {
+    const list = this.announcements();
+    const cat = this.selectedAnnouncementCategory();
+
+    if (cat === 'all') return list;
+    return list.filter((a) => a.category === cat);
+  });
+
+  announcementCounts = computed(() => {
+    const list = this.announcements();
+    return {
+      all: list.length,
+      offer: list.filter((a) => a.category === 'offer').length,
+      intimation: list.filter((a) => a.category === 'intimation').length,
+      festival: list.filter((a) => a.category === 'festival').length,
+    };
+  });
+
   ngOnInit() {
     this.checkDeviceType();
     this.startCarLoaderSequence();
     this.loadVehicles();
+    this.loadAnnouncements();
   }
 
   @HostListener('window:resize')
@@ -236,6 +277,66 @@ export class RRHomepageComponent implements OnInit, OnDestroy {
       this.vehicles.set(data);
     } catch (e) {
       console.error('Error fetching vehicles for homepage:', e);
+    }
+  }
+
+  async loadAnnouncements() {
+    try {
+      const data = await this.rrPublicApi.getAnnouncements();
+      if (data) {
+        if (data.ticker) {
+          this.ticker.set(data.ticker);
+        }
+        if (data.items) {
+          this.announcements.set(data.items);
+        }
+      }
+    } catch (e) {
+      console.error('Error fetching announcements for homepage:', e);
+    }
+  }
+
+  setAnnouncementCategory(cat: string) {
+    this.selectedAnnouncementCategory.set(cat);
+  }
+
+  copyPromoCode(code: string) {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(code).then(() => {
+        this.copiedPromoCode.set(code);
+        toast.success(`Copied coupon code ${code}!`);
+        setTimeout(() => {
+          if (this.copiedPromoCode() === code) {
+            this.copiedPromoCode.set(null);
+          }
+        }, 3000);
+      }).catch(() => {
+        toast.info(`Promo Code: ${code}`);
+      });
+    } else {
+      toast.info(`Promo Code: ${code}`);
+    }
+  }
+
+  handleAnnouncementAction(item: IRRAnnouncementItem) {
+    if (item.ctaAction === 'call') {
+      const phoneToCall = item.ctaLink || this.primaryPhoneRaw;
+      this.makeDirectCall(phoneToCall.replace(/[^0-9]/g, ''));
+    } else if (item.ctaAction === 'whatsapp') {
+      const text = `Hello RoadReady Rentals, I would like to inquire about "${item.title}". ${item.promoCode ? 'Promo code: ' + item.promoCode : ''} Please share details.`;
+      const url = `https://wa.me/91${this.primaryPhoneRaw}?text=${encodeURIComponent(text)}`;
+      if (typeof window !== 'undefined') {
+        window.open(url, '_blank');
+      }
+    } else if (item.ctaAction === 'link' && item.ctaLink) {
+      if (item.ctaLink.startsWith('#')) {
+        const el = document.querySelector(item.ctaLink);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth' });
+        }
+      } else if (typeof window !== 'undefined') {
+        window.open(item.ctaLink, '_blank');
+      }
     }
   }
 

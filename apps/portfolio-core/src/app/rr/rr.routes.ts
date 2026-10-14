@@ -1,9 +1,18 @@
 import { Router, Request, Response } from 'express';
+import { ObjectId } from 'mongodb';
 import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcrypt';
 import multer from 'multer';
 import { authenticateRRToken, requireAdmin } from './rr.middleware';
-import { RRService, IEmployee, IVehicle, IBooking, ICustomerIntimation } from './rr.service';
+import {
+  RRService,
+  IEmployee,
+  IVehicle,
+  IBooking,
+  ICustomerIntimation,
+  IRRAnnouncementItem,
+  IRRScrollingTicker,
+} from './rr.service';
 import { handleVehicleImageUpload } from './r2-storage.controller';
 import { rrPublicRouter } from './rr-public.routes';
 import { authRateLimiter, uploadRateLimiter } from '../../middlewares/rate-limit.middleware';
@@ -1789,6 +1798,294 @@ rrRouter.get('/vehicles/:id/availability', authenticateRRToken, async (req: any,
     }
     const isAvailable = vehicle.status === 'available';
     res.json({ regNo, isAvailable, status: vehicle.status });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+/* ============================================================
+   ADMIN ANNOUNCEMENTS & TICKER MANAGEMENT
+============================================================ */
+
+// GET /api/rr/announcements - Get ticker config and all announcements (Admin)
+rrRouter.get('/announcements', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
+  try {
+    const settingsCol = await RRService.getSettingsCol();
+    const announcementsCol = await RRService.getAnnouncementsCol();
+
+    const tickerDoc = await settingsCol.findOne({ key: 'rr_ticker' });
+    const ticker: IRRScrollingTicker = tickerDoc
+      ? {
+          message: tickerDoc.message || '',
+          badgeText: tickerDoc.badgeText || 'ANNOUNCEMENT',
+          isActive: tickerDoc.isActive !== false,
+          speed: tickerDoc.speed || 'normal',
+          linkText: tickerDoc.linkText || '',
+          linkUrl: tickerDoc.linkUrl || '',
+          updatedAt: tickerDoc.updatedAt || '',
+          updatedBy: tickerDoc.updatedBy || '',
+        }
+      : {
+          message: '',
+          badgeText: 'ANNOUNCEMENT',
+          isActive: false,
+          speed: 'normal',
+        };
+
+    const items = await announcementsCol
+      .find({ isDeleted: { $ne: true } })
+      .sort({ priority: -1, createdAt: -1 })
+      .toArray();
+
+    res.json({ ticker, items });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+// PUT /api/rr/announcements/ticker - Update scrolling ticker settings (Admin)
+rrRouter.put('/announcements/ticker', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
+  try {
+    const settingsCol = await RRService.getSettingsCol();
+    const { message, badgeText, isActive, speed, linkText, linkUrl } = req.body;
+
+    const staffId = req.user?.empId || req.user?.id || 'ADMIN';
+    const now = new Date().toISOString();
+
+    const updateDoc: IRRScrollingTicker = {
+      message: (message || '').trim(),
+      badgeText: (badgeText || 'ANNOUNCEMENT').trim(),
+      isActive: isActive !== false,
+      speed: ['slow', 'normal', 'fast'].includes(speed) ? speed : 'normal',
+      linkText: (linkText || '').trim(),
+      linkUrl: (linkUrl || '').trim(),
+      updatedAt: now,
+      updatedBy: staffId,
+    };
+
+    await settingsCol.updateOne(
+      { key: 'rr_ticker' },
+      { $set: updateDoc },
+      { upsert: true }
+    );
+
+    await RRService.logActivity(
+      'UPDATE_TICKER_SETTINGS',
+      staffId,
+      req.user?.role || 'admin',
+      `Updated homepage scrolling ticker settings. Active: ${updateDoc.isActive}`
+    );
+
+    res.json({ success: true, message: 'Ticker settings updated successfully', ticker: updateDoc });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+// POST /api/rr/announcements - Create new announcement card (Admin)
+rrRouter.post('/announcements', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
+  try {
+    const announcementsCol = await RRService.getAnnouncementsCol();
+    const {
+      title,
+      description,
+      category,
+      tag,
+      promoCode,
+      discountText,
+      validFrom,
+      validUntil,
+      ctaText,
+      ctaAction,
+      ctaLink,
+      icon,
+      priority,
+      isActive,
+    } = req.body;
+
+    if (!title || !description || !category) {
+      res.status(400).json({ error: 'Bad Request', message: 'Title, description, and category are required' });
+      return;
+    }
+
+    const staffId = req.user?.empId || req.user?.id || 'ADMIN';
+    const now = new Date().toISOString();
+
+    const newItem: IRRAnnouncementItem = {
+      title: title.trim(),
+      description: description.trim(),
+      category: ['offer', 'intimation', 'festival'].includes(category) ? category : 'intimation',
+      tag: tag?.trim() || '',
+      promoCode: promoCode?.trim() || '',
+      discountText: discountText?.trim() || '',
+      validFrom: validFrom || undefined,
+      validUntil: validUntil || undefined,
+      ctaText: ctaText?.trim() || '',
+      ctaAction: ['call', 'whatsapp', 'link', 'none'].includes(ctaAction) ? ctaAction : 'none',
+      ctaLink: ctaLink?.trim() || '',
+      icon: icon?.trim() || '',
+      priority: Number(priority) || 0,
+      isActive: isActive !== false,
+      createdAt: now,
+      updatedAt: now,
+      createdBy: staffId,
+    };
+
+    const insertResult = await announcementsCol.insertOne(newItem);
+    newItem._id = insertResult.insertedId;
+
+    await RRService.logActivity(
+      'CREATE_ANNOUNCEMENT',
+      staffId,
+      req.user?.role || 'admin',
+      `Created announcement: "${newItem.title}" (${newItem.category})`
+    );
+
+    res.status(201).json({ success: true, message: 'Announcement created successfully', item: newItem });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+// PUT /api/rr/announcements/:id - Update announcement card (Admin)
+rrRouter.put('/announcements/:id', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
+  try {
+    const id = req.params.id;
+    if (!ObjectId.isValid(id)) {
+      res.status(400).json({ error: 'Bad Request', message: 'Invalid announcement ID' });
+      return;
+    }
+
+    const announcementsCol = await RRService.getAnnouncementsCol();
+    const existing = await announcementsCol.findOne({ _id: new ObjectId(id), isDeleted: { $ne: true } });
+    if (!existing) {
+      res.status(404).json({ error: 'Not Found', message: 'Announcement not found' });
+      return;
+    }
+
+    const {
+      title,
+      description,
+      category,
+      tag,
+      promoCode,
+      discountText,
+      validFrom,
+      validUntil,
+      ctaText,
+      ctaAction,
+      ctaLink,
+      icon,
+      priority,
+      isActive,
+    } = req.body;
+
+    const staffId = req.user?.empId || req.user?.id || 'ADMIN';
+    const now = new Date().toISOString();
+
+    const updateFields: Partial<IRRAnnouncementItem> = {
+      updatedAt: now,
+    };
+
+    if (title !== undefined) updateFields.title = title.trim();
+    if (description !== undefined) updateFields.description = description.trim();
+    if (category !== undefined && ['offer', 'intimation', 'festival'].includes(category)) updateFields.category = category;
+    if (tag !== undefined) updateFields.tag = tag.trim();
+    if (promoCode !== undefined) updateFields.promoCode = promoCode.trim();
+    if (discountText !== undefined) updateFields.discountText = discountText.trim();
+    if (validFrom !== undefined) updateFields.validFrom = validFrom;
+    if (validUntil !== undefined) updateFields.validUntil = validUntil;
+    if (ctaText !== undefined) updateFields.ctaText = ctaText.trim();
+    if (ctaAction !== undefined && ['call', 'whatsapp', 'link', 'none'].includes(ctaAction)) updateFields.ctaAction = ctaAction;
+    if (ctaLink !== undefined) updateFields.ctaLink = ctaLink.trim();
+    if (icon !== undefined) updateFields.icon = icon.trim();
+    if (priority !== undefined) updateFields.priority = Number(priority) || 0;
+    if (isActive !== undefined) updateFields.isActive = isActive === true;
+
+    await announcementsCol.updateOne({ _id: new ObjectId(id) }, { $set: updateFields });
+
+    await RRService.logActivity(
+      'UPDATE_ANNOUNCEMENT',
+      staffId,
+      req.user?.role || 'admin',
+      `Updated announcement: "${updateFields.title || existing.title}"`
+    );
+
+    res.json({ success: true, message: 'Announcement updated successfully' });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+// PATCH /api/rr/announcements/:id/toggle - Toggle active status (Admin)
+rrRouter.patch('/announcements/:id/toggle', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
+  try {
+    const id = req.params.id;
+    if (!ObjectId.isValid(id)) {
+      res.status(400).json({ error: 'Bad Request', message: 'Invalid announcement ID' });
+      return;
+    }
+
+    const announcementsCol = await RRService.getAnnouncementsCol();
+    const existing = await announcementsCol.findOne({ _id: new ObjectId(id), isDeleted: { $ne: true } });
+    if (!existing) {
+      res.status(404).json({ error: 'Not Found', message: 'Announcement not found' });
+      return;
+    }
+
+    const newActive = req.body.isActive !== undefined ? !!req.body.isActive : !existing.isActive;
+    const staffId = req.user?.empId || req.user?.id || 'ADMIN';
+
+    await announcementsCol.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { isActive: newActive, updatedAt: new Date().toISOString() } }
+    );
+
+    await RRService.logActivity(
+      'TOGGLE_ANNOUNCEMENT',
+      staffId,
+      req.user?.role || 'admin',
+      `Toggled announcement "${existing.title}" status to ${newActive ? 'Active' : 'Inactive'}`
+    );
+
+    res.json({ success: true, isActive: newActive, message: `Announcement ${newActive ? 'activated' : 'deactivated'}` });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+// DELETE /api/rr/announcements/:id - Soft-delete announcement (Admin)
+rrRouter.delete('/announcements/:id', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
+  try {
+    const id = req.params.id;
+    if (!ObjectId.isValid(id)) {
+      res.status(400).json({ error: 'Bad Request', message: 'Invalid announcement ID' });
+      return;
+    }
+
+    const announcementsCol = await RRService.getAnnouncementsCol();
+    const existing = await announcementsCol.findOne({ _id: new ObjectId(id) });
+    if (!existing) {
+      res.status(404).json({ error: 'Not Found', message: 'Announcement not found' });
+      return;
+    }
+
+    const staffId = req.user?.empId || req.user?.id || 'ADMIN';
+    const now = new Date().toISOString();
+
+    await announcementsCol.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { isDeleted: true, deletedAt: now, deletedBy: staffId } }
+    );
+
+    await RRService.logActivity(
+      'DELETE_ANNOUNCEMENT',
+      staffId,
+      req.user?.role || 'admin',
+      `Deleted announcement "${existing.title}"`
+    );
+
+    res.json({ success: true, message: 'Announcement deleted successfully' });
   } catch (err: any) {
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }

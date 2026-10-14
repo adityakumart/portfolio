@@ -9,6 +9,8 @@ import {
   ILogsResponse,
   IVehicleAutocompleteItem,
   IRegularCustomerMasked,
+  IRRScrollingTicker,
+  IRRAnnouncementItem,
 } from '@portfolio/shared-types';
 
 export const MOCK_ADMIN_USER: IRRUser = {
@@ -79,6 +81,59 @@ export const MOCK_PUBLIC_VEHICLES: IPublicVehicle[] = [
     status: 'available',
     allowBooking: true,
     images: ['https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=600&auto=format&fit=crop&q=80'],
+  },
+];
+
+export const MOCK_TICKER: IRRScrollingTicker = {
+  message:
+    '🎉 Festive Season Special: Enjoy flat 15% discount on all 7-seater SUV rentals! Call +91 9494873336 to reserve.',
+  badgeText: 'FESTIVAL SPECIAL',
+  isActive: true,
+  speed: 'normal',
+  linkText: 'Explore Offers',
+  linkUrl: '#announcements',
+};
+
+export const MOCK_ANNOUNCEMENTS: IRRAnnouncementItem[] = [
+  {
+    _id: 'ann-1',
+    title: 'Happy Diwali & Joyous Festive Celebrations',
+    description:
+      'RoadReady Rentals wishes you and your family a safe, prosperous, and joyous festive season!',
+    category: 'festival',
+    tag: 'Festive Greeting',
+    isActive: true,
+    priority: 3,
+    createdAt: '2026-10-15T00:00:00.000Z',
+  },
+  {
+    _id: 'ann-2',
+    title: 'Weekend SUV Getaway Bonanza',
+    description:
+      'Get flat 15% discount on Innova and Baleno rentals for 24+ hour bookings this month.',
+    category: 'offer',
+    tag: 'Limited Time Deal',
+    promoCode: 'ROYALWEEKEND',
+    discountText: '15% OFF',
+    validUntil: '2026-11-30',
+    ctaText: 'Claim 15% Discount',
+    ctaAction: 'call',
+    isActive: true,
+    priority: 2,
+    createdAt: '2026-10-15T00:00:00.000Z',
+  },
+  {
+    _id: 'ann-3',
+    title: 'Monsoon & Highway Fleet Advisory',
+    description:
+      'All fleet vehicles are freshly serviced and equipped with rain wipers and 24/7 roadside assistance.',
+    category: 'intimation',
+    tag: 'Fleet Advisory',
+    ctaText: '24/7 Helpline',
+    ctaAction: 'call',
+    isActive: true,
+    priority: 1,
+    createdAt: '2026-10-15T00:00:00.000Z',
   },
 ];
 
@@ -574,6 +629,30 @@ export async function setupRRRouteMocks(
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify(publicVehicles),
+    });
+  });
+
+  // Public announcements endpoint (ticker + cards)
+  await page.route('**/api/rr/public/announcements*', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        ticker: MOCK_TICKER,
+        items: MOCK_ANNOUNCEMENTS,
+      }),
+    });
+  });
+
+  // Admin announcements endpoint
+  await page.route('**/api/rr/announcements*', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        ticker: MOCK_TICKER,
+        items: MOCK_ANNOUNCEMENTS,
+      }),
     });
   });
 

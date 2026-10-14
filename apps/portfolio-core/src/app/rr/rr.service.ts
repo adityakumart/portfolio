@@ -7,9 +7,19 @@ import {
   IBooking,
   ILog,
   ICustomerIntimation,
+  IRRAnnouncementItem,
+  IRRScrollingTicker,
 } from '@portfolio/shared-types';
 
-export { IEmployee, IVehicle, IBooking, ILog, ICustomerIntimation };
+export {
+  IEmployee,
+  IVehicle,
+  IBooking,
+  ILog,
+  ICustomerIntimation,
+  IRRAnnouncementItem,
+  IRRScrollingTicker,
+};
 
 export class RRService {
   private static async getDb(): Promise<Db> {
@@ -36,11 +46,23 @@ export class RRService {
     return db.collection<ILog>('logs');
   }
 
+  static async getAnnouncementsCol(): Promise<Collection<IRRAnnouncementItem>> {
+    const db = await this.getDb();
+    return db.collection<IRRAnnouncementItem>('announcements');
+  }
+
+  static async getSettingsCol(): Promise<Collection<any>> {
+    const db = await this.getDb();
+    return db.collection<any>('settings');
+  }
+
   // --- SEEDING LOGIC ---
   static async seedInitialData() {
     try {
       const empCol = await this.getEmployeesCol();
       const vehCol = await this.getVehiclesCol();
+      const announcementsCol = await this.getAnnouncementsCol();
+      const settingsCol = await this.getSettingsCol();
 
       // 1. Seed Employees
       const empCount = await empCol.countDocuments();
@@ -234,6 +256,85 @@ export class RRService {
           await bookingCol.updateOne({ _id: b._id }, { $set: updateFields });
         }
         console.log('Legacy bookings backfill complete.');
+      }
+
+      // 4. Seed Homepage Scrolling Ticker
+      const existingTicker = await settingsCol.findOne({ key: 'rr_ticker' });
+      if (!existingTicker) {
+        console.log('Seeding initial scrolling marquee ticker for RoadReady Rentals...');
+        await settingsCol.insertOne({
+          key: 'rr_ticker',
+          message:
+            '🎉 Festive Season Special: Enjoy flat 15% discount on all 7-seater SUV rentals for weekend getaways! Call our 24/7 desk at +91 9494873336 to reserve.',
+          badgeText: 'FESTIVAL SPECIAL',
+          isActive: true,
+          speed: 'normal',
+          linkText: 'Explore Offers',
+          linkUrl: '#announcements',
+          updatedAt: new Date().toISOString(),
+          updatedBy: 'RRA001',
+        });
+        console.log('Seeded homepage scrolling ticker.');
+      }
+
+      // 5. Seed Homepage Announcements (Offers, Intimations, Festival Wishes)
+      const announcementsCount = await announcementsCol.countDocuments({
+        isDeleted: { $ne: true },
+      });
+      if (announcementsCount === 0) {
+        console.log('Seeding initial homepage announcements for RoadReady Rentals...');
+        const defaultAnnouncements: IRRAnnouncementItem[] = [
+          {
+            title: 'Happy Diwali & Joyous Festive Celebrations',
+            description:
+              'RoadReady Rentals wishes you and your loved ones a blessed, safe, and joyous festive season! Celebrate the festival of lights with seamless, worry-free journeys in our luxury fleet.',
+            category: 'festival',
+            tag: 'Festive Greeting',
+            icon: 'sparkles',
+            ctaText: 'Reserve Festival Fleet',
+            ctaAction: 'whatsapp',
+            ctaLink: '',
+            priority: 3,
+            isActive: true,
+            createdAt: new Date().toISOString(),
+            createdBy: 'RRA001',
+          },
+          {
+            title: 'Weekend SUV Getaway Bonanza',
+            description:
+              'Plan your long coastal drive in ultimate comfort. Get flat 15% discount on Innova and Baleno rentals for 24+ hour bookings this month. Zero security deposit hassles with express checkout.',
+            category: 'offer',
+            tag: 'Limited Time Deal',
+            promoCode: 'ROYALWEEKEND',
+            discountText: '15% OFF',
+            validUntil: '2026-11-30',
+            ctaText: 'Claim 15% Discount',
+            ctaAction: 'call',
+            ctaLink: '+91 9494873336',
+            icon: 'gift',
+            priority: 2,
+            isActive: true,
+            createdAt: new Date().toISOString(),
+            createdBy: 'RRA001',
+          },
+          {
+            title: 'Monsoon & Highway Fleet Advisory',
+            description:
+              'Dear travelers, all fleet vehicles are freshly serviced and equipped with certified rain-wiper blades, high-grip all-weather tyres, and 24/7 roadside mechanical assistance across coastal Andhra Pradesh.',
+            category: 'intimation',
+            tag: 'Fleet Advisory',
+            icon: 'shield',
+            ctaText: '24/7 Helpline',
+            ctaAction: 'call',
+            ctaLink: '+91 9494873336',
+            priority: 1,
+            isActive: true,
+            createdAt: new Date().toISOString(),
+            createdBy: 'RRA001',
+          },
+        ];
+        await announcementsCol.insertMany(defaultAnnouncements);
+        console.log('Seeded homepage announcements successfully.');
       }
     } catch (e) {
       console.error('Error seeding initial RoadReady Rentals data:', e);

@@ -60,4 +60,44 @@ rrPublicRouter.get('/vehicles', async (req: Request, res: Response) => {
   }
 });
 
+// GET /api/rr/public/announcements
+rrPublicRouter.get('/announcements', async (req: Request, res: Response) => {
+  try {
+    const settingsCol = await RRService.getSettingsCol();
+    const announcementsCol = await RRService.getAnnouncementsCol();
+
+    // 1. Fetch live ticker configuration
+    const tickerDoc = await settingsCol.findOne({ key: 'rr_ticker' });
+    const ticker = tickerDoc
+      ? {
+          message: tickerDoc.message || '',
+          badgeText: tickerDoc.badgeText || 'ANNOUNCEMENT',
+          isActive: tickerDoc.isActive !== false,
+          speed: tickerDoc.speed || 'normal',
+          linkText: tickerDoc.linkText || '',
+          linkUrl: tickerDoc.linkUrl || '',
+          updatedAt: tickerDoc.updatedAt || '',
+        }
+      : {
+          message: '',
+          badgeText: 'ANNOUNCEMENT',
+          isActive: false,
+          speed: 'normal',
+        };
+
+    // 2. Fetch active announcement cards (offers, intimations, festival wishes)
+    const items = await announcementsCol
+      .find({
+        isDeleted: { $ne: true },
+        isActive: true,
+      })
+      .sort({ priority: -1, createdAt: -1 })
+      .toArray();
+
+    res.json({ ticker, items });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
 export { rrPublicRouter };
