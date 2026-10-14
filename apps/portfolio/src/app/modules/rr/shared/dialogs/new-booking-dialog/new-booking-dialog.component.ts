@@ -800,14 +800,15 @@ export class RRNewBookingDialogComponent implements OnInit {
     }
 
     // 3. Check Contract / Maintenance Next Available Date
+    const targetAvailDate = vehicle?.availableBy || vehicle?.nextAvailableDate;
     if (vehicle && ['maintenance', 'contract', 'in_contract'].includes(vehicle.status)) {
-      if (vehicle.nextAvailableDate) {
-        const nextAvail = new Date(vehicle.nextAvailableDate).getTime();
+      if (targetAvailDate) {
+        const nextAvail = new Date(targetAvailDate).getTime();
         if (!isNaN(nextAvail) && reqStart < nextAvail) {
           this.scheduleConflict.set({
             hasConflict: true,
             type: vehicle.status === 'maintenance' ? 'maintenance' : 'contract',
-            message: `Vehicle is currently in ${vehicle.status === 'maintenance' ? 'Maintenance / Service' : 'Corporate Contract'} and next available on ${new Date(vehicle.nextAvailableDate).toLocaleDateString('en-IN')}.`,
+            message: `Vehicle is currently in ${vehicle.status === 'maintenance' ? 'Maintenance / Service' : 'Corporate Contract'} and next available on ${new Date(targetAvailDate).toLocaleDateString('en-IN')}.`,
           });
           return;
         }

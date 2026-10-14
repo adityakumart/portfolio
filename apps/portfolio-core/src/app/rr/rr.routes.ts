@@ -768,12 +768,13 @@ rrRouter.post('/bookings', authenticateRRToken, async (req: any, res: Response) 
       }
 
       // Check contract / maintenance availability date
-      if (['maintenance', 'contract', 'in_contract'].includes(selectedVehicle.status) && selectedVehicle.nextAvailableDate) {
-        const nextAvail = new Date(selectedVehicle.nextAvailableDate).getTime();
+      const targetAvailDate = selectedVehicle.availableBy || selectedVehicle.nextAvailableDate;
+      if (['maintenance', 'contract', 'in_contract'].includes(selectedVehicle.status) && targetAvailDate) {
+        const nextAvail = new Date(targetAvailDate).getTime();
         if (!isNaN(nextAvail) && reqStart < nextAvail) {
           res.status(409).json({
             error: 'Conflict',
-            message: `Vehicle is currently in ${selectedVehicle.status} and next available on ${selectedVehicle.nextAvailableDate}. Reservation pickup must be on or after next available date.`
+            message: `Vehicle is currently in ${selectedVehicle.status} and next available on ${targetAvailDate}. Reservation pickup must be on or after next available date.`
           });
           return;
         }

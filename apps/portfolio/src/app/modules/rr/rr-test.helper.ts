@@ -155,6 +155,8 @@ export const MOCK_ADMIN_VEHICLES: IVehicle[] = [
     insuranceExpiry: '2026-10-20',
     pollutionExpiry: '2026-09-10',
     status: 'maintenance',
+    availableBy: '2026-10-25',
+    nextAvailableDate: '2026-10-25',
     allowBooking: false,
     extraKmPrice: '15',
     extraHourPrice: '180',
@@ -183,6 +185,8 @@ export const MOCK_ADMIN_VEHICLES: IVehicle[] = [
     insuranceExpiry: '2026-08-14',
     pollutionExpiry: '2026-08-10',
     status: 'contract',
+    availableBy: '2026-11-15',
+    nextAvailableDate: '2026-11-15',
     allowBooking: false,
     extraKmPrice: '13',
     extraHourPrice: '160',
@@ -434,7 +438,7 @@ export async function injectRRSession(
   }
 ) {
   const user = options?.user || MOCK_EMPLOYEE_USER;
-  const token = options?.token || 'mock-rr-jwt-token-xyz';
+  const token = options?.token || (user.role === 'admin' ? 'mock-admin-token-xyz' : 'mock-rr-jwt-token-xyz');
   const isLocked = !!options?.isLocked;
 
   // Primary user hub session (enables seamless /user/rr routing)
@@ -690,14 +694,43 @@ export async function setupRRRouteMocks(
     });
   });
 
-  // Auth Permissions endpoint
+  // Auth Permissions endpoint (RR module)
   await page.route('**/api/rr/auth/permissions*', async (route) => {
+    const authHeader = (route.request().headers()['authorization'] || '').toLowerCase();
+    const isAdmin = authHeader.includes('admin');
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({
         success: true,
-        user: MOCK_EMPLOYEE_USER,
+        user: isAdmin ? MOCK_ADMIN_USER : MOCK_EMPLOYEE_USER,
+      }),
+    });
+  });
+
+  // Auth Permissions endpoint (Main User App hub - prevents auto-logout)
+  await page.route('**/api/auth/permissions*', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        success: true,
+        user: {
+          id: 'mock-user-id',
+          email: 'qa.tester@example.com',
+          firstName: 'QA',
+          lastName: 'Tester',
+          role: 'user',
+          modules: {
+            rr: true,
+            aiSpace: true,
+            aiAssistant: true,
+            fileManager: true,
+            dietHydration: true,
+            devTools: true,
+            formBuilder: true,
+          },
+        },
       }),
     });
   });

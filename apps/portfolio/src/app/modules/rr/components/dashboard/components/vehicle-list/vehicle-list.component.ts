@@ -47,6 +47,8 @@ import {
   lucideGripVertical,
   lucideStar,
   lucideImage,
+  lucideWrench,
+  lucideFileText,
 } from '@ng-icons/lucide';
 import { RRVehicleCardComponent, RRVehicleImageCarouselComponent } from '../../../../shared';
 
@@ -109,6 +111,8 @@ export interface VehicleImageItem {
       lucideGripVertical,
       lucideStar,
       lucideImage,
+      lucideWrench,
+      lucideFileText,
     }),
   ],
   templateUrl: './vehicle-list.component.html',
@@ -188,6 +192,7 @@ export class RRVehicleListComponent implements OnInit {
       insuranceExpiry: ['', Validators.required],
       pollutionExpiry: ['', Validators.required],
       status: ['available', Validators.required],
+      availableBy: [null],
       pricing: this.fb.group({
         h23: this.fb.group({ price: ['', [Validators.required, Validators.min(0)]], km: ['', [Validators.required, Validators.min(0)]] }),
         h11: this.fb.group({ price: ['', [Validators.required, Validators.min(0)]], km: ['', [Validators.required, Validators.min(0)]] }),
@@ -197,6 +202,22 @@ export class RRVehicleListComponent implements OnInit {
       extraKmPrice: ['', [Validators.required, Validators.min(0)]],
       extraHourPrice: ['', [Validators.required, Validators.min(0)]]
     });
+
+    this.vehicleFormGroup.get('status')?.valueChanges.subscribe((status) => {
+      this.updateAvailableByValidation(status);
+    });
+  }
+
+  private updateAvailableByValidation(status: string) {
+    const availCtrl = this.vehicleFormGroup.get('availableBy');
+    if (!availCtrl) return;
+    if (status === 'maintenance' || status === 'contract') {
+      availCtrl.setValidators([Validators.required]);
+    } else {
+      availCtrl.clearValidators();
+      availCtrl.setValue(null, { emitEvent: false });
+    }
+    availCtrl.updateValueAndValidity();
   }
 
   async loadVehicles() {
@@ -237,8 +258,10 @@ export class RRVehicleListComponent implements OnInit {
     this.vehicleFormGroup.reset({
       seating: '5',
       fuelType: 'Petrol',
-      status: 'available'
+      status: 'available',
+      availableBy: null
     });
+    this.updateAvailableByValidation('available');
     this.dialog.open(this.vehicleFormDialog, {
       contentClass: 'max-w-3xl w-full p-6 max-h-[90vh] flex flex-col overflow-hidden',
     });
@@ -257,6 +280,9 @@ export class RRVehicleListComponent implements OnInit {
     this.editingVehicleMode.set(true);
     this.resetUploadState();
 
+    const initialStatus = v.status || 'available';
+    const rawAvail = v.availableBy || v.nextAvailableDate;
+
     this.vehicleFormGroup.reset({
       regNo: v.regNo,
       name: v.name,
@@ -271,10 +297,13 @@ export class RRVehicleListComponent implements OnInit {
       chassisNo: v.chassisNo,
       insuranceExpiry: v.insuranceExpiry ? new Date(v.insuranceExpiry) : null,
       pollutionExpiry: v.pollutionExpiry ? new Date(v.pollutionExpiry) : null,
-      status: v.status || 'available',
+      status: initialStatus,
+      availableBy: rawAvail ? new Date(rawAvail) : null,
       extraKmPrice: v.extraKmPrice,
       extraHourPrice: v.extraHourPrice
     });
+
+    this.updateAvailableByValidation(initialStatus);
 
     const pricingGroup = this.vehicleFormGroup.get('pricing') as FormGroup;
     pricingGroup.patchValue({
@@ -309,14 +338,24 @@ export class RRVehicleListComponent implements OnInit {
 
   async saveVehicle(e: Event) {
     e.preventDefault();
-    if (this.vehicleFormGroup.invalid) return;
+    if (this.vehicleFormGroup.invalid) {
+      this.vehicleFormGroup.markAllAsTouched();
+      return;
+    }
 
     const formVal = this.vehicleFormGroup.value;
+    const isServiceOrContract = formVal.status === 'maintenance' || formVal.status === 'contract';
+    const availableByIso = isServiceOrContract && formVal.availableBy
+      ? toISODateString(formVal.availableBy as IndianDateInput)
+      : null;
+
     const imagesList = this.uploadedImages().map((item) => item.url).filter(Boolean);
     const payload = {
       ...formVal,
       insuranceExpiry: toISODateString(formVal.insuranceExpiry as IndianDateInput),
       pollutionExpiry: toISODateString(formVal.pollutionExpiry as IndianDateInput),
+      availableBy: availableByIso,
+      nextAvailableDate: availableByIso,
       images: imagesList.length > 0
         ? imagesList
         : [`assets/rr/${formVal.name?.toLowerCase()}.png`]
