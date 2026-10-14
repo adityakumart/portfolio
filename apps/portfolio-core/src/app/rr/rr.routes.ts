@@ -6,7 +6,7 @@ import { authenticateRRToken, requireAdmin } from './rr.middleware';
 import { RRService, IEmployee, IVehicle, IBooking, ICustomerIntimation } from './rr.service';
 import { handleVehicleImageUpload } from './r2-storage.controller';
 import { rrPublicRouter } from './rr-public.routes';
-import { authRateLimiter } from '../../middlewares/rate-limit.middleware';
+import { authRateLimiter, uploadRateLimiter } from '../../middlewares/rate-limit.middleware';
 import { customerRouter } from '../../routes/customer.routes';
 import { BillingService } from '../../services/billing.service';
 
@@ -257,6 +257,7 @@ const upload = multer({
 rrRouter.post(
   '/vehicles/upload',
   authenticateRRToken,
+  uploadRateLimiter,
   (req, res, next) => {
     upload.fields([
       { name: 'images', maxCount: 15 },

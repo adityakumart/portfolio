@@ -14,6 +14,9 @@
       "@portfolio/feature-user": [
         "./apps/portfolio/src/app/modules/user/index.ts"
       ],
+      "@portfolio/interceptors": [
+        "./apps/portfolio/src/app/shared/interceptors/index.ts"
+      ],
       "@spartan-ng/hel/button": [
         "./libs/styles/button/src/index.ts"
       ],

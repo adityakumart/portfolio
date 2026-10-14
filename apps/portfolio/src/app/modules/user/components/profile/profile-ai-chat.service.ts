@@ -265,11 +265,16 @@ export class ProfileAiChatService {
       console.error('Error generating AI response:', error);
       this.isLoading.set(false);
 
-      const err = error as { error?: { message?: string }; message?: string };
-      const errorMsgText =
-        err.error?.message ||
-        err.message ||
-        'Failed to retrieve response from developer assistant. Please check your connection and try again.';
+      const err = error as { status?: number; error?: { message?: string; retryAfter?: number }; message?: string };
+      let errorMsgText = err.error?.message || err.message;
+      if (err.status === 429) {
+        errorMsgText =
+          err.error?.message ||
+          'AI request rate limit reached. Please slow down and try again in a moment.';
+      } else if (!errorMsgText) {
+        errorMsgText =
+          'Failed to retrieve response from developer assistant. Please check your connection and try again.';
+      }
       const errorMsg: ChatMessage = {
         id: assistantMessageId,
         role: 'assistant',

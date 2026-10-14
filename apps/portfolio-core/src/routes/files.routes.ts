@@ -11,6 +11,7 @@ import {
 } from '../controllers/files.controller';
 import { authenticateToken } from '../middlewares/auth.middleware';
 import { enforceFileRBAC } from '../middlewares/rbac.middleware';
+import { uploadRateLimiter } from '../middlewares/rate-limit.middleware';
 
 export const filesRouter = Router();
 
@@ -18,7 +19,7 @@ export const filesRouter = Router();
 filesRouter.get('/scope', authenticateToken, enforceFileRBAC, handleGetScope);
 filesRouter.get('/list', authenticateToken, enforceFileRBAC, handleListFiles);
 filesRouter.get('/view-url', authenticateToken, enforceFileRBAC, handleGetViewUrl);
-filesRouter.post('/upload', authenticateToken, enforceFileRBAC, handleUploadFile);
+filesRouter.post('/upload', authenticateToken, enforceFileRBAC, uploadRateLimiter, handleUploadFile);
 filesRouter.post('/create-folder', authenticateToken, enforceFileRBAC, handleCreateFolder);
 filesRouter.post('/ai-context', authenticateToken, enforceFileRBAC, handleAiFileContext);
 
