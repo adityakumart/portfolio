@@ -22,6 +22,8 @@ import {
   lucideContact,
   lucideCheck,
   lucideTrash2,
+  lucideUserCheck,
+  lucideKeyRound,
 } from '@ng-icons/lucide';
 
 @Component({
@@ -50,6 +52,8 @@ import {
       lucideContact,
       lucideCheck,
       lucideTrash2,
+      lucideUserCheck,
+      lucideKeyRound,
     }),
   ],
   templateUrl: './employee-list.component.html',
@@ -78,6 +82,7 @@ export class RREmployeeListComponent implements OnInit {
 
   // Modals signals
   editingEmployeeMode = signal<boolean>(false);
+  selectedEmployeeForEdit = signal<IEmployee | null>(null);
 
   // Forms
   employeeFormGroup!: FormGroup;
@@ -99,9 +104,9 @@ export class RREmployeeListComponent implements OnInit {
       aadhar: ['', [Validators.required, Validators.pattern(/^[0-9]{12}$/)]],
       dl: ['', [Validators.required, Validators.pattern(/^[A-Za-z0-9]{16}$/)]],
       role: ['employee', Validators.required],
-      allowLogin: [true],
+      allowLogin: [false],
       address: ['', Validators.required],
-      password: ['RoadReady@123']
+      password: ['']
     });
 
     this.employeeFormGroup.get('role')?.valueChanges.subscribe((role) => {
@@ -129,10 +134,11 @@ export class RREmployeeListComponent implements OnInit {
   // --- ADD/EDIT MODALS ---
   openAddEmployeeModal() {
     this.editingEmployeeMode.set(false);
+    this.selectedEmployeeForEdit.set(null);
     this.employeeFormGroup.reset({
       id: '',
       role: 'employee',
-      allowLogin: true,
+      allowLogin: false,
       password: 'RoadReady@123'
     });
     this.dialog.open(this.employeeFormDialog, {
@@ -142,6 +148,7 @@ export class RREmployeeListComponent implements OnInit {
 
   openEditEmployeeModal(e: IEmployee) {
     this.editingEmployeeMode.set(true);
+    this.selectedEmployeeForEdit.set(e);
     this.employeeFormGroup.reset({
       id: e.id,
       firstName: e.firstName,
@@ -164,6 +171,42 @@ export class RREmployeeListComponent implements OnInit {
 
   closeEmployeeFormModal() {
     this.dialog.closeAll();
+  }
+
+  async activateEmployee(e: IEmployee) {
+    try {
+      await this.rrApi.activateEmployee(e.id);
+      toast.success(`Account for ${e.firstName} ${e.lastName} (${e.id}) activated.`);
+      await this.loadEmployees();
+      if (this.selectedEmployeeForEdit()?.id === e.id) {
+        this.selectedEmployeeForEdit.update(emp => emp ? ({ ...emp, status: 'active', allowLogin: true }) : null);
+        this.employeeFormGroup.patchValue({ allowLogin: true });
+      }
+    } catch (err: any) {
+      toast.error(err.error?.message || err.message || 'Failed to activate staff member.');
+    }
+  }
+
+  async resetPassword(e: IEmployee) {
+    if (!confirm(`Are you sure you want to reset password for ${e.firstName} ${e.lastName} (${e.id})? User will be prompted to create a new password upon first login.`)) {
+      return;
+    }
+
+    try {
+      const res = await this.rrApi.resetEmployeePassword(e.id);
+      toast.success(res.message || `Password reset for ${e.id}. User must create new password on first login.`);
+      await this.loadEmployees();
+    } catch (err: any) {
+      toast.error(err.error?.message || err.message || 'Failed to reset password.');
+    }
+  }
+
+  resetPasswordFromModal(event: Event) {
+    event.preventDefault();
+    const emp = this.selectedEmployeeForEdit();
+    if (emp) {
+      this.resetPassword(emp);
+    }
   }
 
   async saveEmployee(e: Event) {

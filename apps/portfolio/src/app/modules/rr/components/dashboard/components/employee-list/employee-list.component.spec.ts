@@ -69,4 +69,38 @@ test.describe('RR Module - Staff Registry Employee List Component', () => {
       await page.keyboard.press('Escape');
     }
   });
+
+  test('should display status column with Active and Pending Activation badges and activate button', async ({ page }) => {
+    const table = page.locator('table[hlmTable]');
+    await expect(table.getByRole('columnheader', { name: 'Status' })).toBeVisible();
+
+    // Verify Active badge for active employees
+    await expect(table.getByText('ACTIVE').first()).toBeVisible();
+
+    // Verify Pending Activation badge for new employee RRA003
+    await expect(table.getByText('PENDING ACTIVATION')).toBeVisible();
+
+    // Verify Activate button is present
+    const activateBtn = table.locator('button[hlmTooltip="Activate Staff Member"]').first();
+    await expect(activateBtn).toBeVisible();
+    await activateBtn.click();
+  });
+
+  test('should show Reset Password button in modify staff record modal', async ({ page }) => {
+    const table = page.locator('table[hlmTable]');
+    const editBtn = table.locator('button[hlmTooltip="Modify Staff Record"]').first();
+    await editBtn.click();
+
+    const dialog = page.locator('div[role="dialog"], .fixed.inset-0.z-50').first();
+    await expect(dialog).toBeVisible({ timeout: 5000 });
+    await expect(dialog.getByRole('heading', { name: /Modify Staff Record/i })).toBeVisible();
+
+    // Verify Reset Password button is visible
+    const resetBtn = dialog.getByRole('button', { name: /Reset Password/i });
+    await expect(resetBtn).toBeVisible();
+
+    // Close modal
+    const cancelBtn = dialog.getByRole('button', { name: 'Cancel' });
+    await cancelBtn.click();
+  });
 });

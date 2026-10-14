@@ -61,6 +61,16 @@ test.describe('RR Module - Dashboard Shell Component', () => {
       await expect(dialog.locator('input[value="agent@rams-cars.com"]')).toBeVisible();
       await expect(dialog.locator('input[value="EMPLOYEE"]')).toBeVisible();
 
+      // Verify Change Password section in profile
+      const changePassBtn = dialog.getByRole('button', { name: /Change Password/i });
+      await expect(changePassBtn).toBeVisible();
+      await changePassBtn.click();
+
+      // Password input fields appear
+      await expect(dialog.locator('input[formcontrolname="currentPassword"]')).toBeVisible();
+      await expect(dialog.locator('input[formcontrolname="newPassword"]')).toBeVisible();
+      await expect(dialog.locator('input[formcontrolname="confirmPassword"]')).toBeVisible();
+
       // Dismiss dialog
       await dialog.getByRole('button', { name: 'Dismiss' }).click();
       await expect(dialog).not.toBeVisible();

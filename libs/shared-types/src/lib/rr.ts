@@ -17,14 +17,35 @@ export interface IRRLoginRequest {
   dob?: string;
 }
 
+export type RRUserStatus = 'pending_activation' | 'active' | 'deactivated';
+
 export interface IRRLoginResponse {
   access_token: string;
   user: IRRUser;
+  status?: RRUserStatus;
+  mustChangePassword?: boolean;
+  isFirstLogin?: boolean;
+  passwordAgeDays?: number;
+  passwordExpiresInDays?: number;
+  isBufferPeriod?: boolean;
+  isExpired?: boolean;
+}
+
+export interface IRRChangePasswordRequest {
+  currentPassword?: string;
+  newPassword: string;
 }
 
 export interface IRRPermissionsResponse {
   user: IRRUser;
   role: RRRole;
+  status?: RRUserStatus;
+  mustChangePassword?: boolean;
+  isFirstLogin?: boolean;
+  passwordAgeDays?: number;
+  passwordExpiresInDays?: number;
+  isBufferPeriod?: boolean;
+  isExpired?: boolean;
 }
 
 export interface IEmployee {
@@ -41,6 +62,11 @@ export interface IEmployee {
   address: string;
   allowLogin: boolean;
   role: RRRole;
+  status?: RRUserStatus;
+  isFirstLogin?: boolean;
+  mustChangePassword?: boolean;
+  passwordLastChangedAt?: string | null;
+  lastLoginAt?: string | null;
   password?: string; // Optional raw password passed from registration form (hidden field)
   passwordHash?: string; // Bcrypt hashed password
   createdAt: string;

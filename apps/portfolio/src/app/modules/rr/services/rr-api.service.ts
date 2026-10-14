@@ -30,6 +30,8 @@ import {
   ICustomerIntimation,
   IVehicleImageUploadResponse,
   IVehicleUploadedAsset,
+  RRUserStatus,
+  IRRChangePasswordRequest,
 } from '@portfolio/shared-types';
 
 export {
@@ -57,6 +59,8 @@ export type {
   ICustomerIntimation,
   IVehicleImageUploadResponse,
   IVehicleUploadedAsset,
+  RRUserStatus,
+  IRRChangePasswordRequest,
 };
 
 interface ExtensionWindow extends Window {
@@ -114,6 +118,14 @@ export class RRApiService {
   // Signals
   currentUser = signal<IRRUser | null>(null);
   isAdmin = computed(() => this.currentUser()?.role === 'admin');
+  passwordPolicyState = signal<{
+    mustChangePassword: boolean;
+    isFirstLogin?: boolean;
+    passwordAgeDays: number;
+    passwordExpiresInDays: number;
+    isBufferPeriod: boolean;
+    isExpired: boolean;
+  } | null>(null);
 
   constructor() {
     this.loadSession();
@@ -468,6 +480,7 @@ export class RRApiService {
       this.clearInactivityStorage();
     }
     this.currentUser.set(null);
+    this.passwordPolicyState.set(null);
   }
 
   private startPermissionsTimer() {
@@ -662,6 +675,13 @@ export class RRApiService {
       if (res?.user) {
         this.saveSession(res.user, token);
         this.validateCurrentRouteAccess(res.user);
+        this.passwordPolicyState.set({
+          mustChangePassword: !!res.mustChangePassword,
+          passwordAgeDays: res.passwordAgeDays ?? 0,
+          passwordExpiresInDays: res.passwordExpiresInDays ?? 45,
+          isBufferPeriod: !!res.isBufferPeriod,
+          isExpired: !!res.isExpired
+        });
         return res.user;
       }
       return null;
@@ -707,7 +727,7 @@ export class RRApiService {
   // --- API Methods ---
 
   // Auth Login
-  async login(body: IRRLoginRequest): Promise<IRRUser> {
+  async login(body: IRRLoginRequest): Promise<IRRLoginResponse> {
     const res = await firstValueFrom(
       this.http.post<IRRLoginResponse>(
         `${this.baseUrl}/auth/login`,
@@ -717,8 +737,16 @@ export class RRApiService {
     );
     this.saveSession(res.user, res.access_token);
     this.resetInactivityStorage();
+    this.passwordPolicyState.set({
+      mustChangePassword: !!res.mustChangePassword,
+      isFirstLogin: !!res.isFirstLogin,
+      passwordAgeDays: res.passwordAgeDays ?? 0,
+      passwordExpiresInDays: res.passwordExpiresInDays ?? 45,
+      isBufferPeriod: !!res.isBufferPeriod,
+      isExpired: !!res.isExpired
+    });
     console.debug(`[RR Auth] Authenticated session for user with token ${maskToken(res.access_token)}`);
-    return res.user;
+    return res;
   }
 
   private resetInactivityStorage(): void {
@@ -941,6 +969,32 @@ export class RRApiService {
   async deleteEmployee(id: string): Promise<{ message: string }> {
     return firstValueFrom(
       this.http.delete<{ message: string }>(`${this.baseUrl}/employees/${id}`, { headers: this.getHeaders() })
+    );
+  }
+
+  async activateEmployee(id: string): Promise<IEmployee> {
+    return firstValueFrom(
+      this.http.put<IEmployee>(`${this.baseUrl}/employees/${id}/activate`, {}, { headers: this.getHeaders() })
+    );
+  }
+
+  async resetEmployeePassword(id: string, temporaryPassword?: string): Promise<{ success: boolean; message: string; temporaryPassword: string }> {
+    return firstValueFrom(
+      this.http.post<{ success: boolean; message: string; temporaryPassword: string }>(
+        `${this.baseUrl}/employees/${id}/reset-password`,
+        { temporaryPassword },
+        { headers: this.getHeaders() }
+      )
+    );
+  }
+
+  async changePassword(data: { currentPassword?: string; newPassword: string }): Promise<{ success: boolean; message: string }> {
+    return firstValueFrom(
+      this.http.post<{ success: boolean; message: string }>(
+        `${this.baseUrl}/auth/change-password`,
+        data,
+        { headers: this.getHeaders() }
+      )
     );
   }
 
