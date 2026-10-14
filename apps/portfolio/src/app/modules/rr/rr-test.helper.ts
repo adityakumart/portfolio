@@ -423,6 +423,24 @@ export const MOCK_REGULAR_CUSTOMERS: IRegularCustomerMasked[] = [
     endDate: '2027-01-01T00:00:00.000Z',
     createdAt: '2025-01-01T10:00:00.000Z',
   },
+  {
+    _id: 'cust-2',
+    membershipId: 'RR-MEM-002',
+    firstName: 'Kalyan',
+    lastName: 'Chowdary',
+    fatherName: 'Venkatesh',
+    phone: '9988776655',
+    aadhar: 'XXXX-XXXX-4567',
+    dl: 'XXXXXXXXXXXX-5678',
+    address: 'Gandhi Nagar, Rajahmundry',
+    membershipTier: 'silver',
+    discountRate: 10,
+    totalBookings: 2,
+    isActive: true,
+    startDate: '2025-02-01T00:00:00.000Z',
+    endDate: '2026-12-31T00:00:00.000Z',
+    createdAt: '2025-02-01T10:00:00.000Z',
+  },
 ];
 
 /**
@@ -670,11 +688,48 @@ export async function setupRRRouteMocks(
 
   // Regular Customers
   await page.route('**/api/rr/customers*', async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify(customers),
-    });
+    const url = route.request().url();
+    const method = route.request().method();
+    if (url.includes('/autocomplete')) {
+      const items = customers.map((c) => ({
+        _id: c._id || c.membershipId,
+        membershipId: c.membershipId,
+        name: `${c.firstName} ${c.lastName}`,
+        endDate: c.endDate,
+      }));
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(items),
+      });
+    } else if (method === 'GET' && !/\/api\/rr\/customers\/[a-zA-Z0-9_-]+/.test(url)) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          customers,
+          total: customers.length,
+          page: 1,
+          limit: 10,
+          totalPages: 1,
+        }),
+      });
+    } else if (method === 'GET') {
+      const match = url.match(/\/api\/rr\/customers\/([a-zA-Z0-9_-]+)/);
+      const id = match ? match[1] : '';
+      const found = customers.find((c) => c._id === id || c.membershipId === id) || customers[0];
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(found),
+      });
+    } else {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(customers[0]),
+      });
+    }
   });
 
   // Auth Login endpoint

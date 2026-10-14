@@ -605,7 +605,8 @@ rrRouter.get('/bookings', authenticateRRToken, async (req: any, res: Response) =
         $or: [
           { renterFirstName: { $regex: cRegex } },
           { renterSecondName: { $regex: cRegex } },
-          { renterPhone: { $regex: cRegex } }
+          { renterPhone: { $regex: cRegex } },
+          { renterEmail: { $regex: cRegex } }
         ]
       });
     }
@@ -641,7 +642,8 @@ rrRouter.get('/bookings', authenticateRRToken, async (req: any, res: Response) =
           { vehicleName: { $regex: sRegex } },
           { renterFirstName: { $regex: sRegex } },
           { renterSecondName: { $regex: sRegex } },
-          { renterPhone: { $regex: sRegex } }
+          { renterPhone: { $regex: sRegex } },
+          { renterEmail: { $regex: sRegex } }
         ]
       });
     }

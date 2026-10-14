@@ -18,7 +18,7 @@ export interface IRegularCustomerDocument extends Document {
   fatherName: string;
   phone: string;
   altPhone: string;
-  email: string;
+  email?: string;
   aadhar: string;
   aadharBlindIndex: string;
   dl: string;
@@ -88,14 +88,17 @@ const RegularCustomerSchema = new Schema<IRegularCustomerDocument>(
     },
     email: {
       type: String,
-      required: [true, 'Email address is required'],
+      required: false,
       unique: true,
+      sparse: true,
       trim: true,
       lowercase: true,
-      match: [
-        /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-        'Please provide a valid email address',
-      ],
+      validate: {
+        validator: function (v: string): boolean {
+          return !v || /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v);
+        },
+        message: 'Please provide a valid email address',
+      },
       index: true,
     },
     // Encrypted KYC at rest
@@ -188,8 +191,14 @@ const RegularCustomerSchema = new Schema<IRegularCustomerDocument>(
  * Pre-save middleware:
  * Encrypts sensitive KYC fields (Aadhaar & DL) using AES-256-GCM before saving to database.
  * Computes deterministic HMAC-SHA256 blind indexes for duplicate prevention without plaintext storage.
+ * Ensures omitted or empty string email is stored as undefined for sparse unique indexing.
  */
 RegularCustomerSchema.pre('save', async function () {
+  const emailVal = this.get('email') as string | undefined;
+  if (!emailVal || !emailVal.trim()) {
+    this.set('email', undefined);
+  }
+
   const isAadharModified = this['isModified']('aadhar');
   const aadharVal = this.get('aadhar') as string | undefined;
 
@@ -214,12 +223,20 @@ RegularCustomerSchema.pre('save', async function () {
 /**
  * Pre-findOneAndUpdate middleware:
  * Ensures modified Aadhaar or DL in update operations are properly re-encrypted.
+ * Ensures omitted or blank email in updates is properly removed so sparse unique index remains clean.
  */
 RegularCustomerSchema.pre('findOneAndUpdate', async function () {
   const update = this['getUpdate']() as Record<string, unknown> | null;
   if (!update) return;
 
   const setObj = (update['$set'] || update) as Record<string, unknown>;
+
+  if (setObj && 'email' in setObj) {
+    if (!setObj['email'] || !(setObj['email'] as string).trim()) {
+      delete setObj['email'];
+      update['$unset'] = { ...((update['$unset'] as Record<string, unknown>) || {}), email: 1 };
+    }
+  }
 
   if (setObj && typeof setObj['aadhar'] === 'string' && setObj['aadhar']) {
     const raw = setObj['aadhar'];
@@ -276,12 +293,13 @@ RegularCustomerSchema.statics['findByPhoneOrEmail'] = async function (
   identifier: string
 ): Promise<IRegularCustomerDocument | null> {
   const clean = identifier.trim().toLowerCase();
+  const orConditions: Array<Record<string, unknown>> = [{ phone: identifier.trim() }];
+  if (clean) {
+    orConditions.push({ email: clean });
+  }
   return this.findOne({
     isDeleted: { $ne: true },
-    $or: [
-      { phone: identifier.trim() },
-      { email: clean },
-    ],
+    $or: orConditions,
   }).exec();
 };
 

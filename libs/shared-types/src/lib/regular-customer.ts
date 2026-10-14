@@ -8,7 +8,7 @@ export interface IRegularCustomer {
   fatherName: string;
   phone: string;
   altPhone?: string;
-  email: string;
+  email?: string;
   aadhar: string; // Encrypted in DB / Plain 12-digits upon creation
   aadharBlindIndex?: string;
   dl: string; // Encrypted in DB / Plain 15-16 alphanumeric chars upon creation
@@ -35,7 +35,7 @@ export interface IRegularCustomerMasked {
   fatherName: string;
   phone: string;
   altPhone?: string;
-  email: string;
+  email?: string;
   aadhar: string; // Masked representation: e.g. 'XXXX-XXXX-1234'
   dl: string; // Masked representation: e.g. 'XXXXXXXXXXXX-5678'
   address: string;
@@ -57,7 +57,7 @@ export interface ICreateCustomerDTO {
   fatherName: string;
   phone: string;
   altPhone?: string;
-  email: string;
+  email?: string;
   aadhar: string;
   dl: string;
   address: string;

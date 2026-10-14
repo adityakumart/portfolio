@@ -25,6 +25,7 @@ import {
   lucideMoreVertical,
   lucidePhone,
   lucideTag,
+  lucideMail,
 } from '@ng-icons/lucide';
 import { IBooking, IVehicle } from '@portfolio/shared-types';
 import { RRApiService } from '../../../../services/rr-api.service';
@@ -66,6 +67,7 @@ import { IndianDatePipe } from '../../../../../../shared/pipes/indian-date.pipe'
       lucideMoreVertical,
       lucidePhone,
       lucideTag,
+      lucideMail,
     }),
   ],
   templateUrl: './advance-booking-list.component.html',

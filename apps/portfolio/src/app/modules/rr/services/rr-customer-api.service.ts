@@ -58,14 +58,18 @@ export class RRCustomerApiService {
 
     try {
       const response = await firstValueFrom(
-        this.http.get<ICustomerListResponse>(this.baseUrl, {
+        this.http.get<any>(this.baseUrl, {
           headers: this.getHeaders(),
           params: httpParams,
         })
       );
-      this.customers.set(response.customers);
-      this.totalCustomers.set(response.total);
-      return response;
+      const custList = Array.isArray(response) ? response : (response?.customers || []);
+      const custTotal = Array.isArray(response) ? response.length : (response?.total || custList.length);
+      this.customers.set(custList);
+      this.totalCustomers.set(custTotal);
+      return Array.isArray(response)
+        ? { customers: custList, total: custTotal, page: 1, limit: custList.length || 10, totalPages: 1 }
+        : response;
     } finally {
       this.isLoading.set(false);
     }

@@ -131,7 +131,7 @@ export class RRCustomerListComponent implements OnInit {
         c.firstName.toLowerCase().includes(query) ||
         c.lastName.toLowerCase().includes(query) ||
         c.phone.includes(query) ||
-        c.email.toLowerCase().includes(query) ||
+        (c.email ? c.email.toLowerCase().includes(query) : false) ||
         c.membershipId.toLowerCase().includes(query)
     );
   });
@@ -228,7 +228,6 @@ export class RRCustomerListComponent implements OnInit {
       email: [
         '',
         [
-          Validators.required,
           Validators.pattern(
             /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
           ),
@@ -458,7 +457,7 @@ export class RRCustomerListComponent implements OnInit {
           fatherName: formVal.fatherName.trim(),
           phone: formVal.phone.trim(),
           altPhone: formVal.altPhone?.trim() || '',
-          email: formVal.email.trim().toLowerCase(),
+          email: formVal.email?.trim() ? formVal.email.trim().toLowerCase() : undefined,
           aadhar: formVal.aadhar.trim(),
           dl: formVal.dl.trim().toUpperCase(),
           address: formVal.address.trim(),
@@ -485,7 +484,7 @@ export class RRCustomerListComponent implements OnInit {
           fatherName: formVal.fatherName.trim(),
           phone: formVal.phone.trim(),
           altPhone: formVal.altPhone?.trim() || '',
-          email: formVal.email.trim().toLowerCase(),
+          email: formVal.email?.trim() ? formVal.email.trim().toLowerCase() : '',
           address: formVal.address.trim(),
           membershipTier: formVal.membershipTier,
           discountRate: Number(formVal.discountRate),

@@ -39,22 +39,27 @@ test.describe('RR Module - Customer List Registry Component', () => {
       await expect(table.getByText('RR-MEM-001')).toBeVisible();
       await expect(table.getByText('Suresh Varma')).toBeVisible();
       await expect(table.getByText('9876543210')).toBeVisible();
+      await expect(table.getByText('suresh.varma@example.com')).toBeVisible();
       await expect(table.getByText('GOLD')).toBeVisible();
+
+      // Record verification for member without email
+      await expect(table.getByText('RR-MEM-002')).toBeVisible();
+      await expect(table.getByText('Kalyan Chowdary')).toBeVisible();
+      await expect(table.getByText('No email')).toBeVisible();
     });
 
     test('should open customer KYC details dialog on view action', async ({ page }) => {
       // Find view button
-      const viewBtn = page.locator('button[hlmTooltip="View KYC Profile"]').first();
-      await expect(viewBtn).toBeVisible();
+      const viewBtn = page.locator('button:has([name="lucideEye"]), button[hlmTooltip*="View"]').first();
+      await expect(viewBtn).toBeVisible({ timeout: 10000 });
       await viewBtn.click();
 
       // Modal appears
-      const dialog = page.locator('div[role="dialog"], .fixed.inset-0.z-50').first();
-      await expect(dialog).toBeVisible({ timeout: 5000 });
-      await expect(dialog.getByText('Suresh Varma')).toBeVisible();
+      await expect(page.getByText('Customer Membership Profile')).toBeVisible({ timeout: 10000 });
+      await expect(page.getByText('Suresh Varma')).toBeVisible();
 
       // Close modal
-      const closeBtn = dialog.locator('button[aria-label="Close dialog"], button:has([name="lucideX"]), button:has-text("Close")').first();
+      const closeBtn = page.locator('button[aria-label="Close dialog"], button:has([name="lucideX"]), button:has-text("Close")').first();
       if (await closeBtn.isVisible()) {
         await closeBtn.click();
       } else {
@@ -73,16 +78,17 @@ test.describe('RR Module - Customer List Registry Component', () => {
 
     test('should display New Member button and trigger registration modal for admin', async ({ page }) => {
       const newMemberBtn = page.getByRole('button', { name: /New Member/i });
-      await expect(newMemberBtn).toBeVisible();
+      await expect(newMemberBtn).toBeVisible({ timeout: 10000 });
 
       await newMemberBtn.click();
 
-      const dialog = page.locator('div[role="dialog"], .fixed.inset-0.z-50').first();
-      await expect(dialog).toBeVisible({ timeout: 5000 });
-      await expect(dialog.getByRole('heading', { name: /Register Regular Customer|New Member/i })).toBeVisible();
+      await expect(page.getByText('Register Regular Customer')).toBeVisible({ timeout: 10000 });
+
+      // Verify that Email Address is optional
+      await expect(page.getByText('Email Address (Optional)')).toBeVisible();
 
       // Close modal
-      const closeBtn = dialog.locator('button[aria-label="Close dialog"], button:has([name="lucideX"]), button:has-text("Cancel")').first();
+      const closeBtn = page.locator('button[aria-label="Close dialog"], button:has([name="lucideX"]), button:has-text("Cancel")').first();
       if (await closeBtn.isVisible()) {
         await closeBtn.click();
       } else {

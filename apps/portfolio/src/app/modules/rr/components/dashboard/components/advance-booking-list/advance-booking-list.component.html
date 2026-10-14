@@ -101,6 +101,12 @@
                   <ng-icon name="lucidePhone" class="text-[10px]"></ng-icon>
                   <span>{{ b.renterPhone }}</span>
                 </div>
+                @if (b.renterEmail) {
+                  <div class="text-muted-foreground text-[11px] flex items-center gap-1">
+                    <ng-icon name="lucideMail" class="size-3 text-muted-foreground/70"></ng-icon>
+                    <span class="truncate max-w-[140px]">{{ b.renterEmail }}</span>
+                  </div>
+                }
                 @if (b.renterAadhar) {
                   <div class="text-muted-foreground text-[10px] font-mono">
                     Aadhaar: {{ b.renterAadhar | aadharVisible }}

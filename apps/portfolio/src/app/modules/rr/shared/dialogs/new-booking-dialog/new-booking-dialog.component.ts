@@ -188,6 +188,7 @@ export class RRNewBookingDialogComponent implements OnInit {
         [Validators.required, Validators.pattern(/^[0-9]{10}$/)],
       ],
       renterAltPhone: ['', [Validators.pattern(/^[0-9]{10}$/)]],
+      renterEmail: ['', [Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)]],
       renterAddress: ['', Validators.required],
 
       // Guarantee
@@ -438,6 +439,7 @@ export class RRNewBookingDialogComponent implements OnInit {
         renterFatherName: fullCustomer.fatherName,
         renterPhone: fullCustomer.phone,
         renterAltPhone: fullCustomer.altPhone || '',
+        renterEmail: fullCustomer.email || '',
         renterAddress: fullCustomer.address,
         renterAadhar: fullCustomer.aadhar,
         renterDL: fullCustomer.dl,

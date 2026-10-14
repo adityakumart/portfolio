@@ -43,12 +43,12 @@ export class CustomerController {
         errors.push('Alternate phone must be a valid 10-digit mobile number');
       }
 
-      // Email validation
-      if (
-        !body.email ||
-        !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(body.email.trim())
-      ) {
-        errors.push('Valid email address is required');
+      // Email validation (optional)
+      const cleanEmail = body.email?.trim().toLowerCase();
+      if (cleanEmail) {
+        if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(cleanEmail)) {
+          errors.push('Please provide a valid email address');
+        }
       }
 
       // Aadhaar format validation (12 digits or redacted placeholder)
@@ -86,13 +86,14 @@ export class CustomerController {
         return;
       }
 
-      // 2. Duplicate checks (Phone & Email)
+      // 2. Duplicate checks (Phone & optionally Email)
+      const orConditions: Array<Record<string, unknown>> = [{ phone: body.phone.trim() }];
+      if (cleanEmail) {
+        orConditions.push({ email: cleanEmail });
+      }
       const existing = await RegularCustomer.findOne({
         isDeleted: { $ne: true },
-        $or: [
-          { phone: body.phone.trim() },
-          { email: body.email.trim().toLowerCase() },
-        ],
+        $or: orConditions,
       });
 
       if (existing) {
@@ -142,7 +143,7 @@ export class CustomerController {
         fatherName: body.fatherName.trim(),
         phone: body.phone.trim(),
         altPhone: body.altPhone?.trim() || '',
-        email: body.email.trim().toLowerCase(),
+        email: cleanEmail || undefined,
         aadhar: cleanAadhaar?.replace(/\s/g, ''),
         dl: cleanDL?.replace(/[\s-]/g, '').toUpperCase(),
         address: body.address.trim(),
@@ -387,22 +388,28 @@ export class CustomerController {
       }
 
       // Email update check
-      if (body.email && body.email.toLowerCase() !== customer.email) {
-        const cleanEmail = body.email.trim().toLowerCase();
-        if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(cleanEmail)) {
-          res.status(400).json({ error: 'Validation Error', message: 'Invalid email address' });
-          return;
+      if (body.email !== undefined) {
+        const cleanEmail = body.email ? body.email.trim().toLowerCase() : '';
+        if (cleanEmail) {
+          if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(cleanEmail)) {
+            res.status(400).json({ error: 'Validation Error', message: 'Invalid email address' });
+            return;
+          }
+          if (cleanEmail !== (customer.email ? customer.email.toLowerCase() : '')) {
+            const duplicateEmail = await RegularCustomer.findOne({
+              _id: { $ne: customer._id },
+              email: cleanEmail,
+              isDeleted: { $ne: true },
+            });
+            if (duplicateEmail) {
+              res.status(409).json({ error: 'Conflict', message: 'Email address already in use by another member' });
+              return;
+            }
+          }
+          customer.email = cleanEmail;
+        } else {
+          customer.email = undefined;
         }
-        const duplicateEmail = await RegularCustomer.findOne({
-          _id: { $ne: customer._id },
-          email: cleanEmail,
-          isDeleted: { $ne: true },
-        });
-        if (duplicateEmail) {
-          res.status(409).json({ error: 'Conflict', message: 'Email address already in use by another member' });
-          return;
-        }
-        customer.email = cleanEmail;
       }
 
       // KYC updates if provided
