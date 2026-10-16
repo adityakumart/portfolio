@@ -18,7 +18,7 @@
       (click)="openCreateModal()"
     >
       <ng-icon name="lucidePlus" class="size-4"></ng-icon>
-      <span>+ New Project</span>
+      <span>New Project</span>
     </button>
   </div>
 
@@ -249,7 +249,7 @@
 @if (isCreateModalOpen()) {
   <div class="fixed inset-0 bg-black/60 backdrop-blur-xs z-[140] flex items-center justify-center p-4">
     <div
-      class="w-full max-w-md bg-card border border-border rounded-2xl p-6 shadow-2xl animate-in fade-in-0 zoom-in-95 duration-150"
+      class="w-full max-w-xl bg-card border border-border rounded-2xl p-6 shadow-2xl animate-in fade-in-0 zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto"
       role="dialog"
       aria-modal="true"
     >
@@ -260,7 +260,7 @@
           </div>
           <div>
             <h3 class="font-bold text-base text-foreground">Create New Project</h3>
-            <p class="text-xs text-muted-foreground">Initializes with standard vertical workflow columns</p>
+            <p class="text-xs text-muted-foreground">Define project details and rearrange workflow stages horizontally</p>
           </div>
         </div>
         <button
@@ -294,7 +294,7 @@
           <label class="block text-xs font-semibold text-foreground mb-1.5">Description (Optional)</label>
           <textarea
             hlmInput
-            rows="3"
+            rows="2"
             maxlength="500"
             [(ngModel)]="newProjectDescription"
             name="description"
@@ -303,12 +303,17 @@
           ></textarea>
         </div>
 
-        <!-- Configurable Workflow Stages in New Project -->
-        <div class="p-3.5 rounded-xl bg-muted/40 border border-border space-y-3">
+        <!-- Horizontal Configurable Workflow Stages in New Project -->
+        <div class="p-3.5 rounded-xl bg-muted/30 border border-border space-y-3">
           <div class="flex items-center justify-between">
-            <span class="text-[11px] font-bold text-foreground uppercase tracking-wider">
-              Workflow Stages ({{ newProjectStages.length }})
-            </span>
+            <div>
+              <span class="text-[11px] font-bold text-foreground uppercase tracking-wider block">
+                Horizontal Stage Order ({{ newProjectStages.length }})
+              </span>
+              <span class="text-[10px] text-muted-foreground">
+                Cards can move back anytime; forward moves follow selected next stages
+              </span>
+            </div>
             @if (!isAddingStageToNewProject()) {
               <button
                 type="button"
@@ -316,29 +321,94 @@
                 (click)="isAddingStageToNewProject.set(true)"
               >
                 <ng-icon name="lucidePlus" class="size-3"></ng-icon>
-                <span>+ Add Stage</span>
+                <span>Add Stage</span>
               </button>
             }
           </div>
 
-          <!-- Stage Chips / Badges with remove option -->
-          <div class="flex items-center gap-1.5 flex-wrap">
+          <!-- Horizontal Stages Track (Scrollable) -->
+          <div class="flex items-stretch gap-2.5 overflow-x-auto pb-2 pt-1">
             @for (stage of newProjectStages; track stage.id; let idx = $index) {
               <div
-                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-border bg-card text-xs font-medium shadow-xs"
+                class="w-56 shrink-0 p-3 rounded-xl border border-border bg-card shadow-2xs flex flex-col justify-between space-y-2"
               >
-                <span class="h-2.5 w-2.5 rounded-full shrink-0" [style.backgroundColor]="stage.color"></span>
-                <span class="text-foreground">{{ stage.name }}</span>
-                @if (newProjectStages.length > 1) {
-                  <button
-                    type="button"
-                    class="text-muted-foreground hover:text-destructive ml-0.5"
-                    (click)="removeStageFromNewProject(idx)"
-                    title="Remove stage"
-                  >
-                    <ng-icon name="lucideX" class="size-3"></ng-icon>
-                  </button>
-                }
+                <!-- Stage Header: Order + Name + Reorder Controls -->
+                <div class="flex items-center justify-between gap-1 pb-1.5 border-b border-border/60">
+                  <div class="flex items-center gap-1.5 min-w-0">
+                    <span class="h-2.5 w-2.5 rounded-full shrink-0" [style.backgroundColor]="stage.color"></span>
+                    <span class="text-xs font-bold text-foreground truncate">{{ stage.name }}</span>
+                    <span class="text-[10px] text-muted-foreground font-semibold">#{{ idx + 1 }}</span>
+                  </div>
+
+                  <div class="flex items-center gap-0.5 shrink-0">
+                    <!-- Move Left -->
+                    <button
+                      type="button"
+                      class="h-6 w-6 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center disabled:opacity-30 disabled:pointer-events-none"
+                      [disabled]="idx === 0"
+                      (click)="moveNewProjectStageHorizontal(idx, 'left')"
+                      title="Move Left"
+                    >
+                      <ng-icon name="lucideArrowLeft" class="size-3"></ng-icon>
+                    </button>
+
+                    <!-- Move Right -->
+                    <button
+                      type="button"
+                      class="h-6 w-6 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center disabled:opacity-30 disabled:pointer-events-none"
+                      [disabled]="idx === newProjectStages.length - 1"
+                      (click)="moveNewProjectStageHorizontal(idx, 'right')"
+                      title="Move Right"
+                    >
+                      <ng-icon name="lucideArrowRight" class="size-3"></ng-icon>
+                    </button>
+
+                    <!-- Delete -->
+                    @if (newProjectStages.length > 1) {
+                      <button
+                        type="button"
+                        class="h-6 w-6 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive flex items-center justify-center ml-0.5"
+                        (click)="removeStageFromNewProject(idx)"
+                        title="Remove stage"
+                      >
+                        <ng-icon name="lucideTrash2" class="size-3"></ng-icon>
+                      </button>
+                    }
+                  </div>
+                </div>
+
+                <!-- Next Stage(s) Multi-Select Beside / Inside Stage -->
+                <div class="space-y-1">
+                  <div class="flex items-center justify-between text-[10px]">
+                    <span class="font-semibold text-muted-foreground">Next Stage(s):</span>
+                    @if (idx === newProjectStages.length - 1 && getNewProjectStageTransitions(stage, idx).length === 0) {
+                      <span class="text-[9px] text-muted-foreground italic">(Empty - Endpoint)</span>
+                    }
+                  </div>
+
+                  <!-- Multi-select Chips -->
+                  <div class="flex items-center gap-1 flex-wrap min-h-[26px]">
+                    @for (other of newProjectStages; track other.id) {
+                      @if (other.id !== stage.id) {
+                        <button
+                          type="button"
+                          class="px-1.5 py-0.5 rounded text-[10px] font-medium border transition-colors flex items-center gap-1"
+                          [class.bg-primary]="isNewProjectStageTransitionSelected(stage, idx, other.id)"
+                          [class.text-primary-foreground]="isNewProjectStageTransitionSelected(stage, idx, other.id)"
+                          [class.border-primary]="isNewProjectStageTransitionSelected(stage, idx, other.id)"
+                          [class.bg-muted/50]="!isNewProjectStageTransitionSelected(stage, idx, other.id)"
+                          [class.text-muted-foreground]="!isNewProjectStageTransitionSelected(stage, idx, other.id)"
+                          [class.border-border]="!isNewProjectStageTransitionSelected(stage, idx, other.id)"
+                          (click)="toggleNewProjectStageTransition(stage, idx, other.id)"
+                          title="Toggle allowed forward transition"
+                        >
+                          <span class="h-1.5 w-1.5 rounded-full" [style.backgroundColor]="other.color"></span>
+                          <span>{{ other.name }}</span>
+                        </button>
+                      }
+                    }
+                  </div>
+                </div>
               </div>
             }
           </div>

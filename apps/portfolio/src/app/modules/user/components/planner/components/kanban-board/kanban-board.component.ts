@@ -116,11 +116,21 @@ export class KanbanBoardComponent {
   isTransitionAllowed(sourceStageId: string | undefined, targetStageId: string): boolean {
     if (!sourceStageId || sourceStageId === targetStageId) return true;
     const sourceStage = this.stages.find((s) => s.id === sourceStageId);
-    if (!sourceStage) return true;
-    if (!sourceStage.allowedTransitions || sourceStage.allowedTransitions.length === 0) {
+    const targetStage = this.stages.find((s) => s.id === targetStageId);
+    if (!sourceStage || !targetStage) return true;
+
+    // Backward transitions are always allowed
+    if (targetStage.order < sourceStage.order) {
       return true;
     }
-    return sourceStage.allowedTransitions.includes(targetStageId);
+
+    // Forward transitions:
+    if (Array.isArray(sourceStage.allowedTransitions)) {
+      return sourceStage.allowedTransitions.includes(targetStage.id);
+    }
+
+    // Default forward fallback: next stage in sequence
+    return targetStage.order === sourceStage.order + 1;
   }
 
   canEnterStagePredicate(targetStageId: string) {

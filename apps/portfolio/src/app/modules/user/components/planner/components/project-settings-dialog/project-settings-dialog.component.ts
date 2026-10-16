@@ -28,6 +28,8 @@ import {
   lucideAlertTriangle,
   lucideSave,
   lucideMoveRight,
+  lucideArrowLeft,
+  lucideArrowRight,
 } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmInputImports } from '@spartan-ng/hel/input';
@@ -61,6 +63,8 @@ import {
       lucideAlertTriangle,
       lucideSave,
       lucideMoveRight,
+      lucideArrowLeft,
+      lucideArrowRight,
     }),
   ],
   templateUrl: './project-settings-dialog.component.html',
@@ -245,24 +249,85 @@ export class ProjectSettingsDialogComponent implements OnInit {
     this.editingStageTransitions = [];
   }
 
+  get currentProject(): IPlannerProject {
+    const sel = this.state.selectedProject();
+    if (sel && sel.id === this.project.id) {
+      return sel;
+    }
+    const my = this.state.myProjects().find((p) => p.id === this.project.id);
+    if (my) return my;
+    const col = this.state.collaborativeProjects().find((p) => p.id === this.project.id);
+    if (col) return col;
+    return this.project;
+  }
+
   getStageNameById(stageId: string): string {
-    const s = this.project.stages.find((st) => st.id === stageId);
+    const s = this.currentProject.stages.find((st) => st.id === stageId);
     return s ? s.name : stageId;
   }
 
+  // Get allowed forward transitions for a stage.
+  // By default, it is the next stage in sequence, and empty for the last stage.
+  getStageForwardTransitions(stage: IProjectStage, idx: number): string[] {
+    if (Array.isArray(stage.allowedTransitions)) {
+      return stage.allowedTransitions;
+    }
+    // Default value: next stage if not last
+    if (idx < this.currentProject.stages.length - 1) {
+      return [this.currentProject.stages[idx + 1].id];
+    }
+    return [];
+  }
+
+  isForwardOptionSelected(stage: IProjectStage, idx: number, targetStageId: string): boolean {
+    const selected = this.getStageForwardTransitions(stage, idx);
+    return selected.includes(targetStageId);
+  }
+
+  toggleForwardTransition(stage: IProjectStage, idx: number, targetStageId: string): void {
+    const current = this.getStageForwardTransitions(stage, idx);
+    const updated = current.includes(targetStageId)
+      ? current.filter((id) => id !== targetStageId)
+      : [...current, targetStageId];
+
+    this.state.updateStage(this.project.id, stage.id, {
+      allowedTransitions: updated,
+    });
+  }
+
+  onForwardTransitionsSelectChange(stage: IProjectStage, event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const selected = Array.from(select.selectedOptions).map((opt) => opt.value);
+    this.state.updateStage(this.project.id, stage.id, {
+      allowedTransitions: selected,
+    });
+  }
+
+  handleMoveStageHorizontal(stageIndex: number, direction: 'left' | 'right'): void {
+    const stages = [...this.currentProject.stages];
+    const targetIndex = direction === 'left' ? stageIndex - 1 : stageIndex + 1;
+    if (targetIndex < 0 || targetIndex >= stages.length) return;
+
+    const [moved] = stages.splice(stageIndex, 1);
+    stages.splice(targetIndex, 0, moved);
+    this.project.stages = stages.map((s, idx) => ({ ...s, order: idx }));
+    this.state.reorderStages(this.project.id, stages.map((s) => s.id));
+  }
+
   handleMoveStage(stageIndex: number, direction: 'up' | 'down'): void {
-    const stages = [...this.project.stages];
+    const stages = [...this.currentProject.stages];
     const targetIndex = direction === 'up' ? stageIndex - 1 : stageIndex + 1;
     if (targetIndex < 0 || targetIndex >= stages.length) return;
 
     const [moved] = stages.splice(stageIndex, 1);
     stages.splice(targetIndex, 0, moved);
+    this.project.stages = stages.map((s, idx) => ({ ...s, order: idx }));
     this.state.reorderStages(this.project.id, stages.map((s) => s.id));
   }
 
   promptDeleteStage(stage: IProjectStage): void {
     this.stageToDelete = stage;
-    const remaining = this.project.stages.filter((s) => s.id !== stage.id);
+    const remaining = this.currentProject.stages.filter((s) => s.id !== stage.id);
     this.deleteStageTargetId = remaining.length > 0 ? remaining[0].id : null;
   }
 

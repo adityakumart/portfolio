@@ -818,6 +818,8 @@ export class PlannerStateService {
     this.api.addStage(projectId, { name, color, allowedTransitions }).subscribe({
       next: (updated) => {
         this.selectedProject.set(updated);
+        this.myProjects.update((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+        this.collaborativeProjects.update((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
         toast.success(`Stage "${name}" added.`);
       },
       error: (err) => toast.error(err.error?.message || 'Failed to add stage'),
@@ -832,6 +834,8 @@ export class PlannerStateService {
     this.api.updateStage(projectId, stageId, dto).subscribe({
       next: (updated) => {
         this.selectedProject.set(updated);
+        this.myProjects.update((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+        this.collaborativeProjects.update((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
         toast.success('Stage updated.');
       },
       error: (err) => toast.error(err.error?.message || 'Failed to update stage'),
@@ -844,12 +848,17 @@ export class PlannerStateService {
     if (proj) {
       const stageMap = new Map(proj.stages.map((s) => [s.id, s]));
       const reordered = stageIds.map((id, idx) => ({ ...stageMap.get(id)!, order: idx }));
-      this.selectedProject.set({ ...proj, stages: reordered });
+      const optimistic = { ...proj, stages: reordered };
+      this.selectedProject.set(optimistic);
+      this.myProjects.update((prev) => prev.map((p) => (p.id === proj.id ? optimistic : p)));
+      this.collaborativeProjects.update((prev) => prev.map((p) => (p.id === proj.id ? optimistic : p)));
     }
 
     this.api.reorderStages(projectId, { stageIds }).subscribe({
       next: (updated) => {
         this.selectedProject.set(updated);
+        this.myProjects.update((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+        this.collaborativeProjects.update((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
       },
       error: (err) => {
         toast.error('Failed to reorder stages');
@@ -862,6 +871,8 @@ export class PlannerStateService {
     this.api.deleteStage(projectId, stageId, fallbackStageId).subscribe({
       next: (updated) => {
         this.selectedProject.set(updated);
+        this.myProjects.update((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+        this.collaborativeProjects.update((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
         this.loadProjectTodos(projectId);
         toast.success('Stage deleted.');
       },

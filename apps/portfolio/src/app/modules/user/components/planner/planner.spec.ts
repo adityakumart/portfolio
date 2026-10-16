@@ -131,8 +131,8 @@ test.describe('User Module - Planner (Notes, To-Dos & Multi-Platform Reminders)'
         }
       });
 
-      // Click + Note button
-      await page.locator('button:has-text("+ Note")').click();
+      // Click Note button
+      await page.locator('button.shortcut-btn:has-text("Note")').click();
 
       // Modal should appear
       const sheet = page.locator('app-planner-note-editor-sheet');

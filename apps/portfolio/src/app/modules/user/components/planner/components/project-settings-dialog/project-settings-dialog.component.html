@@ -152,10 +152,10 @@
             <div class="flex items-center justify-between">
               <div>
                 <h4 class="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  Custom Workflow Stages ({{ project.stages.length }})
+                  Workflow Stages Order ({{ currentProject.stages.length }})
                 </h4>
                 <p class="text-[11px] text-muted-foreground mt-0.5">
-                  Configure project columns and card movement paths
+                  Horizontal sequence and forward transition paths
                 </p>
               </div>
 
@@ -164,21 +164,29 @@
                 class="text-xs text-primary font-semibold hover:underline flex items-center gap-1"
                 (click)="activeTab.set('stages')"
               >
-                <span>Full Transition Matrix</span>
+                <span>Edit Stages & Transitions</span>
                 <ng-icon name="lucideMoveRight" class="size-3"></ng-icon>
               </button>
             </div>
 
-            <!-- Current Stages Pills -->
-            <div class="flex items-center gap-2 flex-wrap">
-              @for (st of project.stages; track st.id) {
-                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-border bg-muted/20 text-xs font-medium">
+            <!-- Current Stages Horizontal Preview -->
+            <div class="flex items-center gap-2 overflow-x-auto pb-1">
+              @for (st of currentProject.stages; track st.id; let idx = $index) {
+                <div class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border bg-muted/20 text-xs font-medium shrink-0">
+                  <span class="text-[10px] text-muted-foreground font-semibold">#{{ idx + 1 }}</span>
                   <span class="h-2.5 w-2.5 rounded-full shrink-0" [style.backgroundColor]="st.color || '#64748b'"></span>
                   <span class="text-foreground">{{ st.name }}</span>
-                  @if (st.allowedTransitions && st.allowedTransitions.length > 0) {
+                  @if (getStageForwardTransitions(st, idx).length > 0) {
                     <span class="text-[10px] text-primary bg-primary/10 px-1 rounded font-normal">
-                      → {{ st.allowedTransitions.length }}
+                      → {{ getStageForwardTransitions(st, idx).length }}
                     </span>
+                  } @else {
+                    <span class="text-[10px] text-muted-foreground bg-muted px-1 rounded font-normal">
+                      End
+                    </span>
+                  }
+                  @if (idx < currentProject.stages.length - 1) {
+                    <ng-icon name="lucideArrowRight" class="size-3 text-muted-foreground ml-1"></ng-icon>
                   }
                 </div>
               }
@@ -187,7 +195,7 @@
             <!-- Inline Add Custom Stage Form (if user can manage stages) -->
             @if (canManageStages()) {
               <div class="pt-2 border-t border-border/60">
-                <span class="text-[11px] font-bold text-foreground block mb-2">+ Add Custom Stage:</span>
+                <span class="text-[11px] font-bold text-foreground block mb-2">Add Custom Stage:</span>
                 <div class="flex flex-col sm:flex-row gap-2">
                   <input
                     hlmInput
@@ -469,95 +477,158 @@
             </div>
           }
 
-          <!-- Stages List -->
+          <!-- Horizontal Stages Flow Track (Scrollable) -->
           <div>
-            <h4 class="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
-              Workflow Columns & Allowed Transitions
-            </h4>
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Horizontal Stages Sequence & Allowed Forward Transitions ({{ currentProject.stages.length }})
+                </h4>
+                <p class="text-[11px] text-muted-foreground mt-0.5">
+                  Rearrange stages horizontally with ← and →. Beside each stage, select next stage(s) it can move forward to. Moving backward is always permitted.
+                </p>
+              </div>
+            </div>
 
-            <div class="divide-y divide-border border border-border rounded-xl overflow-hidden bg-card">
-              @for (stage of project.stages; track stage.id; let idx = $index) {
-                <div class="p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div class="min-w-0">
-                    <div class="flex items-center gap-2.5">
+            <!-- Horizontal Track -->
+            <div class="flex items-stretch gap-3 overflow-x-auto pb-4 pt-1">
+              @for (stage of currentProject.stages; track stage.id; let idx = $index) {
+                <div
+                  class="w-72 shrink-0 p-3.5 rounded-xl border border-border bg-card shadow-2xs flex flex-col justify-between space-y-3"
+                >
+                  <!-- Stage Header: Order + Color + Name + Horizontal Reorder Controls -->
+                  <div class="flex items-center justify-between gap-1 pb-2 border-b border-border/70">
+                    <div class="flex items-center gap-1.5 min-w-0">
                       <span
                         class="h-3 w-3 rounded-full shrink-0"
                         [style.backgroundColor]="stage.color || '#64748b'"
                       ></span>
-                      <span class="text-xs font-bold text-foreground truncate">{{ stage.name }}</span>
-                      <span class="text-[10px] text-muted-foreground font-semibold">#{{ idx + 1 }}</span>
+                      <span class="text-xs font-bold text-foreground truncate" [title]="stage.name">
+                        {{ stage.name }}
+                      </span>
+                      <span class="text-[10px] text-muted-foreground font-semibold shrink-0">#{{ idx + 1 }}</span>
                     </div>
 
-                    <!-- Configured Allowed Next Stages Badges -->
-                    <div class="mt-1 flex items-center gap-1.5 flex-wrap">
-                      <span class="text-[10px] text-muted-foreground">Next stage:</span>
-                      @if (!stage.allowedTransitions || stage.allowedTransitions.length === 0) {
-                        <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-muted text-muted-foreground">
-                          Any stage
-                        </span>
-                      } @else {
-                        @for (targetId of stage.allowedTransitions; track targetId) {
-                          <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/15 text-primary flex items-center gap-1">
-                            <ng-icon name="lucideMoveRight" class="size-2.5"></ng-icon>
-                            {{ getStageNameById(targetId) }}
-                          </span>
-                        }
-                      }
-                    </div>
+                    @if (canManageStages()) {
+                      <div class="flex items-center gap-0.5 shrink-0">
+                        <!-- Move Left (Horizontal) -->
+                        <button
+                          hlmBtn
+                          variant="ghost"
+                          size="icon"
+                          class="h-6 w-6 rounded-md text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:pointer-events-none"
+                          [disabled]="idx === 0"
+                          (click)="handleMoveStageHorizontal(idx, 'left')"
+                          title="Move Left (Earlier in sequence)"
+                        >
+                          <ng-icon name="lucideArrowLeft" class="size-3.5"></ng-icon>
+                        </button>
+
+                        <!-- Move Right (Horizontal) -->
+                        <button
+                          hlmBtn
+                          variant="ghost"
+                          size="icon"
+                          class="h-6 w-6 rounded-md text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:pointer-events-none"
+                          [disabled]="idx === currentProject.stages.length - 1"
+                          (click)="handleMoveStageHorizontal(idx, 'right')"
+                          title="Move Right (Later in sequence)"
+                        >
+                          <ng-icon name="lucideArrowRight" class="size-3.5"></ng-icon>
+                        </button>
+
+                        <!-- Edit Stage -->
+                        <button
+                          hlmBtn
+                          variant="ghost"
+                          size="icon"
+                          class="h-6 w-6 rounded-md text-muted-foreground hover:text-foreground"
+                          (click)="startEditStage(stage)"
+                          title="Rename / Recolor Stage"
+                        >
+                          <ng-icon name="lucideEdit3" class="size-3"></ng-icon>
+                        </button>
+
+                        <!-- Delete Stage -->
+                        <button
+                          hlmBtn
+                          variant="ghost"
+                          size="icon"
+                          class="h-6 w-6 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 disabled:opacity-30"
+                          [disabled]="currentProject.stages.length <= 1"
+                          (click)="promptDeleteStage(stage)"
+                          title="Delete Stage"
+                        >
+                          <ng-icon name="lucideTrash2" class="size-3"></ng-icon>
+                        </button>
+                      </div>
+                    }
                   </div>
 
-                  @if (canManageStages()) {
-                    <div class="flex items-center gap-1 shrink-0 self-end sm:self-center">
-                      <!-- Edit Stage & Transitions -->
-                      <button
-                        hlmBtn
-                        variant="ghost"
-                        size="icon"
-                        class="h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground"
-                        (click)="startEditStage(stage)"
-                        title="Edit stage & allowed transitions"
-                      >
-                        <ng-icon name="lucideEdit3" class="size-3.5"></ng-icon>
-                      </button>
+                  <!-- Forward Transitions Multi-Select Beside / Inside Stage -->
+                  <div class="space-y-1.5 flex-1 flex flex-col justify-between">
+                    <div>
+                      <div class="flex items-center justify-between text-[11px] mb-1">
+                        <label class="font-bold text-foreground">Next Stage(s):</label>
+                        @if (idx === currentProject.stages.length - 1 && getStageForwardTransitions(stage, idx).length === 0) {
+                          <span class="text-[10px] text-muted-foreground italic">(Default: None / Endpoint)</span>
+                        }
+                      </div>
 
-                      <!-- Reorder Up/Down -->
-                      <button
-                        hlmBtn
-                        variant="ghost"
-                        size="icon"
-                        class="h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground"
-                        [disabled]="idx === 0"
-                        (click)="handleMoveStage(idx, 'up')"
-                        title="Move Left"
+                      <!-- Select with multiple options (default: next stage, empty for last stage) -->
+                      <select
+                        multiple
+                        [disabled]="!canManageStages()"
+                        class="w-full text-xs rounded-lg border border-border bg-background p-1.5 focus:ring-1 focus:ring-primary h-20 text-foreground"
+                        (change)="onForwardTransitionsSelectChange(stage, $event)"
+                        title="Select multiple options for allowed forward transitions"
                       >
-                        <ng-icon name="lucideArrowUp" class="size-3.5"></ng-icon>
-                      </button>
-                      <button
-                        hlmBtn
-                        variant="ghost"
-                        size="icon"
-                        class="h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground"
-                        [disabled]="idx === project.stages.length - 1"
-                        (click)="handleMoveStage(idx, 'down')"
-                        title="Move Right"
-                      >
-                        <ng-icon name="lucideArrowDown" class="size-3.5"></ng-icon>
-                      </button>
+                        @for (other of currentProject.stages; track other.id) {
+                          @if (other.id !== stage.id) {
+                            <option
+                              [value]="other.id"
+                              [selected]="isForwardOptionSelected(stage, idx, other.id)"
+                            >
+                              {{ other.name }}
+                            </option>
+                          }
+                        }
+                      </select>
 
-                      <!-- Delete Stage -->
-                      <button
-                        hlmBtn
-                        variant="ghost"
-                        size="icon"
-                        class="h-7 w-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                        [disabled]="project.stages.length <= 1"
-                        (click)="promptDeleteStage(stage)"
-                        title="Delete stage"
-                      >
-                        <ng-icon name="lucideTrash2" class="size-3.5"></ng-icon>
-                      </button>
+                      <!-- Quick Multi-select Chips -->
+                      <div class="flex items-center gap-1 flex-wrap pt-1.5">
+                        @for (other of currentProject.stages; track other.id) {
+                          @if (other.id !== stage.id) {
+                            <button
+                              type="button"
+                              [disabled]="!canManageStages()"
+                              class="px-1.5 py-0.5 rounded text-[10px] font-medium border transition-colors flex items-center gap-1 disabled:pointer-events-none"
+                              [class.bg-primary]="isForwardOptionSelected(stage, idx, other.id)"
+                              [class.text-primary-foreground]="isForwardOptionSelected(stage, idx, other.id)"
+                              [class.border-primary]="isForwardOptionSelected(stage, idx, other.id)"
+                              [class.bg-muted/40]="!isForwardOptionSelected(stage, idx, other.id)"
+                              [class.text-muted-foreground]="!isForwardOptionSelected(stage, idx, other.id)"
+                              [class.border-border]="!isForwardOptionSelected(stage, idx, other.id)"
+                              (click)="toggleForwardTransition(stage, idx, other.id)"
+                              title="Toggle allowed forward transition"
+                            >
+                              <span class="h-1.5 w-1.5 rounded-full" [style.backgroundColor]="other.color || '#64748b'"></span>
+                              <span>{{ other.name }}</span>
+                              @if (isForwardOptionSelected(stage, idx, other.id)) {
+                                <ng-icon name="lucideCheck" class="size-2 ml-0.5"></ng-icon>
+                              }
+                            </button>
+                          }
+                        }
+                      </div>
                     </div>
-                  }
+
+                    <!-- Rule Reminder Note -->
+                    <div class="pt-2 border-t border-border/50 text-[10px] text-muted-foreground flex items-center justify-between">
+                      <span class="text-emerald-500 font-semibold">✓ Can move back anytime</span>
+                      <span class="text-[9px] text-muted-foreground">Forward moves restricted</span>
+                    </div>
+                  </div>
                 </div>
               }
             </div>
@@ -744,7 +815,7 @@
                 (click)="isCreatingRole.set(true)"
               >
                 <ng-icon name="lucidePlus" class="mr-1 size-3.5"></ng-icon>
-                <span>+ Create Custom Role</span>
+                <span>Create Custom Role</span>
               </button>
             </div>
           }

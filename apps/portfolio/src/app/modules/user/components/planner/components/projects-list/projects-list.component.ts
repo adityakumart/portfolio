@@ -22,6 +22,7 @@ import {
   lucideClock,
   lucideSparkles,
   lucideEdit3,
+  lucideArrowLeft,
 } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmCardImports } from '@spartan-ng/hel/card';
@@ -58,6 +59,7 @@ import { ProjectSettingsDialogComponent } from '../project-settings-dialog/proje
       lucideClock,
       lucideSparkles,
       lucideEdit3,
+      lucideArrowLeft,
     }),
   ],
   templateUrl: './projects-list.component.html',
@@ -83,9 +85,9 @@ export class ProjectsListComponent {
     this.newProjectTitle = '';
     this.newProjectDescription = '';
     this.newProjectStages = [
-      { id: 'stage_backlog', name: 'Backlog', color: '#64748b', allowedTransitions: [] },
-      { id: 'stage_in_progress', name: 'In Progress', color: '#3b82f6', allowedTransitions: [] },
-      { id: 'stage_in_review', name: 'In Review', color: '#f59e0b', allowedTransitions: [] },
+      { id: 'stage_backlog', name: 'Backlog', color: '#64748b', allowedTransitions: ['stage_in_progress'] },
+      { id: 'stage_in_progress', name: 'In Progress', color: '#3b82f6', allowedTransitions: ['stage_in_review'] },
+      { id: 'stage_in_review', name: 'In Review', color: '#f59e0b', allowedTransitions: ['stage_done'] },
       { id: 'stage_done', name: 'Done', color: '#10b981', allowedTransitions: [] },
     ];
     this.isAddingStageToNewProject.set(false);
@@ -100,20 +102,82 @@ export class ProjectsListComponent {
 
   addStageToNewProject(): void {
     if (!this.newStageInputName.trim()) return;
+    const newId = `stage_${Date.now()}`;
+    // If there was a previous stage that had empty transitions, it can now point to this new stage
+    const prevStage = this.newProjectStages[this.newProjectStages.length - 1];
+    if (prevStage && (!prevStage.allowedTransitions || prevStage.allowedTransitions.length === 0)) {
+      prevStage.allowedTransitions = [newId];
+    }
+
     this.newProjectStages.push({
-      id: `stage_${Date.now()}`,
+      id: newId,
       name: this.newStageInputName.trim(),
       color: this.newStageInputColor || '#64748b',
-      allowedTransitions: [],
+      allowedTransitions: [], // last stage is empty by default
     });
     this.newStageInputName = '';
     this.newStageInputColor = '#3b82f6';
     this.isAddingStageToNewProject.set(false);
   }
 
+  moveNewProjectStageHorizontal(index: number, direction: 'left' | 'right'): void {
+    const targetIndex = direction === 'left' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= this.newProjectStages.length) return;
+    const [moved] = this.newProjectStages.splice(index, 1);
+    this.newProjectStages.splice(targetIndex, 0, moved);
+  }
+
+  getNewProjectStageTransitions(
+    stage: { id: string; allowedTransitions?: string[] },
+    idx: number
+  ): string[] {
+    if (Array.isArray(stage.allowedTransitions)) {
+      return stage.allowedTransitions;
+    }
+    if (idx < this.newProjectStages.length - 1) {
+      return [this.newProjectStages[idx + 1].id];
+    }
+    return [];
+  }
+
+  isNewProjectStageTransitionSelected(
+    stage: { id: string; allowedTransitions?: string[] },
+    idx: number,
+    targetId: string
+  ): boolean {
+    const selected = this.getNewProjectStageTransitions(stage, idx);
+    return selected.includes(targetId);
+  }
+
+  toggleNewProjectStageTransition(
+    stage: { id: string; allowedTransitions?: string[] },
+    idx: number,
+    targetId: string
+  ): void {
+    const current = this.getNewProjectStageTransitions(stage, idx);
+    const updated = current.includes(targetId)
+      ? current.filter((id) => id !== targetId)
+      : [...current, targetId];
+    stage.allowedTransitions = updated;
+  }
+
+  onNewProjectStageSelectChange(
+    stage: { id: string; allowedTransitions?: string[] },
+    event: Event
+  ): void {
+    const select = event.target as HTMLSelectElement;
+    stage.allowedTransitions = Array.from(select.selectedOptions).map((o) => o.value);
+  }
+
   removeStageFromNewProject(index: number): void {
     if (this.newProjectStages.length <= 1) return;
-    this.newProjectStages.splice(index, 1);
+    const [removed] = this.newProjectStages.splice(index, 1);
+    // Prune removed ID from other stages' transitions
+    this.newProjectStages.forEach((s) => {
+      if (s.allowedTransitions) {
+        s.allowedTransitions = s.allowedTransitions.filter((id) => id !== removed.id);
+      }
+    });
   }
 
   async handleCreateSubmit(): Promise<void> {
