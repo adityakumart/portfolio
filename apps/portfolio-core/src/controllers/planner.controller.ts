@@ -3,6 +3,8 @@ import { Types } from 'mongoose';
 import { AuthenticatedRequest } from '../types/express';
 import { getNoteModel, INoteDocument } from '../models/note.model';
 import { getTodoModel, ITodoDocument } from '../models/todo.model';
+import { getPlannerProjectModel } from '../models/planner-project.model';
+import { resolveProjectPermissions } from '../services/planner-project.service';
 import {
   INote,
   ITodoItem,
@@ -33,10 +35,13 @@ function mapNoteDoc(doc: INoteDocument): INote {
   };
 }
 
-function mapTodoDoc(doc: ITodoDocument): ITodoItem {
+function mapTodoDoc(doc: any): ITodoItem {
   return {
     id: doc._id.toString(),
     userId: doc.userId.toString(),
+    projectId: doc.projectId?.toString(),
+    stageId: doc.stageId,
+    assigneeIds: (doc.assigneeIds || []).map((id: any) => id.toString()),
     title: doc.title,
     description: doc.description,
     status: doc.status,
@@ -81,7 +86,13 @@ export async function handleGetDashboard(
 
     const [notesDocs, todosDocs] = await Promise.all([
       noteModel.find({ userId: userObjectId }).sort({ isPinned: -1, updatedAt: -1 }).limit(50),
-      todoModel.find({ userId: userObjectId, status: { $ne: 'archived' } }).sort({ dueDate: 1, priority: -1 }),
+      todoModel
+        .find({
+          userId: userObjectId,
+          $or: [{ projectId: null }, { projectId: { $exists: false } }],
+          status: { $ne: 'archived' },
+        } as any)
+        .sort({ dueDate: 1, priority: -1 }),
     ]);
 
     const notes = notesDocs.map(mapNoteDoc);
@@ -259,10 +270,31 @@ export async function handleGetTodos(
 ): Promise<void> {
   try {
     const userId = req.userId;
-    const { status, priority, dueDate } = req.query;
+    const { status, priority, dueDate, projectId } = req.query;
 
     const todoModel = await getTodoModel();
-    const query: any = { userId: new Types.ObjectId(userId) };
+    const query: any = {};
+
+    if (projectId && typeof projectId === 'string') {
+      const projectModel = await getPlannerProjectModel();
+      const project = await projectModel.findById(projectId);
+      if (!project || project.archived) {
+        res.status(404).json({ error: 'Not Found', message: 'Project not found' });
+        return;
+      }
+      const auth = resolveProjectPermissions(project, userId!);
+      if (!auth || auth.status !== 'accepted') {
+        res.status(403).json({
+          error: 'Forbidden',
+          message: 'Project access requires an accepted invitation.',
+        });
+        return;
+      }
+      query.projectId = new Types.ObjectId(projectId);
+    } else {
+      query.userId = new Types.ObjectId(userId);
+      query.$or = [{ projectId: null }, { projectId: { $exists: false } }];
+    }
 
     if (status && typeof status === 'string') {
       query.status = status;
@@ -295,9 +327,31 @@ export async function handleCreateTodo(
       return;
     }
 
+    let projectObjectId: Types.ObjectId | undefined = undefined;
+    if (body.projectId) {
+      const projectModel = await getPlannerProjectModel();
+      const project = await projectModel.findById(body.projectId);
+      if (!project || project.archived) {
+        res.status(404).json({ error: 'Not Found', message: 'Project not found' });
+        return;
+      }
+      const auth = resolveProjectPermissions(project, userId!);
+      if (!auth || auth.status !== 'accepted' || !auth.permissions.canCreateCards) {
+        res.status(403).json({
+          error: 'Forbidden',
+          message: 'Insufficient permissions to create cards in this project.',
+        });
+        return;
+      }
+      projectObjectId = new Types.ObjectId(body.projectId);
+    }
+
     const todoModel = await getTodoModel();
     const newTodo = await todoModel.create({
       userId: new Types.ObjectId(userId),
+      projectId: projectObjectId,
+      stageId: body.stageId,
+      assigneeIds: (body.assigneeIds || []).map((id) => new Types.ObjectId(id)),
       title: body.title.trim(),
       description: body.description?.trim() || '',
       status: body.status || 'pending',
@@ -330,26 +384,51 @@ export async function handleUpdateTodo(
       return;
     }
 
+    const todoModel = await getTodoModel();
+    const existing = await todoModel.findById(id);
+    if (!existing) {
+      res.status(404).json({ error: 'Not Found', message: 'Task not found' });
+      return;
+    }
+
+    if (existing.projectId) {
+      const projectModel = await getPlannerProjectModel();
+      const project = await projectModel.findById(existing.projectId);
+      if (!project || project.archived) {
+        res.status(404).json({ error: 'Not Found', message: 'Project not found' });
+        return;
+      }
+      const auth = resolveProjectPermissions(project, userId!);
+      const isCardCreator = existing.userId.toString() === userId;
+      if (!auth || auth.status !== 'accepted' || (!auth.permissions.canEditCards && !isCardCreator)) {
+        res.status(403).json({
+          error: 'Forbidden',
+          message: 'Insufficient permissions to edit this card.',
+        });
+        return;
+      }
+    } else if (existing.userId.toString() !== userId) {
+      res.status(403).json({ error: 'Forbidden', message: 'Unauthorized' });
+      return;
+    }
+
     const updateData: any = { ...body };
+    if (body.assigneeIds) {
+      updateData.assigneeIds = body.assigneeIds.map((aid) => new Types.ObjectId(aid));
+    }
     if (body.status === 'completed') {
       updateData.completedAt = new Date();
     } else if (body.status) {
       updateData.completedAt = null;
     }
 
-    const todoModel = await getTodoModel();
-    const updated = await todoModel.findOneAndUpdate(
-      { _id: new Types.ObjectId(id), userId: new Types.ObjectId(userId) },
+    const updated = await todoModel.findByIdAndUpdate(
+      id,
       { $set: updateData },
       { new: true },
     );
 
-    if (!updated) {
-      res.status(404).json({ error: 'Not Found', message: 'Task not found' });
-      return;
-    }
-
-    res.json(mapTodoDoc(updated));
+    res.json(mapTodoDoc(updated!));
   } catch (error: any) {
     console.error('Error updating todo:', error);
     res.status(500).json({ error: 'Internal Server Error', message: error.message });
@@ -370,13 +449,27 @@ export async function handleToggleTodoStatus(
     }
 
     const todoModel = await getTodoModel();
-    const existing = await todoModel.findOne({
-      _id: new Types.ObjectId(id),
-      userId: new Types.ObjectId(userId),
-    });
+    const existing = await todoModel.findById(id);
 
     if (!existing) {
       res.status(404).json({ error: 'Not Found', message: 'Task not found' });
+      return;
+    }
+
+    if (existing.projectId) {
+      const projectModel = await getPlannerProjectModel();
+      const project = await projectModel.findById(existing.projectId);
+      if (!project || project.archived) {
+        res.status(404).json({ error: 'Not Found', message: 'Project not found' });
+        return;
+      }
+      const auth = resolveProjectPermissions(project, userId!);
+      if (!auth || auth.status !== 'accepted' || !auth.permissions.canMoveCards) {
+        res.status(403).json({ error: 'Forbidden', message: 'Insufficient permissions to change task status.' });
+        return;
+      }
+    } else if (existing.userId.toString() !== userId) {
+      res.status(403).json({ error: 'Forbidden', message: 'Unauthorized' });
       return;
     }
 
@@ -406,16 +499,31 @@ export async function handleDeleteTodo(
     }
 
     const todoModel = await getTodoModel();
-    const result = await todoModel.findOneAndDelete({
-      _id: new Types.ObjectId(id),
-      userId: new Types.ObjectId(userId),
-    });
-
-    if (!result) {
+    const existing = await todoModel.findById(id);
+    if (!existing) {
       res.status(404).json({ error: 'Not Found', message: 'Task not found' });
       return;
     }
 
+    if (existing.projectId) {
+      const projectModel = await getPlannerProjectModel();
+      const project = await projectModel.findById(existing.projectId);
+      if (!project || project.archived) {
+        res.status(404).json({ error: 'Not Found', message: 'Project not found' });
+        return;
+      }
+      const auth = resolveProjectPermissions(project, userId!);
+      const isCardCreator = existing.userId.toString() === userId;
+      if (!auth || auth.status !== 'accepted' || (!auth.permissions.canDeleteCards && !isCardCreator)) {
+        res.status(403).json({ error: 'Forbidden', message: 'Insufficient permissions to delete card.' });
+        return;
+      }
+    } else if (existing.userId.toString() !== userId) {
+      res.status(403).json({ error: 'Forbidden', message: 'Unauthorized' });
+      return;
+    }
+
+    await todoModel.findByIdAndDelete(id);
     res.json({ success: true, message: 'Task deleted successfully' });
   } catch (error: any) {
     console.error('Error deleting todo:', error);

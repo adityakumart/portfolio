@@ -6,6 +6,13 @@ import {
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import {
+  DragDropModule,
+  CdkDragDrop,
+  moveItemInArray,
+  transferArrayItem,
+} from '@angular/cdk/drag-drop';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideCheck,
@@ -20,13 +27,30 @@ import {
   lucideMoreVertical,
   lucideTrash2,
   lucideEdit3,
+  lucideMoveRight,
+  lucideLayers,
+  lucideGripVertical,
 } from '@ng-icons/lucide';
-import { ITodoItem, TodoStatus, TodoPriority } from '@portfolio/shared-types';
+import { HlmButtonImports } from '@spartan-ng/hel/button';
+import { HlmDropdownMenuImports } from '@spartan-ng/hel/dropdown-menu';
+import {
+  ITodoItem,
+  TodoStatus,
+  TodoPriority,
+  IProjectStage,
+} from '@portfolio/shared-types';
 
 @Component({
   selector: 'app-planner-kanban-board',
   standalone: true,
-  imports: [CommonModule, NgIconComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    DragDropModule,
+    NgIconComponent,
+    HlmButtonImports,
+    HlmDropdownMenuImports,
+  ],
   providers: [
     provideIcons({
       lucideCheck,
@@ -41,6 +65,9 @@ import { ITodoItem, TodoStatus, TodoPriority } from '@portfolio/shared-types';
       lucideMoreVertical,
       lucideTrash2,
       lucideEdit3,
+      lucideMoveRight,
+      lucideLayers,
+      lucideGripVertical,
     }),
   ],
   templateUrl: './kanban-board.component.html',
@@ -48,16 +75,72 @@ import { ITodoItem, TodoStatus, TodoPriority } from '@portfolio/shared-types';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KanbanBoardComponent {
-  @Input({ required: true }) pendingTodos: ITodoItem[] = [];
-  @Input({ required: true }) inProgressTodos: ITodoItem[] = [];
-  @Input({ required: true }) completedTodos: ITodoItem[] = [];
+  // Dynamic Project Stages & Cards
+  @Input() stages: IProjectStage[] = [];
+  @Input() projectCards: ITodoItem[] = [];
+
+  // Fallback 3-column personal todo list inputs
+  @Input() pendingTodos: ITodoItem[] = [];
+  @Input() inProgressTodos: ITodoItem[] = [];
+  @Input() completedTodos: ITodoItem[] = [];
+
+  // RBAC permissions flags
+  @Input() canMoveCards = true;
+  @Input() canCreateCards = true;
+  @Input() canEditCards = true;
+  @Input() canDeleteCards = true;
+  @Input() canManageStages = false;
+
   @Input() todayStr: string = new Date().toISOString().split('T')[0];
 
   @Output() moveStatus = new EventEmitter<{ todoId: string; newStatus: TodoStatus }>();
+  @Output() transitionStage = new EventEmitter<{ todoId: string; stageId: string }>();
   @Output() toggleStatus = new EventEmitter<ITodoItem>();
   @Output() edit = new EventEmitter<ITodoItem>();
   @Output() delete = new EventEmitter<string>();
-  @Output() openNewTask = new EventEmitter<void>();
+  @Output() openNewTask = new EventEmitter<{ stageId?: string }>();
+  @Output() addStage = new EventEmitter<void>();
+  @Output() editStage = new EventEmitter<IProjectStage>();
+  @Output() deleteStage = new EventEmitter<IProjectStage>();
+
+  get isDynamicStages(): boolean {
+    return Array.isArray(this.stages) && this.stages.length > 0;
+  }
+
+  getCardsForStage(stageId: string): ITodoItem[] {
+    return this.projectCards.filter((card) => card.stageId === stageId);
+  }
+
+  onDrop(event: CdkDragDrop<ITodoItem[]>, targetStageId: string): void {
+    if (!this.canMoveCards) return;
+
+    if (event.previousContainer === event.container) {
+      moveItemInArray(
+        event.container.data,
+        event.previousIndex,
+        event.currentIndex
+      );
+    } else {
+      const movedItem = event.previousContainer.data[event.previousIndex];
+      transferArrayItem(
+        event.previousContainer.data,
+        event.container.data,
+        event.previousIndex,
+        event.currentIndex
+      );
+      if (movedItem) {
+        this.transitionStage.emit({
+          todoId: movedItem.id,
+          stageId: targetStageId,
+        });
+      }
+    }
+  }
+
+  onMoveToStage(todo: ITodoItem, targetStageId: string): void {
+    if (!this.canMoveCards || todo.stageId === targetStageId) return;
+    this.transitionStage.emit({ todoId: todo.id, stageId: targetStageId });
+  }
 
   getPriorityClass(priority: TodoPriority): string {
     switch (priority) {
@@ -74,6 +157,8 @@ export class KanbanBoardComponent {
   }
 
   isOverdue(todo: ITodoItem): boolean {
-    return Boolean(todo.dueDate && todo.dueDate < this.todayStr && todo.status !== 'completed');
+    return Boolean(
+      todo.dueDate && todo.dueDate < this.todayStr && todo.status !== 'completed'
+    );
   }
 }

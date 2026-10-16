@@ -49,6 +49,8 @@ import { TodoFormSheetComponent } from './components/todo-form-sheet/todo-form-s
 import { CompactViewComponent } from './components/compact-view/compact-view.component';
 import { ReminderSettingsDialogComponent } from './components/reminder-settings-dialog/reminder-settings-dialog.component';
 import { KanbanBoardComponent } from './components/kanban-board/kanban-board.component';
+import { ProjectsListComponent } from './components/projects-list/projects-list.component';
+import { ProjectSettingsDialogComponent } from './components/project-settings-dialog/project-settings-dialog.component';
 
 import {
   INote,
@@ -62,8 +64,17 @@ import {
   ITodoReminder,
   ISubtask,
   ReminderRepeat,
+  IPlannerProject,
 } from '@portfolio/shared-types';
 import { toast } from '@spartan-ng/brain/sonner';
+import {
+  lucideFolderKanban,
+  lucideArrowLeft,
+  lucideSettings,
+  lucideShield,
+  lucideUserCheck,
+  lucideCheck,
+} from '@ng-icons/lucide';
 
 @Component({
   selector: 'app-planner',
@@ -84,6 +95,8 @@ import { toast } from '@spartan-ng/brain/sonner';
     CompactViewComponent,
     ReminderSettingsDialogComponent,
     KanbanBoardComponent,
+    ProjectsListComponent,
+    ProjectSettingsDialogComponent,
   ],
   providers: [
     provideIcons({
@@ -105,6 +118,12 @@ import { toast } from '@spartan-ng/brain/sonner';
       lucideDownload,
       lucideUpload,
       lucideWifiOff,
+      lucideFolderKanban,
+      lucideArrowLeft,
+      lucideSettings,
+      lucideShield,
+      lucideUserCheck,
+      lucideCheck,
     }),
   ],
   templateUrl: './planner.component.html',
@@ -126,6 +145,8 @@ export class PlannerComponent implements OnInit, OnDestroy {
   readonly isNoteModalOpen = signal<boolean>(false);
   readonly isTodoModalOpen = signal<boolean>(false);
   readonly isReminderDialogOpen = signal<boolean>(false);
+  readonly isProjectSettingsOpen = signal<boolean>(false);
+  readonly projectTaskModalStageId = signal<string | null>(null);
 
   // Active items for editing
   readonly activeNote = signal<INote | null>(null);
@@ -139,8 +160,14 @@ export class PlannerComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     const tabParam = this.route.snapshot.queryParamMap.get('tab');
-    if (tabParam === 'notes' || tabParam === 'todos') {
-      this.state.setActiveTab(tabParam);
+    if (tabParam === 'notes' || tabParam === 'todos' || tabParam === 'projects') {
+      this.state.setActiveTab(tabParam as any);
+    }
+
+    const projectParam = this.route.snapshot.queryParamMap.get('project');
+    if (projectParam) {
+      this.state.setActiveTab('projects');
+      this.state.loadProjects();
     }
 
     this.state.loadDashboard();
@@ -220,7 +247,7 @@ export class PlannerComponent implements OnInit, OnDestroy {
     this.quickTaskTitle.set('');
   }
 
-  setTab(tab: 'todos' | 'notes'): void {
+  setTab(tab: 'todos' | 'notes' | 'projects'): void {
     this.state.setActiveTab(tab);
     this.router.navigate([], {
       relativeTo: this.route,
@@ -264,7 +291,9 @@ export class PlannerComponent implements OnInit, OnDestroy {
 
   // Todo Modal Actions
   openTodoModal(todoToEdit?: ITodoItem): void {
-    this.state.setActiveTab('todos');
+    if (this.state.activeTab() !== 'projects') {
+      this.state.setActiveTab('todos');
+    }
     this.activeTodo.set(todoToEdit || null);
     this.isTodoModalOpen.set(true);
   }
@@ -285,15 +314,42 @@ export class PlannerComponent implements OnInit, OnDestroy {
     subtasks?: ISubtask[];
   }): Promise<void> {
     const current = this.activeTodo();
+    const activeProject = this.state.selectedProject();
+
     if (current && current.id) {
       await this.state.updateTodo(current.id, todoData);
+      if (activeProject) {
+        this.state.loadProjectTodos(activeProject.id);
+      }
+    } else if (this.state.activeTab() === 'projects' && activeProject) {
+      const stageId = this.projectTaskModalStageId() || (activeProject.stages[0]?.id || 'backlog');
+      this.state.createProjectCard(stageId, todoData.title, todoData.priority, todoData.description);
     } else {
       await this.state.addTodo({
         ...todoData,
         status: 'pending',
       });
     }
+    this.projectTaskModalStageId.set(null);
     this.closeTodoModal();
+  }
+
+  // Project Actions
+  openProjectSettings(): void {
+    this.isProjectSettingsOpen.set(true);
+  }
+
+  closeProjectSettings(): void {
+    this.isProjectSettingsOpen.set(false);
+  }
+
+  openProjectTaskModal(event?: { stageId?: string }): void {
+    this.projectTaskModalStageId.set(event?.stageId || null);
+    this.openTodoModal();
+  }
+
+  onTransitionStage(event: { todoId: string; stageId: string }): void {
+    this.state.transitionProjectCard(event.todoId, event.stageId);
   }
 
   // Reminder Dialog Actions

@@ -11,6 +11,18 @@ import {
   ICreateTodoDto,
   IUpdateTodoDto,
   IPlannerDashboardResponse,
+  IPlannerProject,
+  IProjectsListResponse,
+  ICreateProjectDto,
+  IUpdateProjectDto,
+  IInviteMemberDto,
+  IUpdateMemberRoleDto,
+  ICreateStageDto,
+  IUpdateStageDto,
+  IReorderStagesDto,
+  ICreateCustomRoleDto,
+  IUpdateCustomRoleDto,
+  IProjectPermissions,
 } from '@portfolio/shared-types';
 
 @Injectable({
@@ -115,6 +127,195 @@ export class PlannerApiService {
       `${this.baseUrl}/todos/${id}/snooze`,
       { minutes },
       { headers: this.getHeaders() },
+    );
+  }
+
+  // -------------------------------------------------------------------------
+  // Collaborative Projects (GitHub Projects-style)
+  // -------------------------------------------------------------------------
+  getProjects(): Observable<IProjectsListResponse> {
+    return this.http.get<IProjectsListResponse>(`${this.baseUrl}/projects`, {
+      headers: this.getHeaders(),
+    });
+  }
+
+  createProject(dto: ICreateProjectDto): Observable<IPlannerProject> {
+    return this.http.post<IPlannerProject>(`${this.baseUrl}/projects`, dto, {
+      headers: this.getHeaders(),
+    });
+  }
+
+  getProject(id: string): Observable<{
+    project: IPlannerProject;
+    permissions: IProjectPermissions;
+    role: string;
+    isOwner: boolean;
+  }> {
+    return this.http.get<{
+      project: IPlannerProject;
+      permissions: IProjectPermissions;
+      role: string;
+      isOwner: boolean;
+    }>(`${this.baseUrl}/projects/${id}`, {
+      headers: this.getHeaders(),
+    });
+  }
+
+  updateProject(id: string, dto: IUpdateProjectDto): Observable<IPlannerProject> {
+    return this.http.put<IPlannerProject>(`${this.baseUrl}/projects/${id}`, dto, {
+      headers: this.getHeaders(),
+    });
+  }
+
+  deleteProject(id: string): Observable<{ success: boolean }> {
+    return this.http.delete<{ success: boolean }>(`${this.baseUrl}/projects/${id}`, {
+      headers: this.getHeaders(),
+    });
+  }
+
+  // Member Invitations & Access
+  inviteMember(
+    projectId: string,
+    dto: IInviteMemberDto
+  ): Observable<{ success: boolean; project: IPlannerProject }> {
+    return this.http.post<{ success: boolean; project: IPlannerProject }>(
+      `${this.baseUrl}/projects/${projectId}/members`,
+      dto,
+      { headers: this.getHeaders() }
+    );
+  }
+
+  acceptInvitation(
+    projectId: string
+  ): Observable<{ success: boolean; project: IPlannerProject }> {
+    return this.http.post<{ success: boolean; project: IPlannerProject }>(
+      `${this.baseUrl}/projects/${projectId}/accept`,
+      {},
+      { headers: this.getHeaders() }
+    );
+  }
+
+  declineInvitation(projectId: string): Observable<{ success: boolean }> {
+    return this.http.post<{ success: boolean }>(
+      `${this.baseUrl}/projects/${projectId}/decline`,
+      {},
+      { headers: this.getHeaders() }
+    );
+  }
+
+  updateMemberRole(
+    projectId: string,
+    userId: string,
+    dto: IUpdateMemberRoleDto
+  ): Observable<IPlannerProject> {
+    return this.http.patch<IPlannerProject>(
+      `${this.baseUrl}/projects/${projectId}/members/${userId}`,
+      dto,
+      { headers: this.getHeaders() }
+    );
+  }
+
+  removeMember(
+    projectId: string,
+    userId: string
+  ): Observable<{ success: boolean; project: IPlannerProject }> {
+    return this.http.delete<{ success: boolean; project: IPlannerProject }>(
+      `${this.baseUrl}/projects/${projectId}/members/${userId}`,
+      { headers: this.getHeaders() }
+    );
+  }
+
+  // Dynamic Vertical Workflow Stages
+  addStage(projectId: string, dto: ICreateStageDto): Observable<IPlannerProject> {
+    return this.http.post<IPlannerProject>(
+      `${this.baseUrl}/projects/${projectId}/stages`,
+      dto,
+      { headers: this.getHeaders() }
+    );
+  }
+
+  updateStage(
+    projectId: string,
+    stageId: string,
+    dto: IUpdateStageDto
+  ): Observable<IPlannerProject> {
+    return this.http.patch<IPlannerProject>(
+      `${this.baseUrl}/projects/${projectId}/stages/${stageId}`,
+      dto,
+      { headers: this.getHeaders() }
+    );
+  }
+
+  reorderStages(
+    projectId: string,
+    dto: IReorderStagesDto
+  ): Observable<IPlannerProject> {
+    return this.http.put<IPlannerProject>(
+      `${this.baseUrl}/projects/${projectId}/stages/reorder`,
+      dto,
+      { headers: this.getHeaders() }
+    );
+  }
+
+  deleteStage(
+    projectId: string,
+    stageId: string,
+    fallbackStageId?: string
+  ): Observable<IPlannerProject> {
+    let url = `${this.baseUrl}/projects/${projectId}/stages/${stageId}`;
+    if (fallbackStageId) {
+      url += `?fallbackStageId=${encodeURIComponent(fallbackStageId)}`;
+    }
+    return this.http.delete<IPlannerProject>(url, { headers: this.getHeaders() });
+  }
+
+  // Custom Roles (RBAC)
+  createCustomRole(
+    projectId: string,
+    dto: ICreateCustomRoleDto
+  ): Observable<IPlannerProject> {
+    return this.http.post<IPlannerProject>(
+      `${this.baseUrl}/projects/${projectId}/roles`,
+      dto,
+      { headers: this.getHeaders() }
+    );
+  }
+
+  updateCustomRole(
+    projectId: string,
+    roleId: string,
+    dto: IUpdateCustomRoleDto
+  ): Observable<IPlannerProject> {
+    return this.http.patch<IPlannerProject>(
+      `${this.baseUrl}/projects/${projectId}/roles/${roleId}`,
+      dto,
+      { headers: this.getHeaders() }
+    );
+  }
+
+  deleteCustomRole(
+    projectId: string,
+    roleId: string
+  ): Observable<IPlannerProject> {
+    return this.http.delete<IPlannerProject>(
+      `${this.baseUrl}/projects/${projectId}/roles/${roleId}`,
+      { headers: this.getHeaders() }
+    );
+  }
+
+  // Project Todos & Transitions
+  getProjectTodos(projectId: string): Observable<ITodoItem[]> {
+    return this.http.get<ITodoItem[]>(
+      `${this.baseUrl}/projects/${projectId}/todos`,
+      { headers: this.getHeaders() }
+    );
+  }
+
+  transitionTodoStage(todoId: string, stageId: string): Observable<ITodoItem> {
+    return this.http.patch<ITodoItem>(
+      `${this.baseUrl}/todos/${todoId}/stage`,
+      { stageId },
+      { headers: this.getHeaders() }
     );
   }
 }

@@ -17,6 +17,9 @@ export interface ITodoReminderDoc {
 
 export interface ITodoDocument extends Document {
   userId: Types.ObjectId;
+  projectId?: Types.ObjectId;
+  stageId?: string;
+  assigneeIds?: Types.ObjectId[];
   title: string;
   description?: string;
   status: TodoStatus;
@@ -61,6 +64,21 @@ export const TodoSchema = new Schema<ITodoDocument>(
       required: true,
       index: true,
       ref: 'user',
+    },
+    projectId: {
+      type: Schema.Types.ObjectId,
+      index: true,
+      ref: 'PlannerProject',
+      default: undefined,
+    },
+    stageId: {
+      type: String,
+      index: true,
+      default: undefined,
+    },
+    assigneeIds: {
+      type: [{ type: Schema.Types.ObjectId, ref: 'user' }],
+      default: [],
     },
     title: {
       type: String,
@@ -120,6 +138,8 @@ export const TodoSchema = new Schema<ITodoDocument>(
 // Compound queries for listing: user's tasks by status and due date
 TodoSchema.index({ userId: 1, status: 1, dueDate: 1, priority: 1 });
 TodoSchema.index({ userId: 1, 'reminder.reminderTime': 1, 'reminder.isTriggered': 1 });
+TodoSchema.index({ projectId: 1, stageId: 1 });
+
 
 export async function getTodoModel(): Promise<Model<ITodoDocument>> {
   const conn = await getPortfolioConnection();

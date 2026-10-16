@@ -92,6 +92,7 @@ app.use('/api/files', filesRouter);
 app.use('/api/rr', rrRouter);
 app.use('/api/user/diet-hydration', dietHydrationRouter);
 app.use('/api/user/planner', plannerRouter);
+app.use('/api/planner', plannerRouter);
 app.use('/api/movies', movieRouter);
 app.use('/api/user/game', gameRouter);
 app.use('/api/game', gameRouter);

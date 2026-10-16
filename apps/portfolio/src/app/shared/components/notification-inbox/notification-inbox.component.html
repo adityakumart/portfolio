@@ -1,0 +1,137 @@
+<!-- Backdrop Overlay -->
+@if (notifService.isInboxOpen()) {
+  <div
+    class="fixed inset-0 bg-black/40 backdrop-blur-xs z-[120] animate-in fade-in duration-150"
+    (click)="close()"
+  ></div>
+
+  <!-- Inbox Slide-over / Popover Panel -->
+  <aside
+    class="fixed z-[130] top-0 right-0 sm:top-14 sm:right-4 w-full sm:w-[400px] max-w-[100vw] h-full sm:h-[600px] max-h-[100dvh] bg-card border border-border shadow-2xl sm:rounded-2xl flex flex-col overflow-hidden animate-in fade-in-0 zoom-in-95 duration-200"
+    role="dialog"
+    aria-label="Notifications Inbox"
+  >
+    <!-- Header -->
+    <div class="flex items-center justify-between px-4 py-3 border-b border-border bg-card/90 backdrop-blur-md shrink-0">
+      <div class="flex items-center gap-2">
+        <div class="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+          <ng-icon name="lucideBell" class="size-4.5"></ng-icon>
+        </div>
+        <div>
+          <h2 class="text-sm font-semibold text-foreground flex items-center gap-1.5">
+            Notifications
+            @if (notifService.unreadCount() > 0) {
+              <span class="px-1.5 py-0.2 rounded-full text-[11px] font-bold bg-primary text-primary-foreground">
+                {{ notifService.unreadCount() }}
+              </span>
+            }
+          </h2>
+          <p class="text-[11px] text-muted-foreground">Collaborative project alerts & invites</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-1">
+        @if (notifService.unreadCount() > 0) {
+          <button
+            hlmBtn
+            variant="ghost"
+            size="sm"
+            class="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+            (click)="markAllRead()"
+            title="Mark all as read"
+          >
+            <ng-icon name="lucideCheckCheck" class="mr-1 size-3.5"></ng-icon>
+            <span>Read all</span>
+          </button>
+        }
+        <button
+          hlmBtn
+          variant="ghost"
+          size="icon"
+          class="h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground"
+          (click)="close()"
+          aria-label="Close notifications"
+        >
+          <ng-icon name="lucideX" class="size-4"></ng-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- Notification List -->
+    <div class="flex-1 overflow-y-auto divide-y divide-border/50">
+      @if (notifService.notifications().length === 0) {
+        <div class="flex flex-col items-center justify-center h-full p-8 text-center text-muted-foreground">
+          <div class="h-12 w-12 rounded-full bg-muted/60 flex items-center justify-center mb-3">
+            <ng-icon name="lucideBell" class="size-6 text-muted-foreground/60"></ng-icon>
+          </div>
+          <p class="text-sm font-medium text-foreground">No notifications yet</p>
+          <p class="text-xs text-muted-foreground mt-1 max-w-[220px]">
+            When you receive project invites or tasks get updated, they'll appear right here.
+          </p>
+        </div>
+      } @else {
+        @for (item of notifService.notifications(); track item.id) {
+          <div
+            class="p-3.5 transition-colors cursor-pointer hover:bg-muted/50 relative flex gap-3"
+            [class.bg-primary/5]="!item.isRead"
+            (click)="onNotificationClick(item)"
+          >
+            <!-- Unread Indicator Dot -->
+            @if (!item.isRead) {
+              <span class="absolute left-1.5 top-5 w-1.5 h-1.5 rounded-full bg-primary"></span>
+            }
+
+            <!-- Icon Box -->
+            <div class="shrink-0 mt-0.5">
+              @if (item.type === 'project_invite') {
+                <div class="h-8 w-8 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center">
+                  <ng-icon name="lucideUserCheck" class="size-4"></ng-icon>
+                </div>
+              } @else {
+                <div class="h-8 w-8 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center">
+                  <ng-icon name="lucideFolderKanban" class="size-4"></ng-icon>
+                </div>
+              }
+            </div>
+
+            <!-- Content -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-1 mb-0.5">
+                <span class="text-xs font-semibold text-foreground truncate">{{ item.title }}</span>
+                <span class="text-[10px] text-muted-foreground shrink-0 flex items-center gap-1">
+                  <ng-icon name="lucideClock" class="size-3"></ng-icon>
+                  {{ getTimeAgo(item.createdAt) }}
+                </span>
+              </div>
+              <p class="text-xs text-muted-foreground leading-relaxed break-words">{{ item.message }}</p>
+
+              <!-- Interactive Buttons for Project Invitations -->
+              @if (item.type === 'project_invite' && !item.isRead) {
+                <div class="mt-2.5 flex items-center gap-2">
+                  <button
+                    hlmBtn
+                    size="sm"
+                    class="h-7 px-3 text-xs bg-primary text-primary-foreground hover:bg-primary/90 font-medium rounded-lg shadow-xs"
+                    (click)="onAccept(item, $event)"
+                  >
+                    <ng-icon name="lucideCheck" class="mr-1 size-3"></ng-icon>
+                    <span>Accept</span>
+                  </button>
+                  <button
+                    hlmBtn
+                    variant="outline"
+                    size="sm"
+                    class="h-7 px-3 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive border-border rounded-lg"
+                    (click)="onDecline(item, $event)"
+                  >
+                    <span>Decline</span>
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      }
+    </div>
+  </aside>
+}
