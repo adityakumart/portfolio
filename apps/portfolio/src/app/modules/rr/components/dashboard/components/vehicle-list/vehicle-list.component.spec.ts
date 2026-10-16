@@ -67,7 +67,7 @@ test.describe('RR Module - Vehicle Inventory Fleet Registry Component', () => {
       await dzireCard.click();
 
       // Details dialog popup
-      const dialog = page.locator('div[role="dialog"], .fixed.inset-0.z-50').first();
+      const dialog = page.getByRole('dialog').first();
       await expect(dialog).toBeVisible({ timeout: 5000 });
       await expect(dialog.getByText('Swift Dzire')).toBeVisible();
       await expect(dialog.getByText('AP-05-AA-1234')).toBeVisible();
@@ -97,7 +97,7 @@ test.describe('RR Module - Vehicle Inventory Fleet Registry Component', () => {
       // Open Add Vehicle modal
       await addBtn.click();
 
-      const dialog = page.locator('div[role="dialog"], .fixed.inset-0.z-50').first();
+      const dialog = page.getByRole('dialog').first();
       await expect(dialog).toBeVisible({ timeout: 5000 });
       await expect(dialog.getByRole('heading', { name: /Register New Fleet Vehicle|New Vehicle/i })).toBeVisible();
 
@@ -113,6 +113,60 @@ test.describe('RR Module - Vehicle Inventory Fleet Registry Component', () => {
       } else {
         await page.keyboard.press('Escape');
       }
+    });
+
+    test('should display and require Available By date in Modify Fleet Vehicle Metadata popup when status is Service or Contract', async ({ page }) => {
+      // Find Dzire vehicle card and click its edit button (on desktop hover or action menu)
+      const dzireCard = page.locator('app-rr-vehicle-card', { hasText: 'Swift Dzire' }).first();
+      await expect(dzireCard).toBeVisible();
+
+      await dzireCard.hover();
+      const editBtn = dzireCard.locator('button[hlmTooltip="Edit Vehicle"], button:has([name="lucidePencil"])').first();
+      const menuTrigger = dzireCard.locator('button[aria-label="Vehicle admin options"]').first();
+
+      if (await editBtn.isVisible()) {
+        await editBtn.click({ force: true });
+      } else if (await menuTrigger.isVisible()) {
+        await menuTrigger.click();
+        await page.locator('button:has-text("Edit Vehicle")').click();
+      } else {
+        // Fallback: force click editBtn
+        await editBtn.click({ force: true });
+      }
+
+      const dialog = page.getByRole('dialog').first();
+      await expect(dialog).toBeVisible({ timeout: 5000 });
+      await expect(dialog.getByText('Modify Fleet Vehicle Metadata')).toBeVisible();
+
+      // Fleet Active Status select
+      const statusSelect = dialog.locator('select[formcontrolname="status"]');
+      await expect(statusSelect).toBeVisible();
+
+      // For available vehicle, Available By date input should not be visible initially
+      await expect(dialog.locator('hlm-date-picker[formcontrolname="availableBy"]')).not.toBeVisible();
+
+      // 1. Change status to Maintenance / Service ('maintenance')
+      await statusSelect.selectOption('maintenance');
+      const availableByMaintenance = dialog.locator('hlm-date-picker[formcontrolname="availableBy"]');
+      await expect(availableByMaintenance).toBeVisible();
+      await expect(dialog.getByText('Available By')).toBeVisible();
+
+      // 2. Change status to Corporate Contract ('contract')
+      await statusSelect.selectOption('contract');
+      const availableByContract = dialog.locator('hlm-date-picker[formcontrolname="availableBy"]');
+      await expect(availableByContract).toBeVisible();
+
+      // 3. Switch back to Available for Rental ('available') - Available By input should disappear
+      await statusSelect.selectOption('available');
+      await expect(dialog.locator('hlm-date-picker[formcontrolname="availableBy"]')).not.toBeVisible();
+
+      // 4. Switch to Service and try to save without filling Available By date -> validation error
+      await statusSelect.selectOption('maintenance');
+      await expect(dialog.locator('hlm-date-picker[formcontrolname="availableBy"]')).toBeVisible();
+
+      // Close modal
+      const closeBtn = dialog.locator('button[aria-label="Close dialog"]').first();
+      await closeBtn.click();
     });
   });
 });

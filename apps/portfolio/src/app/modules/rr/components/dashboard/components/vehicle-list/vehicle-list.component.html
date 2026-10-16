@@ -338,6 +338,17 @@
               <span class="text-muted-foreground block">Pollution Expiry</span>
               <span class="font-medium">{{ (selectedVehicleDetails()?.pollutionExpiry | indianDate) || 'N/A' }}</span>
             </div>
+            @if (selectedVehicleDetails()?.status === 'maintenance' || selectedVehicleDetails()?.status === 'contract' || selectedVehicleDetails()?.status === 'in_contract') {
+              <div class="col-span-2 p-2.5 rounded-lg bg-muted/40 border border-border/60 flex items-center justify-between">
+                <span class="text-xs text-muted-foreground font-semibold flex items-center gap-1.5">
+                  <ng-icon [name]="selectedVehicleDetails()?.status === 'maintenance' ? 'lucideWrench' : 'lucideFileText'" class="text-xs"></ng-icon>
+                  <span>Available By</span>
+                </span>
+                <span class="font-bold text-xs text-foreground font-mono">
+                  {{ ((selectedVehicleDetails()?.availableBy || selectedVehicleDetails()?.nextAvailableDate) | indianDate) || 'Not Specified' }}
+                </span>
+              </div>
+            }
           </div>
         </div>
       </div>
@@ -548,6 +559,21 @@
               <option value="contract">Corporate Contract</option>
             </select>
           </div>
+
+          @if (vehicleFormGroup.get('status')?.value === 'maintenance' || vehicleFormGroup.get('status')?.value === 'contract') {
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">
+                <span>Available By</span>
+                <span class="text-destructive ml-1">*</span>
+              </label>
+              <hlm-date-picker formControlName="availableBy">
+                <hlm-date-picker-input placeholder="DD-MM-YYYY" class="w-full text-sm" />
+              </hlm-date-picker>
+              @if (vehicleFormGroup.get('availableBy')?.invalid && (vehicleFormGroup.get('availableBy')?.touched || vehicleFormGroup.get('availableBy')?.dirty)) {
+                <span class="text-xs text-destructive">Available By date is required.</span>
+              }
+            </div>
+          }
         </div>
       </div>
 

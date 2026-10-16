@@ -87,6 +87,7 @@ export interface IVehicle {
   status: VehicleStatus;
   images: string[];
   bookingId?: string | null;
+  availableBy?: string | null;
   nextAvailableDate?: string;
   createdAt: string;
   updatedAt?: string | null;

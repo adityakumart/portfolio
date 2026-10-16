@@ -28,8 +28,12 @@ import {
   lucideMoreVertical,
   lucideImage,
   lucideCalendarClock,
+  lucideWrench,
+  lucideFileText,
+  lucideClock,
 } from '@ng-icons/lucide';
 import { IVehicle, IPublicVehicle, IBooking } from '@portfolio/shared-types';
+import { IndianDatePipe } from '../../../../../shared/pipes/indian-date.pipe';
 
 export type VehicleCardVariant = 'fleet' | 'stats' | 'homepage';
 
@@ -44,6 +48,7 @@ export type VehicleCardVariant = 'fleet' | 'stats' | 'homepage';
     HlmBadgeImports,
     HlmDropdownMenuImports,
     NgIconComponent,
+    IndianDatePipe,
   ],
   providers: [
     provideIcons({
@@ -59,6 +64,9 @@ export type VehicleCardVariant = 'fleet' | 'stats' | 'homepage';
       lucideMoreVertical,
       lucideImage,
       lucideCalendarClock,
+      lucideWrench,
+      lucideFileText,
+      lucideClock,
     }),
   ],
   templateUrl: './vehicle-card.component.html',
@@ -88,6 +96,10 @@ export class RRVehicleCardComponent implements OnInit, OnDestroy {
 
   get statusBadgeVariant(): 'secondary' | 'destructive' | 'outline' {
     return 'outline';
+  }
+
+  get availableByDate(): string | null {
+    return this.vehicle?.availableBy || this.vehicle?.nextAvailableDate || null;
   }
 
   get statusBadgeLabel(): string {

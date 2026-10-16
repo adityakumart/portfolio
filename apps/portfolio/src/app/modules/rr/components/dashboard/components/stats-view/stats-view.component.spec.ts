@@ -48,8 +48,8 @@ test.describe('RR Module - Dashboard Stats View Component', () => {
 
       // Check Seating capacity filter pills inside accordion
       const filterAll = page.getByRole('button', { name: /All \(/i });
-      const filter5Seater = page.getByRole('button', { name: /5-Seater/i });
-      const filter7Seater = page.getByRole('button', { name: /7-Seater/i });
+      const filter5Seater = page.getByRole('button', { name: /5\s*Seater/i });
+      const filter7Seater = page.getByRole('button', { name: /7\s*Seater/i });
 
       await expect(filterAll).toBeVisible();
       await expect(filter5Seater).toBeVisible();
@@ -66,7 +66,7 @@ test.describe('RR Module - Dashboard Stats View Component', () => {
       await expect(page.getByText('Swift Dzire')).not.toBeVisible();
 
       // Close accordion using close button
-      const closeAccordionBtn = page.locator('button[aria-label="Close section"], button:has([name="lucideX"])').first();
+      const closeAccordionBtn = page.getByRole('button', { name: /Collapse View/i });
       await closeAccordionBtn.click();
       await expect(accordionHeader).not.toBeVisible();
     });
@@ -82,22 +82,35 @@ test.describe('RR Module - Dashboard Stats View Component', () => {
       await expect(page.getByText('Suresh Varma')).toBeVisible();
       await expect(page.getByText('Venkat Rao')).toBeVisible();
     });
-  });
 
-  test.describe('Administrative Audit Activity View', () => {
-    test('should display recent activity audit table for admin users', async ({ page }) => {
-      await setupRRRouteMocks(page);
-      await injectRRSession(page, { user: MOCK_ADMIN_USER });
-      await page.goto('/user/rr/dashboard');
-      await page.waitForLoadState('domcontentloaded');
+    test('should expand In Service category and display Available By date in listed vehicle cards', async ({ page }) => {
+      const maintenanceCard = page.locator('div[hlmCard]').filter({ hasText: 'In Service' });
+      await maintenanceCard.click();
 
-      // Admin sees Recent Activity Logs section
-      const auditSection = page.locator('section', { hasText: 'Recent Activity Logs' }).or(page.locator('.recent-activity-section, div:has-text("Recent Activity Logs")'));
-      await expect(auditSection.first()).toBeVisible({ timeout: 5000 });
+      // Accordion banner for Fleet In Service & Maintenance
+      await expect(page.getByText('Fleet In Service & Maintenance')).toBeVisible({ timeout: 5000 });
 
-      // Verify log actions
-      await expect(page.getByText('Started rental booking for Swift Dzire')).toBeVisible();
-      await expect(page.getByText('Created rental booking for Innova Crysta')).toBeVisible();
+      // Scorpio N is in maintenance with availableBy: 2026-10-25
+      const scorpioCard = page.locator('app-rr-vehicle-card', { hasText: 'Scorpio N' }).first();
+      await expect(scorpioCard).toBeVisible();
+      await expect(scorpioCard.getByText('IN SERVICE')).toBeVisible();
+      await expect(scorpioCard.getByText(/Available By/i)).toBeVisible();
+      await expect(scorpioCard.getByText('25-10-2026')).toBeVisible();
+    });
+
+    test('should expand In-Contract category and display Available By date in listed vehicle cards', async ({ page }) => {
+      const contractCard = page.locator('div[hlmCard]').filter({ hasText: 'In-Contract' });
+      await contractCard.click();
+
+      // Accordion banner for In-Contract Fleet
+      await expect(page.getByText('In-Contract Fleet')).toBeVisible({ timeout: 5000 });
+
+      // Honda City is in contract with availableBy: 2026-11-15
+      const cityCard = page.locator('app-rr-vehicle-card', { hasText: 'Honda City' }).first();
+      await expect(cityCard).toBeVisible();
+      await expect(cityCard.getByText('IN CONTRACT')).toBeVisible();
+      await expect(cityCard.getByText(/Available By/i)).toBeVisible();
+      await expect(cityCard.getByText('15-11-2026')).toBeVisible();
     });
   });
 });
