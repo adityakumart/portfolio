@@ -33,6 +33,7 @@
           class="cards-scroller"
           cdkDropList
           [cdkDropListData]="getCardsForStage(stage.id)"
+          [cdkDropListEnterPredicate]="canEnterStagePredicate(stage.id)"
           (cdkDropListDropped)="onDrop($event, stage.id)"
         >
           @if (getCardsForStage(stage.id).length === 0) {
@@ -114,8 +115,14 @@
                       aria-label="Move card to another workflow stage"
                     >
                       @for (targetStage of stages; track targetStage.id) {
-                        <option [value]="targetStage.id" [disabled]="targetStage.id === stage.id">
+                        <option
+                          [value]="targetStage.id"
+                          [disabled]="targetStage.id === stage.id || !isTransitionAllowed(stage.id, targetStage.id)"
+                        >
                           {{ targetStage.name }}
+                          @if (targetStage.id !== stage.id && !isTransitionAllowed(stage.id, targetStage.id)) {
+                            (Not allowed)
+                          }
                         </option>
                       }
                     </select>

@@ -158,6 +158,7 @@ export async function handleCreateProject(
             color: s.color || '#64748b',
             order: idx,
             isDefault: false,
+            allowedTransitions: Array.isArray(s.allowedTransitions) ? s.allowedTransitions : [],
           }))
         : getDefaultStages();
 
@@ -674,6 +675,7 @@ export async function handleAddStage(
       color: body.color || '#64748b',
       order: project.stages.length,
       isDefault: false,
+      allowedTransitions: Array.isArray(body.allowedTransitions) ? body.allowedTransitions : [],
     };
 
     project.stages.push(newStage);
@@ -724,6 +726,9 @@ export async function handleUpdateStage(
     }
     if (body.color) {
       stage.color = body.color;
+    }
+    if (Array.isArray(body.allowedTransitions)) {
+      stage.allowedTransitions = body.allowedTransitions;
     }
 
     await project.save();
@@ -836,9 +841,12 @@ export async function handleDeleteStage(
     }
 
     project.stages = project.stages.filter((s) => s.id !== stageId);
-    // Re-index orders
+    // Re-index orders and prune deleted stageId from allowedTransitions
     project.stages.forEach((s, idx) => {
       s.order = idx;
+      if (Array.isArray(s.allowedTransitions)) {
+        s.allowedTransitions = s.allowedTransitions.filter((id) => id !== stageId);
+      }
     });
 
     await project.save();
@@ -1083,6 +1091,27 @@ export async function handleTransitionTodoStage(
       if (!targetStage) {
         res.status(400).json({ error: 'Bad Request', message: 'Target stage does not exist in project.' });
         return;
+      }
+
+      // Validate workflow transition rules:
+      // Backward movement (targetStage.order < currentStage.order) is always allowed.
+      // Forward movement (targetStage.order > currentStage.order) must satisfy allowedTransitions.
+      const currentStage = project.stages.find((s) => s.id === todo.stageId);
+      if (currentStage && targetStage.id !== currentStage.id) {
+        const isMovingForward = targetStage.order > currentStage.order;
+        if (isMovingForward) {
+          const allowedForward = Array.isArray(currentStage.allowedTransitions)
+            ? currentStage.allowedTransitions
+            : [];
+
+          if (!allowedForward.includes(stageId)) {
+            res.status(400).json({
+              error: 'Bad Request',
+              message: `Invalid forward stage transition. Tasks in "${currentStage.name}" cannot be moved forward to "${targetStage.name}".`,
+            });
+            return;
+          }
+        }
       }
 
       const previousStageId = todo.stageId;
