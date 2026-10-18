@@ -41,6 +41,12 @@
             <td hlmTd>
               <div class="font-bold">{{ b.renterFirstName }} {{ b.renterSecondName }}</div>
               <div class="text-muted-foreground text-[11px]">{{ b.renterPhone }}</div>
+              @if (b.renterEmail) {
+                <div class="text-muted-foreground text-[11px] flex items-center gap-1">
+                  <ng-icon name="lucideMail" class="size-3 text-muted-foreground/70"></ng-icon>
+                  <span class="truncate max-w-[140px]">{{ b.renterEmail }}</span>
+                </div>
+              }
               @if (b.renterAadhar) {
                 <div class="text-muted-foreground text-[11px] font-mono flex items-center gap-1 mt-0.5">
                   <span class="text-[10px] uppercase font-semibold text-foreground/60">Aadhaar:</span>
@@ -231,6 +237,9 @@
           <div class="text-right">
             <span class="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">Contact Number</span>
             <span class="font-mono font-bold text-sm text-foreground">{{ selectedIntimationBooking()?.renterPhone }}</span>
+            @if (selectedIntimationBooking()?.renterEmail) {
+              <span class="text-[11px] text-muted-foreground block">{{ selectedIntimationBooking()?.renterEmail }}</span>
+            }
           </div>
         </div>
 

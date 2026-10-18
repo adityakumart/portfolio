@@ -28,6 +28,7 @@ import {
   lucideMoreVertical,
   lucideEye,
   lucideDownload,
+  lucideMail,
 } from '@ng-icons/lucide';
 import { IBooking, IVehicle, ICustomerIntimation } from '@portfolio/shared-types';
 import { RRApiService } from '../../../../services/rr-api.service';
@@ -76,6 +77,7 @@ import { IndianDatePipe } from '../../../../../../shared/pipes/indian-date.pipe'
       lucideMoreVertical,
       lucideEye,
       lucideDownload,
+      lucideMail,
     }),
   ],
   templateUrl: './booking-list.component.html',

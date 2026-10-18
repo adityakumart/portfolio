@@ -161,6 +161,7 @@ export interface IBooking {
   renterDL: string;
   renterPhone: string;
   renterAltPhone?: string;
+  renterEmail?: string;
   renterAddress: string;
 
   guarFirstName: string;

@@ -310,7 +310,7 @@
                   </div>
                   <div class="flex items-center gap-1.5 text-muted-foreground truncate">
                     <ng-icon name="lucideMail" class="size-3.5 text-primary"></ng-icon>
-                    <span class="truncate">Email: <strong class="text-foreground">{{ cust.email }}</strong></span>
+                    <span class="truncate">Email: <strong class="text-foreground">{{ cust.email || 'None' }}</strong></span>
                   </div>
                   <div class="flex items-center gap-1.5 text-muted-foreground">
                     <ng-icon name="lucideShieldCheck" class="size-3.5 text-emerald-500"></ng-icon>
@@ -396,7 +396,20 @@
                 <label hlmLabel class="text-xs text-muted-foreground block mb-1">Alternative Phone Number</label>
                 <input hlmInput formControlName="renterAltPhone" maxlength="10" class="w-full text-sm font-mono" />
               </div>
-              <div class="sm:col-span-2">
+              <div>
+                <label hlmLabel class="text-xs text-muted-foreground block mb-1">Email Address (Optional)</label>
+                <input
+                  hlmInput
+                  type="email"
+                  formControlName="renterEmail"
+                  placeholder="customer@example.com"
+                  class="w-full text-sm"
+                />
+                @if (bookingFormGroup.get('renterEmail')?.invalid && bookingFormGroup.get('renterEmail')?.touched) {
+                  <span class="text-xs text-destructive">Please enter a valid email address.</span>
+                }
+              </div>
+              <div class="sm:col-span-2 md:col-span-1">
                 <label hlmLabel class="text-xs text-muted-foreground block mb-1">Address</label>
                 <textarea hlmInput formControlName="renterAddress" rows="2" class="w-full text-sm"></textarea>
                 @if (bookingFormGroup.get('renterAddress')?.invalid && bookingFormGroup.get('renterAddress')?.touched) {

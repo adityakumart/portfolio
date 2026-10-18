@@ -205,7 +205,7 @@
               <div class="p-3 rounded-xl border border-amber-500/30 bg-amber-500/10 flex items-center justify-between text-xs">
                 <div>
                   <span class="font-bold text-amber-600 dark:text-amber-400">Selected Member:</span>
-                  <span class="ml-1 font-semibold">{{ selectedRegularCustomer()?.firstName }} {{ selectedRegularCustomer()?.lastName }} ({{ selectedRegularCustomer()?.phone }})</span>
+                  <span class="ml-1 font-semibold">{{ selectedRegularCustomer()?.firstName }} {{ selectedRegularCustomer()?.lastName }} ({{ selectedRegularCustomer()?.phone }}{{ selectedRegularCustomer()?.email ? ' • ' + selectedRegularCustomer()?.email : '' }})</span>
                 </div>
                 <button hlmBtn variant="ghost" size="sm" type="button" class="text-xs h-7" (click)="selectedRegularCustomer.set(null)">Change</button>
               </div>
@@ -241,7 +241,20 @@
               <label hlmLabel class="text-xs text-muted-foreground block mb-1">Alternate Phone</label>
               <input hlmInput formControlName="renterAltPhone" maxlength="10" class="w-full text-sm" />
             </div>
-            <div class="sm:col-span-2">
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Email Address (Optional)</label>
+              <input
+                hlmInput
+                type="email"
+                formControlName="renterEmail"
+                placeholder="customer@example.com"
+                class="w-full text-sm"
+              />
+              @if (reserveFormGroup.get('renterEmail')?.invalid && reserveFormGroup.get('renterEmail')?.touched) {
+                <span class="text-xs text-destructive">Please enter a valid email address.</span>
+              }
+            </div>
+            <div class="sm:col-span-2 md:col-span-1">
               <label hlmLabel class="text-xs text-muted-foreground block mb-1">Address</label>
               <input hlmInput formControlName="renterAddress" class="w-full text-sm" />
             </div>

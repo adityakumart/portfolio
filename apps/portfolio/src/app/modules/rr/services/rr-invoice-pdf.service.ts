@@ -155,26 +155,26 @@ export class RRInvoicePdfService {
       ],
       ['Father Name', renterFatherName, 'Vehicle Model', vehicleModelDisplay],
       [
-        'Alternate Contact Number',
-        renterAltPhone,
+        'Contact Number',
+        `${renterPhone}${renterAltPhone ? ` (Alt: ${renterAltPhone})` : ''}`,
         'Vehicle Pickup Date & Time',
         rawPickupDateTime,
       ],
       [
-        'Aadhar Number',
-        renterAadhar,
+        'Email Address',
+        b.renterEmail || 'N/A',
         'Odometer Reading - Pickup',
         odoStartFormatted,
       ],
       [
-        'Driving License Number',
-        renterDL,
+        'Aadhar Number',
+        renterAadhar,
         'Vehicle Return Date & Time',
         rawReturnDateTime,
       ],
       [
-        'Contact Number',
-        renterPhone,
+        'Driving License Number',
+        renterDL,
         'Odometer Reading - Return',
         odoEndFormatted,
       ],
@@ -378,6 +378,7 @@ export class RRInvoicePdfService {
     const renterAadhar = maskAadhar(b.renterAadhar) || 'N/A';
     const renterDL = b.renterDL || 'N/A';
     const renterAddress = b.renterAddress || 'N/A';
+    const renterEmail = b.renterEmail || '';
 
     const vehicleRegNo = b.vehicleRegNo || 'N/A';
     const vehicleManufacturer = b.vehicleManufacturer || '';
@@ -572,8 +573,11 @@ export class RRInvoicePdfService {
     doc.setFont('Helvetica', 'normal');
     doc.setFontSize(8);
     doc.setTextColor(71, 85, 105);
+    const contactLine = renterEmail
+      ? `Phone: ${renterPhone}  |  Email: ${renterEmail}`
+      : `Phone: ${renterPhone}${renterAltPhone ? ` / ${renterAltPhone}` : ''}`;
     doc.text(
-      `Phone: ${renterPhone}${renterAltPhone ? ` / ${renterAltPhone}` : ''}`,
+      contactLine,
       leftMargin + 4,
       cY,
     );

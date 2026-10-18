@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BrnDialogRef, injectBrnDialogContext } from '@spartan-ng/brain/dialog';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmInputImports } from '@spartan-ng/hel/input';
@@ -117,7 +117,19 @@ export class RRModifyBookingDialogComponent implements OnInit {
 
   private initDeleteForm() {
     this.deleteBookingFormGroup = this.fb.group({
-      deletionReason: ['', [Validators.required, Validators.minLength(2)]],
+      deletionReason: [
+        '',
+        [
+          Validators.required,
+          (control: AbstractControl) => {
+            const val = control?.value;
+            if (!val || (typeof val === 'string' && val.trim().length === 0)) {
+              return { required: true };
+            }
+            return null;
+          },
+        ],
+      ],
       returnAmount: ['0', [Validators.required, Validators.min(0)]],
       returnAmountMode: ['', Validators.required],
     });
