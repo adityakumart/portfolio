@@ -22,7 +22,7 @@
           <th hlmTh class="hidden lg:table-cell">Date of Birth</th>
           <th hlmTh>Contact Phone</th>
           <th hlmTh class="hidden md:table-cell">Email Address</th>
-          <th hlmTh class="hidden sm:table-cell">Portal Access</th>
+          <th hlmTh class="hidden sm:table-cell">Status</th>
           <th hlmTh class="text-center">Actions</th>
         </tr>
       </thead>
@@ -51,12 +51,31 @@
               <span>{{ e.email }}</span>
             </td>
             <td hlmTd class="hidden sm:table-cell">
-              <span hlmBadge [variant]="e.allowLogin ? 'secondary' : 'destructive'" [class.text-emerald-600]="e.allowLogin" [class.dark:text-emerald-400]="e.allowLogin">
-                {{ e.allowLogin ? 'Active Permitted' : 'Access Revoked' }}
-              </span>
+              @if (e.status === 'pending_activation') {
+                <span hlmBadge variant="outline" class="font-bold uppercase text-[10px] text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/20">
+                  Pending Activation
+                </span>
+              } @else if (e.status === 'deactivated' || !e.allowLogin) {
+                <span hlmBadge variant="destructive" class="font-bold uppercase text-[10px]">
+                  Deactivated
+                </span>
+              } @else {
+                <span hlmBadge variant="secondary" class="font-bold uppercase text-[10px] text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20">
+                  Active
+                </span>
+              }
             </td>
             <td hlmTd class="text-center whitespace-nowrap space-x-1">
-              <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 rounded-full" hlmTooltip="Modify Staff Information" (click)="openEditEmployeeModal(e)">
+              @if (e.status === 'pending_activation' || e.status === 'deactivated' || !e.allowLogin) {
+                <button hlmBtn size="icon" variant="outline" class="h-8 w-8 rounded-full text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10 border-emerald-500/30" hlmTooltip="Activate Staff Member" (click)="activateEmployee(e)">
+                  <ng-icon name="lucideUserCheck"></ng-icon>
+                </button>
+              } @else {
+                <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 rounded-full opacity-40 cursor-not-allowed" hlmTooltip="Account is Active" [disabled]="true">
+                  <ng-icon name="lucideUserCheck"></ng-icon>
+                </button>
+              }
+              <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 rounded-full" hlmTooltip="Modify Staff Record" (click)="openEditEmployeeModal(e)">
                 <ng-icon name="lucidePencil"></ng-icon>
               </button>
               <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 rounded-full text-destructive hover:bg-destructive/10" hlmTooltip="Delete Staff Member" (click)="deleteEmployee(e)">
@@ -203,6 +222,32 @@
             <label hlmLabel for="empAllowLogin" class="text-xs cursor-pointer">Allow Dashboard Login</label>
           </div>
 
+          @if (editingEmployeeMode()) {
+            <div class="sm:col-span-2 p-3 rounded-lg border bg-muted/20 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div class="text-xs font-semibold">Account Status</div>
+                <div class="text-[11px] text-muted-foreground">Current lifecycle state of this user account</div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span
+                  hlmBadge
+                  [variant]="selectedEmployeeForEdit()?.status === 'active' ? 'secondary' : (selectedEmployeeForEdit()?.status === 'pending_activation' ? 'outline' : 'destructive')"
+                  [class.text-emerald-600]="selectedEmployeeForEdit()?.status === 'active'"
+                  [class.text-amber-600]="selectedEmployeeForEdit()?.status === 'pending_activation'"
+                  class="font-bold uppercase text-[10px]"
+                >
+                  {{ selectedEmployeeForEdit()?.status || (selectedEmployeeForEdit()?.allowLogin ? 'Active' : 'Deactivated') }}
+                </span>
+                @if (selectedEmployeeForEdit()?.status === 'pending_activation' || selectedEmployeeForEdit()?.status === 'deactivated' || !selectedEmployeeForEdit()?.allowLogin) {
+                  <button type="button" hlmBtn size="sm" variant="outline" class="text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/10 h-7 text-xs flex items-center gap-1" (click)="activateEmployee(selectedEmployeeForEdit()!)">
+                    <ng-icon name="lucideUserCheck"></ng-icon>
+                    <span>Activate User</span>
+                  </button>
+                }
+              </div>
+            </div>
+          }
+
           <div class="sm:col-span-2">
             <label hlmLabel class="text-xs text-muted-foreground block mb-1">Residential Address</label>
             <textarea hlmInput formControlName="address" rows="2" class="w-full text-sm"></textarea>
@@ -215,12 +260,29 @@
       </div>
 
       <!-- Fixed Footer -->
-      <div class="shrink-0 flex items-center justify-end gap-2 pt-3 border-t">
-        <button hlmBtn class="action-btn success flex items-center gap-1.5" [disabled]="employeeFormGroup.invalid" (click)="saveEmployee($event)">
-          <ng-icon name="lucideCheck"></ng-icon>
-          <span>{{ editingEmployeeMode() ? 'Save Changes' : 'Register Account' }}</span>
-        </button>
-        <button hlmBtn variant="outline" (click)="closeEmployeeFormModal()">Cancel</button>
+      <div class="shrink-0 flex items-center justify-between gap-2 pt-3 border-t">
+        <div>
+          @if (editingEmployeeMode()) {
+            <button
+              type="button"
+              hlmBtn
+              variant="outline"
+              class="text-amber-600 hover:text-amber-700 hover:bg-amber-500/10 border-amber-500/30 flex items-center gap-1.5 h-9 text-xs font-semibold"
+              hlmTooltip="Reset credentials and force user to create new password on first login"
+              (click)="resetPasswordFromModal($event)"
+            >
+              <ng-icon name="lucideKeyRound"></ng-icon>
+              <span>Reset Password</span>
+            </button>
+          }
+        </div>
+        <div class="flex items-center gap-2">
+          <button hlmBtn class="action-btn success flex items-center gap-1.5" [disabled]="employeeFormGroup.invalid" (click)="saveEmployee($event)">
+            <ng-icon name="lucideCheck"></ng-icon>
+            <span>{{ editingEmployeeMode() ? 'Save Changes' : 'Register Account' }}</span>
+          </button>
+          <button hlmBtn variant="outline" (click)="closeEmployeeFormModal()">Cancel</button>
+        </div>
       </div>
     </form>
   </div>

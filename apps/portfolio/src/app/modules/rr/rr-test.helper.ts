@@ -334,6 +334,7 @@ export const MOCK_EMPLOYEES: IEmployee[] = [
     dl: 'DL-ADMIN-001',
     address: 'HQ Office, Kakinada',
     allowLogin: true,
+    status: 'active',
     role: 'admin',
     createdAt: '2023-01-01T00:00:00.000Z',
   },
@@ -349,8 +350,25 @@ export const MOCK_EMPLOYEES: IEmployee[] = [
     dl: 'DL-AGENT-002',
     address: 'Rental Desk 1, Kakinada',
     allowLogin: true,
+    status: 'active',
     role: 'employee',
     createdAt: '2023-02-15T00:00:00.000Z',
+  },
+  {
+    _id: 'emp-3',
+    id: 'RRA003',
+    firstName: 'New',
+    lastName: 'Staff',
+    dob: '1995-10-10',
+    phone: '9494883336',
+    email: 'newstaff@rams-cars.com',
+    aadhar: '556677889900',
+    dl: 'DL-STAFF-003',
+    address: 'Desk 2, Kakinada',
+    allowLogin: false,
+    status: 'pending_activation',
+    role: 'employee',
+    createdAt: '2026-10-10T00:00:00.000Z',
   },
 ];
 
@@ -668,13 +686,80 @@ export async function setupRRRouteMocks(
     });
   });
 
-  // Employees
-  await page.route('**/api/rr/employees*', async (route) => {
+  // Employee activate
+  await page.route('**/api/rr/employees/*/activate', async (route) => {
+    const url = route.request().url();
+    const match = url.match(/\/api\/rr\/employees\/([a-zA-Z0-9_-]+)\/activate/);
+    const empId = match ? match[1] : '';
+    const emp = employees.find((e) => e.id === empId) || employees[0];
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify(employees),
+      body: JSON.stringify({ ...emp, status: 'active', allowLogin: true }),
     });
+  });
+
+  // Employee reset password
+  await page.route('**/api/rr/employees/*/reset-password', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        success: true,
+        message: 'Password reset successfully. User must create new password on next login.',
+        temporaryPassword: 'TempPassword123'
+      }),
+    });
+  });
+
+  // Auth change password
+  await page.route('**/api/rr/auth/change-password', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        success: true,
+        message: 'Password updated successfully.',
+      }),
+    });
+  });
+
+  // Employees
+  await page.route('**/api/rr/employees*', async (route) => {
+    const method = route.request().method();
+    if (method === 'GET') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(employees),
+      });
+    } else if (method === 'POST') {
+      const data = route.request().postDataJSON();
+      await route.fulfill({
+        status: 201,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          ...data,
+          id: 'RRA' + String(employees.length + 1).padStart(3, '0'),
+          status: 'pending_activation',
+          allowLogin: false,
+          createdAt: new Date().toISOString()
+        }),
+      });
+    } else if (method === 'PUT') {
+      const data = route.request().postDataJSON();
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ ...data }),
+      });
+    } else {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ message: 'Deleted' }),
+      });
+    }
   });
 
   // Logs

@@ -64,6 +64,11 @@ export class RRService {
             address: 'Cinema road, Suryanarayana puram, Kakinada, AP 533001',
             allowLogin: true,
             role: 'admin',
+            status: 'active',
+            isFirstLogin: false,
+            mustChangePassword: false,
+            passwordLastChangedAt: new Date().toISOString(),
+            lastLoginAt: new Date().toISOString(),
             passwordHash: adminHash,
             createdAt: new Date().toISOString(),
           },
@@ -80,11 +85,33 @@ export class RRService {
             address: 'Kakinada, AP 533001',
             allowLogin: true,
             role: 'employee',
+            status: 'active',
+            isFirstLogin: false,
+            mustChangePassword: false,
+            passwordLastChangedAt: new Date().toISOString(),
+            lastLoginAt: new Date().toISOString(),
             createdAt: new Date().toISOString(),
           },
         ];
         await empCol.insertMany(defaultEmployees);
         console.log('Seeded employees successfully.');
+      } else {
+        // Ensure existing employees have status, timestamps and password policy fields populated
+        const unmigrated = await empCol.find({ status: { $exists: false } }).toArray();
+        for (const emp of unmigrated) {
+          await empCol.updateOne(
+            { _id: emp._id },
+            {
+              $set: {
+                status: emp.allowLogin !== false ? 'active' : 'deactivated',
+                isFirstLogin: emp.isFirstLogin ?? false,
+                mustChangePassword: emp.mustChangePassword ?? false,
+                passwordLastChangedAt: emp.passwordLastChangedAt || emp.createdAt || new Date().toISOString(),
+                lastLoginAt: emp.lastLoginAt || new Date().toISOString(),
+              }
+            }
+          );
+        }
       }
 
       // 2. Seed Vehicles

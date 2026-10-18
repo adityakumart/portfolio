@@ -27,7 +27,108 @@ RRService.seedInitialData();
 BillingService.seedInitialRegularCustomers();
 
 /* ============================================================
-   AUTHENTICATION
+   AUTHENTICATION HELPERS & POLICIES
+============================================================ */
+function checkInactivityAndStatus(emp: any): { error?: string; status?: number; isDeactivatedDueToInactivity?: boolean } {
+  if (emp.status === 'pending_activation') {
+    return {
+      error: 'Account pending activation by Administrator. Please contact an Administrator.',
+      status: 403
+    };
+  }
+
+  if (emp.status === 'deactivated' || emp.allowLogin === false) {
+    return {
+      error: 'Your account has been deactivated. Please contact an Administrator to reactivate.',
+      status: 403
+    };
+  }
+
+  // 60-day inactivity check
+  const lastActiveTimestamp = emp.lastLoginAt || emp.createdAt;
+  if (lastActiveTimestamp) {
+    const daysSinceActive = (Date.now() - new Date(lastActiveTimestamp).getTime()) / (1000 * 60 * 60 * 24);
+    if (daysSinceActive > 60) {
+      return {
+        error: 'Account deactivated due to more than 60 days of inactivity. Please contact an Administrator to reactivate.',
+        status: 403,
+        isDeactivatedDueToInactivity: true
+      };
+    }
+  }
+
+  return {};
+}
+
+function calculatePasswordPolicy(emp: any) {
+  const mustChangePassword = emp.mustChangePassword === true || emp.isFirstLogin === true;
+  let passwordAgeDays = 0;
+  let isBufferPeriod = false;
+  let isExpired = false;
+  let passwordExpiresInDays = 45;
+
+  if (emp.passwordLastChangedAt) {
+    const passChangedTime = new Date(emp.passwordLastChangedAt).getTime();
+    passwordAgeDays = Math.floor((Date.now() - passChangedTime) / (1000 * 60 * 60 * 24));
+    passwordExpiresInDays = Math.max(0, 45 - passwordAgeDays);
+    isBufferPeriod = passwordAgeDays >= 40 && passwordAgeDays < 45;
+    isExpired = passwordAgeDays >= 45;
+  } else if (!mustChangePassword) {
+    passwordExpiresInDays = 45;
+    passwordAgeDays = 0;
+  } else {
+    isExpired = true;
+    passwordExpiresInDays = 0;
+  }
+
+  return {
+    mustChangePassword: mustChangePassword || isExpired,
+    isFirstLogin: emp.isFirstLogin === true,
+    passwordAgeDays,
+    passwordExpiresInDays,
+    isBufferPeriod,
+    isExpired
+  };
+}
+
+async function buildLoginSuccess(emp: any, empCol: any, res: Response, auditDescription: string) {
+  await empCol.updateOne(
+    { id: emp.id },
+    {
+      $set: {
+        lastLoginAt: new Date().toISOString(),
+        failedLoginAttempts: 0,
+        lockoutUntil: null
+      }
+    }
+  );
+
+  const token = jwt.sign({ id: emp.id, role: emp.role }, JWT_SECRET, { expiresIn: '24h' });
+  const policy = calculatePasswordPolicy(emp);
+
+  res.json({
+    access_token: token,
+    user: {
+      id: emp.id,
+      firstName: emp.firstName,
+      lastName: emp.lastName,
+      email: emp.email,
+      role: emp.role
+    },
+    status: emp.status || 'active',
+    ...policy
+  });
+
+  RRService.logActivity(
+    'Logged in',
+    emp.id,
+    emp.role,
+    auditDescription
+  ).catch((logErr) => console.error('[AuditLog] Failed to log login:', logErr));
+}
+
+/* ============================================================
+   AUTHENTICATION ROUTES
 ============================================================ */
 rrRouter.post('/auth/login', authRateLimiter, async (req: Request, res: Response) => {
   try {
@@ -51,9 +152,8 @@ rrRouter.post('/auth/login', authRateLimiter, async (req: Request, res: Response
       }
     };
 
-    // 1. Admin Login (Username & Password)
+    // 1. Password / Credential Login (Username / EmpId & Password)
     if (username && password) {
-      // Find employee by email, id, or check if it matches AdminUN/AdminPD directly if DB is empty
       const emp = await empCol.findOne({
         $or: [{ id: username }, { email: username.toLowerCase() }],
         isDeleted: { $ne: true }
@@ -73,8 +173,18 @@ rrRouter.post('/auth/login', authRateLimiter, async (req: Request, res: Response
         return;
       }
 
-      if (!emp.allowLogin) {
-        res.status(403).json({ error: 'Forbidden', message: 'Your account is disabled' });
+      const statusCheck = checkInactivityAndStatus(emp);
+      if (statusCheck.error) {
+        if (statusCheck.isDeactivatedDueToInactivity) {
+          await empCol.updateOne({ id: emp.id }, { $set: { status: 'deactivated', allowLogin: false } });
+          RRService.logActivity(
+            'Account Deactivated',
+            emp.id,
+            emp.role,
+            `Account automatically deactivated due to 60+ days of login inactivity.`
+          ).catch(() => {});
+        }
+        res.status(statusCheck.status || 403).json({ error: 'Forbidden', message: statusCheck.error });
         return;
       }
 
@@ -97,27 +207,12 @@ rrRouter.post('/auth/login', authRateLimiter, async (req: Request, res: Response
       }
 
       await resetFailedAttempts(emp);
-
-      const token = jwt.sign({ id: emp.id, role: emp.role }, JWT_SECRET, { expiresIn: '24h' });
-
-      res.json({
-        access_token: token,
-        user: {
-          id: emp.id,
-          firstName: emp.firstName,
-          lastName: emp.lastName,
-          email: emp.email,
-          role: emp.role
-        }
-      });
-
-      RRService.logActivity(
-        'Logged in',
-        emp.id,
-        emp.role,
+      await buildLoginSuccess(
+        emp,
+        empCol,
+        res,
         `User session authenticated (${emp.firstName} ${emp.lastName}, Role: ${emp.role.toUpperCase()})`
-      ).catch((logErr) => console.error('[AuditLog] Failed to log admin login:', logErr));
-
+      );
       return;
     }
 
@@ -138,44 +233,124 @@ rrRouter.post('/auth/login', authRateLimiter, async (req: Request, res: Response
         return;
       }
 
-      if (!emp.allowLogin) {
-        res.status(403).json({ error: 'Forbidden', message: 'Your account is disabled' });
+      const statusCheck = checkInactivityAndStatus(emp);
+      if (statusCheck.error) {
+        if (statusCheck.isDeactivatedDueToInactivity) {
+          await empCol.updateOne({ id: emp.id }, { $set: { status: 'deactivated', allowLogin: false } });
+          RRService.logActivity(
+            'Account Deactivated',
+            emp.id,
+            emp.role,
+            `Account automatically deactivated due to 60+ days of login inactivity.`
+          ).catch(() => {});
+        }
+        res.status(statusCheck.status || 403).json({ error: 'Forbidden', message: statusCheck.error });
         return;
       }
 
-      if (emp.dob !== dob) {
+      let isDobValid = emp.dob === dob;
+      if (!isDobValid && emp.passwordHash) {
+        // Also allow password in dob field for flexible badge sign-in
+        isDobValid = await bcrypt.compare(dob, emp.passwordHash);
+      }
+
+      if (!isDobValid) {
         await handleFailedLogin(emp, 'Incorrect date of birth.');
         return;
       }
 
       await resetFailedAttempts(emp);
-
-      const token = jwt.sign({ id: emp.id, role: emp.role }, JWT_SECRET, { expiresIn: '24h' });
-
-      res.json({
-        access_token: token,
-        user: {
-          id: emp.id,
-          firstName: emp.firstName,
-          lastName: emp.lastName,
-          email: emp.email,
-          role: emp.role
-        }
-      });
-
-      RRService.logActivity(
-        'Logged in',
-        emp.id,
-        emp.role,
+      await buildLoginSuccess(
+        emp,
+        empCol,
+        res,
         `Employee badge authenticated (${emp.firstName} ${emp.lastName}, ID: ${emp.id})`
-      ).catch((logErr) => console.error('[AuditLog] Failed to log employee login:', logErr));
-
+      );
       return;
     }
 
     res.status(400).json({ error: 'Bad Request', message: 'Please provide credentials' });
   } catch (err: any) {
     console.error('Login router error:', err);
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+// POST /auth/change-password (Authenticated)
+rrRouter.post('/auth/change-password', authenticateRRToken, async (req: any, res: Response) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!newPassword || typeof newPassword !== 'string' || newPassword.trim().length < 6) {
+      res.status(400).json({ error: 'Bad Request', message: 'New password must be at least 6 characters.' });
+      return;
+    }
+
+    const empCol = await RRService.getEmployeesCol();
+    const emp = await empCol.findOne({ id: req.userId, isDeleted: { $ne: true } });
+    if (!emp) {
+      res.status(404).json({ error: 'Not Found', message: 'Employee not found.' });
+      return;
+    }
+
+    // If account doesn't have mustChangePassword or isFirstLogin, verify currentPassword
+    const isMandatoryChange = emp.mustChangePassword === true || emp.isFirstLogin === true;
+    if (!isMandatoryChange) {
+      if (!currentPassword) {
+        res.status(400).json({ error: 'Bad Request', message: 'Current password is required.' });
+        return;
+      }
+      if (emp.passwordHash) {
+        const isMatch = await bcrypt.compare(currentPassword, emp.passwordHash);
+        if (!isMatch) {
+          res.status(401).json({ error: 'Unauthorized', message: 'Current password does not match.' });
+          return;
+        }
+      } else if (emp.dob && emp.dob !== currentPassword) {
+        res.status(401).json({ error: 'Unauthorized', message: 'Current password does not match.' });
+        return;
+      }
+    }
+
+    // Prevent re-using DOB
+    if (emp.dob && newPassword.trim() === emp.dob) {
+      res.status(400).json({ error: 'Bad Request', message: 'New password cannot be your Date of Birth.' });
+      return;
+    }
+
+    // Prevent re-using identical password if hash exists
+    if (emp.passwordHash) {
+      const isIdentical = await bcrypt.compare(newPassword.trim(), emp.passwordHash);
+      if (isIdentical) {
+        res.status(400).json({ error: 'Bad Request', message: 'New password cannot be the same as your previous password.' });
+        return;
+      }
+    }
+
+    const saltRounds = 10;
+    const passwordHash = await bcrypt.hash(newPassword.trim(), saltRounds);
+
+    await empCol.updateOne(
+      { id: emp.id },
+      {
+        $set: {
+          passwordHash,
+          mustChangePassword: false,
+          isFirstLogin: false,
+          passwordLastChangedAt: new Date().toISOString()
+        }
+      }
+    );
+
+    res.json({ success: true, message: 'Password updated successfully.' });
+
+    RRService.logActivity(
+      'Password Updated',
+      emp.id,
+      emp.role,
+      `Password successfully configured for user ${emp.firstName} ${emp.lastName} (${emp.id})`
+    ).catch(() => {});
+  } catch (err: any) {
+    console.error('Change password error:', err);
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }
 });
@@ -211,10 +386,12 @@ rrRouter.get('/auth/permissions', authenticateRRToken, async (req: any, res: Res
       return;
     }
 
-    if (!emp.allowLogin) {
-      res.status(403).json({ error: 'Forbidden', message: 'Account access has been revoked by an administrator.' });
+    if (!emp.allowLogin || emp.status === 'deactivated') {
+      res.status(403).json({ error: 'Forbidden', message: 'Account access has been revoked or deactivated by an administrator.' });
       return;
     }
+
+    const policy = calculatePasswordPolicy(emp);
 
     res.json({
       user: {
@@ -225,6 +402,8 @@ rrRouter.get('/auth/permissions', authenticateRRToken, async (req: any, res: Res
         role: emp.role,
       },
       role: emp.role,
+      status: emp.status || 'active',
+      ...policy
     });
   } catch (err: any) {
     console.error('RR permissions router error:', err);
@@ -1207,22 +1386,48 @@ rrRouter.post('/bookings/:id/customer-intimation', authenticateRRToken, async (r
    EMPLOYEES
 ============================================================ */
 
+/* ============================================================
+   EMPLOYEES
+============================================================ */
+
 // GET all employees (Admin only)
 rrRouter.get('/employees', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
   try {
     const col = await RRService.getEmployeesCol();
+
+    // 60-day inactivity sweep: automatically deactivate any active employee who has not logged in for 60+ days
+    const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString();
+    await col.updateMany(
+      {
+        status: 'active',
+        lastLoginAt: { $lt: sixtyDaysAgo },
+        isDeleted: { $ne: true }
+      },
+      {
+        $set: { status: 'deactivated', allowLogin: false }
+      }
+    );
+
     const filter: any = {};
     if (req.query.includeDeleted !== 'true') {
       filter.isDeleted = { $ne: true };
     }
     const list = await col.find(filter).toArray();
-    res.json(list);
+
+    // Ensure status defaults for any legacy records
+    const normalizedList = list.map((emp) => ({
+      ...emp,
+      status: emp.status || (emp.allowLogin !== false ? 'active' : 'deactivated'),
+    }));
+
+    res.json(normalizedList);
   } catch (err: any) {
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }
 });
 
 // POST create employee (Admin only)
+// New users are created with status: 'pending_activation' and require Admin activation before first login
 rrRouter.post('/employees', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
   try {
     const data: Omit<IEmployee, 'id' | 'createdAt'> = req.body;
@@ -1253,7 +1458,7 @@ rrRouter.post('/employees', authenticateRRToken, requireAdmin, async (req: any, 
     let passwordHash = undefined;
     const rawPassword = data.password && typeof data.password === 'string' && data.password.trim()
       ? data.password.trim()
-      : (data.role === 'admin' ? 'AdminPD' : undefined);
+      : (data.role === 'admin' ? 'AdminPD' : (data.dob || 'RoadReady@123'));
 
     if (rawPassword) {
       const saltRounds = 10;
@@ -1266,6 +1471,12 @@ rrRouter.post('/employees', authenticateRRToken, requireAdmin, async (req: any, 
     const newEmp: IEmployee = {
       ...data,
       id: newId,
+      status: 'pending_activation', // Requires Admin to click Activate
+      allowLogin: false, // Disabled until activated
+      isFirstLogin: true,
+      mustChangePassword: true, // Forces password change on first login
+      passwordLastChangedAt: null,
+      lastLoginAt: null,
       passwordHash,
       createdAt: new Date().toISOString()
     };
@@ -1274,11 +1485,103 @@ rrRouter.post('/employees', authenticateRRToken, requireAdmin, async (req: any, 
     res.status(201).json(newEmp);
 
     RRService.logActivity(
-      `Added employee ${newEmp.id}`,
+      `Registered employee ${newEmp.id}`,
       req.userId,
       req.userRole,
-      `Employee registered: ${newEmp.firstName} ${newEmp.lastName} (Role: ${newEmp.role.toUpperCase()}, Phone: ${newEmp.phone})`
+      `Employee registered (Pending Activation): ${newEmp.firstName} ${newEmp.lastName} (Role: ${newEmp.role.toUpperCase()}, Phone: ${newEmp.phone})`
     ).catch((logErr) => console.error('[AuditLog] Failed to log added employee:', logErr));
+  } catch (err: any) {
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+// PUT activate employee (Admin only)
+// Activates a pending or deactivated user so they can login and configure password
+rrRouter.put('/employees/:id/activate', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
+  try {
+    const empId = req.params.id;
+    const col = await RRService.getEmployeesCol();
+
+    const emp = await col.findOne({ id: empId, isDeleted: { $ne: true } });
+    if (!emp) {
+      res.status(404).json({ error: 'Not Found', message: 'Employee not found or has been deleted' });
+      return;
+    }
+
+    await col.updateOne(
+      { id: empId },
+      {
+        $set: {
+          status: 'active',
+          allowLogin: true,
+          lastLoginAt: new Date().toISOString(), // Reset inactivity timestamp on activation
+          lockoutUntil: null,
+          failedLoginAttempts: 0
+        }
+      }
+    );
+
+    const updated = await col.findOne({ id: empId });
+    res.json(updated);
+
+    RRService.logActivity(
+      `Activated staff ${empId}`,
+      req.userId,
+      req.userRole,
+      `Administrator activated user ${emp.firstName} ${emp.lastName} (${empId}). Account status changed to ACTIVE.`
+    ).catch((logErr) => console.error('[AuditLog] Failed to log user activation:', logErr));
+  } catch (err: any) {
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+// POST reset employee password (Admin only)
+// Resets user password to temporary password or DOB, and forces password change on next login
+rrRouter.post('/employees/:id/reset-password', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
+  try {
+    const empId = req.params.id;
+    const { temporaryPassword } = req.body;
+    const col = await RRService.getEmployeesCol();
+
+    const emp = await col.findOne({ id: empId, isDeleted: { $ne: true } });
+    if (!emp) {
+      res.status(404).json({ error: 'Not Found', message: 'Employee not found or has been deleted' });
+      return;
+    }
+
+    const tempPass = temporaryPassword && typeof temporaryPassword === 'string' && temporaryPassword.trim()
+      ? temporaryPassword.trim()
+      : (emp.dob || 'RoadReady@123');
+
+    const saltRounds = 10;
+    const passwordHash = await bcrypt.hash(tempPass, saltRounds);
+
+    await col.updateOne(
+      { id: empId },
+      {
+        $set: {
+          passwordHash,
+          mustChangePassword: true,
+          isFirstLogin: true,
+          passwordLastChangedAt: null,
+          lockoutUntil: null,
+          failedLoginAttempts: 0
+        }
+      }
+    );
+
+    res.json({
+      success: true,
+      message: `Password reset successfully for ${emp.firstName} ${emp.lastName}. User must configure a new password upon their next login.`,
+      temporaryPassword: tempPass
+    });
+
+    RRService.logActivity(
+      `Reset credentials ${empId}`,
+      req.userId,
+      req.userRole,
+      `Administrator initiated password reset for ${emp.firstName} ${emp.lastName} (${empId}). Forced password update enabled on next login.`
+    ).catch((logErr) => console.error('[AuditLog] Failed to log admin password reset:', logErr));
   } catch (err: any) {
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }
@@ -1304,14 +1607,23 @@ rrRouter.put('/employees/:id', authenticateRRToken, requireAdmin, async (req: an
     if (updateData.password && typeof updateData.password === 'string' && updateData.password.trim()) {
       const saltRounds = 10;
       updateData.passwordHash = await bcrypt.hash(updateData.password.trim(), saltRounds);
+      updateData.passwordLastChangedAt = new Date().toISOString();
+      updateData.mustChangePassword = false;
     }
     delete updateData.password;
+
+    if (updateData.allowLogin !== undefined && updateData.status === undefined) {
+      updateData.status = updateData.allowLogin ? 'active' : 'deactivated';
+    } else if (updateData.status !== undefined && updateData.allowLogin === undefined) {
+      updateData.allowLogin = updateData.status === 'active';
+    }
 
     await col.updateOne({ id: empId }, { $set: updateData });
 
     const updated = await col.findOne({ id: empId });
     const modDetails = [
       updateData.role ? `Role: ${updateData.role}` : null,
+      updateData.status ? `Status: ${updateData.status}` : null,
       updateData.allowLogin !== undefined ? `Login: ${updateData.allowLogin ? 'Allowed' : 'Disabled'}` : null,
       updateData.phone ? `Phone: ${updateData.phone}` : null,
       updateData.email ? `Email: ${updateData.email}` : null

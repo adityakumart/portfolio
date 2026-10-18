@@ -356,6 +356,95 @@
             class="w-full text-sm"
           />
         </div>
+
+        <!-- Change Password Section in Profile -->
+        <div class="mt-4 pt-3 border-t">
+          <div class="flex items-center justify-between mb-2">
+            <div>
+              <span class="text-xs font-bold text-foreground">Account Password</span>
+              <p class="text-[11px] text-muted-foreground">Manage your console sign-in password</p>
+            </div>
+            <button
+              type="button"
+              hlmBtn
+              variant="outline"
+              size="sm"
+              class="h-7 text-xs flex items-center gap-1.5"
+              (click)="toggleProfileChangePassword()"
+            >
+              <ng-icon [name]="showProfileChangePassword() ? 'lucideChevronUp' : 'lucideKeyRound'"></ng-icon>
+              <span>{{ showProfileChangePassword() ? 'Cancel' : 'Change Password' }}</span>
+            </button>
+          </div>
+
+          @if (showProfileChangePassword()) {
+            <form [formGroup]="profilePasswordForm" (ngSubmit)="changePasswordFromProfile($event)" class="space-y-3 p-3 rounded-lg border bg-muted/20 mt-2">
+              <div>
+                <label hlmLabel class="text-xs text-muted-foreground block mb-1">Current Password</label>
+                <div class="relative">
+                  <input
+                    hlmInput
+                    [type]="showCurrentPass() ? 'text' : 'password'"
+                    formControlName="currentPassword"
+                    placeholder="Enter current password"
+                    class="w-full text-xs pr-8"
+                  />
+                  <button
+                    type="button"
+                    class="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    (click)="showCurrentPass.set(!showCurrentPass())"
+                  >
+                    <ng-icon [name]="showCurrentPass() ? 'lucideEyeOff' : 'lucideEye'" class="size-3.5"></ng-icon>
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label hlmLabel class="text-xs text-muted-foreground block mb-1">New Password</label>
+                <div class="relative">
+                  <input
+                    hlmInput
+                    [type]="showNewPass() ? 'text' : 'password'"
+                    formControlName="newPassword"
+                    placeholder="Min 6 characters"
+                    class="w-full text-xs pr-8"
+                  />
+                  <button
+                    type="button"
+                    class="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    (click)="showNewPass.set(!showNewPass())"
+                  >
+                    <ng-icon [name]="showNewPass() ? 'lucideEyeOff' : 'lucideEye'" class="size-3.5"></ng-icon>
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label hlmLabel class="text-xs text-muted-foreground block mb-1">Confirm New Password</label>
+                <input
+                  hlmInput
+                  type="password"
+                  formControlName="confirmPassword"
+                  placeholder="Re-type new password"
+                  class="w-full text-xs"
+                />
+              </div>
+
+              <div class="flex justify-end pt-1">
+                <button
+                  hlmBtn
+                  type="submit"
+                  size="sm"
+                  class="action-btn success text-xs h-8 flex items-center gap-1.5"
+                  [disabled]="profilePasswordForm.invalid || changePasswordSubmitting()"
+                >
+                  <ng-icon name="lucideCheck"></ng-icon>
+                  <span>{{ changePasswordSubmitting() ? 'Updating...' : 'Save New Password' }}</span>
+                </button>
+              </div>
+            </form>
+          }
+        </div>
       </div>
 
       <!-- Fixed Footer -->
@@ -368,6 +457,156 @@
         >
           Dismiss
         </button>
+      </div>
+    </div>
+  </ng-template>
+
+  <!-- POPUP: PASSWORD POLICY (First Login / Buffer Period / 45-Day Expiry) -->
+  <ng-template #passwordPolicyDialog>
+    <div class="flex flex-col h-full max-h-[calc(90vh-3rem)] overflow-hidden">
+      <!-- Fixed Header -->
+      <div class="shrink-0 flex items-center justify-between pb-3 border-b">
+        <h3 class="text-lg font-bold flex items-center gap-2">
+          @if (policyState()?.mustChangePassword) {
+            <ng-icon name="lucideKeyRound" class="text-primary"></ng-icon>
+            <span>First Login &bull; Create Password</span>
+          } @else if (policyState()?.isExpired) {
+            <ng-icon name="lucideShieldAlert" class="text-destructive"></ng-icon>
+            <span>Password Expired (45 Days)</span>
+          } @else {
+            <ng-icon name="lucideAlertTriangle" class="text-amber-500"></ng-icon>
+            <span>Password Expiration Reminder</span>
+          }
+        </h3>
+        @if (policyState()?.isBufferPeriod && !policyState()?.mustChangePassword && !policyState()?.isExpired) {
+          <button
+            hlmBtn
+            size="icon"
+            variant="ghost"
+            class="h-8 w-8 text-muted-foreground hover:text-foreground"
+            (click)="skipPolicyWarning()"
+            aria-label="Skip dialog"
+          >
+            <ng-icon name="lucideX"></ng-icon>
+          </button>
+        }
+      </div>
+
+      <!-- Scrollable Body -->
+      <div class="flex-1 min-h-0 overflow-y-auto py-4 space-y-4 text-xs">
+        @if (policyState()?.mustChangePassword) {
+          <div class="p-3 rounded-lg border border-primary/20 bg-primary/5 text-foreground space-y-1">
+            <div class="font-semibold text-primary flex items-center gap-1.5">
+              <ng-icon name="lucideShieldCheck" class="size-4"></ng-icon>
+              <span>Welcome to RoadReady Fleet Console!</span>
+            </div>
+            <p class="text-muted-foreground leading-relaxed">
+              For security, all accounts created or reset by an administrator must set a personal password upon first login before accessing the console.
+            </p>
+          </div>
+        } @else if (policyState()?.isExpired) {
+          <div class="p-3 rounded-lg border border-destructive/20 bg-destructive/5 text-destructive space-y-1">
+            <div class="font-semibold flex items-center gap-1.5">
+              <ng-icon name="lucideShieldAlert" class="size-4"></ng-icon>
+              <span>Mandatory Password Update Required</span>
+            </div>
+            <p class="leading-relaxed text-muted-foreground">
+              Your password has exceeded the 45-day lifespan limit. In accordance with security policy, you must create a new password to continue accessing the dashboard.
+            </p>
+          </div>
+        } @else if (policyState()?.isBufferPeriod) {
+          <div class="p-3 rounded-lg border border-amber-500/20 bg-amber-500/5 text-foreground space-y-1">
+            <div class="font-semibold text-amber-600 flex items-center gap-1.5">
+              <ng-icon name="lucideAlertTriangle" class="size-4"></ng-icon>
+              <span>Password Expiring Soon</span>
+            </div>
+            <p class="text-muted-foreground leading-relaxed">
+              Your password was changed {{ policyState()?.passwordAgeDays }} days ago and will expire in {{ policyState()?.passwordExpiresInDays }} day(s). You can update it now or skip for now.
+            </p>
+          </div>
+        }
+
+        <form [formGroup]="policyForm" (ngSubmit)="submitPolicyPasswordChange($event)" class="space-y-3 pt-1">
+          @if (!policyState()?.mustChangePassword) {
+            <div>
+              <label hlmLabel class="text-xs text-muted-foreground block mb-1">Current Password</label>
+              <div class="relative">
+                <input
+                  hlmInput
+                  [type]="showPolicyCurrentPass() ? 'text' : 'password'"
+                  formControlName="currentPassword"
+                  placeholder="Enter current password"
+                  class="w-full text-xs pr-8"
+                />
+                <button
+                  type="button"
+                  class="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  (click)="showPolicyCurrentPass.set(!showPolicyCurrentPass())"
+                >
+                  <ng-icon [name]="showPolicyCurrentPass() ? 'lucideEyeOff' : 'lucideEye'" class="size-3.5"></ng-icon>
+                </button>
+              </div>
+            </div>
+          }
+
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">New Password</label>
+            <div class="relative">
+              <input
+                hlmInput
+                [type]="showPolicyNewPass() ? 'text' : 'password'"
+                formControlName="newPassword"
+                placeholder="Min 6 characters"
+                class="w-full text-xs pr-8"
+              />
+              <button
+                type="button"
+                class="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                (click)="showPolicyNewPass.set(!showPolicyNewPass())"
+              >
+                <ng-icon [name]="showPolicyNewPass() ? 'lucideEyeOff' : 'lucideEye'" class="size-3.5"></ng-icon>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label hlmLabel class="text-xs text-muted-foreground block mb-1">Confirm New Password</label>
+            <input
+              hlmInput
+              type="password"
+              formControlName="confirmPassword"
+              placeholder="Confirm new password"
+              class="w-full text-xs"
+            />
+          </div>
+
+          <div class="flex items-center justify-between pt-3 border-t">
+            <div>
+              @if (policyState()?.isBufferPeriod && !policyState()?.mustChangePassword && !policyState()?.isExpired) {
+                <button
+                  type="button"
+                  hlmBtn
+                  variant="outline"
+                  size="sm"
+                  class="text-muted-foreground hover:text-foreground text-xs"
+                  (click)="skipPolicyWarning()"
+                >
+                  Remind Me Later (Skip)
+                </button>
+              }
+            </div>
+            <button
+              hlmBtn
+              type="submit"
+              size="sm"
+              class="action-btn success text-xs h-8 flex items-center gap-1.5"
+              [disabled]="policyForm.invalid || changePasswordSubmitting()"
+            >
+              <ng-icon name="lucideCheck"></ng-icon>
+              <span>{{ changePasswordSubmitting() ? 'Updating...' : 'Set Password & Continue' }}</span>
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </ng-template>
