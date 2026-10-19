@@ -134,6 +134,48 @@ test.describe('RR Module - Homepage Component', () => {
       await hamburger.click();
       await expect(mobileMenu).not.toBeVisible();
     });
+
+    test('should render live scrolling ticker marquee with badge, message, and CTA link', async ({ page }) => {
+      const ticker = page.locator('.rr-ticker-bar');
+      await expect(ticker).toBeVisible({ timeout: 5000 });
+      await expect(ticker.locator('.ticker-badge')).toContainText('FESTIVAL SPECIAL');
+      await expect(ticker.locator('.ticker-track')).toContainText('Festive Season Special');
+      const cta = ticker.locator('.ticker-cta');
+      await expect(cta).toBeVisible();
+      await expect(cta).toContainText('Explore Offers');
+    });
+
+    test('should render dedicated announcements section and filter by category', async ({ page }) => {
+      const section = page.locator('section#announcements');
+      await expect(section).toBeVisible({ timeout: 5000 });
+      await expect(section.getByRole('heading', { name: 'Exclusive Offers & Fleet Intimations' })).toBeVisible();
+
+      // Check category tabs
+      const allTab = section.locator('.announcement-tab', { hasText: 'All Updates' });
+      const offerTab = section.locator('.announcement-tab.offer-tab');
+      const intimationTab = section.locator('.announcement-tab.intimation-tab');
+      const festivalTab = section.locator('.announcement-tab.festival-tab');
+
+      await expect(allTab).toBeVisible();
+      await expect(offerTab).toBeVisible();
+      await expect(intimationTab).toBeVisible();
+      await expect(festivalTab).toBeVisible();
+
+      // Check cards rendered
+      await expect(section.getByText('Happy Diwali & Joyous Festive Celebrations')).toBeVisible();
+      await expect(section.getByText('Weekend SUV Getaway Bonanza')).toBeVisible();
+      await expect(section.getByText('Monsoon & Highway Fleet Advisory')).toBeVisible();
+
+      // Filter by Offers
+      await offerTab.click();
+      await expect(section.getByText('Weekend SUV Getaway Bonanza')).toBeVisible();
+      await expect(section.getByText('Monsoon & Highway Fleet Advisory')).not.toBeVisible();
+
+      // Filter by Festival Wishes
+      await festivalTab.click();
+      await expect(section.getByText('Happy Diwali & Joyous Festive Celebrations')).toBeVisible();
+      await expect(section.getByText('Weekend SUV Getaway Bonanza')).not.toBeVisible();
+    });
   });
 
   test.describe('Authenticated Desk Staff Experience', () => {

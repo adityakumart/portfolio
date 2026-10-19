@@ -32,6 +32,10 @@ import {
   IVehicleUploadedAsset,
   RRUserStatus,
   IRRChangePasswordRequest,
+  IRRScrollingTicker,
+  IRRAnnouncementItem,
+  IRRHomepageAnnouncementsData,
+  RRAnnouncementCategory,
 } from '@portfolio/shared-types';
 
 export {
@@ -61,6 +65,10 @@ export type {
   IVehicleUploadedAsset,
   RRUserStatus,
   IRRChangePasswordRequest,
+  IRRScrollingTicker,
+  IRRAnnouncementItem,
+  IRRHomepageAnnouncementsData,
+  RRAnnouncementCategory,
 };
 
 interface ExtensionWindow extends Window {
@@ -1075,6 +1083,74 @@ export class RRApiService {
         `${this.baseUrl}/vehicles/upload`,
         formData,
         { headers }
+      )
+    );
+  }
+
+  // Announcements & Scrolling Ticker (Admin)
+  async getAnnouncements(): Promise<IRRHomepageAnnouncementsData> {
+    return firstValueFrom(
+      this.http.get<IRRHomepageAnnouncementsData>(`${this.baseUrl}/announcements`, {
+        headers: this.getHeaders(),
+      })
+    );
+  }
+
+  async updateTicker(
+    ticker: Partial<IRRScrollingTicker>
+  ): Promise<{ success: boolean; message: string; ticker: IRRScrollingTicker }> {
+    return firstValueFrom(
+      this.http.put<{ success: boolean; message: string; ticker: IRRScrollingTicker }>(
+        `${this.baseUrl}/announcements/ticker`,
+        ticker,
+        { headers: this.getHeaders() }
+      )
+    );
+  }
+
+  async createAnnouncement(
+    item: Partial<IRRAnnouncementItem>
+  ): Promise<{ success: boolean; message: string; item: IRRAnnouncementItem }> {
+    return firstValueFrom(
+      this.http.post<{ success: boolean; message: string; item: IRRAnnouncementItem }>(
+        `${this.baseUrl}/announcements`,
+        item,
+        { headers: this.getHeaders() }
+      )
+    );
+  }
+
+  async updateAnnouncement(
+    id: string,
+    item: Partial<IRRAnnouncementItem>
+  ): Promise<{ success: boolean; message: string }> {
+    return firstValueFrom(
+      this.http.put<{ success: boolean; message: string }>(
+        `${this.baseUrl}/announcements/${id}`,
+        item,
+        { headers: this.getHeaders() }
+      )
+    );
+  }
+
+  async toggleAnnouncement(
+    id: string,
+    isActive?: boolean
+  ): Promise<{ success: boolean; isActive: boolean; message: string }> {
+    return firstValueFrom(
+      this.http.patch<{ success: boolean; isActive: boolean; message: string }>(
+        `${this.baseUrl}/announcements/${id}/toggle`,
+        { isActive },
+        { headers: this.getHeaders() }
+      )
+    );
+  }
+
+  async deleteAnnouncement(id: string): Promise<{ success: boolean; message: string }> {
+    return firstValueFrom(
+      this.http.delete<{ success: boolean; message: string }>(
+        `${this.baseUrl}/announcements/${id}`,
+        { headers: this.getHeaders() }
       )
     );
   }

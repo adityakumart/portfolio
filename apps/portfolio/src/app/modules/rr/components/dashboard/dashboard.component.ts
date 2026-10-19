@@ -29,6 +29,7 @@ import {
   lucideEyeOff,
   lucideAlertTriangle,
   lucideCheck,
+  lucideMegaphone,
 } from '@ng-icons/lucide';
 import { HlmDialogService } from '@spartan-ng/hel/dialog';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
@@ -86,6 +87,7 @@ import { RRLockScreenComponent } from '../lock-screen/rr-lock-screen.component';
       lucideEyeOff,
       lucideAlertTriangle,
       lucideCheck,
+      lucideMegaphone,
     }),
   ],
   templateUrl: './dashboard.component.html',

@@ -21,6 +21,9 @@
     </div>
     <nav>
       <a href="#services">Services</a>
+      @if (announcements().length > 0) {
+        <a href="#announcements">Updates</a>
+      }
       <a href="#browse">Browse Fleet</a>
       <a href="#about">About</a>
       <a href="#contact">Contact</a>
@@ -44,6 +47,9 @@
   <!-- Mobile Menu -->
   <div class="mobile-menu" [style.display]="mobileMenuOpen() ? 'flex' : 'none'">
     <a href="#services" (click)="toggleMobileMenu()">Services</a>
+    @if (announcements().length > 0) {
+      <a href="#announcements" (click)="toggleMobileMenu()">Updates</a>
+    }
     <a href="#browse" (click)="toggleMobileMenu()">Browse Fleet</a>
     <a href="#about" (click)="toggleMobileMenu()">About us</a>
     <a href="#contact" (click)="toggleMobileMenu()">Contact us</a>
@@ -63,6 +69,36 @@
       >
     }
   </div>
+
+  <!-- Scrolling Marquee Ticker (Customizable by Admin) -->
+  @if (ticker()?.isActive && ticker()?.message) {
+    <div class="rr-ticker-bar" [attr.data-speed]="ticker()?.speed || 'normal'">
+      <div class="ticker-inner">
+        <div class="ticker-badge">
+          <span class="ticker-dot"></span>
+          <span>{{ ticker()?.badgeText || 'ANNOUNCEMENT' }}</span>
+        </div>
+        <div class="ticker-track-wrapper">
+          <div class="ticker-track">
+            <span class="ticker-text">{{ ticker()?.message }}</span>
+            <span class="ticker-separator">✦</span>
+            <span class="ticker-text">{{ ticker()?.message }}</span>
+            <span class="ticker-separator">✦</span>
+            <span class="ticker-text">{{ ticker()?.message }}</span>
+          </div>
+        </div>
+        @if (ticker()?.linkText) {
+          <a
+            [href]="ticker()?.linkUrl || '#announcements'"
+            class="ticker-cta"
+          >
+            <span>{{ ticker()?.linkText }}</span>
+            <ng-icon name="lucideExternalLink"></ng-icon>
+          </a>
+        }
+      </div>
+    </div>
+  }
 
   <!-- Hero Section -->
   <section class="hero">
@@ -91,6 +127,151 @@
       </div>
     </div>
   </section>
+
+  <!-- Announcements Section: Offers, Intimations & Festival Wishes -->
+  @if (announcements().length > 0) {
+    <section class="announcements-section" id="announcements">
+      <div class="section-container">
+        <div class="section-header">
+          <span class="section-tagline">Highlights & Notices</span>
+          <h2>Exclusive Offers & Fleet Intimations</h2>
+          <p class="section-desc">
+            Stay informed with seasonal rental packages, road safety advisories, and warm festive wishes.
+          </p>
+        </div>
+
+        <!-- Category Filters -->
+        <div class="announcement-tabs">
+          <button
+            type="button"
+            class="announcement-tab"
+            [class.active]="selectedAnnouncementCategory() === 'all'"
+            (click)="setAnnouncementCategory('all')"
+          >
+            <span>All Updates</span>
+            <span class="tab-count">{{ announcementCounts().all }}</span>
+          </button>
+          @if (announcementCounts().offer > 0) {
+            <button
+              type="button"
+              class="announcement-tab offer-tab"
+              [class.active]="selectedAnnouncementCategory() === 'offer'"
+              (click)="setAnnouncementCategory('offer')"
+            >
+              <ng-icon name="lucideGift"></ng-icon>
+              <span>Offers & Deals</span>
+              <span class="tab-count">{{ announcementCounts().offer }}</span>
+            </button>
+          }
+          @if (announcementCounts().intimation > 0) {
+            <button
+              type="button"
+              class="announcement-tab intimation-tab"
+              [class.active]="selectedAnnouncementCategory() === 'intimation'"
+              (click)="setAnnouncementCategory('intimation')"
+            >
+              <ng-icon name="lucideShield"></ng-icon>
+              <span>Intimations</span>
+              <span class="tab-count">{{ announcementCounts().intimation }}</span>
+            </button>
+          }
+          @if (announcementCounts().festival > 0) {
+            <button
+              type="button"
+              class="announcement-tab festival-tab"
+              [class.active]="selectedAnnouncementCategory() === 'festival'"
+              (click)="setAnnouncementCategory('festival')"
+            >
+              <ng-icon name="lucideSparkles"></ng-icon>
+              <span>Festival Wishes</span>
+              <span class="tab-count">{{ announcementCounts().festival }}</span>
+            </button>
+          }
+        </div>
+
+        <!-- Cards Grid -->
+        <div class="announcement-grid">
+          @for (item of filteredAnnouncements(); track item._id) {
+            <div
+              class="announcement-card"
+              [attr.data-category]="item.category"
+            >
+              <div class="card-glow"></div>
+              <div class="card-top">
+                <div class="card-badge-row">
+                  <span class="card-cat-badge">
+                    @if (item.category === 'offer') {
+                      <ng-icon name="lucideGift"></ng-icon>
+                      <span>Special Offer</span>
+                    } @else if (item.category === 'festival') {
+                      <ng-icon name="lucideSparkles"></ng-icon>
+                      <span>Festival Wish</span>
+                    } @else {
+                      <ng-icon name="lucideShield"></ng-icon>
+                      <span>Fleet Advisory</span>
+                    }
+                  </span>
+                  @if (item.discountText) {
+                    <span class="discount-badge">{{ item.discountText }}</span>
+                  }
+                </div>
+                <h3 class="card-title">{{ item.title }}</h3>
+                @if (item.tag) {
+                  <span class="card-tag">{{ item.tag }}</span>
+                }
+              </div>
+
+              <div class="card-body">
+                <p class="card-desc">{{ item.description }}</p>
+
+                @if (item.promoCode) {
+                  <div class="promo-box">
+                    <div class="promo-info">
+                      <span class="promo-label">Coupon Code</span>
+                      <span class="promo-code">{{ item.promoCode }}</span>
+                    </div>
+                    <button
+                      type="button"
+                      class="promo-copy-btn"
+                      (click)="copyPromoCode(item.promoCode)"
+                      [hlmTooltip]="'Copy coupon code'"
+                    >
+                      <ng-icon [name]="copiedPromoCode() === item.promoCode ? 'lucideCheck' : 'lucideCopy'"></ng-icon>
+                      <span>{{ copiedPromoCode() === item.promoCode ? 'Copied' : 'Copy' }}</span>
+                    </button>
+                  </div>
+                }
+
+                @if (item.validUntil) {
+                  <div class="validity-row">
+                    <ng-icon name="lucideCalendar"></ng-icon>
+                    <span>Valid until {{ item.validUntil | date:'mediumDate' }}</span>
+                  </div>
+                }
+              </div>
+
+              @if (item.ctaText) {
+                <div class="card-footer">
+                  <button
+                    type="button"
+                    class="card-action-btn"
+                    (click)="handleAnnouncementAction(item)"
+                  >
+                    <span>{{ item.ctaText }}</span>
+                    @if (item.ctaAction === 'call') {
+                      <ng-icon name="lucidePhone"></ng-icon>
+                    } @else {
+                      <ng-icon name="lucideArrowRight"></ng-icon>
+                    }
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+  }
 
   <!-- Services Section -->
   <section class="services" id="services">

@@ -324,3 +324,43 @@ export interface IRRVehicleAvailability {
   isAvailable: boolean;
   status: VehicleStatus;
 }
+
+export type RRAnnouncementCategory = 'offer' | 'intimation' | 'festival';
+
+export interface IRRScrollingTicker {
+  message: string;
+  badgeText: string;
+  isActive: boolean;
+  speed?: 'slow' | 'normal' | 'fast';
+  linkText?: string;
+  linkUrl?: string;
+  updatedAt?: string;
+  updatedBy?: string;
+}
+
+export interface IRRAnnouncementItem {
+  _id?: ObjectId | string;
+  title: string;
+  description: string;
+  category: RRAnnouncementCategory;
+  tag?: string;
+  promoCode?: string;
+  discountText?: string;
+  validFrom?: string;
+  validUntil?: string;
+  ctaText?: string;
+  ctaAction?: 'call' | 'whatsapp' | 'link' | 'none';
+  ctaLink?: string;
+  icon?: string;
+  priority?: number;
+  isActive: boolean;
+  isDeleted?: boolean;
+  createdAt: string;
+  updatedAt?: string;
+  createdBy?: string;
+}
+
+export interface IRRHomepageAnnouncementsData {
+  ticker: IRRScrollingTicker;
+  items: IRRAnnouncementItem[];
+}

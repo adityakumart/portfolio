@@ -13,6 +13,7 @@ import { RREmployeeListComponent } from './components/dashboard/components/emplo
 import { RRHistoryComponent } from './components/dashboard/components/history/history.component';
 import { RRActivityLogsComponent } from './components/dashboard/components/activity-logs/activity-logs.component';
 import { RRCustomerListComponent } from './components/dashboard/components/customer-list/customer-list.component';
+import { RRAnnouncementsComponent } from './components/dashboard/components/announcements/announcements.component';
 
 export const RR_ROUTES: Routes = [
   {
@@ -164,6 +165,17 @@ export const RR_ROUTES: Routes = [
           seo: {
             title: 'System Activity Logs | Royal Rentals',
             description: 'Audit log of rental system operations.',
+            robots: 'noindex, nofollow',
+          },
+        },
+      },
+      {
+        path: 'announcements',
+        component: RRAnnouncementsComponent,
+        data: {
+          seo: {
+            title: 'Announcements & Ticker Desk | Royal Rentals',
+            description: 'Manage homepage scrolling ticker, customer intimations, and festival offers.',
             robots: 'noindex, nofollow',
           },
         },

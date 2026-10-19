@@ -253,6 +253,21 @@
                   <span>Audit Logs</span>
                 </div>
               </li>
+              <li
+                class="menu-item"
+                [routerLink]="['/user/rr/announcements']"
+                routerLinkActive="active-menu"
+                [hlmTooltip]="'Announcements & Ticker'"
+                [tooltipDisabled]="!isSidebarCollapsed()"
+                tooltipPosition="right"
+                (click)="closeMobileSidebar()"
+              >
+                <div class="menu-item-pill"></div>
+                <div class="menu-item-content">
+                  <ng-icon name="lucideMegaphone"></ng-icon>
+                  <span>Announcements & Ticker</span>
+                </div>
+              </li>
             }
 
             <li

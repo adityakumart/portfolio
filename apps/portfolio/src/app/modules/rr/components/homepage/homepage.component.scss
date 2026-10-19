@@ -1,1 +1,508 @@
 @use '../../rr-shared.scss';
+
+/* -----------------------------------------------------------
+   HOMEPAGE SCROLLING TICKER MARQUEE (ADMIN CUSTOMIZABLE)
+----------------------------------------------------------- */
+.rr-ticker-bar {
+  width: 100%;
+  position: relative;
+  z-index: 20;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+
+  .ticker-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0.65rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .ticker-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: 9999px;
+    background: rgba(6, 182, 212, 0.15);
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    color: #38bdf8;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    box-shadow: 0 0 12px rgba(6, 182, 212, 0.2);
+
+    .ticker-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #38bdf8;
+      box-shadow: 0 0 8px #38bdf8;
+      animation: pulse-dot 1.8s infinite;
+    }
+  }
+
+  .ticker-track-wrapper {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      black 24px,
+      black calc(100% - 24px),
+      transparent
+    );
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent,
+      black 24px,
+      black calc(100% - 24px),
+      transparent
+    );
+  }
+
+  .ticker-track {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    animation: marquee-linear 22s linear infinite;
+    will-change: transform;
+
+    &:hover {
+      animation-play-state: paused;
+    }
+  }
+
+  &[data-speed='slow'] .ticker-track {
+    animation-duration: 34s;
+  }
+  &[data-speed='normal'] .ticker-track {
+    animation-duration: 22s;
+  }
+  &[data-speed='fast'] .ticker-track {
+    animation-duration: 13s;
+  }
+
+  .ticker-text {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #e2e8f0;
+    letter-spacing: 0.015em;
+  }
+
+  .ticker-separator {
+    margin: 0 1.5rem;
+    color: rgba(56, 189, 248, 0.6);
+    font-size: 0.75rem;
+  }
+
+  .ticker-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #38bdf8;
+    text-decoration: none;
+    flex-shrink: 0;
+    padding: 0.25rem 0.65rem;
+    border-radius: 0.5rem;
+    background: rgba(56, 189, 248, 0.1);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba(56, 189, 248, 0.2);
+      color: #7dd3fc;
+      transform: translateX(2px);
+    }
+  }
+}
+
+@keyframes marquee-linear {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.8);
+  }
+}
+
+/* -----------------------------------------------------------
+   DEDICATED SECTION: OFFERS, INTIMATIONS & FESTIVAL WISHES
+----------------------------------------------------------- */
+.announcements-section {
+  position: relative;
+  z-index: 2;
+  padding: 5rem 1.5rem;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.6) 0%, rgba(10, 15, 30, 0.95) 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+
+  .section-container {
+    max-width: 1300px;
+    margin: 0 auto;
+  }
+
+  /* Interactive Category Tabs */
+  .announcement-tabs {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+    margin-bottom: 3rem;
+  }
+
+  .announcement-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 1.15rem;
+    border-radius: 9999px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.04);
+    color: #94a3b8;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    user-select: none;
+
+    .tab-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.25rem;
+      height: 1.25rem;
+      padding: 0 0.35rem;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #e2e8f0;
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #f1f5f9;
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    &.active {
+      background: rgba(6, 182, 212, 0.15);
+      border-color: rgba(6, 182, 212, 0.6);
+      color: #38bdf8;
+      box-shadow: 0 0 16px rgba(6, 182, 212, 0.25);
+
+      .tab-count {
+        background: #06b6d4;
+        color: #042f2e;
+      }
+    }
+
+    &.offer-tab.active {
+      background: rgba(245, 158, 11, 0.15);
+      border-color: rgba(245, 158, 11, 0.6);
+      color: #fbbf24;
+      box-shadow: 0 0 16px rgba(245, 158, 11, 0.25);
+
+      .tab-count {
+        background: #f59e0b;
+        color: #451a03;
+      }
+    }
+
+    &.intimation-tab.active {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: rgba(56, 189, 248, 0.6);
+      color: #38bdf8;
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.25);
+
+      .tab-count {
+        background: #38bdf8;
+        color: #082f49;
+      }
+    }
+
+    &.festival-tab.active {
+      background: rgba(168, 85, 247, 0.15);
+      border-color: rgba(168, 85, 247, 0.6);
+      color: #c084fc;
+      box-shadow: 0 0 16px rgba(168, 85, 247, 0.25);
+
+      .tab-count {
+        background: #a855f7;
+        color: #3b0764;
+      }
+    }
+  }
+
+  /* Cards Grid */
+  .announcement-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1.75rem;
+  }
+
+  .announcement-card {
+    position: relative;
+    border-radius: 1.25rem;
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+
+    .card-glow {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      filter: blur(50px);
+      pointer-events: none;
+      opacity: 0.15;
+      transition: opacity 0.3s ease;
+    }
+
+    &:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
+
+      .card-glow {
+        opacity: 0.35;
+      }
+    }
+
+    /* Category Theming */
+    &[data-category='offer'] {
+      border-top: 2px solid #f59e0b;
+      .card-glow {
+        background: #f59e0b;
+      }
+      .card-cat-badge {
+        background: rgba(245, 158, 11, 0.15);
+        color: #fbbf24;
+        border-color: rgba(245, 158, 11, 0.3);
+      }
+    }
+
+    &[data-category='festival'] {
+      border-top: 2px solid #a855f7;
+      .card-glow {
+        background: #a855f7;
+      }
+      .card-cat-badge {
+        background: rgba(168, 85, 247, 0.15);
+        color: #c084fc;
+        border-color: rgba(168, 85, 247, 0.3);
+      }
+    }
+
+    &[data-category='intimation'] {
+      border-top: 2px solid #06b6d4;
+      .card-glow {
+        background: #06b6d4;
+      }
+      .card-cat-badge {
+        background: rgba(6, 182, 212, 0.15);
+        color: #38bdf8;
+        border-color: rgba(6, 182, 212, 0.3);
+      }
+    }
+
+    .card-top {
+      margin-bottom: 1.25rem;
+    }
+
+    .card-badge-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-bottom: 0.85rem;
+    }
+
+    .card-cat-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.2rem 0.65rem;
+      border-radius: 9999px;
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border: 1px solid transparent;
+    }
+
+    .discount-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.2rem 0.65rem;
+      border-radius: 9999px;
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #f8fafc;
+      line-height: 1.35;
+      margin-bottom: 0.35rem;
+    }
+
+    .card-tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 0.15rem 0.55rem;
+      border-radius: 0.35rem;
+    }
+
+    .card-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .card-desc {
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      line-height: 1.6;
+    }
+
+    /* Coupon Promo Box */
+    .promo-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      padding: 0.65rem 0.85rem;
+      border-radius: 0.75rem;
+      border: 1px dashed rgba(245, 158, 11, 0.4);
+      background: rgba(245, 158, 11, 0.08);
+
+      .promo-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.1rem;
+      }
+
+      .promo-label {
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        color: #f59e0b;
+      }
+
+      .promo-code {
+        font-family: monospace;
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: #fef08a;
+        letter-spacing: 0.08em;
+      }
+
+      .promo-copy-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 0.5rem;
+        background: #f59e0b;
+        color: #451a03;
+        font-size: 0.75rem;
+        font-weight: 800;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: #fbbf24;
+          transform: scale(1.02);
+        }
+      }
+    }
+
+    .validity-row {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+
+    .card-footer {
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .card-action-btn {
+      width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.7rem 1.25rem;
+      border-radius: 0.75rem;
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(59, 130, 246, 0.2));
+      border: 1px solid rgba(6, 182, 212, 0.4);
+      color: #e0f2fe;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.25s ease;
+
+      &:hover {
+        background: linear-gradient(135deg, #06b6d4, #3b82f6);
+        color: #ffffff;
+        box-shadow: 0 4px 18px rgba(6, 182, 212, 0.35);
+        transform: translateY(-1px);
+      }
+    }
+  }
+}
+
+/* Reduced Motion Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .rr-ticker-bar .ticker-track {
+    animation: none;
+    transform: none;
+  }
+}
