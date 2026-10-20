@@ -422,7 +422,7 @@ export class AuthService {
         if (!raw) return null;
 
         if (key === this.STORAGE_KEY) {
-          const decrypted = this.decryptData(raw);
+          const decrypted = raw.trim().startsWith('{') ? raw : this.decryptData(raw);
           if (!decrypted) {
             console.warn('[Security] Failed to decrypt session data from storage.');
             return null;
