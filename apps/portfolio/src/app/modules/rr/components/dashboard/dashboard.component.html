@@ -221,85 +221,127 @@
               </div>
             </li>
 
-            <!-- Section: Administrative (Admin Only) -->
+            <!-- Section: Administration (Admin Consolidated Submenu) -->
             @if (isAdmin()) {
               <li
-                class="menu-item"
-                [routerLink]="['/user/rr/employee/list']"
-                routerLinkActive="active-menu"
-                [hlmTooltip]="'Staff Registry'"
+                class="menu-item menu-parent"
+                [class.open]="adminSubmenuOpen()"
+                [class.parent-active]="isAdminRouteActive()"
+                [hlmTooltip]="'Administration'"
                 [tooltipDisabled]="!isSidebarCollapsed()"
                 tooltipPosition="right"
-                (click)="closeMobileSidebar()"
+                (click)="toggleAdminSubmenu($event)"
               >
                 <div class="menu-item-pill"></div>
                 <div class="menu-item-content">
-                  <ng-icon name="lucideBadgeCheck"></ng-icon>
-                  <span>Staff Registry</span>
+                  <div class="menu-parent-label">
+                    <ng-icon name="lucideShieldCheck"></ng-icon>
+                    <span>Administration</span>
+                  </div>
+                  <ng-icon
+                    name="lucideChevronDown"
+                    class="submenu-chevron"
+                  ></ng-icon>
                 </div>
               </li>
-              <li
-                class="menu-item"
-                [routerLink]="['/user/rr/activity-logs']"
-                routerLinkActive="active-menu"
-                [hlmTooltip]="'Audit Logs'"
-                [tooltipDisabled]="!isSidebarCollapsed()"
-                tooltipPosition="right"
-                (click)="closeMobileSidebar()"
-              >
-                <div class="menu-item-pill"></div>
-                <div class="menu-item-content">
-                  <ng-icon name="lucideActivity"></ng-icon>
-                  <span>Audit Logs</span>
+
+              @if (adminSubmenuOpen()) {
+                <div class="submenu-container">
+                  <li
+                    class="menu-item submenu-item"
+                    [routerLink]="['/user/rr/employee/list']"
+                    routerLinkActive="active-menu"
+                    [hlmTooltip]="'Staff Registry'"
+                    [tooltipDisabled]="!isSidebarCollapsed()"
+                    tooltipPosition="right"
+                    (click)="closeMobileSidebar()"
+                  >
+                    <div class="menu-item-pill"></div>
+                    <div class="menu-item-content">
+                      <ng-icon name="lucideBadgeCheck"></ng-icon>
+                      <span>Staff Registry</span>
+                    </div>
+                  </li>
+                  <li
+                    class="menu-item submenu-item"
+                    [routerLink]="['/user/rr/activity-logs']"
+                    routerLinkActive="active-menu"
+                    [hlmTooltip]="'Audit Logs'"
+                    [tooltipDisabled]="!isSidebarCollapsed()"
+                    tooltipPosition="right"
+                    (click)="closeMobileSidebar()"
+                  >
+                    <div class="menu-item-pill"></div>
+                    <div class="menu-item-content">
+                      <ng-icon name="lucideActivity"></ng-icon>
+                      <span>Audit Logs</span>
+                    </div>
+                  </li>
+                  <li
+                    class="menu-item submenu-item"
+                    [routerLink]="['/user/rr/announcements']"
+                    routerLinkActive="active-menu"
+                    [hlmTooltip]="'Announcements & Ticker'"
+                    [tooltipDisabled]="!isSidebarCollapsed()"
+                    tooltipPosition="right"
+                    (click)="closeMobileSidebar()"
+                  >
+                    <div class="menu-item-pill"></div>
+                    <div class="menu-item-content">
+                      <ng-icon name="lucideMegaphone"></ng-icon>
+                      <span>Announcements & Ticker</span>
+                    </div>
+                  </li>
+                  <li
+                    class="menu-item submenu-item"
+                    [routerLink]="['/user/rr/home-content']"
+                    routerLinkActive="active-menu"
+                    [hlmTooltip]="'Homepage CMS & Banners'"
+                    [tooltipDisabled]="!isSidebarCollapsed()"
+                    tooltipPosition="right"
+                    (click)="closeMobileSidebar()"
+                  >
+                    <div class="menu-item-pill"></div>
+                    <div class="menu-item-content">
+                      <ng-icon name="lucidePalette"></ng-icon>
+                      <span>Homepage CMS</span>
+                    </div>
+                  </li>
+                  <li
+                    class="menu-item submenu-item"
+                    [routerLink]="['/user/rr/history']"
+                    routerLinkActive="active-menu"
+                    [hlmTooltip]="'Historical Logs'"
+                    [tooltipDisabled]="!isSidebarCollapsed()"
+                    tooltipPosition="right"
+                    (click)="closeMobileSidebar()"
+                  >
+                    <div class="menu-item-pill"></div>
+                    <div class="menu-item-content">
+                      <ng-icon name="lucideHistory"></ng-icon>
+                      <span>Historical Logs</span>
+                    </div>
+                  </li>
                 </div>
-              </li>
+              }
+            } @else {
+              <!-- Non-Admin: Historical Logs -->
               <li
                 class="menu-item"
-                [routerLink]="['/user/rr/announcements']"
+                [routerLink]="['/user/rr/history']"
                 routerLinkActive="active-menu"
-                [hlmTooltip]="'Announcements & Ticker'"
+                [hlmTooltip]="'Historical Logs'"
                 [tooltipDisabled]="!isSidebarCollapsed()"
                 tooltipPosition="right"
                 (click)="closeMobileSidebar()"
               >
                 <div class="menu-item-pill"></div>
                 <div class="menu-item-content">
-                  <ng-icon name="lucideMegaphone"></ng-icon>
-                  <span>Announcements & Ticker</span>
-                </div>
-              </li>
-              <li
-                class="menu-item"
-                [routerLink]="['/user/rr/home-content']"
-                routerLinkActive="active-menu"
-                [hlmTooltip]="'Homepage CMS & Banners'"
-                [tooltipDisabled]="!isSidebarCollapsed()"
-                tooltipPosition="right"
-                (click)="closeMobileSidebar()"
-              >
-                <div class="menu-item-pill"></div>
-                <div class="menu-item-content">
-                  <ng-icon name="lucidePalette"></ng-icon>
-                  <span>Homepage CMS</span>
+                  <ng-icon name="lucideHistory"></ng-icon>
+                  <span>Historical Logs</span>
                 </div>
               </li>
             }
-
-            <li
-              class="menu-item"
-              [routerLink]="['/user/rr/history']"
-              routerLinkActive="active-menu"
-              [hlmTooltip]="'Historical Logs'"
-              [tooltipDisabled]="!isSidebarCollapsed()"
-              tooltipPosition="right"
-              (click)="closeMobileSidebar()"
-            >
-              <div class="menu-item-pill"></div>
-              <div class="menu-item-content">
-                <ng-icon name="lucideHistory"></ng-icon>
-                <span>Historical Logs</span>
-              </div>
-            </li>
           </ul>
         </div>
       </div>

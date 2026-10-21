@@ -131,12 +131,13 @@ test.describe('RoadReady (RR) Module - End-to-End Suite', () => {
       // Admin header credentials
       const header = page.locator('header.app-header');
       await expect(header.getByText('Admin Operator')).toBeVisible();
-      await expect(header.getByText('ADMIN')).toBeVisible();
+      await expect(header.locator('.text-cyan-500')).toHaveText(/admin/i);
 
       // Admin sidebar navigation contains Staff Registry and Audit Logs
       const toggleBtn = page.locator('.sidebar-toggle-btn');
       await toggleBtn.click();
       const sidebar = page.locator('aside.sidebar');
+      await expect(sidebar.getByText('Administration')).toBeVisible();
       await expect(sidebar.getByText('Staff Registry')).toBeVisible();
       await expect(sidebar.getByText('Audit Logs')).toBeVisible();
     });
