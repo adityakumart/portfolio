@@ -37,6 +37,7 @@ import {
   lucideCheckSquare,
   lucideGamepad2,
   lucideList,
+  lucideCar,
 } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmCardImports } from '@spartan-ng/hel/card';
@@ -53,8 +54,9 @@ import {
   IMovie,
 } from '@portfolio/shared-types';
 import { MovieImporterComponent } from '../../../movie-importer/movie-importer.component';
+import { RRHomeContentAdminComponent } from '../../../rr/components/dashboard/components/home-content/home-content.component';
 
-export type AdminTab = 'overview' | 'users' | 'movies' | 'importer';
+export type AdminTab = 'overview' | 'users' | 'movies' | 'importer' | 'rr-home';
 export type MovieSubTab = 'importer' | 'list';
 
 @Component({
@@ -69,6 +71,7 @@ export type MovieSubTab = 'importer' | 'list';
     HlmBadgeImports,
     HlmInputImports,
     MovieImporterComponent,
+    RRHomeContentAdminComponent,
   ],
   providers: [
     provideIcons({
@@ -98,6 +101,7 @@ export type MovieSubTab = 'importer' | 'list';
       lucideCheckSquare,
       lucideGamepad2,
       lucideList,
+      lucideCar,
     }),
   ],
   templateUrl: './admin-panel.component.html',

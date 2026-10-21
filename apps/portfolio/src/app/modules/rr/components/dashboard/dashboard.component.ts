@@ -30,6 +30,7 @@ import {
   lucideAlertTriangle,
   lucideCheck,
   lucideMegaphone,
+  lucidePalette,
 } from '@ng-icons/lucide';
 import { HlmDialogService } from '@spartan-ng/hel/dialog';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
@@ -88,6 +89,7 @@ import { RRLockScreenComponent } from '../lock-screen/rr-lock-screen.component';
       lucideAlertTriangle,
       lucideCheck,
       lucideMegaphone,
+      lucidePalette,
     }),
   ],
   templateUrl: './dashboard.component.html',

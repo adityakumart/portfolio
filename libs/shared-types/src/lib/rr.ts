@@ -364,3 +364,264 @@ export interface IRRHomepageAnnouncementsData {
   ticker: IRRScrollingTicker;
   items: IRRAnnouncementItem[];
 }
+
+export interface IRRHomeBanner {
+  id: string;
+  imageUrl: string;
+  title?: string;
+  subtitle?: string;
+  altText?: string;
+  badgeText?: string;
+  ctaText?: string;
+  ctaLink?: string;
+  isActive: boolean;
+  order: number;
+}
+
+export interface IRRHomeHeroContent {
+  badge: string;
+  title: string;
+  subtitle: string;
+  primaryCtaText: string;
+  primaryCtaLink: string;
+  secondaryCtaText: string;
+  secondaryCtaLink: string;
+  banners: IRRHomeBanner[];
+  autoRotateBanners: boolean;
+  bannerIntervalSeconds: number;
+}
+
+export interface IRRHomeServiceItem {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  hoverText?: string;
+  isActive: boolean;
+  order: number;
+}
+
+export interface IRRHomeServicesSection {
+  tagline: string;
+  title: string;
+  description: string;
+  items: IRRHomeServiceItem[];
+}
+
+export interface IRRHomeStatItem {
+  id: string;
+  value: string;
+  label: string;
+  order: number;
+}
+
+export interface IRRHomeAboutSection {
+  tagline: string;
+  title: string;
+  paragraphs: string[];
+  stats: IRRHomeStatItem[];
+}
+
+export interface IRRHomeFleetSection {
+  tagline: string;
+  title: string;
+  description: string;
+}
+
+export interface IRRHomeContactItem {
+  id: string;
+  type: 'address' | 'phone' | 'email' | 'web';
+  title: string;
+  values: string[];
+  icon: string;
+  order: number;
+}
+
+export interface IRRHomeContactSection {
+  tagline: string;
+  title: string;
+  description: string;
+  items: IRRHomeContactItem[];
+  primaryPhone: string;
+  primaryPhoneRaw: string;
+  secondaryPhone: string;
+  secondaryPhoneRaw: string;
+  whatsappNumberRaw: string;
+}
+
+export interface IRRHomeFooterContent {
+  brandName: string;
+  copyrightText: string;
+}
+
+export interface IRRHomePageContent {
+  _id?: ObjectId | string;
+  isCustomized: boolean;
+  hero: IRRHomeHeroContent;
+  services: IRRHomeServicesSection;
+  fleet: IRRHomeFleetSection;
+  about: IRRHomeAboutSection;
+  contact: IRRHomeContactSection;
+  footer: IRRHomeFooterContent;
+  updatedAt?: string;
+  updatedBy?: string;
+}
+
+export const DEFAULT_RR_HOMEPAGE_CONTENT: IRRHomePageContent = {
+  isCustomized: false,
+  hero: {
+    badge: 'PREMIUM CAR RENTALS & FLEET COMMAND',
+    title: 'Uncompromising Comfort for Every Journey',
+    subtitle:
+      "Experience seamless travels with Kakinada's premier car rental fleet. Tailored corporate solutions, local sightseeing, and self-drive luxury with zero hidden charges.",
+    primaryCtaText: 'Explore Fleet',
+    primaryCtaLink: '#browse',
+    secondaryCtaText: 'Book Consultation',
+    secondaryCtaLink: '#contact',
+    autoRotateBanners: true,
+    bannerIntervalSeconds: 6,
+    banners: [
+      {
+        id: 'default-hero-1',
+        imageUrl:
+          'https://pub-5892202ec1784725a7afbb07173ed9c1.r2.dev/public_assets/porsche.png',
+        title: 'Uncompromising Comfort for Every Journey',
+        subtitle: 'Experience seamless travels with luxury performance.',
+        altText: 'RoadReady Rentals Luxury Fleet',
+        isActive: true,
+        order: 1,
+      },
+    ],
+  },
+  services: {
+    tagline: 'Capabilities',
+    title: 'Our Premium Services',
+    description:
+      'Designed to cover all your travel requirements with absolute safety, luxury, and reliability.',
+    items: [
+      {
+        id: 'srv-1',
+        title: 'Self Drive Cars',
+        description:
+          'Flexible self-drive solutions with well-maintained hatchbacks, sedans, and SUVs.',
+        icon: 'lucideKey',
+        hoverText: 'Drive at your own pace with unlimited control.',
+        isActive: true,
+        order: 1,
+      },
+      {
+        id: 'srv-2',
+        title: 'Local Sight Seeing',
+        description:
+          'Uncover local treasures with customizable day trips and travel assistance.',
+        icon: 'lucideMap',
+        hoverText: 'Explore city attractions with professional guides.',
+        isActive: true,
+        order: 2,
+      },
+      {
+        id: 'srv-3',
+        title: 'Outstations Pickups',
+        description:
+          'Reliable airport drops, terminal connections, and outstation travels.',
+        icon: 'lucidePlane',
+        hoverText: 'Safe and convenient one-way/roundout journeys.',
+        isActive: true,
+        order: 3,
+      },
+      {
+        id: 'srv-4',
+        title: 'Package Tours',
+        description:
+          'Enjoy unified hotel pairings, route guides, and custom family tour packages.',
+        icon: 'lucideGift',
+        hoverText: 'Bespoke travel packages for holidays and events.',
+        isActive: true,
+        order: 4,
+      },
+      {
+        id: 'srv-5',
+        title: 'Corporate Transits',
+        description:
+          'Elevated employee transit, client commute solutions, and executive leasing.',
+        icon: 'lucideBuilding',
+        hoverText: 'Long-term corporate contracts and executive transit.',
+        isActive: true,
+        order: 5,
+      },
+    ],
+  },
+  fleet: {
+    tagline: 'Our Fleet',
+    title: 'Browse by Category',
+    description:
+      'Select from our wide selection of fully inspected, cleaned, and road-ready vehicles.',
+  },
+  about: {
+    tagline: 'Who We Are',
+    title: 'Over a Decade of Travel Excellence',
+    paragraphs: [
+      "RoadReady Rentals has been Suryanarayana Puram's most trusted travel facilitator for over ten years. We bridge the gap between premium passenger fleet availability and pocket-friendly consumer bookings.",
+      'Our commitment remains absolute: well-maintained models, verified professional drivers, punctual pickups, and complete billing transparency. From quick commutes to outstation holidays, we make every trip an experience in comfort.',
+    ],
+    stats: [
+      { id: 'stat-1', value: '10+', label: 'Years Experience', order: 1 },
+      { id: 'stat-2', value: '50+', label: 'Fleet Vehicles', order: 2 },
+      { id: 'stat-3', value: '15k+', label: 'Happy Bookings', order: 3 },
+      { id: 'stat-4', value: '100%', label: 'Safe Rides', order: 4 },
+    ],
+  },
+  contact: {
+    tagline: 'Get In Touch',
+    title: 'Connect With Our Desk',
+    description:
+      'Our booking desk is open 24/7. Reach out to schedule a custom trip or lease a vehicle.',
+    primaryPhone: '+91 9494873336',
+    primaryPhoneRaw: '9494873336',
+    secondaryPhone: '+91 9494893336',
+    secondaryPhoneRaw: '9494893336',
+    whatsappNumberRaw: '9494873336',
+    items: [
+      {
+        id: 'contact-1',
+        type: 'address',
+        title: 'Office Address',
+        values: [
+          'RoadReady Rentals Automotives',
+          'Cinema road, Suryanarayana puram, Kakinada, AP 533001',
+        ],
+        icon: 'lucideMapPin',
+        order: 1,
+      },
+      {
+        id: 'contact-2',
+        type: 'phone',
+        title: 'Phone Desk',
+        values: ['+91 9494873336', '+91 9494893336'],
+        icon: 'lucidePhone',
+        order: 2,
+      },
+      {
+        id: 'contact-3',
+        type: 'email',
+        title: 'Email Enquiries',
+        values: ['support@roadready.com', 'info@rams-cars.com'],
+        icon: 'lucideMail',
+        order: 3,
+      },
+      {
+        id: 'contact-4',
+        type: 'web',
+        title: 'Web Portal',
+        values: ['roadreadyrentals.com'],
+        icon: 'lucideGlobe',
+        order: 4,
+      },
+    ],
+  },
+  footer: {
+    brandName: 'RoadReady Rentals',
+    copyrightText:
+      '© 2026 RoadReady Rentals — Built for Ultimate Comfort and Speed',
+  },
+};

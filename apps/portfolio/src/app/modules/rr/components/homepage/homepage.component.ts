@@ -32,6 +32,8 @@ import {
   lucideMegaphone,
   lucideTag,
   lucideCalendar,
+  lucideChevronLeft,
+  lucideChevronRight,
 } from '@ng-icons/lucide';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmBadgeImports } from '@spartan-ng/hel/badge';
@@ -46,6 +48,8 @@ import {
   IRRAnnouncementItem,
   IRRScrollingTicker,
   RRAnnouncementCategory,
+  IRRHomePageContent,
+  DEFAULT_RR_HOMEPAGE_CONTENT,
 } from '@portfolio/shared-types';
 import { RRVehicleCardComponent, RRCarLoaderComponent, RRVehicleImageCarouselComponent } from '../../shared';
 
@@ -96,6 +100,8 @@ import { RRVehicleCardComponent, RRCarLoaderComponent, RRVehicleImageCarouselCom
       lucideMegaphone,
       lucideTag,
       lucideCalendar,
+      lucideChevronLeft,
+      lucideChevronRight,
     }),
   ],
   templateUrl: './homepage.component.html',
@@ -106,11 +112,28 @@ export class RRHomepageComponent implements OnInit, OnDestroy {
   private rrPublicApi = inject(RRPublicApiService);
   private router = inject(Router);
 
-  // Desk Phone Info
-  readonly primaryPhone = '+91 9494873336';
-  readonly primaryPhoneRaw = '9494873336';
-  readonly secondaryPhone = '+91 9494893336';
-  readonly secondaryPhoneRaw = '9494893336';
+  // Dynamic Homepage Content Signal with Defaults
+  homeContent = signal<IRRHomePageContent>(DEFAULT_RR_HOMEPAGE_CONTENT);
+
+  // Dynamic Desk Phone Info derived from content
+  primaryPhone = computed(() => this.homeContent().contact.primaryPhone || '+91 9494873336');
+  primaryPhoneRaw = computed(() => this.homeContent().contact.primaryPhoneRaw || '9494873336');
+  secondaryPhone = computed(() => this.homeContent().contact.secondaryPhone || '+91 9494893336');
+  secondaryPhoneRaw = computed(() => this.homeContent().contact.secondaryPhoneRaw || '9494893336');
+  whatsappNumberRaw = computed(() => this.homeContent().contact.whatsappNumberRaw || '9494873336');
+
+  // Hero Banners Carousel State
+  activeHeroBannerIndex = signal<number>(0);
+  private heroBannerTimer?: ReturnType<typeof setInterval>;
+
+  activeHeroBanner = computed(() => {
+    const banners = this.homeContent().hero.banners || [];
+    const idx = this.activeHeroBannerIndex();
+    if (banners.length > idx && banners[idx]) {
+      return banners[idx];
+    }
+    return banners[0] || DEFAULT_RR_HOMEPAGE_CONTENT.hero.banners[0];
+  });
 
   // State Signals
   vehicles = signal<IPublicVehicle[]>([]);
@@ -198,6 +221,7 @@ export class RRHomepageComponent implements OnInit, OnDestroy {
     this.startCarLoaderSequence();
     this.loadVehicles();
     this.loadAnnouncements();
+    this.loadHomeContent();
   }
 
   @HostListener('window:resize')
@@ -217,6 +241,9 @@ export class RRHomepageComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.clearLoaderTimers();
+    if (this.heroBannerTimer) {
+      clearInterval(this.heroBannerTimer);
+    }
   }
 
   private clearLoaderTimers() {
@@ -280,6 +307,51 @@ export class RRHomepageComponent implements OnInit, OnDestroy {
     }
   }
 
+  async loadHomeContent() {
+    try {
+      const data = await this.rrPublicApi.getHomeContent();
+      if (data) {
+        this.homeContent.set(data);
+        this.setupHeroBannerRotator();
+      }
+    } catch (e) {
+      console.error('Error fetching home content for homepage:', e);
+    }
+  }
+
+  private setupHeroBannerRotator() {
+    if (this.heroBannerTimer) {
+      clearInterval(this.heroBannerTimer);
+      this.heroBannerTimer = undefined;
+    }
+    const hero = this.homeContent().hero;
+    if (hero?.autoRotateBanners && hero?.banners && hero.banners.length > 1) {
+      const intervalMs = Math.max(2, hero.bannerIntervalSeconds || 6) * 1000;
+      this.heroBannerTimer = setInterval(() => {
+        const next = (this.activeHeroBannerIndex() + 1) % hero.banners.length;
+        this.activeHeroBannerIndex.set(next);
+      }, intervalMs);
+    }
+  }
+
+  nextBanner() {
+    const banners = this.homeContent().hero.banners || [];
+    if (banners.length > 1) {
+      this.activeHeroBannerIndex.update((i) => (i + 1) % banners.length);
+    }
+  }
+
+  prevBanner() {
+    const banners = this.homeContent().hero.banners || [];
+    if (banners.length > 1) {
+      this.activeHeroBannerIndex.update((i) => (i - 1 + banners.length) % banners.length);
+    }
+  }
+
+  setBannerIndex(idx: number) {
+    this.activeHeroBannerIndex.set(idx);
+  }
+
   async loadAnnouncements() {
     try {
       const data = await this.rrPublicApi.getAnnouncements();
@@ -320,11 +392,11 @@ export class RRHomepageComponent implements OnInit, OnDestroy {
 
   handleAnnouncementAction(item: IRRAnnouncementItem) {
     if (item.ctaAction === 'call') {
-      const phoneToCall = item.ctaLink || this.primaryPhoneRaw;
+      const phoneToCall = item.ctaLink || this.primaryPhoneRaw();
       this.makeDirectCall(phoneToCall.replace(/[^0-9]/g, ''));
     } else if (item.ctaAction === 'whatsapp') {
       const text = `Hello RoadReady Rentals, I would like to inquire about "${item.title}". ${item.promoCode ? 'Promo code: ' + item.promoCode : ''} Please share details.`;
-      const url = `https://wa.me/91${this.primaryPhoneRaw}?text=${encodeURIComponent(text)}`;
+      const url = `https://wa.me/91${this.whatsappNumberRaw()}?text=${encodeURIComponent(text)}`;
       if (typeof window !== 'undefined') {
         window.open(url, '_blank');
       }
@@ -378,21 +450,22 @@ export class RRHomepageComponent implements OnInit, OnDestroy {
   // Reserve Actions
   redirectToWhatsApp(vehicle: IPublicVehicle) {
     const text = `Hello RoadReady Rentals, I would like to reserve ${vehicle.manufacturer} ${vehicle.name}. Please share availability and booking details.`;
-    const url = `https://wa.me/91${this.primaryPhoneRaw}?text=${encodeURIComponent(text)}`;
+    const url = `https://wa.me/91${this.whatsappNumberRaw()}?text=${encodeURIComponent(text)}`;
     if (typeof window !== 'undefined') {
       window.open(url, '_blank');
     }
   }
 
-  makeDirectCall(phoneRaw: string = this.primaryPhoneRaw) {
+  makeDirectCall(phoneRaw?: string) {
+    const targetPhone = phoneRaw || this.primaryPhoneRaw();
     if (typeof window !== 'undefined') {
-      window.location.href = `tel:+91${phoneRaw}`;
+      window.location.href = `tel:+91${targetPhone}`;
     }
   }
 
   handleCardPhoneClick(vehicle: IPublicVehicle) {
     if (this.isMobileDevice()) {
-      this.makeDirectCall(this.primaryPhoneRaw);
+      this.makeDirectCall(this.primaryPhoneRaw());
     } else {
       this.openVehicleModal(vehicle);
     }

@@ -1,0 +1,934 @@
+<div class="cms-container space-y-6 p-4 lg:p-6">
+  <!-- Header Bar -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/60 pb-5">
+    <div>
+      <div class="flex items-center gap-3">
+        <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-cyan-500 via-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md">
+          <ng-icon name="lucidePalette" class="text-xl"></ng-icon>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-2xl font-bold tracking-tight text-foreground">Homepage CMS & Banner Manager</h1>
+            @if (isCustomized()) {
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
+                Dynamic Custom Content Active
+              </span>
+            } @else {
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></span>
+                Factory Default Content
+              </span>
+            }
+          </div>
+          <p class="text-xs text-muted-foreground mt-0.5">
+            Dynamically update hero banners, services, about narratives, metrics, and desk contact points.
+            @if (lastUpdatedAt()) {
+              <span>Last published: {{ lastUpdatedAt() | date:'medium' }}</span>
+            }
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Header Actions -->
+    <div class="flex items-center gap-2.5 flex-wrap">
+      <button
+        hlmBtn
+        variant="outline"
+        size="sm"
+        class="gap-2 rounded-xl"
+        (click)="loadContent()"
+        [disabled]="isLoading() || isSaving()"
+      >
+        <ng-icon name="lucideRefreshCw" [class.animate-spin]="isLoading()" class="text-xs"></ng-icon>
+        <span>Reload</span>
+      </button>
+
+      <button
+        hlmBtn
+        variant="outline"
+        size="sm"
+        class="gap-2 rounded-xl text-destructive hover:bg-destructive/10 border-destructive/30"
+        (click)="promptResetToDefaults()"
+        [disabled]="isLoading() || isSaving() || isResetting()"
+      >
+        <ng-icon name="lucideRotateCcw" class="text-xs"></ng-icon>
+        <span>Restore Defaults</span>
+      </button>
+
+      <a
+        hlmBtn
+        variant="outline"
+        size="sm"
+        href="/user/rr/home"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="gap-2 rounded-xl"
+      >
+        <ng-icon name="lucideExternalLink" class="text-xs"></ng-icon>
+        <span>Live Homepage</span>
+      </a>
+
+      <button
+        hlmBtn
+        variant="default"
+        size="sm"
+        class="gap-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold shadow-md"
+        (click)="saveContent()"
+        [disabled]="isSaving() || isLoading()"
+      >
+        <ng-icon [name]="isSaving() ? 'lucideRefreshCw' : 'lucideSave'" [class.animate-spin]="isSaving()" class="text-sm"></ng-icon>
+        <span>{{ isSaving() ? 'Publishing...' : 'Publish Changes' }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Navigation Tabs -->
+  <div class="flex items-center gap-2 p-1 bg-muted/40 rounded-xl border border-border/60 overflow-x-auto touch-scroll-x">
+    <button
+      type="button"
+      (click)="setTab('hero')"
+      class="flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all shrink-0 cursor-pointer"
+      [ngClass]="activeTab() === 'hero' ? 'bg-card text-foreground shadow-sm border border-border' : 'text-muted-foreground hover:text-foreground'"
+    >
+      <ng-icon name="lucideImage" class="text-sm text-cyan-500"></ng-icon>
+      <span>Hero & Banners ({{ heroBannersArray.length }})</span>
+    </button>
+
+    <button
+      type="button"
+      (click)="setTab('services')"
+      class="flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all shrink-0 cursor-pointer"
+      [ngClass]="activeTab() === 'services' ? 'bg-card text-foreground shadow-sm border border-border' : 'text-muted-foreground hover:text-foreground'"
+    >
+      <ng-icon name="lucideCar" class="text-sm text-blue-500"></ng-icon>
+      <span>Services ({{ serviceItemsArray.length }})</span>
+    </button>
+
+    <button
+      type="button"
+      (click)="setTab('about')"
+      class="flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all shrink-0 cursor-pointer"
+      [ngClass]="activeTab() === 'about' ? 'bg-card text-foreground shadow-sm border border-border' : 'text-muted-foreground hover:text-foreground'"
+    >
+      <ng-icon name="lucideSparkles" class="text-sm text-amber-500"></ng-icon>
+      <span>About Us & Stats</span>
+    </button>
+
+    <button
+      type="button"
+      (click)="setTab('contact')"
+      class="flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all shrink-0 cursor-pointer"
+      [ngClass]="activeTab() === 'contact' ? 'bg-card text-foreground shadow-sm border border-border' : 'text-muted-foreground hover:text-foreground'"
+    >
+      <ng-icon name="lucidePhone" class="text-sm text-emerald-500"></ng-icon>
+      <span>Contact Desk</span>
+    </button>
+
+    <button
+      type="button"
+      (click)="setTab('footer')"
+      class="flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all shrink-0 cursor-pointer"
+      [ngClass]="activeTab() === 'footer' ? 'bg-card text-foreground shadow-sm border border-border' : 'text-muted-foreground hover:text-foreground'"
+    >
+      <ng-icon name="lucideSliders" class="text-sm text-purple-500"></ng-icon>
+      <span>Fleet & Footer</span>
+    </button>
+  </div>
+
+  <form [formGroup]="cmsForm" (ngSubmit)="saveContent()">
+    <!-- TAB 1: HERO & BANNER MANAGEMENT -->
+    @if (activeTab() === 'hero') {
+      <div formGroupName="hero" class="space-y-6 animate-in fade-in-50 duration-200">
+        <!-- Live Miniature Preview Card -->
+        <div class="rounded-2xl border border-border/80 bg-card/60 backdrop-blur-md overflow-hidden shadow-lg p-5">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2">
+              <ng-icon name="lucideEye" class="text-cyan-500 text-lg"></ng-icon>
+              <h3 class="text-sm font-bold text-foreground">Interactive Hero Live Preview</h3>
+            </div>
+            <span class="text-[11px] text-muted-foreground font-medium">Shows active banner and overlay styling</span>
+          </div>
+
+          <div
+            class="relative rounded-xl overflow-hidden p-6 sm:p-10 text-center min-h-[260px] flex flex-col items-center justify-center border border-white/10"
+            [style.background-image]="'linear-gradient(135deg, rgba(3, 7, 18, 0.9) 0%, rgba(15, 23, 42, 0.65) 100%), url(' + (getActivePreviewBanner()?.imageUrl || 'https://pub-5892202ec1784725a7afbb07173ed9c1.r2.dev/public_assets/porsche.png') + ')'"
+            style="background-size: cover; background-position: center;"
+          >
+            <span class="inline-flex items-center px-3 py-1 text-[11px] font-bold rounded-full border border-cyan-400/30 bg-cyan-500/10 text-cyan-300 mb-3 shadow-sm backdrop-blur-xs">
+              <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 mr-2 animate-pulse"></span>
+              {{ cmsForm.get('hero.badge')?.value || 'HERO BADGE' }}
+            </span>
+            <h2 class="text-xl sm:text-3xl font-extrabold text-white tracking-tight max-w-2xl text-shadow-md">
+              {{ cmsForm.get('hero.title')?.value || 'Hero Heading' }}
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-300 max-w-xl mt-2 line-clamp-3 leading-relaxed">
+              {{ cmsForm.get('hero.subtitle')?.value || 'Hero subtitle narrative description...' }}
+            </p>
+            <div class="flex items-center gap-3 mt-5 flex-wrap justify-center">
+              <button
+                type="button"
+                class="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold text-xs shadow-md shadow-cyan-500/25 pointer-events-none"
+              >
+                {{ cmsForm.get('hero.primaryCtaText')?.value || 'Explore Fleet' }}
+              </button>
+              <button
+                type="button"
+                class="px-4 py-2 rounded-xl bg-white/10 text-white font-semibold text-xs border border-white/20 backdrop-blur-sm pointer-events-none"
+              >
+                {{ cmsForm.get('hero.secondaryCtaText')?.value || 'Book Consultation' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Banner Carousel Settings & Image Manager -->
+        <div class="rounded-2xl border border-border/80 bg-card/60 backdrop-blur-md p-5 shadow-sm space-y-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/60 pb-3">
+            <div>
+              <h3 class="text-base font-bold text-foreground">Hero Banner Images (Carousel / Rotator)</h3>
+              <p class="text-xs text-muted-foreground">Add multiple high-resolution banner images. The homepage will smoothly crossfade between active slides.</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="autoRotate"
+                  formControlName="autoRotateBanners"
+                  class="rounded border-border text-cyan-600 focus:ring-cyan-500"
+                />
+                <label for="autoRotate" class="text-xs font-semibold text-foreground cursor-pointer">Auto-Rotate</label>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <label class="text-xs text-muted-foreground">Speed:</label>
+                <input
+                  hlmInput
+                  type="number"
+                  formControlName="bannerIntervalSeconds"
+                  min="2"
+                  max="30"
+                  class="w-16 h-8 text-xs text-center"
+                />
+                <span class="text-xs text-muted-foreground">sec</span>
+              </div>
+              <button
+                hlmBtn
+                type="button"
+                variant="default"
+                size="sm"
+                class="gap-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs"
+                (click)="addBanner()"
+              >
+                <ng-icon name="lucidePlus"></ng-icon>
+                <span>Add Banner</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Banner Cards List -->
+          <div formArrayName="banners" class="space-y-4">
+            @for (bannerCtrl of heroBannersArray.controls; track bannerCtrl.get('id')?.value || $index) {
+              <div
+                [formGroupName]="$index"
+                class="rounded-xl border border-border/80 p-4 transition-all"
+                [ngClass]="activePreviewBannerIndex() === $index ? 'bg-cyan-500/5 border-cyan-500/50 shadow-sm' : 'bg-muted/10 hover:bg-muted/20'"
+              >
+                <div class="flex flex-col md:flex-row gap-4 items-start">
+                  <!-- Thumbnail & Selector -->
+                  <div class="relative shrink-0 w-full md:w-48 h-28 rounded-lg overflow-hidden bg-black/40 border border-border group">
+                    <img
+                      [src]="bannerCtrl.get('imageUrl')?.value || 'https://pub-5892202ec1784725a7afbb07173ed9c1.r2.dev/public_assets/porsche.png'"
+                      alt="Banner Preview"
+                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      (error)="$any($event.target).src = 'https://pub-5892202ec1784725a7afbb07173ed9c1.r2.dev/public_assets/porsche.png'"
+                    />
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-2 justify-between">
+                      <span class="text-[10px] font-bold text-white bg-black/60 px-2 py-0.5 rounded">#{{ $index + 1 }}</span>
+                      <button
+                        type="button"
+                        (click)="activePreviewBannerIndex.set($index)"
+                        class="text-[10px] font-bold px-2 py-0.5 rounded bg-cyan-600 text-white hover:bg-cyan-500"
+                      >
+                        Preview Here
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Banner Details Inputs -->
+                  <div class="flex-1 w-full space-y-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label class="text-[11px] font-semibold text-muted-foreground block mb-1">Image URL *</label>
+                        <input
+                          hlmInput
+                          formControlName="imageUrl"
+                          placeholder="https://...image.png"
+                          class="w-full text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label class="text-[11px] font-semibold text-muted-foreground block mb-1">Banner Title (Optional)</label>
+                        <input
+                          hlmInput
+                          formControlName="title"
+                          placeholder="Title or headline for this slide"
+                          class="w-full text-xs"
+                        />
+                      </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label class="text-[11px] font-semibold text-muted-foreground block mb-1">Subtitle / Caption (Optional)</label>
+                        <input
+                          hlmInput
+                          formControlName="subtitle"
+                          placeholder="Short description or tagline"
+                          class="w-full text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label class="text-[11px] font-semibold text-muted-foreground block mb-1">Alt Text</label>
+                        <input
+                          hlmInput
+                          formControlName="altText"
+                          placeholder="RoadReady Luxury Fleet"
+                          class="w-full text-xs"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Banner Actions -->
+                  <div class="flex md:flex-col items-center gap-1.5 self-end md:self-center shrink-0">
+                    <button
+                      hlmBtn
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      class="h-8 w-8 text-muted-foreground hover:text-foreground"
+                      (click)="moveBanner($index, 'up')"
+                      [disabled]="$index === 0"
+                      [hlmTooltip]="'Move up'"
+                    >
+                      <ng-icon name="lucideMoveUp" class="text-xs"></ng-icon>
+                    </button>
+                    <button
+                      hlmBtn
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      class="h-8 w-8 text-muted-foreground hover:text-foreground"
+                      (click)="moveBanner($index, 'down')"
+                      [disabled]="$index === heroBannersArray.length - 1"
+                      [hlmTooltip]="'Move down'"
+                    >
+                      <ng-icon name="lucideMoveDown" class="text-xs"></ng-icon>
+                    </button>
+                    <button
+                      hlmBtn
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      class="h-8 w-8 text-destructive hover:bg-destructive/10"
+                      (click)="removeBanner($index)"
+                      [hlmTooltip]="'Delete banner'"
+                    >
+                      <ng-icon name="lucideTrash2" class="text-xs"></ng-icon>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Hero Copy Inputs -->
+        <div class="rounded-2xl border border-border/80 bg-card/60 backdrop-blur-md p-5 shadow-sm space-y-4">
+          <h3 class="text-base font-bold text-foreground border-b border-border/60 pb-3">Hero Text & Call-To-Action Controls</h3>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="text-xs font-semibold text-muted-foreground block mb-1">Hero Pill Badge *</label>
+              <input
+                hlmInput
+                formControlName="badge"
+                placeholder="PREMIUM CAR RENTALS & FLEET COMMAND"
+                class="w-full text-xs"
+              />
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-muted-foreground block mb-1">Primary CTA Button Text *</label>
+              <input
+                hlmInput
+                formControlName="primaryCtaText"
+                placeholder="Explore Fleet"
+                class="w-full text-xs"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="text-xs font-semibold text-muted-foreground block mb-1">Main Heading (H1) *</label>
+            <input
+              hlmInput
+              formControlName="title"
+              placeholder="Uncompromising Comfort for Every Journey"
+              class="w-full text-xs font-bold"
+            />
+          </div>
+
+          <div>
+            <label class="text-xs font-semibold text-muted-foreground block mb-1">Hero Subtitle Paragraph *</label>
+            <textarea
+              formControlName="subtitle"
+              rows="3"
+              class="w-full text-xs p-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              placeholder="Enter hero introduction copy..."
+            ></textarea>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label class="text-xs font-semibold text-muted-foreground block mb-1">Primary CTA Link *</label>
+              <input
+                hlmInput
+                formControlName="primaryCtaLink"
+                placeholder="#browse"
+                class="w-full text-xs"
+              />
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-muted-foreground block mb-1">Secondary CTA Text</label>
+              <input
+                hlmInput
+                formControlName="secondaryCtaText"
+                placeholder="Book Consultation"
+                class="w-full text-xs"
+              />
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-muted-foreground block mb-1">Secondary CTA Link</label>
+              <input
+                hlmInput
+                formControlName="secondaryCtaLink"
+                placeholder="#contact"
+                class="w-full text-xs"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- TAB 2: SERVICES MANAGEMENT -->
+    @if (activeTab() === 'services') {
+      <div formGroupName="services" class="space-y-6 animate-in fade-in-50 duration-200">
+        <!-- Section Header Config -->
+        <div class="rounded-2xl border border-border/80 bg-card/60 backdrop-blur-md p-5 shadow-sm space-y-4">
+          <div class="flex items-center justify-between border-b border-border/60 pb-3">
+            <h3 class="text-base font-bold text-foreground">Services Section Header</h3>
+            <button
+              hlmBtn
+              type="button"
+              variant="default"
+              size="sm"
+              class="gap-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs"
+              (click)="addService()"
+            >
+              <ng-icon name="lucidePlus"></ng-icon>
+              <span>Add Service Card</span>
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="text-xs font-semibold text-muted-foreground block mb-1">Section Tagline *</label>
+              <input
+                hlmInput
+                formControlName="tagline"
+                placeholder="Our Services"
+                class="w-full text-xs"
+              />
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-muted-foreground block mb-1">Section Title *</label>
+              <input
+                hlmInput
+                formControlName="title"
+                placeholder="Tailored For Every Transit Requirement"
+                class="w-full text-xs"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="text-xs font-semibold text-muted-foreground block mb-1">Section Description *</label>
+            <textarea
+              formControlName="description"
+              rows="2"
+              class="w-full text-xs p-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              placeholder="Overview description for services..."
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Service Items Cards -->
+        <div formArrayName="items" class="space-y-4">
+          <h3 class="text-sm font-bold text-muted-foreground uppercase tracking-wider">Service Offerings</h3>
+          @for (serviceCtrl of serviceItemsArray.controls; track serviceCtrl.get('id')?.value || $index) {
+            <div
+              [formGroupName]="$index"
+              class="rounded-xl border border-border/80 bg-card/60 p-4 shadow-sm space-y-3"
+            >
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-cyan-500">Service #{{ $index + 1 }}</span>
+                <button
+                  hlmBtn
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  class="h-7 w-7 text-destructive hover:bg-destructive/10"
+                  (click)="removeService($index)"
+                  [hlmTooltip]="'Remove service'"
+                >
+                  <ng-icon name="lucideTrash2" class="text-xs"></ng-icon>
+                </button>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div class="sm:col-span-2">
+                  <label class="text-[11px] font-semibold text-muted-foreground block mb-1">Service Title *</label>
+                  <input
+                    hlmInput
+                    formControlName="title"
+                    placeholder="e.g. Self-Drive Rentals"
+                    class="w-full text-xs font-semibold"
+                  />
+                </div>
+                <div>
+                  <label class="text-[11px] font-semibold text-muted-foreground block mb-1">Lucide Icon *</label>
+                  <input
+                    hlmInput
+                    formControlName="icon"
+                    placeholder="e.g. lucideKey, lucideMap"
+                    class="w-full text-xs"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label class="text-[11px] font-semibold text-muted-foreground block mb-1">Card Description *</label>
+                <textarea
+                  formControlName="description"
+                  rows="2"
+                  class="w-full text-xs p-2.5 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  placeholder="Primary card description..."
+                ></textarea>
+              </div>
+
+              <div>
+                <label class="text-[11px] font-semibold text-muted-foreground block mb-1">Hover Popup Text</label>
+                <input
+                  hlmInput
+                  formControlName="hoverText"
+                  placeholder="Hover summary text..."
+                  class="w-full text-xs"
+                />
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- TAB 3: ABOUT US & METRICS MANAGEMENT -->
+    @if (activeTab() === 'about') {
+      <div formGroupName="about" class="space-y-6 animate-in fade-in-50 duration-200">
+        <div class="rounded-2xl border border-border/80 bg-card/60 backdrop-blur-md p-5 shadow-sm space-y-4">
+          <h3 class="text-base font-bold text-foreground border-b border-border/60 pb-3">About Us Header & Story</h3>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="text-xs font-semibold text-muted-foreground block mb-1">Tagline *</label>
+              <input
+                hlmInput
+                formControlName="tagline"
+                placeholder="Who We Are"
+                class="w-full text-xs"
+              />
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-muted-foreground block mb-1">Title *</label>
+              <input
+                hlmInput
+                formControlName="title"
+                placeholder="Over a Decade of Travel Excellence"
+                class="w-full text-xs font-bold"
+              />
+            </div>
+          </div>
+
+          <!-- Paragraphs Array -->
+          <div formArrayName="paragraphs" class="space-y-3 pt-2">
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-semibold text-muted-foreground">Story Paragraphs</label>
+              <button
+                hlmBtn
+                type="button"
+                variant="outline"
+                size="sm"
+                class="text-xs h-7 rounded-lg"
+                (click)="addParagraph()"
+              >
+                <ng-icon name="lucidePlus" class="mr-1"></ng-icon>
+                <span>Add Paragraph</span>
+              </button>
+            </div>
+
+            @for (pCtrl of aboutParagraphsArray.controls; track $index) {
+              <div class="flex items-start gap-2">
+                <textarea
+                  [formControlName]="$index"
+                  rows="3"
+                  class="flex-1 text-xs p-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  placeholder="Write paragraph narrative..."
+                ></textarea>
+                <button
+                  hlmBtn
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  class="h-8 w-8 text-destructive hover:bg-destructive/10 shrink-0"
+                  (click)="removeParagraph($index)"
+                  [hlmTooltip]="'Remove paragraph'"
+                >
+                  <ng-icon name="lucideTrash2" class="text-xs"></ng-icon>
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Metric Counter Cards (4 Stats) -->
+        <div class="rounded-2xl border border-border/80 bg-card/60 backdrop-blur-md p-5 shadow-sm space-y-4">
+          <h3 class="text-base font-bold text-foreground border-b border-border/60 pb-3">4 Key Performance Metric Stats</h3>
+
+          <div formArrayName="stats" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            @for (statCtrl of aboutStatsArray.controls; track statCtrl.get('id')?.value || $index) {
+              <div
+                [formGroupName]="$index"
+                class="rounded-xl border border-border/80 bg-muted/20 p-4 space-y-3"
+              >
+                <span class="text-xs font-bold text-amber-500">Metric #{{ $index + 1 }}</span>
+                <div>
+                  <label class="text-[11px] font-semibold text-muted-foreground block mb-1">Display Value *</label>
+                  <input
+                    hlmInput
+                    formControlName="value"
+                    placeholder="e.g. 10+, 50+, 100%"
+                    class="w-full text-sm font-extrabold text-cyan-400"
+                  />
+                </div>
+                <div>
+                  <label class="text-[11px] font-semibold text-muted-foreground block mb-1">Metric Label *</label>
+                  <input
+                    hlmInput
+                    formControlName="label"
+                    placeholder="e.g. Years Experience"
+                    class="w-full text-xs font-medium"
+                  />
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- TAB 4: CONTACT & DESK MANAGEMENT -->
+    @if (activeTab() === 'contact') {
+      <div formGroupName="contact" class="space-y-6 animate-in fade-in-50 duration-200">
+        <!-- Direct Reservation Phone Desks -->
+        <div class="rounded-2xl border border-border/80 bg-card/60 backdrop-blur-md p-5 shadow-sm space-y-4">
+          <h3 class="text-base font-bold text-foreground border-b border-border/60 pb-3">Direct Phone & WhatsApp Booking Desk</h3>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="text-xs font-semibold text-muted-foreground block mb-1">Primary Phone (Display Format) *</label>
+              <input
+                hlmInput
+                formControlName="primaryPhone"
+                placeholder="+91 9494873336"
+                class="w-full text-xs font-mono"
+              />
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-muted-foreground block mb-1">Primary Phone (Raw Numbers for Calling) *</label>
+              <input
+                hlmInput
+                formControlName="primaryPhoneRaw"
+                placeholder="9494873336"
+                class="w-full text-xs font-mono"
+              />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="text-xs font-semibold text-muted-foreground block mb-1">Secondary Phone (Display Format)</label>
+              <input
+                hlmInput
+                formControlName="secondaryPhone"
+                placeholder="+91 9494893336"
+                class="w-full text-xs font-mono"
+              />
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-muted-foreground block mb-1">WhatsApp Number (Raw Numbers) *</label>
+              <input
+                hlmInput
+                formControlName="whatsappNumberRaw"
+                placeholder="9494873336"
+                class="w-full text-xs font-mono"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact Section Header & Cards -->
+        <div class="rounded-2xl border border-border/80 bg-card/60 backdrop-blur-md p-5 shadow-sm space-y-4">
+          <h3 class="text-base font-bold text-foreground border-b border-border/60 pb-3">Contact Grid Section</h3>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="text-xs font-semibold text-muted-foreground block mb-1">Tagline *</label>
+              <input
+                hlmInput
+                formControlName="tagline"
+                placeholder="Get In Touch"
+                class="w-full text-xs"
+              />
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-muted-foreground block mb-1">Title *</label>
+              <input
+                hlmInput
+                formControlName="title"
+                placeholder="Connect With Our Desk"
+                class="w-full text-xs font-bold"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="text-xs font-semibold text-muted-foreground block mb-1">Description *</label>
+            <textarea
+              formControlName="description"
+              rows="2"
+              class="w-full text-xs p-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              placeholder="Description..."
+            ></textarea>
+          </div>
+
+          <!-- Contact Grid Cards -->
+          <div formArrayName="items" class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            @for (contactCtrl of contactItemsArray.controls; track contactCtrl.get('id')?.value || $index) {
+              <div
+                [formGroupName]="$index"
+                class="rounded-xl border border-border/80 bg-muted/20 p-4 space-y-3"
+              >
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-emerald-500">Contact Item #{{ $index + 1 }}</span>
+                  <span class="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-muted text-muted-foreground">
+                    {{ contactCtrl.get('type')?.value }}
+                  </span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label class="text-[11px] font-semibold text-muted-foreground block mb-1">Title *</label>
+                    <input
+                      hlmInput
+                      formControlName="title"
+                      placeholder="e.g. Office Address"
+                      class="w-full text-xs font-semibold"
+                    />
+                  </div>
+                  <div>
+                    <label class="text-[11px] font-semibold text-muted-foreground block mb-1">Icon *</label>
+                    <input
+                      hlmInput
+                      formControlName="icon"
+                      placeholder="lucideMapPin, lucidePhone"
+                      class="w-full text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label class="text-[11px] font-semibold text-muted-foreground block mb-1">
+                    Content Lines (one line per value) *
+                  </label>
+                  <textarea
+                    formControlName="valuesText"
+                    rows="3"
+                    class="w-full text-xs p-2.5 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-cyan-500 font-mono"
+                    placeholder="Line 1&#10;Line 2"
+                  ></textarea>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- TAB 5: FLEET SHOWCASE & FOOTER -->
+    @if (activeTab() === 'footer') {
+      <div class="space-y-6 animate-in fade-in-50 duration-200">
+        <!-- Fleet Section Copy -->
+        <div formGroupName="fleet" class="rounded-2xl border border-border/80 bg-card/60 backdrop-blur-md p-5 shadow-sm space-y-4">
+          <h3 class="text-base font-bold text-foreground border-b border-border/60 pb-3">Fleet Showcase Section Header</h3>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="text-xs font-semibold text-muted-foreground block mb-1">Tagline *</label>
+              <input
+                hlmInput
+                formControlName="tagline"
+                placeholder="Our Fleet"
+                class="w-full text-xs"
+              />
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-muted-foreground block mb-1">Title *</label>
+              <input
+                hlmInput
+                formControlName="title"
+                placeholder="Browse by Category"
+                class="w-full text-xs font-bold"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="text-xs font-semibold text-muted-foreground block mb-1">Description *</label>
+            <textarea
+              formControlName="description"
+              rows="2"
+              class="w-full text-xs p-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              placeholder="Description..."
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Footer & Brand Copyright -->
+        <div formGroupName="footer" class="rounded-2xl border border-border/80 bg-card/60 backdrop-blur-md p-5 shadow-sm space-y-4">
+          <h3 class="text-base font-bold text-foreground border-b border-border/60 pb-3">Brand Information & Footer Notice</h3>
+
+          <div>
+            <label class="text-xs font-semibold text-muted-foreground block mb-1">Brand Name *</label>
+            <input
+              hlmInput
+              formControlName="brandName"
+              placeholder="RoadReady Rentals"
+              class="w-full text-xs font-bold"
+            />
+          </div>
+
+          <div>
+            <label class="text-xs font-semibold text-muted-foreground block mb-1">Footer Copyright Notice *</label>
+            <input
+              hlmInput
+              formControlName="copyrightText"
+              placeholder="© 2026 RoadReady Rentals — Built for Ultimate Comfort and Speed"
+              class="w-full text-xs"
+            />
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Bottom Action Bar (Fixed on Mobile or Bottom of Page) -->
+    <div class="sticky bottom-4 z-20 mt-8 p-4 rounded-2xl border border-border/80 bg-card/90 backdrop-blur-md shadow-2xl flex items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full" [ngClass]="isCustomized() ? 'bg-emerald-500' : 'bg-amber-500'"></span>
+        <span class="text-xs text-muted-foreground hidden sm:inline">
+          Status: <strong class="text-foreground">{{ isCustomized() ? 'Custom Dynamic Content' : 'Factory Defaults' }}</strong>
+        </span>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button
+          hlmBtn
+          type="button"
+          variant="outline"
+          size="sm"
+          class="rounded-xl text-xs"
+          (click)="loadContent()"
+          [disabled]="isSaving() || isLoading()"
+        >
+          Cancel / Revert Unsaved
+        </button>
+
+        <button
+          hlmBtn
+          type="submit"
+          size="sm"
+          class="gap-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-semibold shadow-md px-5"
+          [disabled]="isSaving() || isLoading()"
+        >
+          <ng-icon [name]="isSaving() ? 'lucideRefreshCw' : 'lucideSave'" [class.animate-spin]="isSaving()" class="text-sm"></ng-icon>
+          <span>{{ isSaving() ? 'Publishing...' : 'Save & Publish Live' }}</span>
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- Reset Confirmation Dialog Template -->
+<ng-template #resetConfirmDialog let-dialogRef="dialogRef">
+  <div class="space-y-4">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-full bg-destructive/10 text-destructive flex items-center justify-center shrink-0">
+        <ng-icon name="lucideRotateCcw" class="text-lg"></ng-icon>
+      </div>
+      <div>
+        <h3 class="text-base font-bold text-foreground">Restore Factory Defaults?</h3>
+        <p class="text-xs text-muted-foreground mt-0.5">
+          This will reset all homepage copy, hero banners, and service texts back to their initial production defaults.
+        </p>
+      </div>
+    </div>
+
+    <div class="p-3 rounded-lg border border-destructive/20 bg-destructive/5 text-xs text-muted-foreground leading-relaxed">
+      Custom uploaded banner URLs and personalized copy will be replaced by the factory defaults. This action can be modified again at any time.
+    </div>
+
+    <div class="flex items-center justify-end gap-3 pt-2">
+      <button
+        hlmBtn
+        variant="ghost"
+        size="sm"
+        class="rounded-xl"
+        (click)="dialogRef.close()"
+        [disabled]="isResetting()"
+      >
+        Cancel
+      </button>
+      <button
+        hlmBtn
+        variant="destructive"
+        size="sm"
+        class="rounded-xl gap-2 font-semibold"
+        (click)="confirmReset(); dialogRef.close()"
+        [disabled]="isResetting()"
+      >
+        <ng-icon [name]="isResetting() ? 'lucideRefreshCw' : 'lucideCheck'" [class.animate-spin]="isResetting()"></ng-icon>
+        <span>{{ isResetting() ? 'Restoring...' : 'Yes, Restore Defaults' }}</span>
+      </button>
+    </div>
+  </div>
+</ng-template>

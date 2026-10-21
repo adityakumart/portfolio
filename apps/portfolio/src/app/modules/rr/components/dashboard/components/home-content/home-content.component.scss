@@ -1,0 +1,18 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.cms-container {
+  max-width: 1300px;
+  margin: 0 auto;
+}
+
+.text-shadow-md {
+  text-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+}
+
+.touch-scroll-x {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}

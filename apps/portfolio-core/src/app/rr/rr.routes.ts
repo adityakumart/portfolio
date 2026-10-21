@@ -21,6 +21,7 @@ import { BillingService } from '../../services/billing.service';
 
 import { getJwtSecret } from '../../config/security';
 import { safeRegex, escapeRegex } from '../../utils/security/regex.util';
+import { DEFAULT_RR_HOMEPAGE_CONTENT, IRRHomePageContent } from '@portfolio/shared-types';
 
 const rrRouter = Router();
 const JWT_SECRET = getJwtSecret();
@@ -2086,6 +2087,190 @@ rrRouter.delete('/announcements/:id', authenticateRRToken, requireAdmin, async (
     );
 
     res.json({ success: true, message: 'Announcement deleted successfully' });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+// GET /api/rr/home-content - Get current homepage CMS configuration (Admin)
+rrRouter.get('/home-content', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
+  try {
+    const settingsCol = await RRService.getSettingsCol();
+    const doc = await settingsCol.findOne({ key: 'rr_home_content' });
+
+    if (!doc || !doc.content) {
+      res.json(DEFAULT_RR_HOMEPAGE_CONTENT);
+      return;
+    }
+
+    const c = doc.content;
+    const merged: IRRHomePageContent = {
+      isCustomized: c.isCustomized ?? true,
+      hero: {
+        ...DEFAULT_RR_HOMEPAGE_CONTENT.hero,
+        ...(c.hero || {}),
+        banners: c.hero?.banners && c.hero.banners.length > 0
+          ? c.hero.banners
+          : DEFAULT_RR_HOMEPAGE_CONTENT.hero.banners,
+      },
+      services: {
+        ...DEFAULT_RR_HOMEPAGE_CONTENT.services,
+        ...(c.services || {}),
+        items: c.services?.items && c.services.items.length > 0
+          ? c.services.items
+          : DEFAULT_RR_HOMEPAGE_CONTENT.services.items,
+      },
+      fleet: {
+        ...DEFAULT_RR_HOMEPAGE_CONTENT.fleet,
+        ...(c.fleet || {}),
+      },
+      about: {
+        ...DEFAULT_RR_HOMEPAGE_CONTENT.about,
+        ...(c.about || {}),
+        paragraphs: c.about?.paragraphs && c.about.paragraphs.length > 0
+          ? c.about.paragraphs
+          : DEFAULT_RR_HOMEPAGE_CONTENT.about.paragraphs,
+        stats: c.about?.stats && c.about.stats.length > 0
+          ? c.about.stats
+          : DEFAULT_RR_HOMEPAGE_CONTENT.about.stats,
+      },
+      contact: {
+        ...DEFAULT_RR_HOMEPAGE_CONTENT.contact,
+        ...(c.contact || {}),
+        items: c.contact?.items && c.contact.items.length > 0
+          ? c.contact.items
+          : DEFAULT_RR_HOMEPAGE_CONTENT.contact.items,
+      },
+      footer: {
+        ...DEFAULT_RR_HOMEPAGE_CONTENT.footer,
+        ...(c.footer || {}),
+      },
+      updatedAt: doc.updatedAt,
+      updatedBy: doc.updatedBy,
+    };
+
+    res.json(merged);
+  } catch (err: any) {
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+// PUT /api/rr/home-content - Update dynamic homepage content (Admin)
+rrRouter.put('/home-content', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
+  try {
+    const payload = req.body;
+    if (!payload || typeof payload !== 'object') {
+      res.status(400).json({ error: 'Bad Request', message: 'Payload is required' });
+      return;
+    }
+
+    const settingsCol = await RRService.getSettingsCol();
+    const staffId = req.userId || req.user?.id || 'ADMIN';
+    const now = new Date().toISOString();
+
+    const contentToSave: IRRHomePageContent = {
+      isCustomized: true,
+      hero: {
+        ...DEFAULT_RR_HOMEPAGE_CONTENT.hero,
+        ...(payload.hero || {}),
+        banners: Array.isArray(payload.hero?.banners) && payload.hero.banners.length > 0
+          ? payload.hero.banners
+          : DEFAULT_RR_HOMEPAGE_CONTENT.hero.banners,
+      },
+      services: {
+        ...DEFAULT_RR_HOMEPAGE_CONTENT.services,
+        ...(payload.services || {}),
+        items: Array.isArray(payload.services?.items) && payload.services.items.length > 0
+          ? payload.services.items
+          : DEFAULT_RR_HOMEPAGE_CONTENT.services.items,
+      },
+      fleet: {
+        ...DEFAULT_RR_HOMEPAGE_CONTENT.fleet,
+        ...(payload.fleet || {}),
+      },
+      about: {
+        ...DEFAULT_RR_HOMEPAGE_CONTENT.about,
+        ...(payload.about || {}),
+        paragraphs: Array.isArray(payload.about?.paragraphs) && payload.about.paragraphs.length > 0
+          ? payload.about.paragraphs
+          : DEFAULT_RR_HOMEPAGE_CONTENT.about.paragraphs,
+        stats: Array.isArray(payload.about?.stats) && payload.about.stats.length > 0
+          ? payload.about.stats
+          : DEFAULT_RR_HOMEPAGE_CONTENT.about.stats,
+      },
+      contact: {
+        ...DEFAULT_RR_HOMEPAGE_CONTENT.contact,
+        ...(payload.contact || {}),
+        items: Array.isArray(payload.contact?.items) && payload.contact.items.length > 0
+          ? payload.contact.items
+          : DEFAULT_RR_HOMEPAGE_CONTENT.contact.items,
+      },
+      footer: {
+        ...DEFAULT_RR_HOMEPAGE_CONTENT.footer,
+        ...(payload.footer || {}),
+      },
+      updatedAt: now,
+      updatedBy: staffId,
+    };
+
+    await settingsCol.updateOne(
+      { key: 'rr_home_content' },
+      {
+        $set: {
+          key: 'rr_home_content',
+          content: contentToSave,
+          updatedAt: now,
+          updatedBy: staffId,
+        },
+      },
+      { upsert: true }
+    );
+
+    await RRService.logActivity(
+      'UPDATE_HOMEPAGE_CONTENT',
+      staffId,
+      req.userRole || 'admin',
+      'Updated dynamic RR homepage content and banner configurations'
+    );
+
+    res.json({ success: true, message: 'Homepage content saved successfully', content: contentToSave });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+// POST /api/rr/home-content/reset - Restore factory default homepage content (Admin)
+rrRouter.post('/home-content/reset', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
+  try {
+    const settingsCol = await RRService.getSettingsCol();
+    const staffId = req.userId || req.user?.id || 'ADMIN';
+    const now = new Date().toISOString();
+
+    await settingsCol.updateOne(
+      { key: 'rr_home_content' },
+      {
+        $set: {
+          key: 'rr_home_content',
+          content: DEFAULT_RR_HOMEPAGE_CONTENT,
+          updatedAt: now,
+          updatedBy: staffId,
+        },
+      },
+      { upsert: true }
+    );
+
+    await RRService.logActivity(
+      'RESET_HOMEPAGE_CONTENT',
+      staffId,
+      req.userRole || 'admin',
+      'Restored factory default RR homepage content'
+    );
+
+    res.json({
+      success: true,
+      message: 'Homepage content reset to factory defaults successfully',
+      content: DEFAULT_RR_HOMEPAGE_CONTENT,
+    });
   } catch (err: any) {
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }
