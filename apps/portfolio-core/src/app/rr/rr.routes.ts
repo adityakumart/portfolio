@@ -87,12 +87,12 @@ function calculatePasswordPolicy(emp: any) {
     passwordExpiresInDays = 45;
     passwordAgeDays = 0;
   } else {
-    isExpired = true;
     passwordExpiresInDays = 0;
+    passwordAgeDays = 0;
   }
 
   return {
-    mustChangePassword: mustChangePassword || isExpired,
+    mustChangePassword,
     isFirstLogin: emp.isFirstLogin === true,
     passwordAgeDays,
     passwordExpiresInDays,
@@ -304,18 +304,36 @@ rrRouter.post('/auth/change-password', authenticateRRToken, async (req: any, res
 
     // If account doesn't have mustChangePassword or isFirstLogin, verify currentPassword
     const isMandatoryChange = emp.mustChangePassword === true || emp.isFirstLogin === true;
+
+    const verifyPasswordMatch = async (candidate: string) => {
+      if (emp.passwordHash) {
+        const isMatch = await bcrypt.compare(candidate, emp.passwordHash);
+        if (isMatch) return true;
+        // Permitted fallback for employee DOB match if passwordHash was default/temporary
+        if (emp.role !== 'admin' && emp.dob && emp.dob === candidate) {
+          return true;
+        }
+        return false;
+      } else if (emp.dob && emp.dob === candidate) {
+        return true;
+      }
+      return false;
+    };
+
     if (!isMandatoryChange) {
       if (!currentPassword) {
         res.status(400).json({ error: 'Bad Request', message: 'Current password is required.' });
         return;
       }
-      if (emp.passwordHash) {
-        const isMatch = await bcrypt.compare(currentPassword, emp.passwordHash);
-        if (!isMatch) {
-          res.status(401).json({ error: 'Unauthorized', message: 'Current password does not match.' });
-          return;
-        }
-      } else if (emp.dob && emp.dob !== currentPassword) {
+      const isMatch = await verifyPasswordMatch(currentPassword);
+      if (!isMatch) {
+        res.status(401).json({ error: 'Unauthorized', message: 'Current password does not match.' });
+        return;
+      }
+    } else if (currentPassword) {
+      // If user supplied current password during mandatory change, verify it
+      const isMatch = await verifyPasswordMatch(currentPassword);
+      if (!isMatch) {
         res.status(401).json({ error: 'Unauthorized', message: 'Current password does not match.' });
         return;
       }
