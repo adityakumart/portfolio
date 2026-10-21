@@ -36,6 +36,18 @@ import {
   IRRAnnouncementItem,
   IRRHomepageAnnouncementsData,
   RRAnnouncementCategory,
+  IRRHomeBanner,
+  IRRHomeHeroContent,
+  IRRHomeServiceItem,
+  IRRHomeServicesSection,
+  IRRHomeStatItem,
+  IRRHomeAboutSection,
+  IRRHomeFleetSection,
+  IRRHomeContactItem,
+  IRRHomeContactSection,
+  IRRHomeFooterContent,
+  IRRHomePageContent,
+  DEFAULT_RR_HOMEPAGE_CONTENT,
 } from '@portfolio/shared-types';
 
 export {
@@ -69,7 +81,19 @@ export type {
   IRRAnnouncementItem,
   IRRHomepageAnnouncementsData,
   RRAnnouncementCategory,
+  IRRHomeBanner,
+  IRRHomeHeroContent,
+  IRRHomeServiceItem,
+  IRRHomeServicesSection,
+  IRRHomeStatItem,
+  IRRHomeAboutSection,
+  IRRHomeFleetSection,
+  IRRHomeContactItem,
+  IRRHomeContactSection,
+  IRRHomeFooterContent,
+  IRRHomePageContent,
 };
+export { DEFAULT_RR_HOMEPAGE_CONTENT };
 
 interface ExtensionWindow extends Window {
   chrome?: {
@@ -1150,6 +1174,40 @@ export class RRApiService {
     return firstValueFrom(
       this.http.delete<{ success: boolean; message: string }>(
         `${this.baseUrl}/announcements/${id}`,
+        { headers: this.getHeaders() }
+      )
+    );
+  }
+
+  /**
+   * Homepage Dynamic CMS APIs (Admin)
+   */
+  async getHomeContent(): Promise<IRRHomePageContent> {
+    return firstValueFrom(
+      this.http.get<IRRHomePageContent>(
+        `${this.baseUrl}/home-content`,
+        { headers: this.getHeaders() }
+      )
+    );
+  }
+
+  async updateHomeContent(
+    content: Partial<IRRHomePageContent>
+  ): Promise<{ success: boolean; message: string; content: IRRHomePageContent }> {
+    return firstValueFrom(
+      this.http.put<{ success: boolean; message: string; content: IRRHomePageContent }>(
+        `${this.baseUrl}/home-content`,
+        content,
+        { headers: this.getHeaders() }
+      )
+    );
+  }
+
+  async resetHomeContent(): Promise<{ success: boolean; message: string; content: IRRHomePageContent }> {
+    return firstValueFrom(
+      this.http.post<{ success: boolean; message: string; content: IRRHomePageContent }>(
+        `${this.baseUrl}/home-content/reset`,
+        {},
         { headers: this.getHeaders() }
       )
     );

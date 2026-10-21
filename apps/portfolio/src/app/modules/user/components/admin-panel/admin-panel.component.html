@@ -47,6 +47,15 @@
           <ng-icon name="lucideFilm" class="text-sm"></ng-icon>
           <span>Movies</span>
         </button>
+        <button
+          type="button"
+          (click)="setTab('rr-home')"
+          class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all"
+          [ngClass]="activeTab() === 'rr-home' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'"
+        >
+          <ng-icon name="lucideCar" class="text-sm text-cyan-500"></ng-icon>
+          <span>RR Homepage CMS</span>
+        </button>
       </nav>
     </div>
   </header>
@@ -594,6 +603,11 @@
           </div>
         </div>
       </div>
+    </section>
+
+    <!-- TAB 4: RR HOMEPAGE DYNAMIC CMS -->
+    <section *ngIf="activeTab() === 'rr-home'" class="animate-in fade-in-50 duration-300">
+      <app-rr-home-content></app-rr-home-content>
     </section>
   </main>
 

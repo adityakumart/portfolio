@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { IPublicVehicle, IRRHomepageAnnouncementsData } from '@portfolio/shared-types';
+import { IPublicVehicle, IRRHomepageAnnouncementsData, IRRHomePageContent } from '@portfolio/shared-types';
 
 @Injectable({
   providedIn: 'root',
@@ -32,6 +32,15 @@ export class RRPublicApiService {
   async getAnnouncements(): Promise<IRRHomepageAnnouncementsData> {
     return firstValueFrom(
       this.http.get<IRRHomepageAnnouncementsData>(`${this.baseUrl}/announcements`)
+    );
+  }
+
+  /**
+   * Fetch dynamic homepage content (hero, banners, services, about, contact)
+   */
+  async getHomeContent(): Promise<IRRHomePageContent> {
+    return firstValueFrom(
+      this.http.get<IRRHomePageContent>(`${this.baseUrl}/home-content`)
     );
   }
 }

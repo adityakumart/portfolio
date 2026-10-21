@@ -11,6 +11,7 @@ import {
   IRegularCustomerMasked,
   IRRScrollingTicker,
   IRRAnnouncementItem,
+  DEFAULT_RR_HOMEPAGE_CONTENT,
 } from '@portfolio/shared-types';
 
 export const MOCK_ADMIN_USER: IRRUser = {
@@ -642,6 +643,37 @@ export async function setupRRRouteMocks(
         items: MOCK_ANNOUNCEMENTS,
       }),
     });
+  });
+
+  // Public home-content endpoint
+  await page.route('**/api/rr/public/home-content*', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(DEFAULT_RR_HOMEPAGE_CONTENT),
+    });
+  });
+
+  // Admin home-content endpoint (GET, PUT, POST reset)
+  await page.route('**/api/rr/home-content*', async (route) => {
+    const method = route.request().method();
+    if (method === 'GET') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(DEFAULT_RR_HOMEPAGE_CONTENT),
+      });
+    } else {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          message: 'Saved successfully',
+          content: DEFAULT_RR_HOMEPAGE_CONTENT,
+        }),
+      });
+    }
   });
 
   // Admin announcements endpoint
