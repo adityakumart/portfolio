@@ -141,7 +141,7 @@ export class RRDashboardComponent implements OnInit {
   showPolicyNewPass = signal<boolean>(false);
 
   policyForm = new FormGroup({
-    currentPassword: new FormControl(''),
+    currentPassword: new FormControl('', [Validators.required]),
     newPassword: new FormControl('', [Validators.required, Validators.minLength(6)]),
     confirmPassword: new FormControl('', [Validators.required]),
   });
@@ -257,7 +257,7 @@ export class RRDashboardComponent implements OnInit {
     this.changePasswordSubmitting.set(true);
     try {
       await this.rrApi.changePassword({
-        currentPassword: currentPassword || undefined,
+        currentPassword: currentPassword || '',
         newPassword: newPassword || '',
       });
       toast.success('Password configured successfully. Welcome!');
