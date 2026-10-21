@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal, computed, effect, ViewChild, TemplateRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet, NavigationEnd } from '@angular/router';
 import { RRApiService } from '../../services/rr-api.service';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
@@ -123,6 +123,19 @@ export class RRDashboardComponent implements OnInit {
   profileDropdownOpen = signal<boolean>(false);
   isSidebarCollapsed = signal<boolean>(true);
   mobileSidebarOpen = signal<boolean>(false);
+  adminSubmenuOpen = signal<boolean>(true);
+  currentUrl = signal<string>('');
+
+  isAdminRouteActive = computed(() => {
+    const url = this.currentUrl();
+    return (
+      url.includes('/user/rr/employee') ||
+      url.includes('/user/rr/activity-logs') ||
+      url.includes('/user/rr/announcements') ||
+      url.includes('/user/rr/home-content') ||
+      url.includes('/user/rr/history')
+    );
+  });
 
   // Profile password form state
   showProfileChangePassword = signal<boolean>(false);
@@ -168,6 +181,13 @@ export class RRDashboardComponent implements OnInit {
       this.router.navigate(['/user/rr/login']);
     }
 
+    this.currentUrl.set(this.router.url);
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+        this.currentUrl.set(event.urlAfterRedirects || event.url);
+      }
+    });
+
     if (typeof window !== 'undefined' && window.localStorage) {
       const saved = localStorage.getItem('rr_sidebar_collapsed');
       if (saved !== null) {
@@ -184,6 +204,22 @@ export class RRDashboardComponent implements OnInit {
     if (typeof window !== 'undefined' && window.localStorage) {
       localStorage.setItem('rr_sidebar_collapsed', String(next));
     }
+  }
+
+  toggleAdminSubmenu(e?: Event) {
+    if (e) {
+      e.stopPropagation();
+    }
+    // If sidebar is collapsed on desktop, uncollapse and open the submenu
+    if (this.isSidebarCollapsed()) {
+      this.isSidebarCollapsed.set(false);
+      this.adminSubmenuOpen.set(true);
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem('rr_sidebar_collapsed', 'false');
+      }
+      return;
+    }
+    this.adminSubmenuOpen.update((v) => !v);
   }
 
   toggleMobileSidebar() {

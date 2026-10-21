@@ -148,9 +148,34 @@ test.describe('RR Module - Dashboard Shell Component', () => {
         await page.locator('.sidebar-toggle-btn').click();
       }
 
-      // Admin links are visible
+      // Admin links and Administration parent are visible
+      await expect(sidebar.getByText('Administration')).toBeVisible();
       await expect(sidebar.getByText('Staff Registry')).toBeVisible();
       await expect(sidebar.getByText('Audit Logs')).toBeVisible();
+      await expect(sidebar.getByText('Announcements & Ticker')).toBeVisible();
+      await expect(sidebar.getByText('Homepage CMS')).toBeVisible();
+      await expect(sidebar.getByText('Historical Logs')).toBeVisible();
+    });
+
+    test('should toggle Administration submenu collapse and expand states', async ({ page }) => {
+      const sidebar = page.locator('aside.sidebar');
+      if (await sidebar.evaluate(el => el.classList.contains('collapsed'))) {
+        await page.locator('.sidebar-toggle-btn').click();
+      }
+
+      const adminParent = sidebar.locator('.menu-parent', { hasText: 'Administration' });
+      await expect(adminParent).toBeVisible();
+
+      // Submenu starts expanded for admin
+      await expect(sidebar.getByText('Staff Registry')).toBeVisible();
+
+      // Click to collapse
+      await adminParent.click();
+      await expect(sidebar.getByText('Staff Registry')).not.toBeVisible();
+
+      // Click to expand again
+      await adminParent.click();
+      await expect(sidebar.getByText('Staff Registry')).toBeVisible();
     });
 
     test('should navigate to Staff Registry and Audit Logs via sidebar links', async ({ page }) => {
