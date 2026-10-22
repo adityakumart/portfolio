@@ -1,7 +1,7 @@
 import {
   Component,
   ChangeDetectionStrategy,
-  signal,
+  inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -22,7 +22,12 @@ import {
 import { HlmCardImports } from '@spartan-ng/hel/card';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmBadgeImports } from '@spartan-ng/hel/badge';
-import { GameMode } from '../../../../shared/barricade';
+import { BarricadeStateService } from './services/barricade-state.service';
+import { BarricadeAiService } from './services/barricade-ai.service';
+import { BarricadeBoardComponent } from './components/barricade-board/barricade-board.component';
+import { BarricadeControlsComponent } from './components/barricade-controls/barricade-controls.component';
+import { BarricadeRelocationDialogComponent } from './components/barricade-relocation-dialog/barricade-relocation-dialog.component';
+import { BarricadeWinDialogComponent } from './components/barricade-win-dialog/barricade-win-dialog.component';
 
 @Component({
   selector: 'app-barricade',
@@ -34,6 +39,10 @@ import { GameMode } from '../../../../shared/barricade';
     HlmCardImports,
     HlmButtonImports,
     HlmBadgeImports,
+    BarricadeBoardComponent,
+    BarricadeControlsComponent,
+    BarricadeRelocationDialogComponent,
+    BarricadeWinDialogComponent,
   ],
   providers: [
     provideIcons({
@@ -55,14 +64,7 @@ import { GameMode } from '../../../../shared/barricade';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BarricadeComponent {
-  selectedMode = signal<GameMode>('two_players');
-  isGameActive = signal<boolean>(false);
-
-  setGameMode(mode: GameMode): void {
-    this.selectedMode.set(mode);
-  }
-
-  launchGame(): void {
-    this.isGameActive.set(true);
-  }
+  readonly state = inject(BarricadeStateService);
+  // Inject AI service so it is instantiated and registered with the state machine
+  readonly ai = inject(BarricadeAiService);
 }

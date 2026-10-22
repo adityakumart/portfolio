@@ -1,0 +1,276 @@
+<div class="board-wrapper relative w-full flex items-center justify-center select-none overflow-hidden rounded-3xl p-2 md:p-6 bg-card/60 backdrop-blur-md border border-border shadow-2xl">
+  <svg
+    viewBox="0 0 900 1000"
+    class="w-full h-auto max-h-[85vh] drop-shadow-md"
+    preserveAspectRatio="xMidYMid meet"
+  >
+    <defs>
+      <!-- Castle Golden Glow Filter -->
+      <filter id="castleGlow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
+        <feMerge>
+          <feMergeNode in="blur" />
+          <feMergeNode in="SourceGraphic" />
+        </feMerge>
+      </filter>
+
+      <!-- Token Drop Shadow -->
+      <filter id="tokenShadow" x="-30%" y="-30%" width="160%" height="160%">
+        <feDropShadow dx="0" dy="4" stdDeviation="3" flood-opacity="0.35" />
+      </filter>
+
+      <!-- Player 1 (Blue) Gradient -->
+      <linearGradient id="p1Grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#60a5fa" />
+        <stop offset="50%" stop-color="#3b82f6" />
+        <stop offset="100%" stop-color="#1d4ed8" />
+      </linearGradient>
+
+      <!-- Player 2 (Red) Gradient -->
+      <linearGradient id="p2Grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#f87171" />
+        <stop offset="50%" stop-color="#ef4444" />
+        <stop offset="100%" stop-color="#b91c1c" />
+      </linearGradient>
+
+      <!-- Barricade Hazard Gradient -->
+      <linearGradient id="barricadeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#ffffff" />
+        <stop offset="30%" stop-color="#fca5a5" />
+        <stop offset="70%" stop-color="#ef4444" />
+        <stop offset="100%" stop-color="#991b1b" />
+      </linearGradient>
+
+      <!-- Castle Summit Gradient -->
+      <linearGradient id="castleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#fef08a" />
+        <stop offset="50%" stop-color="#eab308" />
+        <stop offset="100%" stop-color="#ca8a04" />
+      </linearGradient>
+
+      <!-- Track Node Gradient -->
+      <radialGradient id="nodeGrad" cx="30%" cy="30%" r="70%">
+        <stop offset="0%" stop-color="var(--card-bg, #334155)" />
+        <stop offset="100%" stop-color="var(--card-border, #1e293b)" />
+      </radialGradient>
+    </defs>
+
+    <!-- LAYER 1: Connecting Corridor Tracks -->
+    <g class="board-corridors">
+      @for (edge of boardEdges(); track edge.fromId + edge.toId) {
+        <line
+          [attr.x1]="edge.x1"
+          [attr.y1]="edge.y1"
+          [attr.x2]="edge.x2"
+          [attr.y2]="edge.y2"
+          class="stroke-muted-foreground/30 hover:stroke-primary/50 transition-colors"
+          stroke-width="5"
+          stroke-linecap="round"
+        />
+      }
+    </g>
+
+    <!-- LAYER 2: Board Node Markers -->
+    <g class="board-nodes">
+      @for (node of allNodes(); track node.id) {
+        <g
+          [attr.transform]="'translate(' + node.x + ',' + node.y + ')'"
+          (click)="onNodeClick(node.id)"
+          class="cursor-pointer group/node"
+        >
+          @switch (node.type) {
+            @case ('castle') {
+              <!-- Castle Summit Emblem -->
+              <circle
+                r="30"
+                fill="url(#castleGrad)"
+                stroke="#fef08a"
+                stroke-width="3"
+                filter="url(#castleGlow)"
+              />
+              <path
+                d="M -12 -5 L -8 10 L 8 10 L 12 -5 L 5 0 L 0 -12 L -5 0 Z"
+                fill="#854d0e"
+              />
+            }
+            @case ('start') {
+              <!-- Base and Start Entry Nodes -->
+              <circle
+                [attr.r]="node.id.startsWith('start_') ? 18 : 14"
+                class="fill-muted stroke-border/80"
+                stroke-width="2.5"
+              />
+              @if (node.id.startsWith('start_p1') || node.id.startsWith('base_p1')) {
+                <circle
+                  [attr.r]="node.id.startsWith('start_') ? 10 : 7"
+                  class="fill-blue-500/20 stroke-blue-500/60"
+                  stroke-width="1.5"
+                />
+              } @else {
+                <circle
+                  [attr.r]="node.id.startsWith('start_') ? 10 : 7"
+                  class="fill-red-500/20 stroke-red-500/60"
+                  stroke-width="1.5"
+                />
+              }
+            }
+            @default {
+              <!-- Normal Track Node -->
+              <circle
+                [attr.r]="node.type === 'barricade' ? 16 : 13"
+                class="fill-card stroke-border/90 group-hover/node:stroke-primary/80 transition-colors"
+                stroke-width="2.5"
+              />
+              @if (node.type === 'barricade') {
+                <circle r="6" class="fill-muted-foreground/30" />
+              }
+            }
+          }
+        </g>
+      }
+    </g>
+
+    <!-- LAYER 3: Barricades -->
+    <g class="board-barricades">
+      @for (b of renderBarricades(); track b.id) {
+        <g
+          [attr.transform]="'translate(' + b.x + ',' + b.y + ')'"
+          (click)="onBarricadeClick(b.nodeId, $event)"
+          class="barricade-piece cursor-pointer"
+          filter="url(#tokenShadow)"
+        >
+          <!-- Hexagonal Warning Shield -->
+          <polygon
+            points="0,-17 15,-8 15,9 0,18 -15,9 -15,-8"
+            fill="url(#barricadeGrad)"
+            stroke="#ffffff"
+            stroke-width="2"
+          />
+          <!-- Cross / Barricade Warning Strip -->
+          <rect x="-8" y="-2" width="16" height="4" fill="#ffffff" rx="1" />
+        </g>
+      }
+    </g>
+
+    <!-- LAYER 4: Player Tokens -->
+    <g class="board-tokens">
+      @for (rt of renderTokens(); track rt.token.id) {
+        <g
+          [attr.transform]="'translate(' + rt.x + ',' + rt.y + ')'"
+          (click)="onTokenClick(rt, $event)"
+          class="token-piece cursor-pointer transition-transform duration-200"
+          [class.can-move]="rt.canMove"
+          [class.selected]="rt.isSelected"
+          filter="url(#tokenShadow)"
+        >
+          <!-- Movable Pulsing Ring -->
+          @if (rt.canMove && !rt.isSelected) {
+            <circle
+              r="22"
+              fill="none"
+              class="stroke-primary animate-pulse"
+              stroke-width="2.5"
+              stroke-dasharray="4 2"
+            />
+          }
+
+          <!-- Selected Halo -->
+          @if (rt.isSelected) {
+            <circle
+              r="23"
+              fill="none"
+              stroke="#fbbf24"
+              stroke-width="3"
+              class="animate-spin-slow"
+              stroke-dasharray="6 3"
+            />
+          }
+
+          <!-- Token Disc -->
+          <circle
+            r="16"
+            [attr.fill]="rt.player.color === 'blue' ? 'url(#p1Grad)' : 'url(#p2Grad)'"
+            stroke="#ffffff"
+            stroke-width="2.5"
+          />
+
+          <!-- Token Owner Initial / ID -->
+          <text
+            x="0"
+            y="4.5"
+            text-anchor="middle"
+            fill="#ffffff"
+            font-size="11"
+            font-weight="bold"
+            font-family="sans-serif"
+          >
+            {{ rt.player.color === 'blue' ? '1' : '2' }}
+          </text>
+        </g>
+      }
+    </g>
+
+    <!-- LAYER 5: Valid Move Destination Highlights -->
+    <g class="valid-move-highlights">
+      @for (entry of validMovesMap().entries(); track entry[0]) {
+        <g
+          [attr.transform]="'translate(' + graphService.getNode(entry[0])!.x + ',' + graphService.getNode(entry[0])!.y + ')'"
+          (click)="onNodeClick(entry[0])"
+          class="move-destination-target cursor-pointer"
+        >
+          <!-- Pulsing Target Ring -->
+          <circle
+            r="20"
+            fill="none"
+            [attr.stroke]="entry[1].capturesBarricade ? '#ef4444' : entry[1].capturesOpponentTokenId ? '#8b5cf6' : '#22c55e'"
+            stroke-width="3"
+            class="animate-ping opacity-60"
+          />
+          <circle
+            r="19"
+            [attr.fill]="entry[1].capturesBarricade ? 'rgba(239, 68, 68, 0.2)' : entry[1].capturesOpponentTokenId ? 'rgba(139, 92, 246, 0.2)' : 'rgba(34, 197, 94, 0.2)'"
+            [attr.stroke]="entry[1].capturesBarricade ? '#ef4444' : entry[1].capturesOpponentTokenId ? '#8b5cf6' : '#22c55e'"
+            stroke-width="2.5"
+          />
+
+          <!-- Capture Indicator Badges -->
+          @if (entry[1].capturesBarricade) {
+            <text x="0" y="3.5" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="extrabold">✕</text>
+          } @else if (entry[1].capturesOpponentTokenId) {
+            <text x="0" y="3.5" text-anchor="middle" fill="#8b5cf6" font-size="9" font-weight="extrabold">⚔</text>
+          } @else if (entry[0] === 'castle_1') {
+            <text x="0" y="3.5" text-anchor="middle" fill="#eab308" font-size="10" font-weight="extrabold">★</text>
+          } @else {
+            <circle r="4" fill="#22c55e" />
+          }
+
+          <!-- Transparent large hit area -->
+          <circle r="26" fill="transparent" />
+        </g>
+      }
+    </g>
+
+    <!-- LAYER 6: Relocation Placement Highlights (when PLACING_BARRICADE) -->
+    @if (stateService.phase() === 'PLACING_BARRICADE') {
+      <g class="relocation-highlights">
+        @for (nodeId of eligiblePlacementNodeIds(); track nodeId) {
+          <g
+            [attr.transform]="'translate(' + graphService.getNode(nodeId)!.x + ',' + graphService.getNode(nodeId)!.y + ')'"
+            (click)="onNodeClick(nodeId)"
+            class="relocation-target cursor-pointer group/reloc"
+          >
+            <circle
+              r="18"
+              fill="rgba(239, 68, 68, 0.15)"
+              stroke="#ef4444"
+              stroke-width="2"
+              stroke-dasharray="3 3"
+              class="group-hover/reloc:fill-red-500/30 transition-colors"
+            />
+            <circle r="24" fill="transparent" />
+          </g>
+        }
+      </g>
+    }
+  </svg>
+</div>
