@@ -149,6 +149,7 @@ export class AdminPanelComponent implements OnInit {
     planner: boolean;
     game: boolean;
     movies: boolean;
+    barricade: boolean;
   }>({
     admin: false,
     masterAdmin: false,
@@ -161,6 +162,7 @@ export class AdminPanelComponent implements OnInit {
     planner: false,
     game: false,
     movies: false,
+    barricade: false,
   });
 
   // Movies State
@@ -327,6 +329,7 @@ export class AdminPanelComponent implements OnInit {
       planner: user.modules.planner ?? false,
       game: user.modules.game ?? false,
       movies: user.modules.movies ?? false,
+      barricade: user.modules.barricade ?? false,
     });
     this.isEditModalOpen.set(true);
   }
@@ -356,6 +359,7 @@ export class AdminPanelComponent implements OnInit {
         planner: form.planner,
         game: form.game,
         movies: form.movies,
+        barricade: form.barricade,
       },
     };
 

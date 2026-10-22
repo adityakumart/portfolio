@@ -104,6 +104,19 @@ export const USER_MODULES: UserModuleConfig[] = [
     iconBgClass: 'bg-amber-500/10 border-amber-500/20',
     iconTextClass: 'text-amber-500',
   },
+  {
+    key: 'barricade',
+    label: 'Barricade Game',
+    route: '/user/barricade',
+    icon: 'lucideShieldAlert',
+    description:
+      'Classic Malefiz tactical board game with chokepoints, barricade captures, 2-player pass-and-play, and computer AI.',
+    badge: 'Strategy',
+    gradientClass:
+      'bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-500 hover:to-amber-500 text-white shadow-md shadow-red-500/15',
+    iconBgClass: 'bg-red-500/10 border-red-500/20',
+    iconTextClass: 'text-red-500',
+  },
 ];
 
 /**

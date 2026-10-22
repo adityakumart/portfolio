@@ -8,6 +8,7 @@ export interface UserModules {
   planner?: boolean;
   game?: boolean;
   movies?: boolean;
+  barricade?: boolean;
 }
 
 export interface User {

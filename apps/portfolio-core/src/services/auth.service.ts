@@ -51,6 +51,7 @@ export class AuthService {
           planner: false,
           game: false,
           movies: false,
+          barricade: false,
         },
       };
 
@@ -266,6 +267,7 @@ export class AuthService {
       if (typeof modules.planner === 'boolean') updateFields['modules.planner'] = modules.planner;
       if (typeof modules.game === 'boolean') updateFields['modules.game'] = modules.game;
       if (typeof modules.movies === 'boolean') updateFields['modules.movies'] = modules.movies;
+      if (typeof modules.barricade === 'boolean') updateFields['modules.barricade'] = modules.barricade;
 
       await userCollection.updateOne(
         { _id: objId },

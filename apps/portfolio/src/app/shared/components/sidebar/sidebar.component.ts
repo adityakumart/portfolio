@@ -260,7 +260,22 @@ export class SidebarComponent implements OnDestroy {
           })),
         })),
       },
-      { label: 'Movie Guesser', icon: 'lucideGamepad2', link: '/user/game' },
+      {
+        label: 'Games',
+        icon: 'lucideGamepad2',
+        children: [
+          {
+            label: 'Barricade',
+            link: '/user/barricade',
+            icon: 'lucideShieldAlert',
+          },
+          {
+            label: 'Telugu Movie Guesser',
+            link: '/user/game',
+            icon: 'lucideFilm',
+          },
+        ],
+      },
     ];
 
     if (user) {

@@ -298,6 +298,29 @@ const routes: Routes = [
         },
       },
       {
+        path: 'barricade',
+        loadComponent: () =>
+          import(
+            './components/barricade/barricade.component'
+          ).then((m) => m.BarricadeComponent),
+        data: {
+          seo: {
+            title: 'Barricade (Malefiz) Board Game | Aditya Kumar T Platform',
+            description:
+              'Tactical Barricade board game featuring 2-player pass-and-play, heuristic computer AI, SVG pyramid board, and chokepoint blockades.',
+            keywords: [
+              'Barricade',
+              'Malefiz',
+              'Board Game',
+              'Tactical Game',
+              'Aditya Kumar T',
+            ],
+            robots: 'index, follow',
+            ogType: 'game',
+          },
+        },
+      },
+      {
         path: 'dev-tools',
         loadChildren: () =>
           import('../dev-tools/dev-tools-routing.module').then(

@@ -185,6 +185,7 @@ export class AdminService {
         planner: Boolean(updated['modules']?.planner),
         game: Boolean(updated['modules']?.game),
         movies: Boolean(updated['modules']?.movies),
+        barricade: Boolean(updated['modules']?.barricade),
       },
       user_logged_in_at: updated['user_logged_in_at'] || null,
       updated_at: updated['updated_at'] || undefined,
@@ -256,6 +257,7 @@ export class AdminService {
       plannerCount,
       gameCount,
       moviesCount,
+      barricadeCount,
       totalMovies,
       untranslatedMoviesCount,
     ] = await Promise.all([
@@ -272,6 +274,7 @@ export class AdminService {
       userCollection.countDocuments({ 'modules.planner': true, is_deleted: { $ne: true } }),
       userCollection.countDocuments({ 'modules.game': true, is_deleted: { $ne: true } }),
       userCollection.countDocuments({ 'modules.movies': true, is_deleted: { $ne: true } }),
+      userCollection.countDocuments({ 'modules.barricade': true, is_deleted: { $ne: true } }),
       MovieModel.countDocuments(),
       MovieModel.countDocuments({
         $or: [
@@ -289,6 +292,7 @@ export class AdminService {
       planner: plannerCount,
       game: gameCount,
       movies: moviesCount,
+      barricade: barricadeCount,
     };
 
     return {
