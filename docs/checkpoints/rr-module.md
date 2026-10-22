@@ -2,7 +2,7 @@
 
 **Module Path**: `apps/portfolio/src/app/modules/rr/`  
 **Status**: Active Baseline  
-**Framework**: Angular 18+ (Signals, OnPush, Spartan UI / SCSS)
+**Framework**: Angular 22+ (Signals, OnPush, Spartan UI / SCSS)
 
 ---
 

@@ -1,5 +1,5 @@
 ---
-description: Enforce non-breaking feature development and checkpoint gates across User, RR, Portfolio, and Planner modules
+description: Enforce non-breaking feature development and checkpoint gates across User, RR, Portfolio, Planner, and Dev Tools modules
 globs: **/*
 ---
 
@@ -16,6 +16,7 @@ Before proposing or writing code that impacts any of the following domains, the 
 - **RR (Royal Rentals) Module**: `docs/checkpoints/rr-module.md`
 - **Portfolio Module**: `docs/checkpoints/portfolio-module.md`
 - **Planner Module**: `docs/checkpoints/planner-module.md`
+- **Dev Tools Module**: `docs/checkpoints/dev-tools-module.md`
 
 ---
 
