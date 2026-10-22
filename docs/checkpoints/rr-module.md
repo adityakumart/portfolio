@@ -3,6 +3,7 @@
 **Module Path**: `apps/portfolio/src/app/modules/rr/`  
 **Route Prefix**: `/user/rr/`  
 **Status**: Active Baseline  
+**BA Handover Specification**: [rr-module-business-analyst-handover.md](file:///e:/Code/portfolio/docs/handover/rr-module-business-analyst-handover.md)  
 **Framework**: Angular 18+ (Signals, OnPush, Spartan UI / SCSS)
 
 ---
@@ -288,27 +289,37 @@ The **RR (Royal Rentals) Module** is an enterprise-grade car rental operations p
   - `cleanlinessChoice`: Required `'none' | '500' | '1000' | 'custom'`. Custom amounts must be `>= 0`.
   - Dynamic damages list: Each damage requires description and non-negative amount.
   - Challana / Toll / Fines: Optional; must be `>= 0`.
-- **2. The 5 End-Booking Scenarios**:
-  - **Case 1: Standard / Early Return**: Returned on or before scheduled end without exceeding KM limit.
-  - **Case 2: Late Return (Extra Hours)**:
-    - `extraHours = actualReturnTime - scheduledReturnTime` (rounded up).
-    - `extraHourFee = extraHours * vehicle.extraHourRate`.
-  - **Case 3: KM Overage**:
+- **2. The 5 End-Booking Settlement Scenarios (`activeScenario`)**:
+  - **Case 1: Standard Clean Return (`'case1'`)**: Returned on or before scheduled end date/time and within KM allowance (`!isKmExceeded && !isHrsExceeded`).
+    - `extraKms = 0`, `extraKmFee = 0`, `extraHours = 0`, `extraHourFee = 0`.
+    - Only base rent, cleanliness fee (if selected), tolls, and damages apply.
+  - **Case 2: Kilometer Overage Only (`'case2'`)**: Returned on time, but exceeded allowed KM (`isKmExceeded && !isHrsExceeded`).
     - `actualDistanceDriven = odometerEnd - odometerStart`.
-    - `extraKms = max(0, actualDistanceDriven - allowedKms)`.
-    - `extraKmFee = extraKms * vehicle.extraKmRate`.
-  - **Case 4.1: Combined Late Return + Extra KMs**:
-    - Applies both `extraHourFee` and `extraKmFee`.
-    - **Non-Intimation Fine Evaluation**: If customer exceeded both limits without logging an advance intimation (`submitCustomerIntimation`), an optional `nonIntimationFine` (default 1000, uncapped) is applied.
-  - **Case 4.2: Extension / Slab Recalculation Mode**:
-    - Recalculates base slab rent and effective KM allowance (`slabExtraKmAllowance`), adjusting overage charges.
+    - `extraKms = max(0, actualDistanceDriven - totalKmLimit)`.
+    - `extraKmFee = extraKms * extraKmRate`.
+    - `extraHours = 0`, `extraHourFee = 0`.
+  - **Case 3: Late Return Only (`'case3'`)**: Returned late, but within allowed KM (`!isKmExceeded && isHrsExceeded`).
+    - `rawHoursExceeded = ceil((actualReturnDateTime - scheduledReturnDateTime) / 1 hour)`.
+    - `extraHours = rawHoursExceeded`.
+    - `extraHourFee = extraHours * extraHourRate`.
+    - `extraKms = 0`, `extraKmFee = 0`.
+  - **Case 4.1: Combined Late Return + KM Overage Standard Mode (`'case4_1'`)**:
+    - Both limits exceeded without slab recalculation (`recalculateSlabMode === false`).
+    - Applies both `extraKmFee = extraKms * extraKmRate` and `extraHourFee = extraHours * extraHourRate`.
+    - **Non-Intimation Fine Evaluation**: If customer exceeded both limits without logging an advance delay intimation (`openIntimationModal`), an optional `nonIntimationFine` (default ₹1,000, configurable $\ge 0$) is applied.
+  - **Case 4.2: Extension / Slab Recalculation Mode (`'case4_2'`)**:
+    - Both limits exceeded with slab recalculation active (`recalculateSlabMode === true`).
+    - Converts excess hours into vehicle pricing slabs via `calculateSlabKm(rawHoursExceeded, vehicle.pricing)` and `calculateSlabRent(rawHoursExceeded, vehicle.pricing)`.
+    - Grants additional `slabExtraKmAllowance` and updates `effectiveKmLimit = baseKmLimit + addedKmLimit`.
+    - Recalculates remaining excess KMs: `extraKms = max(0, distanceDriven - newEffectiveKmLimit)`.
+    - Extra hours are absorbed into `finalRentAmount = baseRent + addedRent`; `extraHourFee = 0`.
 - **3. Settlement Formulas**:
   - `totalAdditionalFees = cleanlinessFee + extraKmFee + extraHourFee + damagesTotal + challanaTollFinesTotal + nonIntimationFine`.
   - `finalTotalPayable = finalRentAmount + totalAdditionalFees`.
-  - `balancePending = finalTotalPayable - totalPaidAmount`.
+  - `balancePending = finalTotalPayable - amountPaid`.
   - If `balancePending > 0`: Customer pays due balance.
-  - If `balancePending < 0`: Refund owed to customer (security deposit return).
-  - Triggers automated tax-compliant PDF invoice via `RRInvoicePdfService`.
+  - If `balancePending < 0`: Refund owed to customer (excess deposit return).
+  - Triggers automated tax-compliant PDF invoice via `RRInvoicePdfService.printInvoicePdf()`.
 
 ---
 
