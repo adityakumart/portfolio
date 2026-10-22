@@ -113,6 +113,7 @@ export const environment = {
 const publicRoutes = [
   { path: '', priority: '1.0', changefreq: 'weekly' },
   { path: 'user/login', priority: '0.5', changefreq: 'monthly' },
+  { path: 'user/barricade', priority: '0.8', changefreq: 'weekly' },
   { path: 'user/formbuilder', priority: '0.8', changefreq: 'monthly' },
   { path: 'user/formbuilder/create', priority: '0.8', changefreq: 'monthly' },
   { path: 'user/rr', priority: '0.8', changefreq: 'monthly' },
