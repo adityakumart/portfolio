@@ -11,26 +11,36 @@
 The **RR (Royal Rentals) Module** is an enterprise-grade car rental operations platform. It combines a public vehicle showcase with an administrative dashboard covering fleet management, walk-in and advance reservations, return settlements, customer KYC membership tiers, employee permissions, activity audits, customer delay intimations, and legal invoice generation.
 
 ### Global Invariants
-1. **Public vs. Dashboard Separation**:
+1. **Public vs. Dashboard Separation & Role Gating**:
    - The public showcase (`/user/rr`, `/user/rr/home`) must remain 100% accessible without authentication.
-   - All dashboard routes (`/user/rr/dashboard/*`) require verified staff credentials (`IRRUser`: role `'admin'` or `'employee'`).
+   - All dashboard routes require verified staff credentials (`IRRUser`: role `'admin'` or `'employee'`).
+   - **Admin Submenu Gating**: The following routes are strictly restricted to `role === 'admin'`:
+     - `/user/rr/employee/list`
+     - `/user/rr/history`
+     - `/user/rr/activity-logs`
+     - `/user/rr/announcements`
+     - `/user/rr/home-content`
+   - Desk staff (`role === 'employee'`) have access to `/user/rr/dashboard` (stats), `/user/rr/booking/list`, `/user/rr/booking/advance`, `/user/rr/vehicle/list`, and `/user/rr/customer/list`.
 2. **Inactivity Session Lock (`RRInactivityService` & `RRLockScreenComponent`)**:
    - **Timeout**: Strictly 5 minutes (`RR_INACTIVITY_TIMEOUT_MS = 300,000ms`) of idle time.
    - Monitored inputs: `mousemove`, `keydown`, `touchstart`, `scroll`, `click` (throttled at 1,500ms).
-   - Once expired, sets `rr_session_is_locked = 'true'` and renders `RRLockScreenComponent` requiring password re-verification.
-   - Unlock verifies password via `RRApiService.verifyPassword()` and dismisses the overlay without page reload.
+   - Once expired, sets `rr_session_is_locked = 'true'` and renders `RRLockScreenComponent` overlay requiring password re-verification.
+   - Unlocks in-place upon valid password check without page reload or loss of active form drafts.
    - State synchronizes across browser tabs, Chrome Extension storage, and desktop wrappers.
-3. **AES-256 Encrypted Storage Envelopes**:
+3. **Mandatory Password Policy Engine**:
+   - Evaluates `policyState` signal (`mustChangePassword`, `isExpired`, `isBufferPeriod`).
+   - If policy triggers, forces an unclosable `passwordPolicyDialog` modal requiring a new password ($\ge$ 6 characters) before further operations.
+4. **AES-256 Encrypted Storage Envelopes**:
    - Tokens and session payloads are encrypted using AES-256 (`portfolio_rr_secure_session_v1`) via `createStorageEnvelope` and `verifyStorageEnvelope`.
-4. **Audit Trail Immutability**:
-   - Every booking creation, modification, vehicle return, login, and deletion must write an entry to `RRActivityLogsComponent`.
-5. **Vehicle State Machine Integrity**:
+5. **Audit Trail Immutability**:
+   - Every booking creation, modification, vehicle return, login, intimation log, and deletion must write an entry to `RRActivityLogsComponent`.
+6. **Vehicle State Machine Integrity**:
    - Valid lifecycle: `Available` ➔ `Reserved` ➔ `Booked (In-Use)` ➔ `Maintenance` / `Contract` ➔ `Available`.
    - A vehicle cannot be simultaneously marked `Available` while assigned to an active booking.
 
 ---
 
-## 2. Page-by-Page Specifications
+## 2. Page-by-Page Specifications (Exact Angular Router Paths)
 
 ### Page 2.1: Public Homepage & Showcase (`/user/rr`, `/user/rr/home`)
 - **Component**: `RRHomepageComponent`
@@ -50,14 +60,17 @@ The **RR (Royal Rentals) Module** is an enterprise-grade car rental operations p
 ### Page 2.2: Staff Login Portal (`/user/rr/login`)
 - **Component**: `RRLoginComponent`
 - **Access**: Public
-- **Inputs & Validations**:
-  - `email`: Required, valid email format regex.
-  - `password`: Required string.
+- **Dual Authentication Modes**:
+  - **Tab 1: Desk Staff Login (`employeeFormGroup`)**:
+    - `empId`: Required, pattern `/^RRA[0-9]{3}$/` (e.g. `RRA002`).
+    - `dob`: Date of Birth, converted via `toISODateString(dob)`.
+    - Authenticates desk agents for daily rental operations.
+  - **Tab 2: Administrator Login (`adminFormGroup`)**:
+    - `adminUsername`: Required email/username string.
+    - `adminPassword`: Required password ($\ge$ 4 characters).
 - **State Logic**:
-  - Calls `RRApiService.login()`.
-  - Checks `employee.allowLogin === true` and `employee.status === 'active'`.
-  - On success: Stores encrypted session envelopes (`rr_token`, `rr_user`, `loggedInUser: { role, id }`), writes audit log, and navigates to `/user/rr/dashboard/stats`.
-  - On failure: Displays inline error alert without clearing email.
+  - Calls `RRApiService.login()`. Checks `employee.allowLogin === true` and `employee.status === 'active'`.
+  - On success: Stores encrypted session envelopes (`rr_token`, `rr_user`, `loggedInUser: { role, id }`), writes audit log, and navigates to `/user/rr/dashboard`.
 
 ---
 
@@ -65,17 +78,17 @@ The **RR (Royal Rentals) Module** is an enterprise-grade car rental operations p
 - **Component**: `RRDashboardComponent` with `RRLockScreenComponent`
 - **Access Guard**: Staff Auth (`IRRUser`)
 - **Features**:
-  - Header with current employee profile, active role badge (`Admin` vs `Employee`), and Sign Out.
-  - Responsive sub-navigation bar with badge counters for active bookings, advance bookings, and pending payments.
+  - Header with current employee initials avatar (`getInitials()`), name, active role badge (`Admin` vs `Employee`), and Sign Out.
+  - Collapsible sidebar with state persisted to `localStorage.getItem('rr_sidebar_collapsed')`.
+  - Admin submenu accordion automatically highlighted via `isAdminRouteActive` computed signal.
   - **Lock Screen Overlay (`RRLockScreenComponent`)**:
+    - Triggers on 5-minute inactivity timeout.
     - Displays employee avatar, name, and email.
-    - Password input with toggleable show/hide eye icon (`lucideEye` / `lucideEyeOff`).
-    - Unlocks session in-place upon valid password check.
-    - Logout button clears all storage keys (`rr_user`, `rr_token`, `loggedInUser`, `rr_session_is_locked`) and redirects to login.
+    - Unlocks in-place upon valid password check.
 
 ---
 
-### Page 2.4: Stats & Operations Overview (`.../dashboard/stats`)
+### Page 2.4: Stats & Operations Overview (`/user/rr/dashboard`)
 - **Component**: `RRStatsViewComponent`
 - **7 Core KPI Categories (`StatCategory`)**:
   1. `fleet`: Total vehicles in system.
@@ -91,7 +104,7 @@ The **RR (Royal Rentals) Module** is an enterprise-grade car rental operations p
 
 ---
 
-### Page 2.5: Active Rentals Management (`.../dashboard/bookings`)
+### Page 2.5: Active Rentals Management (`/user/rr/booking/list`)
 - **Component**: `RRBookingListComponent`
 - **Features & Table Controls**:
   - Lists all bookings where `status === 'active'`.
@@ -100,15 +113,15 @@ The **RR (Royal Rentals) Module** is an enterprise-grade car rental operations p
 - **Actions**:
   - **End Rental**: Opens `RREndBookingDialogComponent` for final return calculation.
   - **Modify Rental**: Opens `RRModifyBookingDialogComponent` to extend dates or swap vehicles.
-  - **Customer Intimation Modal (`openIntimationModal`)**:
-    - Operator logs customer delay call: `intimationType` (`'delay'`), `notes` (min length 3), and `expectedReturnDateTime`.
-    - Saves intimation via `rrApi.recordCustomerIntimation()`.
-    - **Critical Link**: Directly determines whether the **Non-Intimation Fine** (`nonIntimationFine: 1000`) is triggered during end-booking return settlement.
+  - **Customer Delay Intimation Modal (`openIntimationModal`)**:
+    - Form fields: `intimationType` (`'delay'`), `notes` (min length 3), and `expectedReturnDateTime`.
+    - Saves delay record via `rrApi.recordCustomerIntimation()`.
+    - **Critical Business Rule**: Directly determines whether the **Non-Intimation Fine** (`nonIntimationFine: 1000`) is excused or charged during end-booking return settlement.
   - **Print Handover Agreement**: Calls `RRInvoicePdfService.viewAgreementPdf()`.
 
 ---
 
-### Page 2.6: Advance Bookings Schedule (`.../dashboard/advance-bookings`)
+### Page 2.6: Advance Bookings Desk (`/user/rr/booking/advance`)
 - **Component**: `RRAdvanceBookingListComponent`
 - **Features**:
   - Lists forward reservations where `status === 'reserved'`.
@@ -117,12 +130,12 @@ The **RR (Royal Rentals) Module** is an enterprise-grade car rental operations p
 - **Actions**:
   - **Reserve Booking**: Opens `RRReserveBookingDialogComponent`.
   - **Modify Reservation**: Edit schedule dates or vehicle preference.
-  - **Book Now (Handover Pipeline)**: Auto-fills `RRNewBookingDialogComponent` and promotes to Active Rental with advance credit.
-  - **Delete Reservation**: Confirmation prompt, releases vehicle calendar, logs audit entry.
+  - **Book Now (Handover Pipeline)**: Auto-fills `RRNewBookingDialogComponent` with customer KYC, vehicle, dates, and advance payment credited toward `amountPaid`.
+  - **Delete Reservation**: Releases vehicle calendar and logs audit entry.
 
 ---
 
-### Page 2.7: Vehicle Fleet Inventory (`.../dashboard/vehicles`)
+### Page 2.7: Vehicle Fleet Management (`/user/rr/vehicle/list`)
 - **Component**: `RRVehicleListComponent`
 - **Inventory Rules & State**:
   - Statuses: `Available`, `Booked (In-Use)`, `Maintenance`, `Contract`.
@@ -143,8 +156,9 @@ The **RR (Royal Rentals) Module** is an enterprise-grade car rental operations p
 
 ---
 
-### Page 2.8: Employee Directory (`.../dashboard/employees`)
+### Page 2.8: Staff Management Directory (`/user/rr/employee/list`)
 - **Component**: `RREmployeeListComponent`
+- **Access Guard**: Admin Role Only (`role === 'admin'`)
 - **Inputs & Validations**:
   - `firstName`, `lastName`: Required alphabet strings.
   - `dob`: Date of birth ISO string.
@@ -161,7 +175,7 @@ The **RR (Royal Rentals) Module** is an enterprise-grade car rental operations p
 
 ---
 
-### Page 2.9: Customer Directory & Membership (`.../dashboard/customers`)
+### Page 2.9: Customer Directory & Loyalty Tiers (`/user/rr/customer/list`)
 - **Component**: `RRCustomerListComponent`
 - **Membership Tiers & Discount Structure**:
   - `Standard`: 0% discount.
@@ -176,8 +190,9 @@ The **RR (Royal Rentals) Module** is an enterprise-grade car rental operations p
 
 ---
 
-### Page 2.10: Completed Rentals Archive (`.../dashboard/history`)
+### Page 2.10: Rental History & Invoices (`/user/rr/history`)
 - **Component**: `RRHistoryComponent`
+- **Access Guard**: Admin Role Only (`role === 'admin'`)
 - **Features & Filtering**:
   - Archive of all closed rentals (`status === 'completed'`).
   - Date Range Filter: `startDate` to `endDate` using `HlmDatePickerImports`.
@@ -188,8 +203,9 @@ The **RR (Royal Rentals) Module** is an enterprise-grade car rental operations p
 
 ---
 
-### Page 2.11: Activity Audit Logs (`.../dashboard/activity-logs`)
+### Page 2.11: System Activity Audit Logs (`/user/rr/activity-logs`)
 - **Component**: `RRActivityLogsComponent`
+- **Access Guard**: Admin Role Only (`role === 'admin'`)
 - **Log Structure (`ILog`)**:
   - `action`: e.g. `'started booking'`, `'ended booking'`, `'modified booking'`, `'logged in'`, `'deleted reservation'`, `'recorded intimation'`.
   - `performedBy`: Operator name and ID (e.g. `Desk Agent (RRA002)`).
@@ -199,8 +215,9 @@ The **RR (Royal Rentals) Module** is an enterprise-grade car rental operations p
 
 ---
 
-### Page 2.12: Announcements & Ticker Manager (`.../dashboard/announcements`)
+### Page 2.12: Announcements & Ticker Desk (`/user/rr/announcements`)
 - **Component**: `RRAnnouncementsComponent`
+- **Access Guard**: Admin Role Only (`role === 'admin'`)
 - **Scrolling Ticker Controls**:
   - `message`: Ticker announcement text.
   - `badgeText`: Tag chip label (e.g. `FESTIVAL SPECIAL`).
@@ -215,8 +232,9 @@ The **RR (Royal Rentals) Module** is an enterprise-grade car rental operations p
 
 ---
 
-### Page 2.13: Homepage Content CMS (`.../dashboard/home-content`)
+### Page 2.13: Homepage CMS & Banners (`/user/rr/home-content`)
 - **Component**: `RRHomeContentAdminComponent`
+- **Access Guard**: Admin Role Only (`role === 'admin'`)
 - **CMS Sections**:
   - Hero banner headline, subtitle, primary CTA text, and background image URL.
   - Promotional banners array (`banners: IRRHomeBanner[]`).
@@ -334,7 +352,7 @@ The **RR (Royal Rentals) Module** is an enterprise-grade car rental operations p
 ---
 
 ## 4. Active Rentals ⟷ Advance Bookings Bridge
-The operational link between **Active Rentals** (`RRBookingListComponent`) and **Advance Bookings** (`RRAdvanceBookingListComponent`) must adhere to these 5 points:
+The operational link between **Active Rentals** (`/user/rr/booking/list`) and **Advance Bookings** (`/user/rr/booking/advance`) must adhere to these points:
 
 1. **Shared Conflict Engine**: Both lists scan each other in real time to prevent any double-booking.
 2. **"Book Now" Handover Pipeline**: Clicking "Book Now" on an advance reservation opens `RRNewBookingDialogComponent` with **100% pre-filled data** (KYC, guarantor, dates, vehicle, and advance payment credited toward `amountPaid`).
