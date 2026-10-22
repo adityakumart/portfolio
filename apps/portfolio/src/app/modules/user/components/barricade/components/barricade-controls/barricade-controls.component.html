@@ -76,6 +76,17 @@
         variant="outline"
         size="icon"
         class="h-9 w-9 rounded-xl border-border text-muted-foreground hover:text-foreground"
+        (click)="toggleSound()"
+        [title]="sound.isSoundEnabled() ? 'Mute Sound Effects' : 'Enable Sound Effects'"
+      >
+        <ng-icon [name]="sound.isSoundEnabled() ? 'lucideVolume2' : 'lucideVolumeX'" class="text-base" />
+      </button>
+
+      <button
+        hlmBtn
+        variant="outline"
+        size="icon"
+        class="h-9 w-9 rounded-xl border-border text-muted-foreground hover:text-foreground"
         (click)="onReset()"
         title="Reset Game"
       >

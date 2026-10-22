@@ -14,12 +14,15 @@ import {
   lucideSparkles,
   lucideShieldAlert,
   lucideTrophy,
+  lucideVolume2,
+  lucideVolumeX,
 } from '@ng-icons/lucide';
 import { HlmCardImports } from '@spartan-ng/hel/card';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmBadgeImports } from '@spartan-ng/hel/badge';
 import { GameMode } from '../../../../../../shared/barricade';
 import { BarricadeStateService } from '../../services/barricade-state.service';
+import { BarricadeSoundService } from '../../services/barricade-sound.service';
 
 @Component({
   selector: 'app-barricade-controls',
@@ -40,6 +43,8 @@ import { BarricadeStateService } from '../../services/barricade-state.service';
       lucideSparkles,
       lucideShieldAlert,
       lucideTrophy,
+      lucideVolume2,
+      lucideVolumeX,
     }),
   ],
   templateUrl: './barricade-controls.component.html',
@@ -48,6 +53,7 @@ import { BarricadeStateService } from '../../services/barricade-state.service';
 })
 export class BarricadeControlsComponent {
   readonly state = inject(BarricadeStateService);
+  readonly sound = inject(BarricadeSoundService);
   readonly isRollingAnimation = signal<boolean>(false);
 
   onRollDice(): void {
@@ -72,5 +78,9 @@ export class BarricadeControlsComponent {
 
   onReset(): void {
     this.state.resetGame();
+  }
+
+  toggleSound(): void {
+    this.sound.setSoundEnabled(!this.sound.isSoundEnabled());
   }
 }

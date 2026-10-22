@@ -11,6 +11,8 @@ import {
 } from '../../../../../shared/barricade';
 import { BarricadeBoardGraphService } from './barricade-board-graph.service';
 import { BarricadeBfsEngineService } from './barricade-bfs-engine.service';
+import { BarricadeSoundService } from './barricade-sound.service';
+import { ToastrService } from '../../../../../shared/services/toaster.service';
 
 export interface BarricadeAiHandler {
   playTurn(): Promise<void>;
@@ -22,6 +24,8 @@ export interface BarricadeAiHandler {
 export class BarricadeStateService {
   private readonly graphService = inject(BarricadeBoardGraphService);
   private readonly bfsEngine = inject(BarricadeBfsEngineService);
+  private readonly soundService = inject(BarricadeSoundService);
+  private readonly toastr = inject(ToastrService);
 
   // Optional AI handler registered by BarricadeAiService
   private aiHandler: BarricadeAiHandler | null = null;
@@ -216,11 +220,15 @@ export class BarricadeStateService {
         ? forcedValue
         : Math.floor(Math.random() * 6) + 1;
 
+    this.soundService.playDiceRoll();
     this.diceValue.set(value);
     const movableTokens = this.tokensWithValidMoves();
 
     if (movableTokens.length === 0) {
       // Automatic turn pass: No valid moves possible with rolled value
+      this.toastr.info('No Legal Moves', {
+        description: `Rolled a ${value}. No path available, passing turn.`,
+      });
       this.statusMessage.set(
         `Rolled a ${value}. No legal moves possible! Passing turn...`,
       );
@@ -301,6 +309,7 @@ export class BarricadeStateService {
     const diceRoll = this.diceValue()!;
 
     // 1. Move token to target
+    this.soundService.playTokenMove();
     this.players.update((currentPlayers) => {
       return currentPlayers.map((p) => {
         if (p.id !== player.id) return p;
@@ -322,6 +331,10 @@ export class BarricadeStateService {
     let capturedOpponentTokenId: string | undefined;
     if (validMove.capturesOpponentTokenId) {
       capturedOpponentTokenId = validMove.capturesOpponentTokenId;
+      this.soundService.playKnockout();
+      this.toastr.warning('Knockout!', {
+        description: `${player.name} sent an opponent token back to start camp!`,
+      });
       this.players.update((currentPlayers) => {
         return currentPlayers.map((p) => {
           if (p.id === player.id) return p;
@@ -359,6 +372,10 @@ export class BarricadeStateService {
     if (targetNodeId === this.graphService.getCastleNodeId()) {
       this.winner.set(player);
       this.phase.set('GAME_OVER');
+      this.soundService.playWinFanfare();
+      this.toastr.success('Castle Conquered!', {
+        description: `🎉 ${player.name} reached the Summit Castle and won the game!`,
+      });
       this.statusMessage.set(`🎉 ${player.name} reached the Castle Summit and won the game!`);
       return true;
     }
@@ -372,6 +389,10 @@ export class BarricadeStateService {
       if (barricade) {
         this.capturedBarricadeId.set(barricade.id);
         this.phase.set('PLACING_BARRICADE');
+        this.soundService.playBarricadeCapture();
+        this.toastr.warning('Barricade Captured!', {
+          description: `${player.name} broke through a barricade and can now relocate it.`,
+        });
         this.statusMessage.set(
           `Barricade captured! Click any vacant track node to relocate it.`,
         );
@@ -425,6 +446,11 @@ export class BarricadeStateService {
       if (history.length === 0) return history;
       const last = { ...history[history.length - 1], barricadeRelocatedTo: targetNodeId };
       return [...history.slice(0, -1), last];
+    });
+
+    this.soundService.playTokenMove();
+    this.toastr.info('Barricade Deployed', {
+      description: 'Obstacle relocated on the board.',
     });
 
     this.capturedBarricadeId.set(null);
