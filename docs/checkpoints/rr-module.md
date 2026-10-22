@@ -46,13 +46,16 @@ The **RR (Royal Rentals) Module** is an enterprise-grade car rental operations p
 - **Component**: `RRHomepageComponent`
 - **Access**: Public (No Auth Required)
 - **Features & Logic**:
+  - **Animated Car Loader (`RRCarLoaderComponent`)**: Renders simulated ignition progress bar (14% to 100%) on initial entry; can be dismissed instantly via "Skip" button.
   - **Live Scrolling Ticker (`IRRScrollingTicker`)**: Renders dynamic ticker banner configured from announcements (`speed: 'slow' | 'normal' | 'fast'`).
   - **Dynamic CMS Content**: Loads hero headline, promotional banners, services grid, fleet statistics, and customer testimonials from `IRRHomePageContent`.
   - **Vehicle Fleet Catalog (`RRVehicleCardComponent` variant `'homepage'`)**:
+    - **Filter Exclusions**: Strictly filters out vehicles where `allowBooking === false` or `status === 'maintenance'` or `status === 'contract'`.
     - Filter by Seating: `'all' | '5' | '7'`.
-    - Filter by Fuel: Petrol, Diesel, CNG.
-    - Filter by Transmission: Manual, Automatic.
+    - Filter by Body Style: `'suv' | 'sedan' | 'hatchback'`.
+    - Real-time search across manufacturer, model name, type, fuel, and color.
     - Vehicle cards display primary thumbnail, daily rate, seating capacity, fuel type, and "Reserve / Book" CTA.
+  - **Promotional Offers & Quick Actions**: Copy promo code action with toast notification; one-click phone and WhatsApp dialer shortcuts.
   - **Inquiry Modal**: Clicking "Reserve" opens `RRReserveBookingDialogComponent`.
 
 ---
@@ -312,10 +315,14 @@ The **RR (Royal Rentals) Module** is an enterprise-grade car rental operations p
 ### Dialog 3.3: Modify & Cancel Booking Dialog (`RRModifyBookingDialogComponent`)
 - **Modification**: Allows vehicle swapping, return date extension, and start odometer adjustment.
 - **Cancellation & Deletion Flow**:
-  - Mandatory cancellation reason recorded in audit log.
-  - Refund handling: `returnedAmountMode` strictly one of:
-    - `'Original method' | 'Cash' | 'UPI Transfer' | 'Bank Transfer' | 'Used for another Booking'`.
-  - Immediately releases vehicle status back to `'available'`.
+  - Clicking "Delete Booking" reveals an inline deletion section:
+    - `deletionReason`: FormControl string, required (mandatory audit justification).
+    - `returnAmount`: Auto-populated with refundable balance ($\ge 0$).
+    - `returnAmountMode`: Required dropdown strictly one of:
+      - `'Original method' | 'Cash' | 'UPI Transfer' | 'Bank Transfer' | 'Used for another Booking'`.
+  - **Button State Gate**: The confirm "Delete" action button is strictly **disabled** until **both** `deletionReason` and `returnAmountMode` are entered.
+  - **Cancel Inline Action**: Clicking "Cancel" removes the deletion form and restores standard "Save Changes" and "Delete Booking" buttons without altering the booking.
+  - On confirm: Releases vehicle status back to `'available'`, registers the refund mode, and records an immutable audit log.
 
 ---
 
