@@ -9,6 +9,7 @@ import {
   ICustomerIntimation,
   IRRAnnouncementItem,
   IRRScrollingTicker,
+  IRRFeedback,
 } from '@portfolio/shared-types';
 
 export {
@@ -19,6 +20,7 @@ export {
   ICustomerIntimation,
   IRRAnnouncementItem,
   IRRScrollingTicker,
+  IRRFeedback,
 };
 
 export class RRService {
@@ -49,6 +51,11 @@ export class RRService {
   static async getAnnouncementsCol(): Promise<Collection<IRRAnnouncementItem>> {
     const db = await this.getDb();
     return db.collection<IRRAnnouncementItem>('announcements');
+  }
+
+  static async getFeedbackCol(): Promise<Collection<IRRFeedback>> {
+    const db = await this.getDb();
+    return db.collection<IRRFeedback>('feedback');
   }
 
   static async getSettingsCol(): Promise<Collection<any>> {

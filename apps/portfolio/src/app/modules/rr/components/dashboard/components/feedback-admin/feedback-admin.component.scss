@@ -1,0 +1,41 @@
+.feedback-admin-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.admin-header-card {
+  padding: 1.5rem;
+  border-radius: 1.25rem;
+  background: radial-gradient(circle at top left, rgba(6, 182, 212, 0.08), transparent 70%),
+              radial-gradient(circle at top right, rgba(59, 130, 246, 0.05), transparent 70%),
+              hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+}
+
+.metric-card {
+  padding: 1.25rem;
+  border-radius: 1rem;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--card));
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px -4px rgba(0, 0, 0, 0.1);
+}
+
+.metric-active {
+  ring: 2px solid hsl(var(--primary));
+  box-shadow: 0 0 15px -2px rgba(6, 182, 212, 0.25);
+}
+
+.ticket-card {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ticket-card:hover {
+  border-color: rgba(6, 182, 212, 0.4);
+}

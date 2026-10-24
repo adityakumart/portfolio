@@ -1,0 +1,587 @@
+<div class="feedback-admin-container">
+  <!-- Top Header -->
+  <div class="admin-header-card">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="h-12 w-12 rounded-2xl bg-gradient-to-br from-cyan-500/20 via-sky-500/20 to-blue-600/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shadow-lg shadow-cyan-500/10">
+          <ng-icon name="lucideMessageSquareCheck" class="text-2xl"></ng-icon>
+        </div>
+        <div>
+          <h1 class="text-xl sm:text-2xl font-black tracking-tight text-foreground flex items-center gap-2">
+            Feedback Management Desk
+            <span hlmBadge variant="outline" class="text-[10px] uppercase font-bold border-cyan-500/30 text-cyan-400 bg-cyan-500/10">
+              Admin Console
+            </span>
+          </h1>
+          <p class="text-xs sm:text-sm text-muted-foreground mt-0.5">
+            Review user-submitted issues, manage lifecycle statuses (open, in-progress, closed), and document resolutions.
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 self-start md:self-auto">
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          class="rounded-xl text-xs gap-2"
+          (click)="loadData()"
+          [disabled]="isLoading()"
+        >
+          <ng-icon name="lucideRefreshCw" [class.animate-spin]="isLoading()" class="text-xs"></ng-icon>
+          <span>Refresh Data</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Metric Summary Cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6 pt-6 border-t border-border/60">
+      <!-- Total -->
+      <div
+        class="metric-card cursor-pointer"
+        [class.metric-active]="selectedStatus() === 'all'"
+        (click)="setStatusFilter('all')"
+      >
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Tickets</span>
+          <ng-icon name="lucideLayers" class="text-muted-foreground text-sm"></ng-icon>
+        </div>
+        <div class="text-2xl font-black text-foreground mt-2">
+          {{ stats().total }}
+        </div>
+        <p class="text-[11px] text-muted-foreground mt-1">All submissions</p>
+      </div>
+
+      <!-- Open -->
+      <div
+        class="metric-card border-amber-500/30 bg-amber-500/5 cursor-pointer"
+        [class.metric-active]="selectedStatus() === 'open'"
+        (click)="setStatusFilter('open')"
+      >
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-amber-400 uppercase tracking-wider">Open</span>
+          <ng-icon name="lucideClock" class="text-amber-400 text-sm"></ng-icon>
+        </div>
+        <div class="text-2xl font-black text-amber-400 mt-2">
+          {{ stats().open }}
+        </div>
+        <p class="text-[11px] text-muted-foreground mt-1">Pending triage</p>
+      </div>
+
+      <!-- In Progress -->
+      <div
+        class="metric-card border-blue-500/30 bg-blue-500/5 cursor-pointer"
+        [class.metric-active]="selectedStatus() === 'in-progress'"
+        (click)="setStatusFilter('in-progress')"
+      >
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-blue-400 uppercase tracking-wider">In Progress</span>
+          <ng-icon name="lucideRefreshCw" class="text-blue-400 text-sm"></ng-icon>
+        </div>
+        <div class="text-2xl font-black text-blue-400 mt-2">
+          {{ stats().inProgress }}
+        </div>
+        <p class="text-[11px] text-muted-foreground mt-1">Under investigation</p>
+      </div>
+
+      <!-- Closed -->
+      <div
+        class="metric-card border-emerald-500/30 bg-emerald-500/5 cursor-pointer"
+        [class.metric-active]="selectedStatus() === 'closed'"
+        (click)="setStatusFilter('closed')"
+      >
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Closed</span>
+          <ng-icon name="lucideCheckCircle2" class="text-emerald-400 text-sm"></ng-icon>
+        </div>
+        <div class="text-2xl font-black text-emerald-400 mt-2">
+          {{ stats().closed }}
+        </div>
+        <p class="text-[11px] text-muted-foreground mt-1">Resolved & closed</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter & Search Toolbar -->
+  <div class="filter-toolbar rounded-2xl border border-border/80 bg-card/90 backdrop-blur-md p-4 sm:p-5 mt-6 shadow-sm space-y-4">
+    <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+      
+      <!-- Search Input -->
+      <div class="relative flex-1">
+        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted-foreground">
+          <ng-icon name="lucideSearch" class="text-sm"></ng-icon>
+        </div>
+        <input
+          hlmInput
+          type="text"
+          placeholder="Search by ticket ID, user name, employee ID, description, or notes..."
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+          class="w-full pl-9 pr-8 h-10 rounded-xl text-xs bg-background/80"
+        />
+        @if (searchQuery()) {
+          <button
+            type="button"
+            class="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground"
+            (click)="searchQuery.set('')"
+          >
+            <ng-icon name="lucideX" class="text-xs"></ng-icon>
+          </button>
+        }
+      </div>
+
+      <!-- Filter Dropdowns Grid -->
+      <div class="flex flex-wrap items-center gap-3">
+        <!-- Target Page Filter -->
+        <div class="relative">
+          <select
+            [ngModel]="selectedPage()"
+            (ngModelChange)="selectedPage.set($event)"
+            class="h-10 px-3 pr-8 rounded-xl border border-border bg-background/80 text-foreground text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-cyan-500/40 cursor-pointer appearance-none"
+          >
+            <option value="all">All Pages</option>
+            @for (page of feedbackPages; track page.value) {
+              <option [value]="page.value">{{ page.label }}</option>
+            }
+          </select>
+          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-muted-foreground">
+            <ng-icon name="lucideFilter" class="text-xs"></ng-icon>
+          </div>
+        </div>
+
+        <!-- Issue Type Filter -->
+        <div class="relative">
+          <select
+            [ngModel]="selectedIssueType()"
+            (ngModelChange)="selectedIssueType.set($event)"
+            class="h-10 px-3 pr-8 rounded-xl border border-border bg-background/80 text-foreground text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-cyan-500/40 cursor-pointer appearance-none"
+          >
+            <option value="all">All Categories</option>
+            @for (type of issueTypes; track type.value) {
+              <option [value]="type.value">{{ type.label }}</option>
+            }
+          </select>
+          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-muted-foreground">
+            <ng-icon name="lucideSliders" class="text-xs"></ng-icon>
+          </div>
+        </div>
+
+        <!-- Reset Filters Button -->
+        @if (selectedStatus() !== 'all' || selectedPage() !== 'all' || selectedIssueType() !== 'all' || searchQuery()) {
+          <button
+            hlmBtn
+            variant="ghost"
+            size="sm"
+            class="h-10 rounded-xl text-xs text-muted-foreground hover:text-foreground gap-1.5"
+            (click)="selectedStatus.set('all'); selectedPage.set('all'); selectedIssueType.set('all'); searchQuery.set('')"
+          >
+            <ng-icon name="lucideX" class="text-xs"></ng-icon>
+            <span>Reset Filters</span>
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Status Filter Buttons Bar -->
+    <div class="flex items-center gap-2 pt-2 overflow-x-auto pb-1">
+      <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground mr-1 flex items-center gap-1">
+        <ng-icon name="lucideShieldCheck" class="text-cyan-400"></ng-icon> Status:
+      </span>
+      <button
+        hlmBtn
+        [variant]="selectedStatus() === 'all' ? 'default' : 'outline'"
+        size="sm"
+        class="rounded-xl text-xs font-semibold px-3 py-1 h-8"
+        (click)="setStatusFilter('all')"
+      >
+        All ({{ stats().total }})
+      </button>
+
+      <button
+        hlmBtn
+        [variant]="selectedStatus() === 'open' ? 'default' : 'outline'"
+        size="sm"
+        class="rounded-xl text-xs font-semibold px-3 py-1 h-8 text-amber-400 border-amber-500/30"
+        (click)="setStatusFilter('open')"
+      >
+        Open ({{ stats().open }})
+      </button>
+
+      <button
+        hlmBtn
+        [variant]="selectedStatus() === 'in-progress' ? 'default' : 'outline'"
+        size="sm"
+        class="rounded-xl text-xs font-semibold px-3 py-1 h-8 text-blue-400 border-blue-500/30"
+        (click)="setStatusFilter('in-progress')"
+      >
+        In Progress ({{ stats().inProgress }})
+      </button>
+
+      <button
+        hlmBtn
+        [variant]="selectedStatus() === 'closed' ? 'default' : 'outline'"
+        size="sm"
+        class="rounded-xl text-xs font-semibold px-3 py-1 h-8 text-emerald-400 border-emerald-500/30"
+        (click)="setStatusFilter('closed')"
+      >
+        Closed ({{ stats().closed }})
+      </button>
+    </div>
+  </div>
+
+  <!-- Feedbacks List View -->
+  <div class="mt-6 space-y-4">
+    <div class="flex items-center justify-between text-xs text-muted-foreground px-1">
+      <span>Showing <strong>{{ filteredFeedbacks().length }}</strong> of {{ stats().total }} total submissions</span>
+    </div>
+
+    @if (isLoading()) {
+      <div class="flex items-center justify-center p-16 text-muted-foreground gap-2">
+        <ng-icon name="lucideRefreshCw" class="animate-spin text-xl"></ng-icon>
+        <span class="text-xs">Loading feedback tickets...</span>
+      </div>
+    } @else if (filteredFeedbacks().length === 0) {
+      <div class="rounded-2xl border border-dashed border-border p-16 text-center bg-card/40">
+        <div class="h-14 w-14 rounded-2xl bg-muted/60 text-muted-foreground flex items-center justify-center mx-auto mb-3">
+          <ng-icon name="lucideInbox" class="text-3xl"></ng-icon>
+        </div>
+        <h3 class="font-bold text-sm text-foreground">No Feedbacks Found</h3>
+        <p class="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+          No feedback tickets match the currently selected filters or search criteria.
+        </p>
+      </div>
+    } @else {
+      <div class="grid grid-cols-1 gap-4">
+        @for (ticket of filteredFeedbacks(); track ticket.id) {
+          <div
+            class="ticket-card rounded-2xl border bg-card/90 backdrop-blur-md p-5 sm:p-6 shadow-sm hover:shadow-md transition-all space-y-4"
+            [ngClass]="{
+              'border-amber-500/40': ticket.status === 'open',
+              'border-blue-500/40': ticket.status === 'in-progress',
+              'border-border/80': ticket.status === 'closed'
+            }"
+          >
+            <!-- Top Row: Submitter info, Page, Category & Status Pill -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <!-- Submitter Profile Snapshot -->
+              <div class="flex items-center gap-3">
+                <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 text-white font-bold text-xs flex items-center justify-center shadow-xs flex-shrink-0">
+                  {{ ticket.user.name.substring(0, 1) || 'U' }}
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="font-bold text-xs sm:text-sm text-foreground">{{ ticket.user.name }}</span>
+                    <span class="text-[10px] font-mono px-1.5 py-0.2 rounded bg-muted/60 text-muted-foreground">
+                      {{ ticket.user.id }}
+                    </span>
+                    <span class="text-[10px] uppercase font-bold text-cyan-400">
+                      ({{ ticket.user.role }})
+                    </span>
+                  </div>
+                  <p class="text-[11px] text-muted-foreground mt-0.5">
+                    {{ ticket.user.email }} • Submitted on {{ formatDate(ticket.createdAt) }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Badges: Target Page & Status -->
+              <div class="flex items-center gap-2 flex-wrap self-start sm:self-auto">
+                <!-- Page Badge -->
+                <span hlmBadge variant="outline" class="text-[10px] font-semibold border-cyan-500/30 text-cyan-400 bg-cyan-500/5">
+                  {{ getPageLabel(ticket.page) }}
+                </span>
+
+                <!-- Category Badge -->
+                <span hlmBadge variant="secondary" class="text-[10px] font-semibold">
+                  {{ getIssueTypeLabel(ticket.issueType) }}
+                </span>
+
+                <!-- Status Badge -->
+                <span
+                  hlmBadge
+                  variant="outline"
+                  class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md"
+                  [ngClass]="{
+                    'border-amber-500/40 text-amber-400 bg-amber-500/10': ticket.status === 'open',
+                    'border-blue-500/40 text-blue-400 bg-blue-500/10': ticket.status === 'in-progress',
+                    'border-emerald-500/40 text-emerald-400 bg-emerald-500/10': ticket.status === 'closed'
+                  }"
+                >
+                  @if (ticket.status === 'open') {
+                    <ng-icon name="lucideClock" class="mr-1 text-[10px]"></ng-icon>
+                  } @else if (ticket.status === 'in-progress') {
+                    <ng-icon name="lucideRefreshCw" class="mr-1 text-[10px]"></ng-icon>
+                  } @else if (ticket.status === 'closed') {
+                    <ng-icon name="lucideCheckCircle2" class="mr-1 text-[10px]"></ng-icon>
+                  }
+                  {{ ticket.status }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Description Body & Attachment -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-start pt-1">
+              <!-- Description (3 cols) -->
+              <div class="md:col-span-3 space-y-2">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">User Description:</span>
+                <p class="text-xs sm:text-sm text-foreground/95 leading-relaxed whitespace-pre-wrap bg-muted/20 p-3.5 rounded-xl border border-border/60">
+                  {{ ticket.description }}
+                </p>
+
+                <!-- Admin Notes if present -->
+                @if (ticket.adminNotes) {
+                  <div class="p-3.5 rounded-xl bg-blue-950/20 border border-blue-500/30 text-xs space-y-1">
+                    <div class="flex items-center justify-between">
+                      <span class="font-bold text-blue-400 flex items-center gap-1">
+                        <ng-icon name="lucideInfo"></ng-icon>
+                        Admin Resolution Remarks:
+                      </span>
+                      @if (ticket.resolvedBy) {
+                        <span class="text-[10px] font-mono text-muted-foreground">Resolved by {{ ticket.resolvedBy }}</span>
+                      }
+                    </div>
+                    <p class="text-muted-foreground leading-relaxed">{{ ticket.adminNotes }}</p>
+                  </div>
+                }
+              </div>
+
+              <!-- Screenshot Thumbnail (1 col) -->
+              <div class="md:col-span-1">
+                @if (ticket.imageUrl) {
+                  <div class="space-y-1.5">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Attached Screenshot:</span>
+                    <div
+                      class="relative h-28 w-full rounded-xl overflow-hidden border border-cyan-500/40 bg-black/40 cursor-pointer group shadow-sm"
+                      (click)="openImageModal(ticket.imageUrl, 'Screenshot for ' + ticket.id)"
+                    >
+                      <img
+                        [src]="ticket.imageUrl"
+                        [alt]="ticket.imageOriginalName || 'Screenshot'"
+                        class="h-full w-full object-cover group-hover:scale-105 transition-transform"
+                      />
+                      <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity gap-1 text-white text-xs font-bold">
+                        <ng-icon name="lucideEye"></ng-icon>
+                        <span>Inspect</span>
+                      </div>
+                    </div>
+                  </div>
+                } @else {
+                  <div class="h-28 rounded-xl border border-dashed border-border/60 bg-muted/10 flex flex-col items-center justify-center text-muted-foreground text-[11px] p-2 text-center">
+                    <ng-icon name="lucideImage" class="text-lg opacity-40 mb-1"></ng-icon>
+                    <span>No screenshot attached</span>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Bottom Actions Bar: Lifecycle Status Mutation -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-border/40 text-xs">
+              <div class="flex items-center gap-2 text-muted-foreground text-[11px] font-mono">
+                <span>Ticket: <strong>{{ ticket.id }}</strong></span>
+                @if (ticket.resolvedAt) {
+                  <span>• Resolved: {{ formatDate(ticket.resolvedAt) }}</span>
+                }
+              </div>
+
+              <!-- Status Action Buttons -->
+              <div class="flex items-center gap-2 flex-wrap">
+                <!-- Status Switcher Buttons -->
+                <div class="inline-flex rounded-xl p-0.5 bg-muted/60 border border-border/60">
+                  <button
+                    type="button"
+                    class="px-2.5 py-1 text-[11px] font-bold rounded-lg transition-colors"
+                    [ngClass]="ticket.status === 'open' ? 'bg-amber-500 text-black shadow-xs' : 'text-muted-foreground hover:text-foreground'"
+                    (click)="quickUpdateStatus(ticket, 'open')"
+                    [disabled]="isUpdating()"
+                  >
+                    Open
+                  </button>
+                  <button
+                    type="button"
+                    class="px-2.5 py-1 text-[11px] font-bold rounded-lg transition-colors"
+                    [ngClass]="ticket.status === 'in-progress' ? 'bg-blue-600 text-white shadow-xs' : 'text-muted-foreground hover:text-foreground'"
+                    (click)="quickUpdateStatus(ticket, 'in-progress')"
+                    [disabled]="isUpdating()"
+                  >
+                    In Progress
+                  </button>
+                  <button
+                    type="button"
+                    class="px-2.5 py-1 text-[11px] font-bold rounded-lg transition-colors"
+                    [ngClass]="ticket.status === 'closed' ? 'bg-emerald-600 text-white shadow-xs' : 'text-muted-foreground hover:text-foreground'"
+                    (click)="quickUpdateStatus(ticket, 'closed')"
+                    [disabled]="isUpdating()"
+                  >
+                    Closed
+                  </button>
+                </div>
+
+                <!-- Edit Remarks / Resolve Button -->
+                <button
+                  type="button"
+                  hlmBtn
+                  variant="outline"
+                  size="sm"
+                  class="h-8 rounded-xl text-xs gap-1"
+                  (click)="openNotesModal(ticket)"
+                >
+                  <ng-icon name="lucideInfo" class="text-xs"></ng-icon>
+                  <span>{{ ticket.adminNotes ? 'Edit Notes' : 'Add Notes' }}</span>
+                </button>
+
+                <!-- Delete Ticket -->
+                <button
+                  type="button"
+                  hlmBtn
+                  variant="ghost"
+                  size="icon"
+                  class="h-8 w-8 text-destructive hover:bg-destructive/10 rounded-xl"
+                  (click)="deleteFeedback(ticket)"
+                  [hlmTooltip]="'Delete Ticket'"
+                >
+                  <ng-icon name="lucideTrash2" class="text-xs"></ng-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Status & Resolution Notes Dialog Modal -->
+  @if (activeNotesModal()) {
+    <div
+      class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200"
+      (click)="closeNotesModal()"
+    >
+      <div
+        class="relative w-full max-w-lg bg-card rounded-2xl border border-border p-6 shadow-2xl flex flex-col space-y-4"
+        (click)="$event.stopPropagation()"
+      >
+        <div class="flex items-center justify-between border-b border-border/60 pb-3">
+          <div>
+            <h3 class="font-bold text-sm text-foreground">Update Status & Resolution Remarks</h3>
+            <p class="text-[11px] text-muted-foreground font-mono mt-0.5">Ticket ID: {{ activeNotesModal()?.ticket?.id }}</p>
+          </div>
+          <button
+            type="button"
+            hlmBtn
+            variant="ghost"
+            size="icon"
+            class="h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground"
+            (click)="closeNotesModal()"
+          >
+            <ng-icon name="lucideX" class="text-sm"></ng-icon>
+          </button>
+        </div>
+
+        <!-- Target Status Selector -->
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Lifecycle Status</label>
+          <div class="grid grid-cols-3 gap-2">
+            <button
+              type="button"
+              class="px-3 py-2 text-xs font-bold rounded-xl border text-center transition-all"
+              [ngClass]="activeNotesModal()?.newStatus === 'open' ? 'border-amber-500 bg-amber-500/20 text-amber-400' : 'border-border bg-muted/20 text-muted-foreground'"
+              (click)="activeNotesModal()!.newStatus = 'open'"
+            >
+              Open
+            </button>
+            <button
+              type="button"
+              class="px-3 py-2 text-xs font-bold rounded-xl border text-center transition-all"
+              [ngClass]="activeNotesModal()?.newStatus === 'in-progress' ? 'border-blue-500 bg-blue-500/20 text-blue-400' : 'border-border bg-muted/20 text-muted-foreground'"
+              (click)="activeNotesModal()!.newStatus = 'in-progress'"
+            >
+              In Progress
+            </button>
+            <button
+              type="button"
+              class="px-3 py-2 text-xs font-bold rounded-xl border text-center transition-all"
+              [ngClass]="activeNotesModal()?.newStatus === 'closed' ? 'border-emerald-500 bg-emerald-500/20 text-emerald-400' : 'border-border bg-muted/20 text-muted-foreground'"
+              (click)="activeNotesModal()!.newStatus = 'closed'"
+            >
+              Closed
+            </button>
+          </div>
+        </div>
+
+        <!-- Resolution Notes Textarea -->
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Internal Notes / Resolution Remarks</label>
+          <textarea
+            rows="4"
+            [(ngModel)]="activeNotesModal()!.notes"
+            placeholder="Document root cause, code fix details, commit links, or reasons for closure..."
+            class="w-full p-3 rounded-xl border border-border bg-background/80 text-foreground text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-cyan-500/40"
+          ></textarea>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-border/60">
+          <button
+            type="button"
+            hlmBtn
+            variant="ghost"
+            size="sm"
+            class="rounded-xl text-xs font-semibold"
+            (click)="closeNotesModal()"
+            [disabled]="isUpdating()"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            hlmBtn
+            size="sm"
+            class="rounded-xl text-xs font-bold bg-cyan-500 hover:bg-cyan-600 text-white px-4"
+            (click)="saveStatusWithNotes()"
+            [disabled]="isUpdating()"
+          >
+            @if (isUpdating()) {
+              <ng-icon name="lucideRefreshCw" class="animate-spin text-xs mr-1"></ng-icon>
+              <span>Saving...</span>
+            } @else {
+              <span>Save Changes</span>
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Fullscreen Image Preview Lightbox Modal -->
+  @if (previewModalImage()) {
+    <div
+      class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200"
+      (click)="closeImageModal()"
+    >
+      <div
+        class="relative max-w-4xl max-h-[90vh] bg-card rounded-2xl border border-border overflow-hidden shadow-2xl flex flex-col"
+        (click)="$event.stopPropagation()"
+      >
+        <div class="flex items-center justify-between px-5 py-3 border-b border-border bg-card/80 backdrop-blur-sm">
+          <span class="text-xs font-bold text-foreground">{{ previewModalImage()?.title }}</span>
+          <button
+            type="button"
+            hlmBtn
+            variant="ghost"
+            size="icon"
+            class="h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground"
+            (click)="closeImageModal()"
+          >
+            <ng-icon name="lucideX" class="text-sm"></ng-icon>
+          </button>
+        </div>
+        <div class="p-2 overflow-auto max-h-[80vh] flex items-center justify-center bg-black/60">
+          <img
+            [src]="previewModalImage()?.url"
+            [alt]="previewModalImage()?.title"
+            class="max-w-full max-h-[75vh] object-contain rounded-lg shadow-lg"
+          />
+        </div>
+      </div>
+    </div>
+  }
+</div>

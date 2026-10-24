@@ -13,7 +13,7 @@ import {
   IRRAnnouncementItem,
   IRRScrollingTicker,
 } from './rr.service';
-import { handleVehicleImageUpload } from './r2-storage.controller';
+import { handleVehicleImageUpload, handleFeedbackScreenshotUpload } from './r2-storage.controller';
 import { rrPublicRouter } from './rr-public.routes';
 import { authRateLimiter, uploadRateLimiter } from '../../middlewares/rate-limit.middleware';
 import { customerRouter } from '../../routes/customer.routes';
@@ -21,7 +21,18 @@ import { BillingService } from '../../services/billing.service';
 
 import { getJwtSecret } from '../../config/security';
 import { safeRegex, escapeRegex } from '../../utils/security/regex.util';
-import { DEFAULT_RR_HOMEPAGE_CONTENT, IRRHomePageContent } from '@portfolio/shared-types';
+import {
+  DEFAULT_RR_HOMEPAGE_CONTENT,
+  IRRHomePageContent,
+  IRRFeedback,
+  RRFeedbackStatus,
+  RRFeedbackPage,
+  RRFeedbackIssueType,
+  IRRCreateFeedbackPayload,
+  IRRUpdateFeedbackStatusPayload,
+  RR_FEEDBACK_PAGES,
+  RR_FEEDBACK_ISSUE_TYPES,
+} from '@portfolio/shared-types';
 
 const rrRouter = Router();
 const JWT_SECRET = getJwtSecret();
@@ -2288,6 +2299,322 @@ rrRouter.post('/home-content/reset', authenticateRRToken, requireAdmin, async (r
       success: true,
       message: 'Homepage content reset to factory defaults successfully',
       content: DEFAULT_RR_HOMEPAGE_CONTENT,
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+/* ============================================================
+   FEEDBACK DESK & MANAGEMENT
+============================================================ */
+
+// POST upload feedback screenshot (Authenticated)
+rrRouter.post(
+  '/feedback/upload',
+  authenticateRRToken,
+  uploadRateLimiter,
+  (req, res, next) => {
+    upload.fields([
+      { name: 'screenshot', maxCount: 1 },
+      { name: 'image', maxCount: 1 },
+      { name: 'file', maxCount: 1 },
+    ])(req, res, (err: any) => {
+      if (err) {
+        res.status(400).json({ error: 'Bad Request', message: err.message });
+      } else {
+        next();
+      }
+    });
+  },
+  handleFeedbackScreenshotUpload
+);
+
+// POST submit new feedback (Authenticated)
+rrRouter.post('/feedback', authenticateRRToken, async (req: Request, res: Response) => {
+  try {
+    const { page, issueType, description, imageUrl, imageKey, imageOriginalName } = req.body;
+    const staffId = (req as any).userId;
+
+    const validPages = RR_FEEDBACK_PAGES.map((p) => p.value);
+    if (!page || !validPages.includes(page)) {
+      res.status(400).json({
+        error: 'Bad Request',
+        message: `Invalid page selection. Must be one of: ${validPages.join(', ')}`,
+      });
+      return;
+    }
+
+    const validIssueTypes = RR_FEEDBACK_ISSUE_TYPES.map((t) => t.value);
+    if (!issueType || !validIssueTypes.includes(issueType)) {
+      res.status(400).json({
+        error: 'Bad Request',
+        message: `Invalid issue type. Must be one of: ${validIssueTypes.join(', ')}`,
+      });
+      return;
+    }
+
+    const trimmedDesc = typeof description === 'string' ? description.trim() : '';
+    if (trimmedDesc.length < 10 || trimmedDesc.length > 1000) {
+      res.status(400).json({
+        error: 'Bad Request',
+        message: 'Feedback description must be between 10 and 1000 characters.',
+      });
+      return;
+    }
+
+    const empCol = await RRService.getEmployeesCol();
+    const emp = await empCol.findOne({ id: staffId });
+    const userName = emp ? `${emp.firstName || ''} ${emp.lastName || ''}`.trim() || emp.id : staffId;
+    const userEmail = emp?.email || '';
+    const userRole = (emp?.role as any) || (req as any).userRole || 'employee';
+
+    const feedbackId = `RRFB-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const now = new Date().toISOString();
+
+    const feedbackDoc: IRRFeedback = {
+      id: feedbackId,
+      user: {
+        id: staffId,
+        name: userName,
+        email: userEmail,
+        role: userRole,
+      },
+      page,
+      issueType,
+      description: trimmedDesc,
+      imageUrl: typeof imageUrl === 'string' && imageUrl.trim() ? imageUrl.trim() : undefined,
+      imageKey: typeof imageKey === 'string' && imageKey.trim() ? imageKey.trim() : undefined,
+      imageOriginalName: typeof imageOriginalName === 'string' && imageOriginalName.trim() ? imageOriginalName.trim() : undefined,
+      status: 'open',
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    const feedbackCol = await RRService.getFeedbackCol();
+    await feedbackCol.insertOne(feedbackDoc as any);
+
+    await RRService.logActivity(
+      'SUBMIT_FEEDBACK',
+      staffId,
+      userRole,
+      `Submitted feedback ticket ${feedbackId} for ${page} (${issueType})`
+    );
+
+    res.status(201).json({
+      success: true,
+      message: 'Feedback submitted successfully. Thank you for helping us improve!',
+      data: feedbackDoc,
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+// GET current user's submitted feedbacks (Authenticated)
+rrRouter.get('/feedback/my', authenticateRRToken, async (req: Request, res: Response) => {
+  try {
+    const staffId = (req as any).userId;
+    const feedbackCol = await RRService.getFeedbackCol();
+    const feedbacks = await feedbackCol
+      .find({ 'user.id': staffId })
+      .sort({ createdAt: -1 })
+      .toArray();
+
+    res.json({
+      success: true,
+      data: feedbacks,
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+// GET aggregate feedback statistics (Admin only)
+rrRouter.get('/feedback/stats', authenticateRRToken, requireAdmin, async (_req: Request, res: Response) => {
+  try {
+    const feedbackCol = await RRService.getFeedbackCol();
+    const [total, open, inProgress, closed] = await Promise.all([
+      feedbackCol.countDocuments(),
+      feedbackCol.countDocuments({ status: 'open' }),
+      feedbackCol.countDocuments({ status: 'in-progress' }),
+      feedbackCol.countDocuments({ status: 'closed' }),
+    ]);
+
+    res.json({
+      success: true,
+      stats: {
+        total,
+        open,
+        inProgress,
+        closed,
+      },
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+// GET all feedbacks with filtering and search (Admin only)
+rrRouter.get('/feedback', authenticateRRToken, requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { status, page, issueType, search, limit, skip } = req.query;
+    const filter: any = {};
+
+    if (status && typeof status === 'string' && status !== 'all') {
+      filter.status = status;
+    }
+    if (page && typeof page === 'string' && page !== 'all') {
+      filter.page = page;
+    }
+    if (issueType && typeof issueType === 'string' && issueType !== 'all') {
+      filter.issueType = issueType;
+    }
+    if (search && typeof search === 'string' && search.trim()) {
+      const searchRegex = safeRegex(search.trim(), 'i');
+      filter.$or = [
+        { id: { $regex: searchRegex } },
+        { description: { $regex: searchRegex } },
+        { 'user.name': { $regex: searchRegex } },
+        { 'user.id': { $regex: searchRegex } },
+        { 'user.email': { $regex: searchRegex } },
+        { adminNotes: { $regex: searchRegex } },
+      ];
+    }
+
+    const feedbackCol = await RRService.getFeedbackCol();
+    let query = feedbackCol.find(filter).sort({ createdAt: -1 });
+
+    if (skip && !isNaN(Number(skip))) {
+      query = query.skip(Number(skip));
+    }
+    if (limit && !isNaN(Number(limit))) {
+      query = query.limit(Number(limit));
+    }
+
+    const feedbacks = await query.toArray();
+    const total = await feedbackCol.countDocuments(filter);
+
+    res.json({
+      success: true,
+      total,
+      data: feedbacks,
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+// PATCH update feedback status and admin notes (Admin only)
+rrRouter.patch('/feedback/:id/status', authenticateRRToken, requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const id = String(req.params['id']);
+    const { status, adminNotes } = req.body;
+    const staffId = (req as any).userId;
+
+    const validStatuses: RRFeedbackStatus[] = ['open', 'in-progress', 'closed'];
+    if (!status || !validStatuses.includes(status)) {
+      res.status(400).json({
+        error: 'Bad Request',
+        message: `Invalid status. Must be one of: ${validStatuses.join(', ')}`,
+      });
+      return;
+    }
+
+    const feedbackCol = await RRService.getFeedbackCol();
+    const isValidObjectId = ObjectId.isValid(id);
+    const existing = await feedbackCol.findOne({
+      $or: [
+        { id },
+        ...(isValidObjectId ? [{ _id: new ObjectId(id) }] : []),
+      ],
+    });
+
+    if (!existing) {
+      res.status(404).json({
+        error: 'Not Found',
+        message: `Feedback ticket with ID ${id} was not found.`,
+      });
+      return;
+    }
+
+    const now = new Date().toISOString();
+    const updateDoc: any = {
+      status,
+      updatedAt: now,
+    };
+
+    if (adminNotes !== undefined) {
+      updateDoc.adminNotes = typeof adminNotes === 'string' ? adminNotes.trim() : '';
+    }
+
+    if (status === 'closed') {
+      updateDoc.resolvedAt = now;
+      updateDoc.resolvedBy = staffId;
+    } else {
+      updateDoc.resolvedAt = null;
+      updateDoc.resolvedBy = null;
+    }
+
+    await feedbackCol.updateOne(
+      { _id: existing._id },
+      { $set: updateDoc }
+    );
+
+    const updated = await feedbackCol.findOne({ _id: existing._id });
+
+    await RRService.logActivity(
+      'UPDATE_FEEDBACK_STATUS',
+      staffId,
+      (req as any).userRole || 'admin',
+      `Updated feedback ${existing.id} status to "${status}"`
+    );
+
+    res.json({
+      success: true,
+      message: `Feedback ticket status updated to "${status}".`,
+      data: updated,
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+// DELETE feedback (Admin only)
+rrRouter.delete('/feedback/:id', authenticateRRToken, requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const id = String(req.params['id']);
+    const staffId = (req as any).userId;
+
+    const feedbackCol = await RRService.getFeedbackCol();
+    const isValidObjectId = ObjectId.isValid(id);
+    const existing = await feedbackCol.findOne({
+      $or: [
+        { id },
+        ...(isValidObjectId ? [{ _id: new ObjectId(id) }] : []),
+      ],
+    });
+
+    if (!existing) {
+      res.status(404).json({
+        error: 'Not Found',
+        message: `Feedback ticket with ID ${id} was not found.`,
+      });
+      return;
+    }
+
+    await feedbackCol.deleteOne({ _id: existing._id });
+
+    await RRService.logActivity(
+      'DELETE_FEEDBACK',
+      staffId,
+      (req as any).userRole || 'admin',
+      `Deleted feedback ticket ${existing.id}`
+    );
+
+    res.json({
+      success: true,
+      message: 'Feedback deleted successfully.',
     });
   } catch (err: any) {
     res.status(500).json({ error: 'Internal Server Error', message: err.message });

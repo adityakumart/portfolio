@@ -625,3 +625,128 @@ export const DEFAULT_RR_HOMEPAGE_CONTENT: IRRHomePageContent = {
       '© 2026 RoadReady Rentals — Built for Ultimate Comfort and Speed',
   },
 };
+
+export type RRFeedbackStatus = 'open' | 'in-progress' | 'closed';
+
+export type RRFeedbackPage =
+  | 'home'
+  | 'dashboard'
+  | 'booking_list'
+  | 'booking_advance'
+  | 'fleet_registry'
+  | 'customer_registry'
+  | 'staff_registry'
+  | 'history'
+  | 'activity_logs'
+  | 'announcements'
+  | 'home_content'
+  | 'feedback'
+  | 'other';
+
+export type RRFeedbackIssueType =
+  | 'ui'
+  | 'functionality'
+  | 'performance'
+  | 'feature_request'
+  | 'data_issue'
+  | 'other';
+
+export interface IRRFeedbackUserSnapshot {
+  id: string; // Employee ID (e.g. 'RRA001')
+  name: string;
+  email: string;
+  role: RRRole;
+}
+
+export interface IRRFeedback {
+  _id?: ObjectId | string;
+  id: string; // Unique ticket ID (e.g. 'RRFB-1730000000000-4821')
+  user: IRRFeedbackUserSnapshot;
+  page: RRFeedbackPage;
+  issueType: RRFeedbackIssueType;
+  description: string; // min 10, max 1000 characters
+  imageUrl?: string;
+  imageKey?: string;
+  imageOriginalName?: string;
+  status: RRFeedbackStatus;
+  adminNotes?: string;
+  resolvedAt?: string | null;
+  resolvedBy?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface IRRCreateFeedbackPayload {
+  page: RRFeedbackPage;
+  issueType: RRFeedbackIssueType;
+  description: string;
+  imageUrl?: string;
+  imageKey?: string;
+  imageOriginalName?: string;
+}
+
+export interface IRRUpdateFeedbackStatusPayload {
+  status: RRFeedbackStatus;
+  adminNotes?: string;
+}
+
+export interface IRRFeedbackStats {
+  total: number;
+  open: number;
+  inProgress: number;
+  closed: number;
+}
+
+export const RR_FEEDBACK_PAGES: { value: RRFeedbackPage; label: string; route?: string }[] = [
+  { value: 'home', label: 'Home Page', route: '/user/rr/home' },
+  { value: 'dashboard', label: 'Dashboard / Overview', route: '/user/rr/dashboard' },
+  { value: 'booking_list', label: 'Active Rentals / Bookings', route: '/user/rr/booking/list' },
+  { value: 'booking_advance', label: 'Advance Bookings', route: '/user/rr/booking/advance' },
+  { value: 'fleet_registry', label: 'Fleet Registry / Vehicles Inventory', route: '/user/rr/vehicle/list' },
+  { value: 'customer_registry', label: 'Regular Customers Directory', route: '/user/rr/customer/list' },
+  { value: 'staff_registry', label: 'Staff Registry / Employee Directory', route: '/user/rr/employee/list' },
+  { value: 'history', label: 'Rental History & Invoices', route: '/user/rr/history' },
+  { value: 'activity_logs', label: 'System Activity Logs', route: '/user/rr/activity-logs' },
+  { value: 'announcements', label: 'Announcements & Ticker Desk', route: '/user/rr/announcements' },
+  { value: 'home_content', label: 'Homepage CMS & Banners', route: '/user/rr/home-content' },
+  { value: 'feedback', label: 'Feedback Desk', route: '/user/rr/feedback' },
+  { value: 'other', label: 'Other / General System Issue' },
+];
+
+export const RR_FEEDBACK_ISSUE_TYPES: {
+  value: RRFeedbackIssueType;
+  label: string;
+  description: string;
+}[] = [
+  {
+    value: 'ui',
+    label: 'UI / Design / Visuals',
+    description: 'Layout glitches, misaligned components, theme or font rendering',
+  },
+  {
+    value: 'functionality',
+    label: 'Bug / Functionality',
+    description: 'Buttons not working, form submission errors, broken flows',
+  },
+  {
+    value: 'performance',
+    label: 'Performance / Loading',
+    description: 'Slow page loads, unresponsive tables, delayed responses',
+  },
+  {
+    value: 'feature_request',
+    label: 'Feature Request / Enhancement',
+    description: 'Suggestions for new capabilities or UX improvements',
+  },
+  {
+    value: 'data_issue',
+    label: 'Data / Pricing Inconsistency',
+    description: 'Incorrect calculation, missing records, data discrepancy',
+  },
+  {
+    value: 'other',
+    label: 'Other',
+    description: 'Any issue not fitting the categories above',
+  },
+];
+
