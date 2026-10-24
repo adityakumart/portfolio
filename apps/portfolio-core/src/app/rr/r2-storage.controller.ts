@@ -75,3 +75,63 @@ export async function handleVehicleImageUpload(
       .json({ error: 'Internal Server Error', message: error.message });
   }
 }
+
+/**
+ * Handles feedback screenshot upload requests.
+ * Saves the file to Cloudflare R2 (or mock local storage) and returns the asset details.
+ */
+export async function handleFeedbackScreenshotUpload(
+  req: any,
+  res: Response,
+): Promise<void> {
+  try {
+    let rawFile: Express.Multer.File | undefined = undefined;
+    if (req.file) {
+      rawFile = req.file;
+    } else if (Array.isArray(req.files) && req.files.length > 0) {
+      rawFile = req.files[0];
+    } else if (req.files && typeof req.files === 'object') {
+      const firstKey = Object.keys(req.files)[0];
+      if (firstKey && Array.isArray(req.files[firstKey]) && req.files[firstKey].length > 0) {
+        rawFile = req.files[firstKey][0];
+      }
+    }
+
+    if (!rawFile) {
+      res
+        .status(400)
+        .json({ error: 'Bad Request', message: 'No screenshot file provided.' });
+      return;
+    }
+
+    const hostUrl = req.protocol + '://' + req.get('host');
+    const publicUrl = process.env['RR_R2_PUBLIC_URL'];
+    const bucketName = process.env['RR_R2_BUCKET_NAME'];
+
+    const originalExt = path.extname(rawFile.originalname).toLowerCase() || '.png';
+    const timestamp = Date.now();
+    const randomSuffix = Math.round(Math.random() * 1e9);
+    const filename = `feedback-${timestamp}-${randomSuffix}${originalExt}`;
+    const key = `rr/feedback/${filename}`;
+
+    await R2Service.uploadObject(key, rawFile.buffer, rawFile.mimetype, bucketName);
+
+    const url = publicUrl
+      ? `${publicUrl.endsWith('/') ? publicUrl.slice(0, -1) : publicUrl}/${key}`
+      : `${hostUrl}/api/files/mock-download?key=${encodeURIComponent(key)}`;
+
+    res.status(200).json({
+      success: true,
+      message: 'Screenshot uploaded successfully.',
+      key,
+      url,
+      originalName: rawFile.originalname,
+    });
+  } catch (error: any) {
+    console.error('Error uploading feedback screenshot:', error);
+    res
+      .status(500)
+      .json({ error: 'Internal Server Error', message: error.message });
+  }
+}
+

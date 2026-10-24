@@ -48,6 +48,15 @@ import {
   IRRHomeFooterContent,
   IRRHomePageContent,
   DEFAULT_RR_HOMEPAGE_CONTENT,
+  IRRFeedback,
+  RRFeedbackStatus,
+  RRFeedbackPage,
+  RRFeedbackIssueType,
+  IRRCreateFeedbackPayload,
+  IRRUpdateFeedbackStatusPayload,
+  IRRFeedbackStats,
+  RR_FEEDBACK_PAGES,
+  RR_FEEDBACK_ISSUE_TYPES,
 } from '@portfolio/shared-types';
 
 export {
@@ -92,8 +101,15 @@ export type {
   IRRHomeContactSection,
   IRRHomeFooterContent,
   IRRHomePageContent,
+  IRRFeedback,
+  RRFeedbackStatus,
+  RRFeedbackPage,
+  RRFeedbackIssueType,
+  IRRCreateFeedbackPayload,
+  IRRUpdateFeedbackStatusPayload,
+  IRRFeedbackStats,
 };
-export { DEFAULT_RR_HOMEPAGE_CONTENT };
+export { DEFAULT_RR_HOMEPAGE_CONTENT, RR_FEEDBACK_PAGES, RR_FEEDBACK_ISSUE_TYPES };
 
 interface ExtensionWindow extends Window {
   chrome?: {
@@ -1208,6 +1224,111 @@ export class RRApiService {
       this.http.post<{ success: boolean; message: string; content: IRRHomePageContent }>(
         `${this.baseUrl}/home-content/reset`,
         {},
+        { headers: this.getHeaders() }
+      )
+    );
+  }
+
+  /**
+   * Feedback Desk & Management APIs
+   */
+  async uploadFeedbackScreenshot(file: File): Promise<{ key: string; url: string; originalName: string }> {
+    const formData = new FormData();
+    formData.append('screenshot', file);
+
+    const token = this.getToken();
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    const res = await firstValueFrom(
+      this.http.post<{ success: boolean; message: string; key: string; url: string; originalName: string }>(
+        `${this.baseUrl}/feedback/upload`,
+        formData,
+        { headers }
+      )
+    );
+
+    return {
+      key: res.key,
+      url: res.url,
+      originalName: res.originalName,
+    };
+  }
+
+  async submitFeedback(payload: IRRCreateFeedbackPayload): Promise<{ success: boolean; message: string; data: IRRFeedback }> {
+    return firstValueFrom(
+      this.http.post<{ success: boolean; message: string; data: IRRFeedback }>(
+        `${this.baseUrl}/feedback`,
+        payload,
+        { headers: this.getHeaders() }
+      )
+    );
+  }
+
+  async getMyFeedbacks(): Promise<IRRFeedback[]> {
+    const res = await firstValueFrom(
+      this.http.get<{ success: boolean; data: IRRFeedback[] }>(
+        `${this.baseUrl}/feedback/my`,
+        { headers: this.getHeaders() }
+      )
+    );
+    return res?.data || [];
+  }
+
+  async getAllFeedbacks(params?: {
+    status?: string;
+    page?: string;
+    issueType?: string;
+    search?: string;
+    limit?: number;
+    skip?: number;
+  }): Promise<{ total: number; data: IRRFeedback[] }> {
+    let httpParams = new HttpParams();
+    if (params?.status && params.status !== 'all') httpParams = httpParams.set('status', params.status);
+    if (params?.page && params.page !== 'all') httpParams = httpParams.set('page', params.page);
+    if (params?.issueType && params.issueType !== 'all') httpParams = httpParams.set('issueType', params.issueType);
+    if (params?.search) httpParams = httpParams.set('search', params.search);
+    if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
+    if (params?.skip) httpParams = httpParams.set('skip', params.skip.toString());
+
+    const res = await firstValueFrom(
+      this.http.get<{ success: boolean; total: number; data: IRRFeedback[] }>(
+        `${this.baseUrl}/feedback`,
+        { headers: this.getHeaders(), params: httpParams }
+      )
+    );
+    return { total: res?.total || 0, data: res?.data || [] };
+  }
+
+  async getFeedbackStats(): Promise<IRRFeedbackStats> {
+    const res = await firstValueFrom(
+      this.http.get<{ success: boolean; stats: IRRFeedbackStats }>(
+        `${this.baseUrl}/feedback/stats`,
+        { headers: this.getHeaders() }
+      )
+    );
+    return res?.stats || { total: 0, open: 0, inProgress: 0, closed: 0 };
+  }
+
+  async updateFeedbackStatus(
+    id: string,
+    payload: IRRUpdateFeedbackStatusPayload
+  ): Promise<{ success: boolean; message: string; data: IRRFeedback }> {
+    return firstValueFrom(
+      this.http.patch<{ success: boolean; message: string; data: IRRFeedback }>(
+        `${this.baseUrl}/feedback/${id}/status`,
+        payload,
+        { headers: this.getHeaders() }
+      )
+    );
+  }
+
+  async deleteFeedback(id: string): Promise<{ success: boolean; message: string }> {
+    return firstValueFrom(
+      this.http.delete<{ success: boolean; message: string }>(
+        `${this.baseUrl}/feedback/${id}`,
         { headers: this.getHeaders() }
       )
     );
