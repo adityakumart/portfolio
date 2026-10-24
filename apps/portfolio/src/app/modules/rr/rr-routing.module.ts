@@ -16,6 +16,7 @@ import { RRCustomerListComponent } from './components/dashboard/components/custo
 import { RRAnnouncementsComponent } from './components/dashboard/components/announcements/announcements.component';
 import { RRHomeContentAdminComponent } from './components/dashboard/components/home-content/home-content.component';
 import { RRFeedbackSubmissionComponent } from './components/dashboard/components/feedback/feedback.component';
+import { RRFeedbackAdminComponent } from './components/dashboard/components/feedback-admin/feedback-admin.component';
 
 export const RR_ROUTES: Routes = [
   {
@@ -200,6 +201,17 @@ export const RR_ROUTES: Routes = [
           seo: {
             title: 'Feedback Desk | Royal Rentals',
             description: 'Submit feedback, suggestions, and issue reports for Royal Rentals.',
+            robots: 'noindex, nofollow',
+          },
+        },
+      },
+      {
+        path: 'feedback/manage',
+        component: RRFeedbackAdminComponent,
+        data: {
+          seo: {
+            title: 'Feedback Management Desk | Royal Rentals',
+            description: 'Administrative console for reviewing, triaging, and resolving feedback tickets.',
             robots: 'noindex, nofollow',
           },
         },

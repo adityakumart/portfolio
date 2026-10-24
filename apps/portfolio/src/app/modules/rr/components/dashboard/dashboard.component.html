@@ -337,6 +337,21 @@
                       <span>Historical Logs</span>
                     </div>
                   </li>
+                  <li
+                    class="menu-item submenu-item"
+                    [routerLink]="['/user/rr/feedback/manage']"
+                    routerLinkActive="active-menu"
+                    [hlmTooltip]="'Feedback Management'"
+                    [tooltipDisabled]="!isSidebarCollapsed()"
+                    tooltipPosition="right"
+                    (click)="closeMobileSidebar()"
+                  >
+                    <div class="menu-item-pill"></div>
+                    <div class="menu-item-content">
+                      <ng-icon name="lucideMessageSquareCheck"></ng-icon>
+                      <span>Feedback Desk</span>
+                    </div>
+                  </li>
                 </div>
               }
             } @else {

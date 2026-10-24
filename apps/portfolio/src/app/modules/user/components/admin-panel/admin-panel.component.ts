@@ -55,8 +55,9 @@ import {
 } from '@portfolio/shared-types';
 import { MovieImporterComponent } from '../../../movie-importer/movie-importer.component';
 import { RRHomeContentAdminComponent } from '../../../rr/components/dashboard/components/home-content/home-content.component';
+import { RRFeedbackAdminComponent } from '../../../rr/components/dashboard/components/feedback-admin/feedback-admin.component';
 
-export type AdminTab = 'overview' | 'users' | 'movies' | 'importer' | 'rr-home';
+export type AdminTab = 'overview' | 'users' | 'movies' | 'importer' | 'rr-home' | 'rr-feedback';
 export type MovieSubTab = 'importer' | 'list';
 
 @Component({
@@ -72,6 +73,7 @@ export type MovieSubTab = 'importer' | 'list';
     HlmInputImports,
     MovieImporterComponent,
     RRHomeContentAdminComponent,
+    RRFeedbackAdminComponent,
   ],
   providers: [
     provideIcons({

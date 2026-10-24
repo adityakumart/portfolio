@@ -56,6 +56,15 @@
           <ng-icon name="lucideCar" class="text-sm text-cyan-500"></ng-icon>
           <span>RR Homepage CMS</span>
         </button>
+        <button
+          type="button"
+          (click)="setTab('rr-feedback')"
+          class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all"
+          [ngClass]="activeTab() === 'rr-feedback' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'"
+        >
+          <ng-icon name="lucideMessageSquare" class="text-sm text-cyan-500"></ng-icon>
+          <span>RR Feedback</span>
+        </button>
       </nav>
     </div>
   </header>
@@ -608,6 +617,11 @@
     <!-- TAB 4: RR HOMEPAGE DYNAMIC CMS -->
     <section *ngIf="activeTab() === 'rr-home'" class="animate-in fade-in-50 duration-300">
       <app-rr-home-content></app-rr-home-content>
+    </section>
+
+    <!-- TAB 5: RR FEEDBACK MANAGEMENT DESK -->
+    <section *ngIf="activeTab() === 'rr-feedback'" class="animate-in fade-in-50 duration-300">
+      <app-rr-feedback-admin></app-rr-feedback-admin>
     </section>
   </main>
 
