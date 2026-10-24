@@ -220,6 +220,21 @@
                 <span>Regular Customers</span>
               </div>
             </li>
+            <li
+              class="menu-item"
+              [routerLink]="['/user/rr/feedback']"
+              routerLinkActive="active-menu"
+              [hlmTooltip]="'Feedback Desk'"
+              [tooltipDisabled]="!isSidebarCollapsed()"
+              tooltipPosition="right"
+              (click)="closeMobileSidebar()"
+            >
+              <div class="menu-item-pill"></div>
+              <div class="menu-item-content">
+                <ng-icon name="lucideMessageSquarePlus"></ng-icon>
+                <span>Feedback Desk</span>
+              </div>
+            </li>
 
             <!-- Section: Administration (Admin Consolidated Submenu) -->
             @if (isAdmin()) {

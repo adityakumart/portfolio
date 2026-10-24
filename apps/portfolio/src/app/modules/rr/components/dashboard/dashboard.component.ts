@@ -31,6 +31,8 @@ import {
   lucideCheck,
   lucideMegaphone,
   lucidePalette,
+  lucideMessageSquarePlus,
+  lucideMessageSquareCheck,
 } from '@ng-icons/lucide';
 import { HlmDialogService } from '@spartan-ng/hel/dialog';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
@@ -90,6 +92,8 @@ import { RRLockScreenComponent } from '../lock-screen/rr-lock-screen.component';
       lucideCheck,
       lucideMegaphone,
       lucidePalette,
+      lucideMessageSquarePlus,
+      lucideMessageSquareCheck,
     }),
   ],
   templateUrl: './dashboard.component.html',
@@ -133,7 +137,8 @@ export class RRDashboardComponent implements OnInit {
       url.includes('/user/rr/activity-logs') ||
       url.includes('/user/rr/announcements') ||
       url.includes('/user/rr/home-content') ||
-      url.includes('/user/rr/history')
+      url.includes('/user/rr/history') ||
+      url.includes('/user/rr/feedback/manage')
     );
   });
 
