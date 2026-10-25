@@ -269,6 +269,38 @@ export interface IBooking {
   deletionReason?: string | null;
   returnAmount?: string | null;
   returnAmountMode?: 'Original method' | 'Cash' | 'UPI Transfer' | 'Bank Transfer' | 'Used for another Booking' | string | null;
+
+  // Advance booking closure & refund tracking
+  isClosed?: boolean;
+  closedAt?: string | null;
+  closedBy?: string | null;
+  closedByName?: string | null;
+  closedByRole?: string | null;
+  closeReason?: string | null;
+  autoClosed?: boolean;
+  autoClosedAt?: string | null;
+  isAdvanceReturned?: boolean;
+  advanceReturnAmount?: string | null;
+  advanceReturnMode?:
+    | 'Original method'
+    | 'Cash'
+    | 'UPI Transfer'
+    | 'Bank Transfer'
+    | 'Cheque / Checkbook'
+    | string
+    | null;
+}
+
+export interface ICloseAdvanceBookingPayload {
+  closeReason: string;
+  isAdvanceReturned: boolean;
+  advanceReturnAmount?: string;
+  advanceReturnMode?: string;
+}
+
+export interface IAutoCloseSweepResult {
+  closedCount: number;
+  closedBookingIds: string[];
 }
 
 export interface ICustomerIntimation {
@@ -626,7 +658,12 @@ export const DEFAULT_RR_HOMEPAGE_CONTENT: IRRHomePageContent = {
   },
 };
 
-export type RRFeedbackStatus = 'open' | 'in-progress' | 'closed';
+export type RRFeedbackStatus =
+  | 'open'
+  | 'in-progress'
+  | 'on-hold'
+  | 'completed'
+  | 'closed';
 
 export type RRFeedbackPage =
   | 'home'
@@ -694,8 +731,22 @@ export interface IRRFeedbackStats {
   total: number;
   open: number;
   inProgress: number;
+  onHold: number;
+  completed: number;
   closed: number;
 }
+
+export const RR_FEEDBACK_STATUSES: {
+  value: RRFeedbackStatus;
+  label: string;
+  description: string;
+}[] = [
+  { value: 'open', label: 'Open', description: 'Pending triage' },
+  { value: 'in-progress', label: 'In Progress', description: 'Under active investigation or development' },
+  { value: 'on-hold', label: 'On Hold', description: 'Paused pending further information or dependency' },
+  { value: 'completed', label: 'Completed', description: 'Resolved and implemented' },
+  { value: 'closed', label: 'Closed', description: 'Archived, rejected, or finalized' },
+];
 
 export const RR_FEEDBACK_PAGES: { value: RRFeedbackPage; label: string; route?: string }[] = [
   { value: 'home', label: 'Home Page', route: '/user/rr/home' },

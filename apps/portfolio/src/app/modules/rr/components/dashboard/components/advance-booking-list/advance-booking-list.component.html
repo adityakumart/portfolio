@@ -51,7 +51,7 @@
           <th hlmTh class="min-w-[150px]">Pickup Schedule</th>
           <th hlmTh class="min-w-[150px]">Expected Return</th>
           <th hlmTh class="min-w-[120px]">Advance Amount</th>
-          <th hlmTh class="text-center min-w-[160px]">Actions</th>
+          <th hlmTh class="text-center min-w-[220px]">Actions</th>
         </tr>
       </thead>
       <tbody hlmTBody>
@@ -118,9 +118,29 @@
               <td hlmTd>
                 <div class="font-semibold text-foreground">{{ b.pickupDateTime | indianDate }}</div>
                 <div class="text-muted-foreground text-[11px] font-mono">{{ b.pickupDateTime | date:'shortTime' }}</div>
-                <div class="text-[10px] text-cyan-600 dark:text-cyan-400 font-medium mt-0.5">
-                  Scheduled Start
-                </div>
+                @if (isBookingOverdue(b)) {
+                  <span
+                    hlmBadge
+                    variant="outline"
+                    class="font-bold text-[9px] text-destructive bg-destructive/10 border-destructive/30 px-1.5 py-0.5 mt-1 flex items-center gap-1 w-fit"
+                  >
+                    <ng-icon name="lucideAlertTriangle" class="text-[10px]"></ng-icon>
+                    <span>2+ hrs Idle (Overdue)</span>
+                  </span>
+                } @else if (isBookingStartingSoon(b)) {
+                  <span
+                    hlmBadge
+                    variant="outline"
+                    class="font-bold text-[9px] text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/30 px-1.5 py-0.5 mt-1 flex items-center gap-1 w-fit"
+                  >
+                    <ng-icon name="lucideClock" class="text-[10px]"></ng-icon>
+                    <span>Starts Soon</span>
+                  </span>
+                } @else {
+                  <div class="text-[10px] text-cyan-600 dark:text-cyan-400 font-medium mt-0.5">
+                    Scheduled Start
+                  </div>
+                }
               </td>
 
               <!-- 4. Expected Return -->
@@ -144,7 +164,7 @@
                 </div>
               </td>
 
-              <!-- 6. Actions: Edit/Modify | Book Now | Delete -->
+              <!-- 6. Actions: Book Now | Close | Edit/Modify | Delete -->
               <td hlmTd class="text-center whitespace-nowrap">
                 <div class="inline-flex items-center gap-1.5">
                   <!-- Book Now: Transitions reservation to active rental -->
@@ -157,6 +177,19 @@
                   >
                     <ng-icon name="lucideKey" class="text-xs"></ng-icon>
                     <span>Book Now</span>
+                  </button>
+
+                  <!-- Close Advance Booking (Manual closure & refund settlement) -->
+                  <button
+                    hlmBtn
+                    size="sm"
+                    variant="outline"
+                    class="border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 h-7 px-2 text-xs rounded-lg flex items-center gap-1 font-semibold"
+                    hlmTooltip="Close Advance Booking & Advance Return"
+                    (click)="openCloseReservationModal(b)"
+                  >
+                    <ng-icon name="lucideXCircle" class="text-xs"></ng-icon>
+                    <span>Close</span>
                   </button>
 
                   <!-- Edit / Modify Schedule -->
