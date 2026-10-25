@@ -373,4 +373,98 @@ export class RRService {
       return null;
     }
   }
+
+  /**
+   * Automatically closes advance reservations that have remained idle for more than two hours
+   * after their scheduled pickup date and time (pickupDateTime).
+   * Releases associated vehicles back to 'available' status and logs an automated audit entry.
+   */
+  static async autoCloseIdleAdvanceBookings(): Promise<{ closedCount: number; closedBookingIds: string[] }> {
+    try {
+      const bookingCol = await this.getBookingsCol();
+      const vehCol = await this.getVehiclesCol();
+
+      // Two hours ago cutoff
+      const twoHoursAgoMs = Date.now() - 2 * 60 * 60 * 1000;
+
+      // Find reserved bookings that are not soft-deleted
+      const reservedBookings = await bookingCol.find({
+        status: 'reserved',
+        isDeleted: { $ne: true },
+      }).toArray();
+
+      const overdueBookings = reservedBookings.filter((b) => {
+        if (!b.pickupDateTime) return false;
+        const pickupMs = new Date(b.pickupDateTime).getTime();
+        return !isNaN(pickupMs) && pickupMs < twoHoursAgoMs;
+      });
+
+      if (overdueBookings.length === 0) {
+        return { closedCount: 0, closedBookingIds: [] };
+      }
+
+      const closedBookingIds: string[] = [];
+      const nowIso = new Date().toISOString();
+
+      for (const booking of overdueBookings) {
+        // Soft-cancel booking with auto-closed metadata
+        await bookingCol.updateOne(
+          { id: booking.id },
+          {
+            $set: {
+              status: 'cancelled',
+              isDeleted: true,
+              isClosed: true,
+              autoClosed: true,
+              autoClosedAt: nowIso,
+              closedAt: nowIso,
+              closedBy: 'system',
+              closedByName: 'Automated System Sweeper',
+              closedByRole: 'system',
+              closeReason: 'Auto-closed: Inactivity for more than 2 hours after scheduled booking date and time',
+              deletedAt: nowIso,
+              deletedBy: 'system',
+              deletedByName: 'Automated System Sweeper',
+              deletedByRole: 'system',
+              deletionReason: 'Auto-closed: Inactivity for more than 2 hours after scheduled booking date and time',
+              isAdvanceReturned: false,
+              updatedAt: nowIso,
+            },
+          }
+        );
+
+        // If vehicle is reserved for this booking, release back to available
+        if (booking.vehicleRegNo) {
+          const veh = await vehCol.findOne({ regNo: booking.vehicleRegNo });
+          if (veh && (veh.bookingId === booking.id || veh.status === 'reserved')) {
+            await vehCol.updateOne(
+              { regNo: booking.vehicleRegNo },
+              {
+                $set: {
+                  status: 'available',
+                  bookingId: null,
+                  updatedAt: nowIso,
+                },
+              }
+            );
+          }
+        }
+
+        closedBookingIds.push(booking.id);
+
+        // Audit log
+        await this.logActivity(
+          `Auto-closed idle advance booking ${booking.id}`,
+          'system',
+          'system',
+          `Advance booking ${booking.id} for vehicle ${booking.vehicleRegNo} was automatically closed due to 2+ hours idle past scheduled pickup (${booking.pickupDateTime}). Customer: ${booking.renterFirstName} ${booking.renterSecondName} (${booking.renterPhone}) | Advance Paid: ₹${booking.amountPaid || '0'}.`
+        );
+      }
+
+      return { closedCount: closedBookingIds.length, closedBookingIds };
+    } catch (err) {
+      console.error('[RRService.autoCloseIdleAdvanceBookings] Error running auto-close sweep:', err);
+      return { closedCount: 0, closedBookingIds: [] };
+    }
+  }
 }

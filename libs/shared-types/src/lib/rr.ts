@@ -269,6 +269,38 @@ export interface IBooking {
   deletionReason?: string | null;
   returnAmount?: string | null;
   returnAmountMode?: 'Original method' | 'Cash' | 'UPI Transfer' | 'Bank Transfer' | 'Used for another Booking' | string | null;
+
+  // Advance booking closure & refund tracking
+  isClosed?: boolean;
+  closedAt?: string | null;
+  closedBy?: string | null;
+  closedByName?: string | null;
+  closedByRole?: string | null;
+  closeReason?: string | null;
+  autoClosed?: boolean;
+  autoClosedAt?: string | null;
+  isAdvanceReturned?: boolean;
+  advanceReturnAmount?: string | null;
+  advanceReturnMode?:
+    | 'Original method'
+    | 'Cash'
+    | 'UPI Transfer'
+    | 'Bank Transfer'
+    | 'Cheque / Checkbook'
+    | string
+    | null;
+}
+
+export interface ICloseAdvanceBookingPayload {
+  closeReason: string;
+  isAdvanceReturned: boolean;
+  advanceReturnAmount?: string;
+  advanceReturnMode?: string;
+}
+
+export interface IAutoCloseSweepResult {
+  closedCount: number;
+  closedBookingIds: string[];
 }
 
 export interface ICustomerIntimation {

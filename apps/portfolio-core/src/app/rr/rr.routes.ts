@@ -769,9 +769,31 @@ rrRouter.delete('/vehicles/:id', authenticateRRToken, requireAdmin, async (req: 
    BOOKINGS
 ============================================================ */
 
+// POST trigger auto-close sweep for idle advance reservations
+rrRouter.post('/bookings/advance/auto-close', authenticateRRToken, async (req: any, res: Response) => {
+  try {
+    const result = await RRService.autoCloseIdleAdvanceBookings();
+    res.json({
+      success: true,
+      message: `Auto-close sweep executed. Closed ${result.closedCount} idle advance booking(s).`,
+      result,
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
 // GET bookings (Authenticated; supports filtering & pagination from API side)
 rrRouter.get('/bookings', authenticateRRToken, async (req: any, res: Response) => {
   try {
+    // Automatically sweep and close idle advance reservations (> 2 hours past pickup time)
+    const reqStatus = req.query.status;
+    if (!reqStatus || (typeof reqStatus === 'string' && (reqStatus.includes('reserved') || reqStatus.includes('cancelled')))) {
+      await RRService.autoCloseIdleAdvanceBookings().catch((err) =>
+        console.error('[AutoCloseSweep] Failed to auto-close idle advance bookings:', err)
+      );
+    }
+
     const col = await RRService.getBookingsCol();
     const {
       status,
@@ -1177,6 +1199,110 @@ rrRouter.delete('/bookings/:id', authenticateRRToken, async (req: any, res: Resp
       deleterRole,
       auditDetail
     ).catch((logErr) => console.error('[AuditLog] Failed to log booking delete:', logErr));
+  } catch (err: any) {
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+// POST close advance booking manually (with checkbook / refund tracking)
+rrRouter.post('/bookings/:id/close-advance', authenticateRRToken, async (req: any, res: Response) => {
+  try {
+    const bookingId = req.params.id;
+    const bookingCol = await RRService.getBookingsCol();
+    const vehCol = await RRService.getVehiclesCol();
+    const empCol = await RRService.getEmployeesCol();
+
+    const booking = await bookingCol.findOne({ id: bookingId });
+    if (!booking || booking.isDeleted) {
+      res.status(404).json({ error: 'Not Found', message: 'Booking not found or has already been closed/deleted' });
+      return;
+    }
+
+    if (booking.status !== 'reserved') {
+      res.status(400).json({ error: 'Bad Request', message: 'Only advance reservations in reserved status can be closed via this action.' });
+      return;
+    }
+
+    const body = req.body || {};
+    const closeReason = body.closeReason || 'Customer requested cancellation';
+    const isAdvanceReturned = body.isAdvanceReturned === true || body.isAdvanceReturned === 'true';
+    const advanceReturnAmount = isAdvanceReturned
+      ? String(body.advanceReturnAmount ?? booking.amountPaid ?? '0')
+      : '0';
+    const advanceReturnMode = isAdvanceReturned
+      ? (body.advanceReturnMode || 'Original method')
+      : null;
+
+    // Resolve staff name for audit
+    let closerName = 'Administrator';
+    let closerRole = req.userRole || 'admin';
+    if (req.userId && req.userId !== 'admin') {
+      const emp = await empCol.findOne({ id: req.userId });
+      if (emp) {
+        closerName = `${emp.firstName || ''} ${emp.lastName || ''}`.trim() || closerName;
+        closerRole = emp.role || closerRole;
+      }
+    }
+
+    const nowIso = new Date().toISOString();
+
+    await bookingCol.updateOne(
+      { id: bookingId },
+      {
+        $set: {
+          status: 'cancelled',
+          isDeleted: true,
+          isClosed: true,
+          closedAt: nowIso,
+          closedBy: req.userId || 'admin',
+          closedByName: closerName,
+          closedByRole: closerRole,
+          closeReason: closeReason,
+          deletedAt: nowIso,
+          deletedBy: req.userId || 'admin',
+          deletedByName: closerName,
+          deletedByRole: closerRole,
+          deletionReason: closeReason,
+          isAdvanceReturned: isAdvanceReturned,
+          advanceReturnAmount: advanceReturnAmount,
+          advanceReturnMode: advanceReturnMode,
+          returnAmount: isAdvanceReturned ? advanceReturnAmount : null,
+          returnAmountMode: advanceReturnMode,
+          updatedAt: nowIso,
+        },
+      }
+    );
+
+    // Release vehicle back to available if reserved
+    if (booking.vehicleRegNo) {
+      const veh = await vehCol.findOne({ regNo: booking.vehicleRegNo });
+      if (veh && (veh.bookingId === bookingId || veh.status === 'reserved')) {
+        await vehCol.updateOne(
+          { regNo: booking.vehicleRegNo },
+          {
+            $set: {
+              status: 'available',
+              bookingId: null,
+              updatedAt: nowIso,
+            },
+          }
+        );
+      }
+    }
+
+    const updated = await bookingCol.findOne({ id: bookingId });
+    res.json(updated);
+
+    const returnSummary = isAdvanceReturned
+      ? `Advance Returned: ₹${advanceReturnAmount} via ${advanceReturnMode}`
+      : `Advance Retained (Not returned)`;
+
+    RRService.logActivity(
+      `Closed advance booking ${bookingId}`,
+      req.userId,
+      closerRole,
+      `Advance reservation ${bookingId} for vehicle ${booking.vehicleRegNo} closed by ${closerName}. Reason: "${closeReason}". ${returnSummary}. Customer: ${booking.renterFirstName} ${booking.renterSecondName} (${booking.renterPhone}).`
+    ).catch((logErr) => console.error('[AuditLog] Failed to log advance booking closure:', logErr));
   } catch (err: any) {
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
   }

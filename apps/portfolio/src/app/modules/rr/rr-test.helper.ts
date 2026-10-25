@@ -768,6 +768,28 @@ export async function setupRRRouteMocks(
             booking: bookings[0],
           }),
         });
+      } else if (url.includes('/close-advance')) {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            ...bookings[0],
+            status: 'cancelled',
+            isDeleted: true,
+            isClosed: true,
+            isAdvanceReturned: true,
+          }),
+        });
+      } else if (url.includes('/advance/auto-close')) {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            success: true,
+            message: 'Auto-close sweep executed.',
+            result: { closedCount: 0, closedBookingIds: [] },
+          }),
+        });
       } else {
         const data = route.request().postDataJSON();
         await route.fulfill({

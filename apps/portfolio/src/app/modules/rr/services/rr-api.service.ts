@@ -58,6 +58,8 @@ import {
   RR_FEEDBACK_STATUSES,
   RR_FEEDBACK_PAGES,
   RR_FEEDBACK_ISSUE_TYPES,
+  ICloseAdvanceBookingPayload,
+  IAutoCloseSweepResult,
 } from '@portfolio/shared-types';
 
 export {
@@ -109,6 +111,8 @@ export type {
   IRRCreateFeedbackPayload,
   IRRUpdateFeedbackStatusPayload,
   IRRFeedbackStats,
+  ICloseAdvanceBookingPayload,
+  IAutoCloseSweepResult,
 };
 export { DEFAULT_RR_HOMEPAGE_CONTENT, RR_FEEDBACK_STATUSES, RR_FEEDBACK_PAGES, RR_FEEDBACK_ISSUE_TYPES };
 
@@ -977,6 +981,27 @@ export class RRApiService {
 
   async getAdvanceBookings(): Promise<IBooking[]> {
     return this.getBookings({ status: 'reserved' });
+  }
+
+  async closeAdvanceBooking(
+    id: string,
+    data: ICloseAdvanceBookingPayload
+  ): Promise<IBooking> {
+    return firstValueFrom(
+      this.http.post<IBooking>(`${this.baseUrl}/bookings/${id}/close-advance`, data, {
+        headers: this.getHeaders(),
+      })
+    );
+  }
+
+  async triggerAutoCloseAdvanceBookings(): Promise<{ success: boolean; message: string; result: IAutoCloseSweepResult }> {
+    return firstValueFrom(
+      this.http.post<{ success: boolean; message: string; result: IAutoCloseSweepResult }>(
+        `${this.baseUrl}/bookings/advance/auto-close`,
+        {},
+        { headers: this.getHeaders() }
+      )
+    );
   }
 
   async reserveBooking(data: Partial<IBooking>): Promise<IBooking> {

@@ -26,12 +26,15 @@ import {
   lucidePhone,
   lucideTag,
   lucideMail,
+  lucideXCircle,
+  lucideAlertTriangle,
 } from '@ng-icons/lucide';
 import { IBooking, IVehicle } from '@portfolio/shared-types';
 import { RRApiService } from '../../../../services/rr-api.service';
 import {
   RRNewBookingDialogComponent,
   RRReserveBookingDialogComponent,
+  RRCloseAdvanceBookingDialogComponent,
   AadharVisiblePipe,
 } from '../../../../shared';
 import { IndianDatePipe } from '../../../../../../shared/pipes/indian-date.pipe';
@@ -68,6 +71,8 @@ import { IndianDatePipe } from '../../../../../../shared/pipes/indian-date.pipe'
       lucidePhone,
       lucideTag,
       lucideMail,
+      lucideXCircle,
+      lucideAlertTriangle,
     }),
   ],
   templateUrl: './advance-booking-list.component.html',
@@ -221,7 +226,28 @@ export class RRAdvanceBookingListComponent implements OnInit {
   }
 
   /**
-   * Action 3: Delete Advance Booking
+   * Action 3: Close Advance Booking (with Checkbox / Checkbook refund option)
+   */
+  openCloseReservationModal(reservation: IBooking) {
+    const vehicle = this.getVehicleForBooking(reservation);
+    const ref = this.dialog.open(RRCloseAdvanceBookingDialogComponent, {
+      context: {
+        booking: reservation,
+        vehicle,
+      },
+      contentClass: 'max-w-lg w-full p-0 flex flex-col overflow-hidden rounded-2xl',
+    });
+
+    ref.closed$.subscribe((result) => {
+      if (result) {
+        this.loadBookings();
+        this.loadVehicles();
+      }
+    });
+  }
+
+  /**
+   * Action 4: Delete Advance Booking
    */
   async deleteReservation(reservation: IBooking) {
     const confirmed = window.confirm(
@@ -238,5 +264,27 @@ export class RRAdvanceBookingListComponent implements OnInit {
       console.error(e);
       toast.error(e.error?.message || 'Failed to delete reservation.');
     }
+  }
+
+  /**
+   * Check if booking has exceeded 2 hours past pickup time (auto-close candidate)
+   */
+  isBookingOverdue(b: IBooking): boolean {
+    if (!b.pickupDateTime) return false;
+    const pickupMs = new Date(b.pickupDateTime).getTime();
+    if (isNaN(pickupMs)) return false;
+    return Date.now() - pickupMs > 2 * 60 * 60 * 1000;
+  }
+
+  /**
+   * Check if booking is starting soon or in grace period
+   */
+  isBookingStartingSoon(b: IBooking): boolean {
+    if (!b.pickupDateTime) return false;
+    const pickupMs = new Date(b.pickupDateTime).getTime();
+    if (isNaN(pickupMs)) return false;
+    const elapsed = Date.now() - pickupMs;
+    // Between pickup time and 2 hours past pickup time
+    return elapsed >= 0 && elapsed <= 2 * 60 * 60 * 1000;
   }
 }

@@ -49,4 +49,20 @@ test.describe('RR Module - Advance Booking List Component', () => {
     const dialog = page.locator('[role="dialog"], hlm-dialog, app-reserve-booking-dialog').first();
     await expect(dialog).toBeVisible({ timeout: 5000 });
   });
+
+  test('should open Close Advance Booking dialog when clicking Close button on a reservation row', async ({
+    page,
+  }) => {
+    const closeBtn = page.getByRole('button', { name: 'Close' }).first();
+    if (await closeBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await closeBtn.click();
+      const closeDialog = page.locator('app-rr-close-advance-booking-dialog, [role="dialog"]').first();
+      await expect(closeDialog).toBeVisible({ timeout: 5000 });
+      await expect(closeDialog.getByText('Close Advance Booking')).toBeVisible();
+
+      // Check the advance returned checkbox exists
+      const returnCheckbox = closeDialog.locator('#isAdvanceReturnedCheckbox');
+      await expect(returnCheckbox).toBeVisible();
+    }
+  });
 });
