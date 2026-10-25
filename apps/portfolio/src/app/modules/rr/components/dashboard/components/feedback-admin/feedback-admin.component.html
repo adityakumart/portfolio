@@ -14,7 +14,7 @@
             </span>
           </h1>
           <p class="text-xs sm:text-sm text-muted-foreground mt-0.5">
-            Review user-submitted issues, manage lifecycle statuses (open, in-progress, closed), and document resolutions.
+            Review user-submitted issues, manage lifecycle statuses (open, in-progress, on-hold, completed, closed), and document resolutions.
           </p>
         </div>
       </div>
@@ -35,7 +35,7 @@
     </div>
 
     <!-- Metric Summary Cards -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6 pt-6 border-t border-border/60">
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mt-6 pt-6 border-t border-border/60">
       <!-- Total -->
       <div
         class="metric-card cursor-pointer"
@@ -84,6 +84,38 @@
         <p class="text-[11px] text-muted-foreground mt-1">Under investigation</p>
       </div>
 
+      <!-- On Hold -->
+      <div
+        class="metric-card border-purple-500/30 bg-purple-500/5 cursor-pointer"
+        [class.metric-active]="selectedStatus() === 'on-hold'"
+        (click)="setStatusFilter('on-hold')"
+      >
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-purple-400 uppercase tracking-wider">On Hold</span>
+          <ng-icon name="lucidePauseCircle" class="text-purple-400 text-sm"></ng-icon>
+        </div>
+        <div class="text-2xl font-black text-purple-400 mt-2">
+          {{ stats().onHold }}
+        </div>
+        <p class="text-[11px] text-muted-foreground mt-1">Pending details</p>
+      </div>
+
+      <!-- Completed -->
+      <div
+        class="metric-card border-teal-500/30 bg-teal-500/5 cursor-pointer"
+        [class.metric-active]="selectedStatus() === 'completed'"
+        (click)="setStatusFilter('completed')"
+      >
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-teal-400 uppercase tracking-wider">Completed</span>
+          <ng-icon name="lucideCheckCircle2" class="text-teal-400 text-sm"></ng-icon>
+        </div>
+        <div class="text-2xl font-black text-teal-400 mt-2">
+          {{ stats().completed }}
+        </div>
+        <p class="text-[11px] text-muted-foreground mt-1">Implemented & done</p>
+      </div>
+
       <!-- Closed -->
       <div
         class="metric-card border-emerald-500/30 bg-emerald-500/5 cursor-pointer"
@@ -92,7 +124,7 @@
       >
         <div class="flex items-center justify-between">
           <span class="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Closed</span>
-          <ng-icon name="lucideCheckCircle2" class="text-emerald-400 text-sm"></ng-icon>
+          <ng-icon name="lucideCheckCheck" class="text-emerald-400 text-sm"></ng-icon>
         </div>
         <div class="text-2xl font-black text-emerald-400 mt-2">
           {{ stats().closed }}
@@ -219,6 +251,26 @@
 
       <button
         hlmBtn
+        [variant]="selectedStatus() === 'on-hold' ? 'default' : 'outline'"
+        size="sm"
+        class="rounded-xl text-xs font-semibold px-3 py-1 h-8 text-purple-400 border-purple-500/30"
+        (click)="setStatusFilter('on-hold')"
+      >
+        On Hold ({{ stats().onHold }})
+      </button>
+
+      <button
+        hlmBtn
+        [variant]="selectedStatus() === 'completed' ? 'default' : 'outline'"
+        size="sm"
+        class="rounded-xl text-xs font-semibold px-3 py-1 h-8 text-teal-400 border-teal-500/30"
+        (click)="setStatusFilter('completed')"
+      >
+        Completed ({{ stats().completed }})
+      </button>
+
+      <button
+        hlmBtn
         [variant]="selectedStatus() === 'closed' ? 'default' : 'outline'"
         size="sm"
         class="rounded-xl text-xs font-semibold px-3 py-1 h-8 text-emerald-400 border-emerald-500/30"
@@ -258,6 +310,8 @@
             [ngClass]="{
               'border-amber-500/40': ticket.status === 'open',
               'border-blue-500/40': ticket.status === 'in-progress',
+              'border-purple-500/40': ticket.status === 'on-hold',
+              'border-teal-500/40': ticket.status === 'completed',
               'border-border/80': ticket.status === 'closed'
             }"
           >
@@ -304,6 +358,8 @@
                   [ngClass]="{
                     'border-amber-500/40 text-amber-400 bg-amber-500/10': ticket.status === 'open',
                     'border-blue-500/40 text-blue-400 bg-blue-500/10': ticket.status === 'in-progress',
+                    'border-purple-500/40 text-purple-400 bg-purple-500/10': ticket.status === 'on-hold',
+                    'border-teal-500/40 text-teal-400 bg-teal-500/10': ticket.status === 'completed',
                     'border-emerald-500/40 text-emerald-400 bg-emerald-500/10': ticket.status === 'closed'
                   }"
                 >
@@ -311,10 +367,14 @@
                     <ng-icon name="lucideClock" class="mr-1 text-[10px]"></ng-icon>
                   } @else if (ticket.status === 'in-progress') {
                     <ng-icon name="lucideRefreshCw" class="mr-1 text-[10px]"></ng-icon>
-                  } @else if (ticket.status === 'closed') {
+                  } @else if (ticket.status === 'on-hold') {
+                    <ng-icon name="lucidePauseCircle" class="mr-1 text-[10px]"></ng-icon>
+                  } @else if (ticket.status === 'completed') {
                     <ng-icon name="lucideCheckCircle2" class="mr-1 text-[10px]"></ng-icon>
+                  } @else if (ticket.status === 'closed') {
+                    <ng-icon name="lucideCheckCheck" class="mr-1 text-[10px]"></ng-icon>
                   }
-                  {{ ticket.status }}
+                  {{ ticket.status === 'on-hold' ? 'On Hold' : ticket.status }}
                 </span>
               </div>
             </div>
@@ -408,6 +468,24 @@
                   <button
                     type="button"
                     class="px-2.5 py-1 text-[11px] font-bold rounded-lg transition-colors"
+                    [ngClass]="ticket.status === 'on-hold' ? 'bg-purple-600 text-white shadow-xs' : 'text-muted-foreground hover:text-foreground'"
+                    (click)="quickUpdateStatus(ticket, 'on-hold')"
+                    [disabled]="isUpdating()"
+                  >
+                    On Hold
+                  </button>
+                  <button
+                    type="button"
+                    class="px-2.5 py-1 text-[11px] font-bold rounded-lg transition-colors"
+                    [ngClass]="ticket.status === 'completed' ? 'bg-teal-600 text-white shadow-xs' : 'text-muted-foreground hover:text-foreground'"
+                    (click)="quickUpdateStatus(ticket, 'completed')"
+                    [disabled]="isUpdating()"
+                  >
+                    Completed
+                  </button>
+                  <button
+                    type="button"
+                    class="px-2.5 py-1 text-[11px] font-bold rounded-lg transition-colors"
                     [ngClass]="ticket.status === 'closed' ? 'bg-emerald-600 text-white shadow-xs' : 'text-muted-foreground hover:text-foreground'"
                     (click)="quickUpdateStatus(ticket, 'closed')"
                     [disabled]="isUpdating()"
@@ -479,10 +557,10 @@
         <!-- Target Status Selector -->
         <div class="space-y-1.5">
           <label class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Lifecycle Status</label>
-          <div class="grid grid-cols-3 gap-2">
+          <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
             <button
               type="button"
-              class="px-3 py-2 text-xs font-bold rounded-xl border text-center transition-all"
+              class="px-2 py-2 text-xs font-bold rounded-xl border text-center transition-all"
               [ngClass]="activeNotesModal()?.newStatus === 'open' ? 'border-amber-500 bg-amber-500/20 text-amber-400' : 'border-border bg-muted/20 text-muted-foreground'"
               (click)="activeNotesModal()!.newStatus = 'open'"
             >
@@ -490,7 +568,7 @@
             </button>
             <button
               type="button"
-              class="px-3 py-2 text-xs font-bold rounded-xl border text-center transition-all"
+              class="px-2 py-2 text-xs font-bold rounded-xl border text-center transition-all"
               [ngClass]="activeNotesModal()?.newStatus === 'in-progress' ? 'border-blue-500 bg-blue-500/20 text-blue-400' : 'border-border bg-muted/20 text-muted-foreground'"
               (click)="activeNotesModal()!.newStatus = 'in-progress'"
             >
@@ -498,7 +576,23 @@
             </button>
             <button
               type="button"
-              class="px-3 py-2 text-xs font-bold rounded-xl border text-center transition-all"
+              class="px-2 py-2 text-xs font-bold rounded-xl border text-center transition-all"
+              [ngClass]="activeNotesModal()?.newStatus === 'on-hold' ? 'border-purple-500 bg-purple-500/20 text-purple-400' : 'border-border bg-muted/20 text-muted-foreground'"
+              (click)="activeNotesModal()!.newStatus = 'on-hold'"
+            >
+              On Hold
+            </button>
+            <button
+              type="button"
+              class="px-2 py-2 text-xs font-bold rounded-xl border text-center transition-all"
+              [ngClass]="activeNotesModal()?.newStatus === 'completed' ? 'border-teal-500 bg-teal-500/20 text-teal-400' : 'border-border bg-muted/20 text-muted-foreground'"
+              (click)="activeNotesModal()!.newStatus = 'completed'"
+            >
+              Completed
+            </button>
+            <button
+              type="button"
+              class="px-2 py-2 text-xs font-bold rounded-xl border text-center transition-all"
               [ngClass]="activeNotesModal()?.newStatus === 'closed' ? 'border-emerald-500 bg-emerald-500/20 text-emerald-400' : 'border-border bg-muted/20 text-muted-foreground'"
               (click)="activeNotesModal()!.newStatus = 'closed'"
             >

@@ -2434,10 +2434,12 @@ rrRouter.get('/feedback/my', authenticateRRToken, async (req: Request, res: Resp
 rrRouter.get('/feedback/stats', authenticateRRToken, requireAdmin, async (_req: Request, res: Response) => {
   try {
     const feedbackCol = await RRService.getFeedbackCol();
-    const [total, open, inProgress, closed] = await Promise.all([
+    const [total, open, inProgress, onHold, completed, closed] = await Promise.all([
       feedbackCol.countDocuments(),
       feedbackCol.countDocuments({ status: 'open' }),
       feedbackCol.countDocuments({ status: 'in-progress' }),
+      feedbackCol.countDocuments({ status: 'on-hold' }),
+      feedbackCol.countDocuments({ status: 'completed' }),
       feedbackCol.countDocuments({ status: 'closed' }),
     ]);
 
@@ -2447,6 +2449,8 @@ rrRouter.get('/feedback/stats', authenticateRRToken, requireAdmin, async (_req: 
         total,
         open,
         inProgress,
+        onHold,
+        completed,
         closed,
       },
     });
@@ -2512,7 +2516,13 @@ rrRouter.patch('/feedback/:id/status', authenticateRRToken, requireAdmin, async 
     const { status, adminNotes } = req.body;
     const staffId = (req as any).userId;
 
-    const validStatuses: RRFeedbackStatus[] = ['open', 'in-progress', 'closed'];
+    const validStatuses: RRFeedbackStatus[] = [
+      'open',
+      'in-progress',
+      'on-hold',
+      'completed',
+      'closed',
+    ];
     if (!status || !validStatuses.includes(status)) {
       res.status(400).json({
         error: 'Bad Request',
@@ -2548,7 +2558,7 @@ rrRouter.patch('/feedback/:id/status', authenticateRRToken, requireAdmin, async 
       updateDoc.adminNotes = typeof adminNotes === 'string' ? adminNotes.trim() : '';
     }
 
-    if (status === 'closed') {
+    if (status === 'closed' || status === 'completed') {
       updateDoc.resolvedAt = now;
       updateDoc.resolvedBy = staffId;
     } else {

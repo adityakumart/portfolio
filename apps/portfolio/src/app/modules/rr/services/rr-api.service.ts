@@ -55,6 +55,7 @@ import {
   IRRCreateFeedbackPayload,
   IRRUpdateFeedbackStatusPayload,
   IRRFeedbackStats,
+  RR_FEEDBACK_STATUSES,
   RR_FEEDBACK_PAGES,
   RR_FEEDBACK_ISSUE_TYPES,
 } from '@portfolio/shared-types';
@@ -109,7 +110,7 @@ export type {
   IRRUpdateFeedbackStatusPayload,
   IRRFeedbackStats,
 };
-export { DEFAULT_RR_HOMEPAGE_CONTENT, RR_FEEDBACK_PAGES, RR_FEEDBACK_ISSUE_TYPES };
+export { DEFAULT_RR_HOMEPAGE_CONTENT, RR_FEEDBACK_STATUSES, RR_FEEDBACK_PAGES, RR_FEEDBACK_ISSUE_TYPES };
 
 interface ExtensionWindow extends Window {
   chrome?: {

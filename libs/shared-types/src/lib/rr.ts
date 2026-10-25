@@ -626,7 +626,12 @@ export const DEFAULT_RR_HOMEPAGE_CONTENT: IRRHomePageContent = {
   },
 };
 
-export type RRFeedbackStatus = 'open' | 'in-progress' | 'closed';
+export type RRFeedbackStatus =
+  | 'open'
+  | 'in-progress'
+  | 'on-hold'
+  | 'completed'
+  | 'closed';
 
 export type RRFeedbackPage =
   | 'home'
@@ -694,8 +699,22 @@ export interface IRRFeedbackStats {
   total: number;
   open: number;
   inProgress: number;
+  onHold: number;
+  completed: number;
   closed: number;
 }
+
+export const RR_FEEDBACK_STATUSES: {
+  value: RRFeedbackStatus;
+  label: string;
+  description: string;
+}[] = [
+  { value: 'open', label: 'Open', description: 'Pending triage' },
+  { value: 'in-progress', label: 'In Progress', description: 'Under active investigation or development' },
+  { value: 'on-hold', label: 'On Hold', description: 'Paused pending further information or dependency' },
+  { value: 'completed', label: 'Completed', description: 'Resolved and implemented' },
+  { value: 'closed', label: 'Closed', description: 'Archived, rejected, or finalized' },
+];
 
 export const RR_FEEDBACK_PAGES: { value: RRFeedbackPage; label: string; route?: string }[] = [
   { value: 'home', label: 'Home Page', route: '/user/rr/home' },

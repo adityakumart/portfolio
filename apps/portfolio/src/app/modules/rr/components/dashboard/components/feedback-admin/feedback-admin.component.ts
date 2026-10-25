@@ -18,6 +18,7 @@ import {
   IRRFeedbackStats,
   RR_FEEDBACK_PAGES,
   RR_FEEDBACK_ISSUE_TYPES,
+  RR_FEEDBACK_STATUSES,
   IRRUpdateFeedbackStatusPayload,
 } from '@portfolio/shared-types';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
@@ -33,6 +34,8 @@ import {
   lucideFilter,
   lucideCheckCircle2,
   lucideClock,
+  lucidePauseCircle,
+  lucideCheckCheck,
   lucideAlertCircle,
   lucideImage,
   lucideExternalLink,
@@ -70,6 +73,8 @@ import {
       lucideFilter,
       lucideCheckCircle2,
       lucideClock,
+      lucidePauseCircle,
+      lucideCheckCheck,
       lucideAlertCircle,
       lucideImage,
       lucideExternalLink,
@@ -100,10 +105,18 @@ export class RRFeedbackAdminComponent implements OnInit {
   // Taxonomy
   feedbackPages = RR_FEEDBACK_PAGES;
   issueTypes = RR_FEEDBACK_ISSUE_TYPES;
+  feedbackStatuses = RR_FEEDBACK_STATUSES;
 
   // Data State
   feedbacks = signal<IRRFeedback[]>([]);
-  stats = signal<IRRFeedbackStats>({ total: 0, open: 0, inProgress: 0, closed: 0 });
+  stats = signal<IRRFeedbackStats>({
+    total: 0,
+    open: 0,
+    inProgress: 0,
+    onHold: 0,
+    completed: 0,
+    closed: 0,
+  });
   isLoading = signal<boolean>(false);
   isUpdating = signal<boolean>(false);
 

@@ -312,7 +312,7 @@
             </li>
             <li class="flex items-start gap-2">
               <ng-icon name="lucideCheckCircle2" class="text-cyan-400 text-sm mt-0.5 flex-shrink-0"></ng-icon>
-              <span><strong>Lifecycle Tracking:</strong> Submissions start as <span class="font-bold text-amber-400">Open</span> and transition to <span class="font-bold text-sky-400">In-Progress</span> or <span class="font-bold text-emerald-400">Closed</span> once addressed.</span>
+              <span><strong>Lifecycle Tracking:</strong> Submissions start as <span class="font-bold text-amber-400">Open</span> and transition through <span class="font-bold text-sky-400">In-Progress</span>, <span class="font-bold text-purple-400">On-Hold</span>, <span class="font-bold text-teal-400">Completed</span>, or <span class="font-bold text-emerald-400">Closed</span> once addressed.</span>
             </li>
           </ul>
         </div>
@@ -349,10 +349,12 @@
                   [ngClass]="{
                     'border-amber-500/40 text-amber-400 bg-amber-500/10': latest.status === 'open',
                     'border-blue-500/40 text-blue-400 bg-blue-500/10': latest.status === 'in-progress',
+                    'border-purple-500/40 text-purple-400 bg-purple-500/10': latest.status === 'on-hold',
+                    'border-teal-500/40 text-teal-400 bg-teal-500/10': latest.status === 'completed',
                     'border-emerald-500/40 text-emerald-400 bg-emerald-500/10': latest.status === 'closed'
                   }"
                 >
-                  {{ latest.status }}
+                  {{ latest.status === 'on-hold' ? 'On Hold' : latest.status }}
                 </span>
               </div>
               <p class="text-xs text-foreground font-semibold truncate">{{ getPageLabel(latest.page) }}</p>
@@ -433,6 +435,8 @@
                     [ngClass]="{
                       'border-amber-500/40 text-amber-400 bg-amber-500/10': ticket.status === 'open',
                       'border-blue-500/40 text-blue-400 bg-blue-500/10': ticket.status === 'in-progress',
+                      'border-purple-500/40 text-purple-400 bg-purple-500/10': ticket.status === 'on-hold',
+                      'border-teal-500/40 text-teal-400 bg-teal-500/10': ticket.status === 'completed',
                       'border-emerald-500/40 text-emerald-400 bg-emerald-500/10': ticket.status === 'closed'
                     }"
                   >
@@ -440,10 +444,14 @@
                       <ng-icon name="lucideClock" class="mr-1 text-[10px]"></ng-icon>
                     } @else if (ticket.status === 'in-progress') {
                       <ng-icon name="lucideRefreshCw" class="mr-1 text-[10px]"></ng-icon>
-                    } @else if (ticket.status === 'closed') {
+                    } @else if (ticket.status === 'on-hold') {
+                      <ng-icon name="lucidePauseCircle" class="mr-1 text-[10px]"></ng-icon>
+                    } @else if (ticket.status === 'completed') {
                       <ng-icon name="lucideCheckCircle2" class="mr-1 text-[10px]"></ng-icon>
+                    } @else if (ticket.status === 'closed') {
+                      <ng-icon name="lucideCheckCheck" class="mr-1 text-[10px]"></ng-icon>
                     }
-                    {{ ticket.status }}
+                    {{ ticket.status === 'on-hold' ? 'On Hold' : ticket.status }}
                   </span>
                 </div>
 
