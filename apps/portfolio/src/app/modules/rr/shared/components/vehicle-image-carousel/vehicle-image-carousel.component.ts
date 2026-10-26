@@ -62,6 +62,7 @@ export class RRVehicleImageCarouselComponent {
   @Input() alt = 'Vehicle Image';
   @Input() containerClass = 'h-56 sm:h-64';
   @Input() showThumbnails = true;
+  @Input() showCoverTag = false;
 
   readonly currentIndex = signal<number>(0);
 

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RRApiService } from '../../../../services/rr-api.service';
 import { HlmCardImports } from '@spartan-ng/hel/card';
@@ -113,7 +113,7 @@ export type SeatingFilter = 'all' | '5' | '7';
   templateUrl: './stats-view.component.html',
   styleUrl: './stats-view.component.scss',
 })
-export class RRStatsViewComponent implements OnInit {
+export class RRStatsViewComponent implements OnInit, OnDestroy {
   private rrApi = inject(RRApiService);
   private router = inject(Router);
 
@@ -121,6 +121,9 @@ export class RRStatsViewComponent implements OnInit {
   bookings = signal<IBooking[]>([]);
   recentLogs = signal<ILog[]>([]);
   isAdmin = computed(() => this.rrApi.currentUser()?.role === 'admin');
+
+  currentTime = signal<Date>(new Date());
+  private timeTickerInterval: any = null;
 
   stats = signal<IRRDashboardStats>({
     totalFleet: 0,
@@ -143,6 +146,57 @@ export class RRStatsViewComponent implements OnInit {
     this.loadBookings();
     this.loadStats();
     this.loadRecentLogs();
+    this.timeTickerInterval = setInterval(() => {
+      this.currentTime.set(new Date());
+    }, 10000);
+  }
+
+  ngOnDestroy() {
+    if (this.timeTickerInterval) {
+      clearInterval(this.timeTickerInterval);
+      this.timeTickerInterval = null;
+    }
+  }
+
+  getRentalTimeRemaining(returnDateTime: string): {
+    text: string;
+    isExceeded: boolean;
+    label: string;
+  } {
+    if (!returnDateTime) {
+      return { text: 'N/A', isExceeded: false, label: 'Time Left' };
+    }
+
+    const returnTime = new Date(returnDateTime).getTime();
+    if (isNaN(returnTime)) {
+      return { text: 'Invalid date', isExceeded: false, label: 'Time Left' };
+    }
+
+    const now = this.currentTime().getTime();
+    const diffMs = returnTime - now;
+    const isExceeded = diffMs < 0;
+    const absDiffMinutes = Math.floor(Math.abs(diffMs) / (1000 * 60));
+
+    const days = Math.floor(absDiffMinutes / (24 * 60));
+    const hours = Math.floor((absDiffMinutes % (24 * 60)) / 60);
+    const minutes = absDiffMinutes % 60;
+
+    const timeParts: string[] = [];
+    if (days > 0) {
+      timeParts.push(`${days}day${days > 1 ? 's' : ''}`);
+    }
+    if (hours > 0 || days > 0) {
+      timeParts.push(`${hours} hrs`);
+    }
+    timeParts.push(`${minutes} mins`);
+
+    const formattedTime = timeParts.join(' ');
+
+    return {
+      text: formattedTime,
+      isExceeded,
+      label: isExceeded ? 'Exceeded by' : 'Time Left',
+    };
   }
 
   async loadRecentLogs() {

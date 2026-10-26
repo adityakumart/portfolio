@@ -327,9 +327,10 @@
                     [vehicle]="v"
                     variant="stats"
                     [showReserveBtn]="activeCategory() === 'fleet'"
+                    [isCardClickable]="activeCategory() !== 'fleet'"
                     (reserveClick)="reserveVehicle(v)"
                     (bookNow)="bookVehicle($event)"
-                    (cardClick)="v.status === 'available' ? bookVehicle($event) : null"
+                    (cardClick)="activeCategory() === 'fleet' ? null : (v.status === 'available' ? bookVehicle($event) : null)"
                   />
                 }
               </div>
@@ -360,9 +361,10 @@
                     [vehicle]="v"
                     variant="stats"
                     [showReserveBtn]="activeCategory() === 'fleet'"
+                    [isCardClickable]="activeCategory() !== 'fleet'"
                     (reserveClick)="reserveVehicle(v)"
                     (bookNow)="bookVehicle($event)"
-                    (cardClick)="v.status === 'available' ? bookVehicle($event) : null"
+                    (cardClick)="activeCategory() === 'fleet' ? null : (v.status === 'available' ? bookVehicle($event) : null)"
                   />
                 }
               </div>
@@ -379,9 +381,10 @@
                   [vehicle]="v"
                   variant="stats"
                   [showReserveBtn]="activeCategory() === 'fleet'"
+                  [isCardClickable]="activeCategory() !== 'fleet'"
                   (reserveClick)="reserveVehicle(v)"
                   (bookNow)="bookVehicle($event)"
-                  (cardClick)="v.status === 'available' ? bookVehicle($event) : null"
+                  (cardClick)="activeCategory() === 'fleet' ? null : (v.status === 'available' ? bookVehicle($event) : null)"
                 />
               }
             </div>
@@ -403,9 +406,10 @@
                   [vehicle]="v"
                   variant="stats"
                   [showReserveBtn]="activeCategory() === 'fleet'"
+                  [isCardClickable]="activeCategory() !== 'fleet'"
                   (reserveClick)="reserveVehicle(v)"
                   (bookNow)="bookVehicle($event)"
-                  (cardClick)="v.status === 'available' ? bookVehicle($event) : null"
+                  (cardClick)="activeCategory() === 'fleet' ? null : (v.status === 'available' ? bookVehicle($event) : null)"
                 />
               }
             </div>
@@ -552,28 +556,19 @@
                     <app-rr-vehicle-card
                       [vehicle]="item.vehicle"
                       variant="stats"
+                      [isCardClickable]="false"
                       [reservation]="item.reservation"
-                      (cardClick)="bookVehicleFromReservation(item.reservation, $event)"
                     />
                     <div class="mt-2 flex items-center justify-between gap-2 px-1">
                       <button
                         hlmBtn
                         size="sm"
                         variant="outline"
-                        class="text-xs h-7 gap-1 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10 flex-1"
+                        class="text-xs h-7 gap-1 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10 w-full"
                         (click)="modifyReservation(item.reservation, $event)"
                       >
                         <ng-icon name="lucidePencil" class="text-xs"></ng-icon>
-                        <span>Modify</span>
-                      </button>
-                      <button
-                        hlmBtn
-                        size="sm"
-                        class="text-xs h-7 gap-1 bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-400 hover:to-blue-500 flex-1 font-bold shadow-xs"
-                        (click)="bookVehicleFromReservation(item.reservation, $event)"
-                      >
-                        <ng-icon name="lucideKey" class="text-xs"></ng-icon>
-                        <span>Book Now</span>
+                        <span>Modify Reservation</span>
                       </button>
                     </div>
                   </div>
@@ -605,28 +600,19 @@
                     <app-rr-vehicle-card
                       [vehicle]="item.vehicle"
                       variant="stats"
+                      [isCardClickable]="false"
                       [reservation]="item.reservation"
-                      (cardClick)="bookVehicleFromReservation(item.reservation, $event)"
                     />
                     <div class="mt-2 flex items-center justify-between gap-2 px-1">
                       <button
                         hlmBtn
                         size="sm"
                         variant="outline"
-                        class="text-xs h-7 gap-1 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10 flex-1"
+                        class="text-xs h-7 gap-1 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10 w-full"
                         (click)="modifyReservation(item.reservation, $event)"
                       >
                         <ng-icon name="lucidePencil" class="text-xs"></ng-icon>
-                        <span>Modify</span>
-                      </button>
-                      <button
-                        hlmBtn
-                        size="sm"
-                        class="text-xs h-7 gap-1 bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-400 hover:to-blue-500 flex-1 font-bold shadow-xs"
-                        (click)="bookVehicleFromReservation(item.reservation, $event)"
-                      >
-                        <ng-icon name="lucideKey" class="text-xs"></ng-icon>
-                        <span>Book Now</span>
+                        <span>Modify Reservation</span>
                       </button>
                     </div>
                   </div>
@@ -645,28 +631,19 @@
                   <app-rr-vehicle-card
                     [vehicle]="item.vehicle"
                     variant="stats"
+                    [isCardClickable]="false"
                     [reservation]="item.reservation"
-                    (cardClick)="bookVehicleFromReservation(item.reservation, $event)"
                   />
                   <div class="mt-2 flex items-center justify-between gap-2 px-1">
                     <button
                       hlmBtn
                       size="sm"
                       variant="outline"
-                      class="text-xs h-7 gap-1 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10 flex-1"
+                      class="text-xs h-7 gap-1 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10 w-full"
                       (click)="modifyReservation(item.reservation, $event)"
                     >
                       <ng-icon name="lucidePencil" class="text-xs"></ng-icon>
-                      <span>Modify</span>
-                    </button>
-                    <button
-                      hlmBtn
-                      size="sm"
-                      class="text-xs h-7 gap-1 bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-400 hover:to-blue-500 flex-1 font-bold shadow-xs"
-                      (click)="bookVehicleFromReservation(item.reservation, $event)"
-                    >
-                      <ng-icon name="lucideKey" class="text-xs"></ng-icon>
-                      <span>Book Now</span>
+                      <span>Modify Reservation</span>
                     </button>
                   </div>
                 </div>
@@ -690,28 +667,19 @@
                   <app-rr-vehicle-card
                     [vehicle]="item.vehicle"
                     variant="stats"
+                    [isCardClickable]="false"
                     [reservation]="item.reservation"
-                    (cardClick)="bookVehicleFromReservation(item.reservation, $event)"
                   />
                   <div class="mt-2 flex items-center justify-between gap-2 px-1">
                     <button
                       hlmBtn
                       size="sm"
                       variant="outline"
-                      class="text-xs h-7 gap-1 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10 flex-1"
+                      class="text-xs h-7 gap-1 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10 w-full"
                       (click)="modifyReservation(item.reservation, $event)"
                     >
                       <ng-icon name="lucidePencil" class="text-xs"></ng-icon>
-                      <span>Modify</span>
-                    </button>
-                    <button
-                      hlmBtn
-                      size="sm"
-                      class="text-xs h-7 gap-1 bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-400 hover:to-blue-500 flex-1 font-bold shadow-xs"
-                      (click)="bookVehicleFromReservation(item.reservation, $event)"
-                    >
-                      <ng-icon name="lucideKey" class="text-xs"></ng-icon>
-                      <span>Book Now</span>
+                      <span>Modify Reservation</span>
                     </button>
                   </div>
                 </div>
@@ -943,6 +911,24 @@
           <div class="font-semibold text-foreground leading-tight">{{ b.returnDateTime | indianDate }}</div>
           <div class="text-[10px] text-muted-foreground font-mono mt-0.5">{{ b.returnDateTime | date:'shortTime' }}</div>
         </div>
+      </div>
+
+      <!-- Dynamic Time Remaining / Exceeded Status Badge -->
+      <div
+        class="mb-2 px-2.5 py-1.5 rounded-xl border text-[11px] font-bold flex items-center justify-between transition-colors shadow-xs"
+        [ngClass]="{
+          'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400': getRentalTimeRemaining(b.returnDateTime).isExceeded,
+          'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400': !getRentalTimeRemaining(b.returnDateTime).isExceeded
+        }"
+      >
+        <span class="inline-flex items-center gap-1.5 font-semibold">
+          <ng-icon
+            [name]="getRentalTimeRemaining(b.returnDateTime).isExceeded ? 'lucideAlertCircle' : 'lucideClock'"
+            class="text-xs"
+          ></ng-icon>
+          <span>{{ getRentalTimeRemaining(b.returnDateTime).label }}:</span>
+        </span>
+        <span class="font-mono tracking-tight font-black">{{ getRentalTimeRemaining(b.returnDateTime).text }}</span>
       </div>
 
       @if (b.lastIntimation) {
