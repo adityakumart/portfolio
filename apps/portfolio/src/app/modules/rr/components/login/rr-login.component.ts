@@ -76,7 +76,7 @@ export class RRLoginComponent implements OnInit {
   // Form Groups
   employeeFormGroup = new FormGroup({
     empId: new FormControl('', [Validators.required, Validators.pattern(/^RRA[0-9]{3}$/)]),
-    dob: new FormControl<Date | string | null>(null, [Validators.required]),
+    password: new FormControl('', [Validators.required]),
   });
 
   adminFormGroup = new FormGroup({
@@ -92,6 +92,11 @@ export class RRLoginComponent implements OnInit {
   authError = this.error;
   authSuccess = this.success;
   showPassword = signal(false);
+  showEmployeePassword = signal(false);
+
+  toggleEmployeePassword() {
+    this.showEmployeePassword.update((v) => !v);
+  }
 
   constructor() {
     effect(() => {
@@ -127,10 +132,10 @@ export class RRLoginComponent implements OnInit {
     this.loading.set(true);
 
     const enteredId = this.employeeFormGroup.value.empId || '';
-    const enteredDob = toISODateString(this.employeeFormGroup.value.dob as IndianDateInput) || '';
+    const enteredPassword = this.employeeFormGroup.value.password || '';
 
     try {
-      await this.rrApi.login({ empId: enteredId, dob: enteredDob });
+      await this.rrApi.login({ username: enteredId, password: enteredPassword, empId: enteredId });
       this.inactivityService.resetSessionState();
       this.success.set('Login successful! Redirecting...');
       toast.success('Login successful! Redirecting to fleet console...');
