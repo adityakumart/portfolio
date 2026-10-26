@@ -1,6 +1,8 @@
 <div
   hlmCard
-  class="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 cursor-pointer flex flex-col h-full"
+  class="group relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col h-full"
+  [class.cursor-pointer]="isCardClickable"
+  [class.cursor-default]="!isCardClickable"
   (click)="onCardClick($event)"
   (mouseenter)="stopAutoScroll()"
   (mouseleave)="startAutoScroll()"
@@ -162,17 +164,6 @@
             (click)="onPhoneClick($event)"
           >
             <ng-icon name="lucidePhone" class="text-sm"></ng-icon>
-          </button>
-          <!-- Reserve button -->
-          <button
-            hlmBtn
-            size="sm"
-            class="bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold rounded-lg shadow-sm flex items-center gap-1 hover:from-cyan-400 hover:to-blue-500 text-xs px-2.5 h-8"
-            type="button"
-            (click)="onReserveClick($event)"
-          >
-            <span>Reserve</span>
-            <ng-icon name="lucideArrowRight" class="text-xs"></ng-icon>
           </button>
         </div>
       </div>

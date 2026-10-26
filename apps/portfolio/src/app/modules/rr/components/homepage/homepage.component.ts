@@ -420,6 +420,23 @@ export class RRHomepageComponent implements OnInit, OnDestroy {
     }
   }
 
+  scrollToSection(target: string | undefined, event?: Event): void {
+    if (event) {
+      event.preventDefault();
+    }
+    if (!target) return;
+
+    if (target.startsWith('#') || !target.includes('/')) {
+      const elementId = target.replace(/^#/, '');
+      const el = document.getElementById(elementId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    } else if (typeof window !== 'undefined') {
+      window.open(target, '_blank');
+    }
+  }
+
   toggleMobileMenu() {
     this.mobileMenuOpen.set(!this.mobileMenuOpen());
   }

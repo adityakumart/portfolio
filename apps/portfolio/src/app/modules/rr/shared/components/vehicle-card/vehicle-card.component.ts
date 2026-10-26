@@ -77,6 +77,7 @@ export class RRVehicleCardComponent implements OnInit, OnDestroy {
   @Input() variant: VehicleCardVariant = 'fleet';
   @Input() isAdmin = false;
   @Input() showReserveBtn = false;
+  @Input() isCardClickable = true;
   @Input() reservation?: IBooking | any;
 
   readonly currentImageIndex = signal<number>(0);
@@ -180,6 +181,9 @@ export class RRVehicleCardComponent implements OnInit, OnDestroy {
   }
 
   onCardClick(event: Event) {
+    if (!this.isCardClickable) {
+      return;
+    }
     this.cardClick.emit(this.vehicle);
     if (this.variant === 'stats' && this.vehicle?.status === 'available') {
       this.bookNow.emit(this.vehicle);

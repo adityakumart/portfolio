@@ -61,6 +61,19 @@
             <td hlmTd>
               <div class="font-semibold">{{ b.returnDateTime | indianDate }}</div>
               <div class="text-muted-foreground text-[11px]">{{ b.returnDateTime | date:'shortTime' }}</div>
+              <div
+                class="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded border mt-1"
+                [ngClass]="{
+                  'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400': getRentalTimeRemaining(b.returnDateTime).isExceeded,
+                  'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400': !getRentalTimeRemaining(b.returnDateTime).isExceeded
+                }"
+              >
+                <ng-icon
+                  [name]="getRentalTimeRemaining(b.returnDateTime).isExceeded ? 'lucideAlertCircle' : 'lucideClock'"
+                  class="text-[10px]"
+                ></ng-icon>
+                <span>{{ getRentalTimeRemaining(b.returnDateTime).text }}</span>
+              </div>
               @if (b.lastIntimation) {
                 <div class="inline-flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400 font-semibold mt-0.5 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
                   <ng-icon name="lucidePhoneCall" class="text-[10px]"></ng-icon>

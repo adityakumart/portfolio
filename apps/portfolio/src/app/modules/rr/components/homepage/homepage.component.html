@@ -20,13 +20,13 @@
       <h2>{{ homeContent().footer.brandName || 'RoadReady Rentals' }}</h2>
     </div>
     <nav>
-      <a href="#services">Services</a>
+      <a href="#services" (click)="scrollToSection('#services', $event)">Services</a>
       @if (announcements().length > 0) {
-        <a href="#announcements">Updates</a>
+        <a href="#announcements" (click)="scrollToSection('#announcements', $event)">Updates</a>
       }
-      <a href="#browse">Browse Fleet</a>
-      <a href="#about">About</a>
-      <a href="#contact">Contact</a>
+      <a href="#browse" (click)="scrollToSection('#browse', $event)">Browse Fleet</a>
+      <a href="#about" (click)="scrollToSection('#about', $event)">About</a>
+      <a href="#contact" (click)="scrollToSection('#contact', $event)">Contact</a>
       @if (currentUser()) {
         <a routerLink="/user/rr/dashboard" class="nav-login-btn">
           <span>Command Desk</span>
@@ -46,13 +46,13 @@
 
   <!-- Mobile Menu -->
   <div class="mobile-menu" [style.display]="mobileMenuOpen() ? 'flex' : 'none'">
-    <a href="#services" (click)="toggleMobileMenu()">Services</a>
+    <a href="#services" (click)="scrollToSection('#services', $event); toggleMobileMenu()">Services</a>
     @if (announcements().length > 0) {
-      <a href="#announcements" (click)="toggleMobileMenu()">Updates</a>
+      <a href="#announcements" (click)="scrollToSection('#announcements', $event); toggleMobileMenu()">Updates</a>
     }
-    <a href="#browse" (click)="toggleMobileMenu()">Browse Fleet</a>
-    <a href="#about" (click)="toggleMobileMenu()">About us</a>
-    <a href="#contact" (click)="toggleMobileMenu()">Contact us</a>
+    <a href="#browse" (click)="scrollToSection('#browse', $event); toggleMobileMenu()">Browse Fleet</a>
+    <a href="#about" (click)="scrollToSection('#about', $event); toggleMobileMenu()">About us</a>
+    <a href="#contact" (click)="scrollToSection('#contact', $event); toggleMobileMenu()">Contact us</a>
     @if (currentUser()) {
       <a
         routerLink="/user/rr/dashboard"
@@ -90,6 +90,7 @@
         @if (ticker()?.linkText) {
           <a
             [href]="ticker()?.linkUrl || '#announcements'"
+            (click)="scrollToSection(ticker()?.linkUrl || '#announcements', $event)"
             class="ticker-cta"
           >
             <span>{{ ticker()?.linkText }}</span>
@@ -123,8 +124,18 @@
         {{ homeContent().hero.subtitle }}
       </p>
       <div class="hero-actions flex gap-4 justify-center flex-wrap">
-        <a [href]="homeContent().hero.primaryCtaLink || '#browse'" class="hero-primary-btn">{{ homeContent().hero.primaryCtaText || 'Explore Fleet' }}</a>
-        <a [href]="homeContent().hero.secondaryCtaLink || '#contact'" class="hero-secondary-btn">{{ homeContent().hero.secondaryCtaText || 'Book Consultation' }}</a>
+        <a
+          [href]="homeContent().hero.primaryCtaLink || '#browse'"
+          (click)="scrollToSection(homeContent().hero.primaryCtaLink || '#browse', $event)"
+          class="hero-primary-btn"
+          >{{ homeContent().hero.primaryCtaText || 'Explore Fleet' }}</a
+        >
+        <a
+          [href]="homeContent().hero.secondaryCtaLink || '#contact'"
+          (click)="scrollToSection(homeContent().hero.secondaryCtaLink || '#contact', $event)"
+          class="hero-secondary-btn"
+          >{{ homeContent().hero.secondaryCtaText || 'Book Consultation' }}</a
+        >
       </div>
 
       <!-- Multi-Banner Indicators & Controls (if more than 1 banner) -->

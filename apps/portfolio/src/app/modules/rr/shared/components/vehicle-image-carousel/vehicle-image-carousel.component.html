@@ -71,7 +71,7 @@
             class="w-full h-full object-cover pointer-events-none"
             loading="lazy"
           />
-          @if ($index === 0) {
+          @if (showCoverTag && $index === 0) {
             <span
               class="absolute bottom-0 inset-x-0 bg-black/75 text-[9px] text-emerald-400 font-bold text-center tracking-tighter py-0.5"
             >

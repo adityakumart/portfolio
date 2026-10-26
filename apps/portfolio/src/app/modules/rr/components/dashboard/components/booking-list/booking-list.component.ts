@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed, ViewChild, TemplateRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, computed, ViewChild, TemplateRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -29,6 +29,7 @@ import {
   lucideEye,
   lucideDownload,
   lucideMail,
+  lucideAlertCircle,
 } from '@ng-icons/lucide';
 import { IBooking, IVehicle, ICustomerIntimation } from '@portfolio/shared-types';
 import { RRApiService } from '../../../../services/rr-api.service';
@@ -78,12 +79,13 @@ import { IndianDatePipe } from '../../../../../../shared/pipes/indian-date.pipe'
       lucideEye,
       lucideDownload,
       lucideMail,
+      lucideAlertCircle,
     }),
   ],
   templateUrl: './booking-list.component.html',
   styleUrl: './booking-list.component.scss',
 })
-export class RRBookingListComponent implements OnInit {
+export class RRBookingListComponent implements OnInit, OnDestroy {
   private rrApi = inject(RRApiService);
   private dialog = inject(HlmDialogService);
   private route = inject(ActivatedRoute);
@@ -92,6 +94,9 @@ export class RRBookingListComponent implements OnInit {
   // Collections data
   bookings = signal<IBooking[]>([]);
   vehicles = signal<IVehicle[]>([]);
+
+  currentTime = signal<Date>(new Date());
+  private timeTickerInterval: any = null;
 
   // Pagination state
   currentPage = signal(0);
@@ -125,6 +130,58 @@ export class RRBookingListComponent implements OnInit {
         }
       }
     });
+
+    this.timeTickerInterval = setInterval(() => {
+      this.currentTime.set(new Date());
+    }, 10000);
+  }
+
+  ngOnDestroy() {
+    if (this.timeTickerInterval) {
+      clearInterval(this.timeTickerInterval);
+      this.timeTickerInterval = null;
+    }
+  }
+
+  getRentalTimeRemaining(returnDateTime: string): {
+    text: string;
+    isExceeded: boolean;
+    label: string;
+  } {
+    if (!returnDateTime) {
+      return { text: 'N/A', isExceeded: false, label: 'Time Left' };
+    }
+
+    const returnTime = new Date(returnDateTime).getTime();
+    if (isNaN(returnTime)) {
+      return { text: 'Invalid date', isExceeded: false, label: 'Time Left' };
+    }
+
+    const now = this.currentTime().getTime();
+    const diffMs = returnTime - now;
+    const isExceeded = diffMs < 0;
+    const absDiffMinutes = Math.floor(Math.abs(diffMs) / (1000 * 60));
+
+    const days = Math.floor(absDiffMinutes / (24 * 60));
+    const hours = Math.floor((absDiffMinutes % (24 * 60)) / 60);
+    const minutes = absDiffMinutes % 60;
+
+    const timeParts: string[] = [];
+    if (days > 0) {
+      timeParts.push(`${days}day${days > 1 ? 's' : ''}`);
+    }
+    if (hours > 0 || days > 0) {
+      timeParts.push(`${hours} hrs`);
+    }
+    timeParts.push(`${minutes} mins`);
+
+    const formattedTime = timeParts.join(' ');
+
+    return {
+      text: formattedTime,
+      isExceeded,
+      label: isExceeded ? 'Exceeded by' : 'Time Left',
+    };
   }
 
   async loadBookings() {

@@ -18,7 +18,7 @@ test.describe('RR Module - Homepage Component', () => {
     });
 
     test('should render header brand and navigation elements', async ({ page }) => {
-      const header = page.locator('header');
+      const header = page.locator('.rr-wrapper header');
       await expect(header).toBeVisible();
       await expect(header.locator('h2')).toHaveText('RoadReady Rentals');
 
