@@ -46,6 +46,12 @@ import { RRApiService } from '../../../services/rr-api.service';
 import { RRInvoicePdfService } from '../../../services/rr-invoice-pdf.service';
 import { RRCustomerApiService } from '../../../services/rr-customer-api.service';
 import { RRAadharInputComponent } from '../../components/aadhar-input/aadhar-input.component';
+import { HlmDialogService } from '@spartan-ng/hel/dialog';
+import {
+  RRAgreementUploadDialogComponent,
+  AgreementUploadItem,
+  AgreementUploadDialogResult,
+} from '../agreement-upload-dialog/agreement-upload-dialog.component';
 
 import { ScheduleConflict } from '../reserve-booking-dialog/reserve-booking-dialog.component';
 
@@ -108,6 +114,7 @@ export class RRNewBookingDialogComponent implements OnInit {
   private customerApi = inject(RRCustomerApiService);
   private fb = inject(FormBuilder);
   private invoicePdf = inject(RRInvoicePdfService);
+  private dialog = inject(HlmDialogService);
 
   vehicles = signal<IVehicle[]>([]);
   allBookings = signal<IBooking[]>([]);
@@ -115,6 +122,12 @@ export class RRNewBookingDialogComponent implements OnInit {
   overrideOdometer = false;
   isSubmitting = signal(false);
   membershipDiscount = signal<ICustomerMembershipDiscount | null>(null);
+
+  // Documentation & Agreement workflow state
+  isAgreementReviewed = signal<boolean>(false);
+  hasUploadedAttachments = signal<boolean>(false);
+  signedAgreementUrl = signal<string | null>(null);
+  uploadedAttachments = signal<AgreementUploadItem[]>([]);
 
   // Real-time schedule conflict status against advance reservations
   scheduleConflict = signal<ScheduleConflict>({ hasConflict: false });
@@ -221,7 +234,7 @@ export class RRNewBookingDialogComponent implements OnInit {
       travelTo: [''],
 
       // Deposit
-      depositType: ['none', Validators.required],
+      depositType: ['', Validators.required],
       bikeRegNo: [''],
       bikeManufacturer: [''],
       bikeModel: [''],
@@ -235,7 +248,7 @@ export class RRNewBookingDialogComponent implements OnInit {
       discount: ['0'],
       discountType: ['none'],
       finalRentalAmount: ['0'],
-      amountPaid: ['0', [Validators.required, Validators.min(0)]],
+      amountPaid: ['', [Validators.required, Validators.min(0)]],
       pendingAmount: ['0'],
       paymentMode: ['Cash'],
       amountByUser: ['0'],
@@ -624,6 +637,18 @@ export class RRNewBookingDialogComponent implements OnInit {
       if (selected && (!resv.vehicleOdometerStart || resv.vehicleOdometerStart === '0')) {
         this.bookingFormGroup.patchValue({ vehicleOdometerStart: selected.odometer });
       }
+      if (resv.signedAgreementUrl) {
+        this.signedAgreementUrl.set(resv.signedAgreementUrl);
+        this.isAgreementReviewed.set(true);
+      }
+      if (resv.attachments && resv.attachments.length > 0) {
+        const atts: AgreementUploadItem[] = resv.attachments.map((url, i) => ({
+          name: `Attachment ${i + 1}`,
+          url,
+        }));
+        this.uploadedAttachments.set(atts);
+        this.hasUploadedAttachments.set(true);
+      }
       this.validateScheduleOverlap();
       return;
     }
@@ -922,7 +947,11 @@ export class RRNewBookingDialogComponent implements OnInit {
 
     const discountVal =
       Number(this.bookingFormGroup.get('discount')?.value) || 0;
-    const paid = Number(this.bookingFormGroup.get('amountPaid')?.value) || 0;
+    const paidVal = this.bookingFormGroup.get('amountPaid')?.value;
+    const paid =
+      paidVal !== null && paidVal !== '' && !isNaN(Number(paidVal))
+        ? Number(paidVal)
+        : 0;
 
     let finalRent = total;
     if (discountVal > 0 && discountType !== 'none') {
@@ -943,7 +972,7 @@ export class RRNewBookingDialogComponent implements OnInit {
     this.bookingFormGroup.patchValue(
       {
         finalRentalAmount: String(finalRent),
-        pendingAmount: String(finalRent - paid),
+        pendingAmount: String(Math.max(0, finalRent - paid)),
       },
       { emitEvent: false }
     );
@@ -969,7 +998,11 @@ export class RRNewBookingDialogComponent implements OnInit {
 
     const paidCtrl = this.bookingFormGroup.get('amountPaid');
     paidCtrl?.clearValidators();
-    paidCtrl?.setValidators([Validators.required, Validators.min(0)]);
+    paidCtrl?.setValidators([
+      Validators.required,
+      Validators.min(0),
+      Validators.max(finalRent),
+    ]);
     paidCtrl?.updateValueAndValidity({ emitEvent: false });
   }
 
@@ -985,12 +1018,19 @@ export class RRNewBookingDialogComponent implements OnInit {
       return;
     }
 
+    if (!this.isAgreementReviewed() || !this.hasUploadedAttachments()) {
+      toast.error('Please review the agreement and upload the signed agreement and attachment proofs before creating the booking.');
+      return;
+    }
+
     try {
       this.isSubmitting.set(true);
       const currentUser = this.rrApi.currentUser();
-      const payload = {
+      const payload: Partial<IBooking> = {
         ...this.bookingFormGroup.value,
         status: 'active',
+        signedAgreementUrl: this.signedAgreementUrl(),
+        attachments: this.uploadedAttachments().map((a) => a.url),
         bookedBy: currentUser?.id,
         bookedByName: currentUser ? `${currentUser.firstName} ${currentUser.lastName}`.trim() : undefined,
       };
@@ -1053,9 +1093,53 @@ export class RRNewBookingDialogComponent implements OnInit {
     };
   }
 
-  viewAgreementPDFFromForm() {
-    const bObj = this.getAgreementDraftObject();
-    this.invoicePdf.viewAgreementPdf(bObj);
+  async viewAgreementPDFFromForm() {
+    try {
+      const bObj = this.getAgreementDraftObject();
+      const doc = await this.invoicePdf.generateAgreementPdfDoc(bObj);
+      if (!doc) {
+        toast.error('Failed to generate agreement preview.');
+        return;
+      }
+      const id = bObj.id || 'DRAFT';
+      const blob = doc.output('blob');
+      const blobUrl = URL.createObjectURL(blob);
+
+      const ref = this.dialog.open(RRAgreementUploadDialogComponent, {
+        context: {
+          title: `Rental Agreement & Documentation - #${id}`,
+          fileName: `Agreement_${id}.pdf`,
+          blobUrl,
+          signedAgreementUrl: this.signedAgreementUrl(),
+          attachments: this.uploadedAttachments(),
+        },
+        contentClass: 'w-[95vw] max-w-5xl p-0 border-0 bg-transparent shadow-none',
+      });
+
+      ref.closed$.subscribe((res: unknown) => {
+        const result = res as AgreementUploadDialogResult | undefined;
+        try {
+          URL.revokeObjectURL(blobUrl);
+        } catch {
+          // ignore
+        }
+        if (result) {
+          this.signedAgreementUrl.set(result.signedAgreementUrl || null);
+          this.uploadedAttachments.set(result.attachments || []);
+          this.isAgreementReviewed.set(true);
+          const hasDocs = Boolean(result.signedAgreementUrl && result.attachments && result.attachments.length > 0);
+          this.hasUploadedAttachments.set(hasDocs);
+          if (hasDocs) {
+            toast.success('Agreement and attachments saved and verified.');
+          } else {
+            toast.info('Draft agreement reviewed. Note: Both signed agreement and attachments are required to create booking.');
+          }
+        }
+      });
+    } catch (err: any) {
+      console.error('Error opening agreement upload dialog:', err);
+      toast.error('Failed to open agreement dialog: ' + (err?.message || 'unknown error'));
+    }
   }
 
   downloadAgreementPDFFromForm() {

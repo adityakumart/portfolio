@@ -169,6 +169,9 @@ export class RRActivityLogsComponent implements OnInit {
     if (act.includes('logged out')) {
       return { label: 'LOGOUT', class: 'bg-slate-500/15 text-slate-700 dark:text-slate-400 border-slate-500/30' };
     }
+    if (act.includes('advance booking') || act.includes('reserved') || act.includes('reservation')) {
+      return { label: 'ADVANCE BOOKING', class: 'bg-cyan-500/15 text-cyan-700 dark:text-cyan-400 border-cyan-500/30' };
+    }
     if (act.includes('started booking')) {
       return { label: 'BOOKING START', class: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30' };
     }

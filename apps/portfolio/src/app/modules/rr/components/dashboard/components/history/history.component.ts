@@ -225,7 +225,7 @@ export class RRHistoryComponent implements OnInit {
       const toIso = toISODateString(this.toDateFilter());
 
       const res = await this.rrApi.getBookingsPaginated({
-        status: 'completed,cancelled',
+        status: 'completed,cancelled,reserved',
         vehicle: this.vehicleFilter().trim(),
         customer: this.customerFilter().trim(),
         from: fromIso || undefined,

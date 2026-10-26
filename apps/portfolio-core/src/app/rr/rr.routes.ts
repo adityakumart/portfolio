@@ -154,6 +154,7 @@ async function buildLoginSuccess(emp: any, empCol: any, res: Response, auditDesc
 rrRouter.post('/auth/login', authRateLimiter, async (req: Request, res: Response) => {
   try {
     const { username, password, empId, dob } = req.body;
+    const effectiveUsername = username || empId;
 
     const empCol = await RRService.getEmployeesCol();
 
@@ -174,9 +175,9 @@ rrRouter.post('/auth/login', authRateLimiter, async (req: Request, res: Response
     };
 
     // 1. Password / Credential Login (Username / EmpId & Password)
-    if (username && password) {
+    if (effectiveUsername && password) {
       const emp = await empCol.findOne({
-        $or: [{ id: username }, { email: username.toLowerCase() }],
+        $or: [{ id: effectiveUsername }, { email: effectiveUsername.toLowerCase() }],
         isDeleted: { $ne: true }
       });
 
@@ -1099,11 +1100,11 @@ rrRouter.post('/bookings', authenticateRRToken, async (req: any, res: Response) 
     res.status(201).json(newBooking);
 
     RRService.logActivity(
-      isAdvanceReservation ? `Reserved vehicle ${newBooking.vehicleRegNo}` : `Started booking ${bookingId}`,
+      isAdvanceReservation ? `Created advance booking ${bookingId}` : `Started booking ${bookingId}`,
       req.userId,
       req.userRole,
       isAdvanceReservation
-        ? `Advance reservation created (${bookingId}) for ${newBooking.renterFirstName} ${newBooking.renterSecondName} (${newBooking.renterPhone}) | Vehicle: ${newBooking.vehicleRegNo} | Schedule: ${newBooking.pickupDateTime} to ${newBooking.returnDateTime} | Advance Paid: ₹${newBooking.amountPaid || '0'}`
+        ? `Advance booking created (${bookingId}) for ${newBooking.renterFirstName} ${newBooking.renterSecondName} (${newBooking.renterPhone}) | Vehicle: ${newBooking.vehicleRegNo} | Schedule: ${newBooking.pickupDateTime} to ${newBooking.returnDateTime} | Advance Paid: ₹${newBooking.amountPaid || '0'}`
         : `Booking started for customer ${newBooking.renterFirstName} ${newBooking.renterSecondName} (${newBooking.renterPhone}) | Vehicle: ${newBooking.vehicleRegNo} (${selectedVehicle.manufacturer} ${selectedVehicle.name}) | Pickup: ${newBooking.pickupDateTime} | Return: ${newBooking.returnDateTime} | Total: ₹${newBooking.finalRentalAmount}`
     ).catch((logErr) => console.error('[AuditLog] Failed to log booking start:', logErr));
   } catch (err: any) {

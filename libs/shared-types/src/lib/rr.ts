@@ -230,6 +230,8 @@ export interface IBooking {
   createdAt: string;
   endedAt?: string | null;
   activityLogs?: string[];
+  signedAgreementUrl?: string | null;
+  attachments?: string[];
 
   // Staff audit tracking (who booked and who ended)
   bookedBy?: string;

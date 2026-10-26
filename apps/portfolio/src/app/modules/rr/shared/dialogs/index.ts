@@ -4,3 +4,4 @@ export * from './modify-booking-dialog/modify-booking-dialog.component';
 export * from './pdf-viewer-dialog/rr-pdf-viewer-dialog.component';
 export * from './reserve-booking-dialog/reserve-booking-dialog.component';
 export * from './close-advance-booking-dialog/close-advance-booking-dialog.component';
+export * from './agreement-upload-dialog/agreement-upload-dialog.component';
