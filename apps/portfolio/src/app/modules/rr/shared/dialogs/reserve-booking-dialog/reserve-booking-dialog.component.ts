@@ -183,7 +183,7 @@ export class RRReserveBookingDialogComponent implements OnInit {
       guarAddress: ['', Validators.required],
 
       // Deposit (Step 2 Part 3)
-      depositType: ['none', Validators.required],
+      depositType: ['', Validators.required],
       bikeRegNo: [''],
       bikeManufacturer: [''],
       bikeModel: [''],
