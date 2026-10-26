@@ -89,12 +89,12 @@
 
           <div>
             <label hlmLabel class="text-xs text-muted-foreground block mb-1">Travel From</label>
-            <input hlmInput formControlName="travelFrom" placeholder="Kakinada" class="w-full text-sm" />
+            <input hlmInput formControlName="travelFrom" placeholder="Pickup location / City (e.g. Area, City)" class="w-full text-sm" />
           </div>
 
           <div>
             <label hlmLabel class="text-xs text-muted-foreground block mb-1">Travel To</label>
-            <input hlmInput formControlName="travelTo" placeholder="Hyderabad" class="w-full text-sm" />
+            <input hlmInput formControlName="travelTo" placeholder="Destination / Drop location (e.g. Outstation, City)" class="w-full text-sm" />
           </div>
         </div>
 
@@ -615,7 +615,13 @@
               <label hlmLabel class="text-xs text-muted-foreground block mb-1">Advance Amount Paid (Rs.)</label>
               <input hlmInput type="number" formControlName="amountPaid" (input)="recalculateFinalAmount()" (change)="recalculateFinalAmount()" class="w-full text-sm" />
               @if (bookingFormGroup.get('amountPaid')?.invalid && bookingFormGroup.get('amountPaid')?.touched) {
-                <span class="text-xs text-destructive">Must be positive number.</span>
+                @if (bookingFormGroup.get('amountPaid')?.hasError('required')) {
+                  <span class="text-xs text-destructive">Advance paid is required (enter 0 if none).</span>
+                } @else if (bookingFormGroup.get('amountPaid')?.hasError('min')) {
+                  <span class="text-xs text-destructive">Must be at least 0.</span>
+                } @else if (bookingFormGroup.get('amountPaid')?.hasError('max')) {
+                  <span class="text-xs text-destructive">Advance paid cannot exceed final rental amount (₹{{ bookingFormGroup.get('finalRentalAmount')?.value }}).</span>
+                }
               }
             </div>
 
@@ -645,24 +651,52 @@
     </div>
 
     <!-- Fixed Footer -->
-    <div class="shrink-0 flex flex-wrap items-center justify-end gap-2 pt-3 border-t border-border">
-      <button hlmBtn variant="ghost" class="order-3 sm:order-1" (click)="closeDialog()">Cancel</button>
-      <button
-        hlmBtn
-        variant="outline"
-        type="button"
-        class="action-btn flex items-center gap-1.5 order-2"
-        [disabled]="bookingFormGroup.invalid"
-        (click)="viewAgreementPDFFromForm()"
-        title="View Agreement"
-      >
-        <ng-icon name="lucideFileText"></ng-icon>
-        <span>Agreement</span>
-      </button>
-      <button hlmBtn class="action-btn success flex items-center gap-1.5 order-1 sm:order-3 font-bold shadow-sm" [disabled]="bookingFormGroup.invalid || isSubmitting() || scheduleConflict().hasConflict" (click)="createBooking($event)">
-        <ng-icon name="lucideCheck"></ng-icon>
-        <span>{{ isSubmitting() ? 'Creating...' : 'Create Booking' }}</span>
-      </button>
+    <div class="shrink-0 flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-border">
+      <!-- Status Badge on Agreement & Attachments Readiness -->
+      <div class="flex items-center gap-2 text-xs">
+        @if (isAgreementReviewed() && hasUploadedAttachments()) {
+          <span class="inline-flex items-center gap-1.5 font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 px-2.5 py-1 rounded-full text-[11px]">
+            <ng-icon name="lucideCheck" class="text-xs"></ng-icon>
+            <span>Documentation Complete</span>
+          </span>
+        } @else {
+          <span class="inline-flex items-center gap-1.5 font-semibold text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/25 px-2.5 py-1 rounded-full text-[11px]">
+            <ng-icon name="lucideAlertCircle" class="text-xs"></ng-icon>
+            <span>Agreement & Attachments Required</span>
+          </span>
+        }
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button hlmBtn variant="ghost" type="button" (click)="closeDialog()">Cancel</button>
+        <button
+          hlmBtn
+          variant="outline"
+          type="button"
+          class="action-btn flex items-center gap-1.5"
+          [disabled]="bookingFormGroup.invalid"
+          (click)="viewAgreementPDFFromForm()"
+          title="Open Draft Agreement and Upload Attachments"
+        >
+          <ng-icon name="lucideFileText"></ng-icon>
+          <span>Agreement & Documents</span>
+          @if (isAgreementReviewed() && hasUploadedAttachments()) {
+            <span class="inline-flex items-center justify-center h-4 w-4 rounded-full bg-emerald-500 text-white text-[9px] font-black">
+              ✓
+            </span>
+          }
+        </button>
+        <button
+          hlmBtn
+          type="button"
+          class="action-btn success flex items-center gap-1.5 font-bold shadow-sm"
+          [disabled]="bookingFormGroup.invalid || isSubmitting() || scheduleConflict().hasConflict || !isAgreementReviewed() || !hasUploadedAttachments()"
+          (click)="createBooking($event)"
+        >
+          <ng-icon name="lucideCheck"></ng-icon>
+          <span>{{ isSubmitting() ? 'Creating...' : 'Create Booking' }}</span>
+        </button>
+      </div>
     </div>
   </form>
 </div>
