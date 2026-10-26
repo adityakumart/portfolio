@@ -314,14 +314,18 @@
                     COMPLETED
                   </span>
                 } @else if (b.status === 'cancelled') {
-                  <span hlmBadge variant="destructive" class="font-semibold">
+                  <span hlmBadge variant="outline" class="font-semibold text-muted-foreground bg-muted/40 border-border">
                     CANCELLED
                   </span>
                   @if (b.deletionReason) {
-                    <div class="text-[10px] text-destructive/90 truncate max-w-[120px] mx-auto mt-0.5" title="Reason: {{ b.deletionReason }}">
+                    <div class="text-[10px] text-muted-foreground truncate max-w-[120px] mx-auto mt-0.5" title="Reason: {{ b.deletionReason }}">
                       {{ b.deletionReason }}
                     </div>
                   }
+                } @else if (b.status === 'reserved') {
+                  <span hlmBadge variant="outline" class="font-semibold text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 border-cyan-500/30">
+                    ADVANCE BOOKING
+                  </span>
                 } @else if (b.status === 'active') {
                   <span hlmBadge variant="outline" class="font-semibold text-orange-600 dark:text-orange-400 bg-orange-500/10 border-orange-500/30">
                     ACTIVE BOOKING
