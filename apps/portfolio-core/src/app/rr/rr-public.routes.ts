@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { RRService } from './rr.service';
+import { RRWhatsAppService } from './services/rr-whatsapp.service';
 import { safeRegex } from '../../utils/security/regex.util';
 import { DEFAULT_RR_HOMEPAGE_CONTENT, IRRHomePageContent } from '@portfolio/shared-types';
 
@@ -164,4 +165,100 @@ rrPublicRouter.get('/home-content', async (req: Request, res: Response) => {
   }
 });
 
+// GET /api/rr/public/invoice/:token
+// Secure, time-limited (24 hours) digital invoice endpoint for customers
+rrPublicRouter.get('/invoice/:token', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const token = String(req.params['token'] || '');
+    if (!token) {
+      res.status(400).json({ error: 'Bad Request', message: 'Invoice token is required.' });
+      return;
+    }
+
+    const verification = RRWhatsAppService.verifyInvoiceToken(token);
+    if (!verification.valid) {
+      if (verification.isExpired) {
+        res.status(410).json({
+          expired: true,
+          error: 'Invoice Link Expired',
+          message: verification.error || 'This invoice link has expired. Digital invoice links are active for 24 hours only. Please contact RoadReady support for an updated invoice copy.',
+        });
+        return;
+      }
+      res.status(401).json({
+        expired: false,
+        error: 'Invalid Token',
+        message: verification.error || 'Invalid or tampered invoice link.',
+      });
+      return;
+    }
+
+    const bookingsCol = await RRService.getBookingsCol();
+    const booking = await bookingsCol.findOne(
+      { id: verification.bookingId, isDeleted: { $ne: true } },
+      {
+        projection: {
+          id: 1,
+          renterFirstName: 1,
+          renterSecondName: 1,
+          renterPhone: 1,
+          renterEmail: 1,
+          renterAadhar: 1,
+          renterDL: 1,
+          vehicleRegNo: 1,
+          vehicleName: 1,
+          vehicleManufacturer: 1,
+          vehicleModel: 1,
+          pickupDateTime: 1,
+          returnDateTime: 1,
+          returnDateTimeActual: 1,
+          durationDays: 1,
+          durationHours: 1,
+          totalRentalAmount: 1,
+          discount: 1,
+          discountType: 1,
+          finalRentalAmount: 1,
+          amountPaid: 1,
+          pendingAmount: 1,
+          paymentMode: 1,
+          status: 1,
+          createdAt: 1,
+          endedAt: 1,
+          cleanlinessFee: 1,
+          extraKmsTravelled: 1,
+          extraKmFee: 1,
+          extraHoursTaken: 1,
+          extraHourFee: 1,
+          damages: 1,
+          damagesTotal: 1,
+          challanaTollFinesTotal: 1,
+          nonIntimationFine: 1,
+          totalAdditionalFees: 1,
+        },
+      }
+    );
+
+    if (!booking) {
+      res.status(404).json({ error: 'Not Found', message: 'Invoice record not found.' });
+      return;
+    }
+
+    const config = await RRWhatsAppService.getConfig();
+
+    res.json({
+      success: true,
+      booking,
+      company: {
+        name: config.generalSettings.companyName,
+        supportPhone: config.generalSettings.supportPhoneNumber,
+        depotAddress: config.generalSettings.depotAddress,
+      },
+      verifiedAt: new Date().toISOString(),
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
 export { rrPublicRouter };
+

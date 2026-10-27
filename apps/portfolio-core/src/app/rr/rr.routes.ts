@@ -18,6 +18,8 @@ import { rrPublicRouter } from './rr-public.routes';
 import { authRateLimiter, uploadRateLimiter } from '../../middlewares/rate-limit.middleware';
 import { customerRouter } from '../../routes/customer.routes';
 import { BillingService } from '../../services/billing.service';
+import { RRWhatsAppService } from './services/rr-whatsapp.service';
+import { RRNotificationSchedulerService } from './services/rr-notification-scheduler.service';
 
 import { getJwtSecret } from '../../config/security';
 import { safeRegex, escapeRegex } from '../../utils/security/regex.util';
@@ -32,6 +34,7 @@ import {
   IRRUpdateFeedbackStatusPayload,
   RR_FEEDBACK_PAGES,
   RR_FEEDBACK_ISSUE_TYPES,
+  IRRWhatsAppTemplateId,
 } from '@portfolio/shared-types';
 
 const rrRouter = Router();
@@ -46,6 +49,9 @@ rrRouter.use('/customers', customerRouter);
 // Seed database on router initialization
 RRService.seedInitialData();
 BillingService.seedInitialRegularCustomers();
+
+// Start background automated notification engine (4h return reminders, 12h & 4h pickup intimations, 4h pending cadence)
+RRNotificationSchedulerService.startScheduler();
 
 /* ============================================================
    AUTHENTICATION HELPERS & POLICIES
@@ -1099,6 +1105,29 @@ rrRouter.post('/bookings', authenticateRRToken, async (req: any, res: Response) 
 
     res.status(201).json(newBooking);
 
+    // Dispatch automated WhatsApp notification to customer mobile
+    const clientBaseUrl = (req.headers.origin as string) || (req.headers.referer as string) || undefined;
+    const notificationType: IRRWhatsAppTemplateId = isAdvanceReservation ? 'reserve_booking' : 'new_booking';
+    RRWhatsAppService.getConfig()
+      .then((waConfig) => {
+        const shouldSend = isAdvanceReservation
+          ? waConfig.generalSettings.sendAutomaticReserveConfirmation
+          : waConfig.generalSettings.sendAutomaticNewBooking;
+
+        if (shouldSend) {
+          RRWhatsAppService.sendBookingNotification(bookingId, notificationType, {
+            isAutomated: true,
+            sentBy: req.userId,
+            sentByName: staffName,
+            sentByRole: staffRole,
+            baseUrl: clientBaseUrl,
+          }).catch((waErr) =>
+            console.error(`[WhatsApp] Failed to dispatch ${notificationType} for ${bookingId}:`, waErr)
+          );
+        }
+      })
+      .catch((cfgErr) => console.error('[WhatsApp] Failed to load config:', cfgErr));
+
     RRService.logActivity(
       isAdvanceReservation ? `Created advance booking ${bookingId}` : `Started booking ${bookingId}`,
       req.userId,
@@ -1442,6 +1471,24 @@ rrRouter.put('/bookings/:id', authenticateRRToken, async (req: any, res: Respons
       const damagesNote = Number(updateData.damagesTotal || 0) > 0 ? ` | Damages: ₹${updateData.damagesTotal}` : '';
       const fineNote = Number(updateData.nonIntimationFine || 0) > 0 ? ` | Late/Non-intimation Fine: ₹${updateData.nonIntimationFine}` : '';
       const odoNote = updateData.vehicleOdometerEnd ? ` | Final Odo: ${updateData.vehicleOdometerEnd} km` : '';
+
+      // Dispatch 24-hour time-limited tax invoice link via WhatsApp to customer mobile
+      const clientBaseUrl = (req.headers.origin as string) || (req.headers.referer as string) || undefined;
+      RRWhatsAppService.getConfig()
+        .then((waConfig) => {
+          if (waConfig.generalSettings.sendAutomaticEndBookingInvoice) {
+            RRWhatsAppService.sendBookingNotification(bookingId, 'end_booking_invoice', {
+              isAutomated: true,
+              sentBy: req.userId,
+              sentByName: req.userRole || 'Staff',
+              baseUrl: clientBaseUrl,
+            }).catch((waErr) =>
+              console.error(`[WhatsApp] Failed to dispatch end booking invoice for ${bookingId}:`, waErr)
+            );
+          }
+        })
+        .catch((cfgErr) => console.error('[WhatsApp] Failed to load config:', cfgErr));
+
       RRService.logActivity(
         `Ended booking ${bookingId}`,
         req.userId,
@@ -2752,6 +2799,151 @@ rrRouter.delete('/feedback/:id', authenticateRRToken, requireAdmin, async (req: 
     res.json({
       success: true,
       message: 'Feedback deleted successfully.',
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+/* ============================================================
+   WHATSAPP MESSAGING & NOTIFICATIONS APIS
+============================================================ */
+
+// GET /api/rr/whatsapp/config (Authenticated staff)
+rrRouter.get('/whatsapp/config', authenticateRRToken, async (req: Request, res: Response) => {
+  try {
+    const config = await RRWhatsAppService.getConfig();
+    res.json(config);
+  } catch (err: any) {
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+// PUT /api/rr/whatsapp/config (Admin only)
+rrRouter.put('/whatsapp/config', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
+  try {
+    const updated = await RRWhatsAppService.saveConfig(req.body, req.userId || 'admin');
+    await RRService.logActivity(
+      'UPDATE_WHATSAPP_CONFIG',
+      req.userId,
+      req.userRole || 'admin',
+      `Updated WhatsApp configuration and message templates.`
+    );
+    res.json({ success: true, message: 'WhatsApp configuration updated successfully.', config: updated });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+// POST /api/rr/whatsapp/test (Admin only: test message dispatch)
+rrRouter.post('/whatsapp/test', authenticateRRToken, requireAdmin, async (req: any, res: Response): Promise<void> => {
+  try {
+    const { phone, message } = req.body;
+    if (!phone || !message) {
+      res.status(400).json({ error: 'Bad Request', message: 'Phone number and message text are required.' });
+      return;
+    }
+
+    const config = await RRWhatsAppService.getConfig();
+    const result = await RRWhatsAppService.dispatchViaGateway(phone, message, config);
+
+    await RRService.logActivity(
+      'TEST_WHATSAPP_DISPATCH',
+      req.userId,
+      req.userRole || 'admin',
+      `Sent test WhatsApp message to ${phone} via ${result.provider}. Result: ${result.success ? 'Success' : result.error}`
+    );
+
+    res.json({
+      success: result.success,
+      provider: result.provider,
+      message: result.success ? 'Test WhatsApp message sent successfully.' : result.error,
+      messageId: result.messageId,
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+// GET /api/rr/bookings/:id/whatsapp/preview (Authenticated staff)
+rrRouter.get('/bookings/:id/whatsapp/preview', authenticateRRToken, async (req: any, res: Response): Promise<void> => {
+  try {
+    const bookingId = req.params.id;
+    const templateType = (req.query.templateType as IRRWhatsAppTemplateId) || 'active_reminder';
+    const customText = req.query.customText as string | undefined;
+
+    const bookingsCol = await RRService.getBookingsCol();
+    const booking = await bookingsCol.findOne({ id: bookingId, isDeleted: { $ne: true } });
+
+    if (!booking) {
+      res.status(404).json({ error: 'Not Found', message: `Booking #${bookingId} not found.` });
+      return;
+    }
+
+    const config = await RRWhatsAppService.getConfig();
+    const clientBaseUrl = (req.headers.origin as string) || (req.headers.referer as string) || undefined;
+
+    const preview = RRWhatsAppService.compileMessage(
+      booking,
+      templateType,
+      config,
+      customText,
+      clientBaseUrl
+    );
+
+    res.json({
+      success: true,
+      bookingId,
+      templateType,
+      template: config.templates[templateType],
+      ...preview,
+      generalSettings: config.generalSettings,
+      provider: config.provider,
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+// POST /api/rr/bookings/:id/whatsapp/send (Authenticated staff - manual or direct send)
+rrRouter.post('/bookings/:id/whatsapp/send', authenticateRRToken, async (req: any, res: Response): Promise<void> => {
+  try {
+    const bookingId = req.params.id;
+    const { templateType, customText } = req.body;
+
+    if (!templateType) {
+      res.status(400).json({ error: 'Bad Request', message: 'templateType is required.' });
+      return;
+    }
+
+    const empCol = await RRService.getEmployeesCol();
+    const staff = await empCol.findOne({ id: req.userId });
+    const staffName = staff ? `${staff.firstName} ${staff.lastName}`.trim() : (req.userId || 'Staff');
+    const clientBaseUrl = (req.headers.origin as string) || (req.headers.referer as string) || undefined;
+
+    const result = await RRWhatsAppService.sendBookingNotification(bookingId, templateType, {
+      customText,
+      sentBy: req.userId,
+      sentByName: staffName,
+      sentByRole: req.userRole || 'employee',
+      isAutomated: false,
+      baseUrl: clientBaseUrl,
+    });
+
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  }
+});
+
+// POST /api/rr/whatsapp/run-scheduler-sweep (Admin only: manual sweep trigger)
+rrRouter.post('/whatsapp/run-scheduler-sweep', authenticateRRToken, requireAdmin, async (req: any, res: Response): Promise<void> => {
+  try {
+    const stats = await RRNotificationSchedulerService.runAutomatedNotificationSweep();
+    res.json({
+      success: true,
+      message: 'Automated notification sweep completed successfully.',
+      stats,
     });
   } catch (err: any) {
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
