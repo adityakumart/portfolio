@@ -639,11 +639,22 @@
                       hlmBtn
                       size="sm"
                       variant="outline"
-                      class="text-xs h-7 gap-1 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10 w-full"
+                      class="text-xs h-7 gap-1 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10 flex-1"
                       (click)="modifyReservation(item.reservation, $event)"
                     >
                       <ng-icon name="lucidePencil" class="text-xs"></ng-icon>
-                      <span>Modify Reservation</span>
+                      <span>Modify</span>
+                    </button>
+                    <button
+                      hlmBtn
+                      size="sm"
+                      variant="outline"
+                      class="text-xs h-7 gap-1 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 flex-1 font-semibold"
+                      (click)="openWhatsAppModal(item.reservation, 'reserve_intimation', $event)"
+                      hlmTooltip="Send WhatsApp Pickup Intimation"
+                    >
+                      <ng-icon name="lucideMessageSquare" class="text-xs"></ng-icon>
+                      <span>WhatsApp</span>
                     </button>
                   </div>
                 </div>
@@ -675,11 +686,22 @@
                       hlmBtn
                       size="sm"
                       variant="outline"
-                      class="text-xs h-7 gap-1 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10 w-full"
+                      class="text-xs h-7 gap-1 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10 flex-1"
                       (click)="modifyReservation(item.reservation, $event)"
                     >
                       <ng-icon name="lucidePencil" class="text-xs"></ng-icon>
-                      <span>Modify Reservation</span>
+                      <span>Modify</span>
+                    </button>
+                    <button
+                      hlmBtn
+                      size="sm"
+                      variant="outline"
+                      class="text-xs h-7 gap-1 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 flex-1 font-semibold"
+                      (click)="openWhatsAppModal(item.reservation, 'reserve_intimation', $event)"
+                      hlmTooltip="Send WhatsApp Pickup Intimation"
+                    >
+                      <ng-icon name="lucideMessageSquare" class="text-xs"></ng-icon>
+                      <span>WhatsApp</span>
                     </button>
                   </div>
                 </div>
@@ -830,6 +852,14 @@
               </button>
               <button
                 hlmDropdownMenuItem
+                class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 w-full text-left"
+                (click)="openWhatsAppModal(b, activeCategory() === 'payments' || +b.pendingAmount > 0 ? 'pending_payment' : 'active_reminder', $event)"
+              >
+                <ng-icon name="lucideMessageSquare" class="text-xs"></ng-icon>
+                <span>Send WhatsApp {{ activeCategory() === 'payments' || +b.pendingAmount > 0 ? 'Due Notice' : 'Return Reminder' }}</span>
+              </button>
+              <button
+                hlmDropdownMenuItem
                 class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg text-rose-500 hover:bg-rose-500/10 w-full text-left"
                 (click)="endBooking(b, $event)"
               >
@@ -864,6 +894,18 @@
         >
           <ng-icon name="lucideFileText" class="text-xs"></ng-icon>
           <span>Agreement</span>
+        </button>
+
+        <button
+          hlmBtn
+          variant="secondary"
+          size="sm"
+          class="w-36 h-7.5 text-xs font-medium rounded-lg shadow-sm border border-border/40 flex items-center justify-center gap-1.5 transition-all active:scale-95 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
+          (click)="openWhatsAppModal(b, activeCategory() === 'payments' || +b.pendingAmount > 0 ? 'pending_payment' : 'active_reminder', $event)"
+          [title]="activeCategory() === 'payments' || +b.pendingAmount > 0 ? 'Send WhatsApp Payment Reminder' : 'Send WhatsApp Return Reminder'"
+        >
+          <ng-icon name="lucideMessageSquare" class="text-xs text-emerald-500"></ng-icon>
+          <span>WhatsApp</span>
         </button>
 
         <button

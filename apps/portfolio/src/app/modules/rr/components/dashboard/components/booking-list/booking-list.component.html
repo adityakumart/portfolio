@@ -101,6 +101,16 @@
             <td hlmTd class="text-center whitespace-nowrap">
               <!-- Desktop Action Buttons (md and up) -->
               <div class="hidden md:inline-flex items-center space-x-1">
+                <button
+                  hlmBtn
+                  size="icon"
+                  variant="ghost"
+                  class="h-8 w-8 rounded-full text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10"
+                  [hlmTooltip]="+b.pendingAmount > 0 ? 'Send WhatsApp Payment Reminder' : 'Send WhatsApp Return Reminder'"
+                  (click)="openWhatsAppModal(b, +b.pendingAmount > 0 ? 'pending_payment' : 'active_reminder')"
+                >
+                  <ng-icon name="lucideMessageSquare"></ng-icon>
+                </button>
                 <button hlmBtn size="icon" variant="ghost" class="h-8 w-8 rounded-full text-amber-500 hover:text-amber-600 hover:bg-amber-500/10" hlmTooltip="Log Customer Intimation (Call/Delay/Extension)" (click)="openIntimationModal(b)">
                   <ng-icon name="lucidePhoneCall"></ng-icon>
                 </button>
@@ -137,6 +147,14 @@
                 </button>
                 <ng-template #mobileBookingMenu>
                   <div hlmDropdownMenu class="w-56 p-1 rounded-xl shadow-xl border border-border bg-card/95 backdrop-blur-md">
+                    <button
+                      hlmDropdownMenuItem
+                      class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 w-full text-left"
+                      (click)="openWhatsAppModal(b, +b.pendingAmount > 0 ? 'pending_payment' : 'active_reminder')"
+                    >
+                      <ng-icon name="lucideMessageSquare" class="text-xs"></ng-icon>
+                      <span>Send WhatsApp {{ +b.pendingAmount > 0 ? 'Payment Reminder' : 'Return Reminder' }}</span>
+                    </button>
                     <button
                       hlmDropdownMenuItem
                       class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"

@@ -827,7 +827,7 @@ export class RREndBookingDialogComponent implements OnInit {
         console.error('Customer invoice generation note:', pdfErr);
       }
 
-      toast.success(`Booking ${b.id} ended & customer invoice generated!`);
+      toast.success(`Booking ${b.id} ended, invoice printed & WhatsApp link dispatched (valid for 24h)!`);
       this.dialogRef?.close(true);
     } catch (e: any) {
       console.error(e);

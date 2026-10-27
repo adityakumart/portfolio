@@ -38,10 +38,11 @@ import {
   lucideMoreVertical,
   lucideDownload,
   lucideCalendarClock,
+  lucideMessageSquare,
 } from '@ng-icons/lucide';
 import { Router, RouterLink } from '@angular/router';
 import { HlmDialogService } from '@spartan-ng/hel/dialog';
-import { IVehicle, IBooking, IRRDashboardStats, ILog } from '@portfolio/shared-types';
+import { IVehicle, IBooking, IRRDashboardStats, ILog, IRRWhatsAppTemplateId } from '@portfolio/shared-types';
 import { RRInvoicePdfService } from '../../../../services/rr-invoice-pdf.service';
 import {
   RRVehicleCardComponent,
@@ -49,6 +50,7 @@ import {
   RRModifyBookingDialogComponent,
   RREndBookingDialogComponent,
   RRReserveBookingDialogComponent,
+  RRWhatsAppPreviewDialogComponent,
 } from '../../../../shared';
 import { IndianDatePipe } from '../../../../../../shared/pipes/indian-date.pipe';
 
@@ -108,6 +110,7 @@ export type SeatingFilter = 'all' | '5' | '7';
       lucideMoreVertical,
       lucideDownload,
       lucideCalendarClock,
+      lucideMessageSquare,
     }),
   ],
   templateUrl: './stats-view.component.html',
@@ -551,6 +554,30 @@ export class RRStatsViewComponent implements OnInit, OnDestroy {
     ref.closed$.subscribe((result) => {
       if (result) {
         this.loadVehicles();
+        this.loadBookings();
+        this.loadStats();
+      }
+    });
+  }
+
+  openWhatsAppModal(
+    booking: IBooking,
+    templateType: IRRWhatsAppTemplateId = 'active_reminder',
+    event?: any
+  ) {
+    if (event && typeof event.stopPropagation === 'function') {
+      event.stopPropagation();
+    }
+    const ref = this.dialog.open(RRWhatsAppPreviewDialogComponent, {
+      context: {
+        booking,
+        templateType,
+      },
+      contentClass: 'max-w-xl w-full p-0 border-0 bg-transparent shadow-none',
+    });
+
+    ref.closed$.subscribe((result) => {
+      if (result) {
         this.loadBookings();
         this.loadStats();
       }
