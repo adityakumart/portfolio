@@ -291,6 +291,9 @@ export interface IBooking {
     | 'Cheque / Checkbook'
     | string
     | null;
+
+  // WhatsApp & automated notification tracking
+  notifications?: IBookingNotifications;
 }
 
 export interface ICloseAdvanceBookingPayload {
@@ -802,4 +805,285 @@ export const RR_FEEDBACK_ISSUE_TYPES: {
     description: 'Any issue not fitting the categories above',
   },
 ];
+
+/* ============================================================
+   WHATSAPP MESSAGING & NOTIFICATIONS INTERFACES
+============================================================ */
+
+export interface IBookingNotifications {
+  newBookingSentAt?: string | null;
+  returnReminder4hSentAt?: string | null;
+  reserveConfirmationSentAt?: string | null;
+  reserveIntimation12hSentAt?: string | null;
+  reserveIntimation4hSentAt?: string | null;
+  lastPendingReminderSentAt?: string | null;
+  pendingRemindersCount?: number;
+  endBookingInvoiceSentAt?: string | null;
+  invoiceToken?: string | null;
+  invoiceTokenExpiresAt?: string | null;
+  lastManualNotificationSentAt?: string | null;
+  lastManualNotificationType?: string | null;
+}
+
+export type IRRWhatsAppTemplateId =
+  | 'new_booking'
+  | 'active_reminder'
+  | 'reserve_booking'
+  | 'reserve_intimation'
+  | 'pending_payment'
+  | 'end_booking_invoice';
+
+export interface IRRWhatsAppTemplate {
+  id: IRRWhatsAppTemplateId;
+  name: string;
+  title: string;
+  description: string;
+  enabled: boolean;
+  templateText: string;
+  availablePlaceholders: string[];
+}
+
+export type IRRWhatsAppProvider = 'meta_cloud' | 'twilio' | 'custom_webhook' | 'manual_only';
+
+export interface IRRWhatsAppConfig {
+  key?: 'rr_whatsapp_config';
+  provider: IRRWhatsAppProvider;
+  metaConfig?: {
+    phoneNumberId: string;
+    accessToken: string;
+    businessAccountId?: string;
+  };
+  twilioConfig?: {
+    accountSid: string;
+    authToken: string;
+    fromNumber: string;
+  };
+  customWebhookUrl?: string;
+  generalSettings: {
+    sendAutomaticNewBooking: boolean;
+    sendAutomaticActiveReminder: boolean; // 4h before return
+    sendAutomaticReserveConfirmation: boolean;
+    sendAutomaticReserveIntimation: boolean; // 12h & 4h before pickup
+    sendAutomaticPendingReminders: boolean; // every 4h till return
+    sendAutomaticEndBookingInvoice: boolean; // on end booking completion
+    countryCodePrefix: string; // default '+91'
+    companyName: string;
+    supportPhoneNumber: string;
+    depotAddress: string;
+  };
+  templates: Record<IRRWhatsAppTemplateId, IRRWhatsAppTemplate>;
+  updatedAt?: string;
+  updatedBy?: string;
+}
+
+export const DEFAULT_RR_WHATSAPP_CONFIG: IRRWhatsAppConfig = {
+  key: 'rr_whatsapp_config',
+  provider: 'manual_only',
+  generalSettings: {
+    sendAutomaticNewBooking: true,
+    sendAutomaticActiveReminder: true,
+    sendAutomaticReserveConfirmation: true,
+    sendAutomaticReserveIntimation: true,
+    sendAutomaticPendingReminders: true,
+    sendAutomaticEndBookingInvoice: true,
+    countryCodePrefix: '+91',
+    companyName: 'RoadReady Car Rentals',
+    supportPhoneNumber: '+91 98765 43210',
+    depotAddress: 'Main Depot, Airport Road',
+  },
+  templates: {
+    new_booking: {
+      id: 'new_booking',
+      name: 'New Booking Confirmation',
+      title: 'Booking Confirmed',
+      description: 'Dispatched immediately to customer mobile number when a new rental booking is initiated.',
+      enabled: true,
+      availablePlaceholders: [
+        'customerName',
+        'customerPhone',
+        'bookingId',
+        'vehicleName',
+        'vehicleManufacturer',
+        'vehicleRegNo',
+        'pickupDate',
+        'pickupTime',
+        'returnDate',
+        'returnTime',
+        'finalRentalAmount',
+        'amountPaid',
+        'pendingAmount',
+        'companyName',
+        'supportPhone',
+        'depotAddress',
+      ],
+      templateText:
+        '🚗 *{{companyName}} - Booking Confirmed!*\n\n' +
+        'Dear {{customerName}},\n' +
+        'Thank you for choosing {{companyName}}! Your vehicle booking is confirmed.\n\n' +
+        '📋 *Booking Details:*\n' +
+        '• Booking ID: #{{bookingId}}\n' +
+        '• Vehicle: *{{vehicleManufacturer}} {{vehicleName}}* ({{vehicleRegNo}})\n' +
+        '• Pickup: {{pickupDate}} at {{pickupTime}}\n' +
+        '• Scheduled Return: {{returnDate}} at {{returnTime}}\n' +
+        '• Rental Amount: ₹{{finalRentalAmount}}\n' +
+        '• Amount Paid: ₹{{amountPaid}}\n' +
+        '• Balance Due: ₹{{pendingAmount}}\n\n' +
+        '📍 *Pickup / Depot:* {{depotAddress}}\n' +
+        '📞 *Support:* {{supportPhone}}\n\n' +
+        'Have a safe and pleasant drive!',
+    },
+    active_reminder: {
+      id: 'active_reminder',
+      name: 'Active Booking Return Reminder',
+      title: 'Return Schedule Reminder',
+      description: 'Sent manually from Active Rentals card actions or automatically 4 hours prior to return time.',
+      enabled: true,
+      availablePlaceholders: [
+        'customerName',
+        'bookingId',
+        'vehicleName',
+        'vehicleManufacturer',
+        'vehicleRegNo',
+        'returnDate',
+        'returnTime',
+        'pendingAmount',
+        'companyName',
+        'supportPhone',
+        'depotAddress',
+      ],
+      templateText:
+        '⏰ *{{companyName}} - Rental Return Reminder*\n\n' +
+        'Dear {{customerName}},\n' +
+        'This is a friendly reminder that your rental for *{{vehicleManufacturer}} {{vehicleName}}* ({{vehicleRegNo}}) is scheduled for return today at *{{returnTime}}* ({{returnDate}}).\n\n' +
+        '📍 *Return Location:* {{depotAddress}}\n' +
+        '⚠️ *Need an Extension?*\n' +
+        'Please inform us immediately at {{supportPhone}} before your return time to avoid late fees.\n\n' +
+        'Drive safely and see you soon!',
+    },
+    reserve_booking: {
+      id: 'reserve_booking',
+      name: 'Advance Reservation Confirmation',
+      title: 'Advance Reservation Confirmed',
+      description: 'Dispatched immediately when an advance vehicle reservation is recorded.',
+      enabled: true,
+      availablePlaceholders: [
+        'customerName',
+        'customerPhone',
+        'bookingId',
+        'vehicleName',
+        'vehicleManufacturer',
+        'vehicleRegNo',
+        'pickupDate',
+        'pickupTime',
+        'returnDate',
+        'returnTime',
+        'finalRentalAmount',
+        'amountPaid',
+        'pendingAmount',
+        'companyName',
+        'supportPhone',
+        'depotAddress',
+      ],
+      templateText:
+        '📅 *{{companyName}} - Advance Reservation Confirmed*\n\n' +
+        'Dear {{customerName}},\n' +
+        'We have reserved your vehicle as requested!\n\n' +
+        '📋 *Reservation Summary:*\n' +
+        '• Reservation ID: #{{bookingId}}\n' +
+        '• Vehicle: *{{vehicleManufacturer}} {{vehicleName}}* ({{vehicleRegNo}})\n' +
+        '• Scheduled Pickup: {{pickupDate}} at {{pickupTime}}\n' +
+        '• Expected Return: {{returnDate}} at {{returnTime}}\n' +
+        '• Advance Paid: ₹{{amountPaid}}\n' +
+        '• Balance on Pickup: ₹{{pendingAmount}}\n\n' +
+        '📍 *Location:* {{depotAddress}}\n' +
+        '📞 *Contact:* {{supportPhone}}\n\n' +
+        'Thank you for planning ahead with {{companyName}}!',
+    },
+    reserve_intimation: {
+      id: 'reserve_intimation',
+      name: 'Reserve Intimation (Pickup Readiness)',
+      title: 'Upcoming Pickup Readiness Notice',
+      description: 'Sent manually from Reserved Fleet card actions or automatically 12 hours & 4 hours before pickup.',
+      enabled: true,
+      availablePlaceholders: [
+        'customerName',
+        'bookingId',
+        'vehicleName',
+        'vehicleManufacturer',
+        'vehicleRegNo',
+        'pickupDate',
+        'pickupTime',
+        'pendingAmount',
+        'companyName',
+        'supportPhone',
+        'depotAddress',
+      ],
+      templateText:
+        '🚘 *{{companyName}} - Vehicle Pickup Intimation*\n\n' +
+        'Dear {{customerName}},\n' +
+        'Your reserved vehicle *{{vehicleManufacturer}} {{vehicleName}}* ({{vehicleRegNo}}) is prepped for your scheduled pickup at *{{pickupTime}}* ({{pickupDate}}).\n\n' +
+        '📑 *Please Bring With You:*\n' +
+        '1. Original Valid Driving License\n' +
+        '2. Aadhaar Card / Govt ID\n' +
+        '3. Remaining Balance: ₹{{pendingAmount}}\n\n' +
+        '📍 *Pickup Point:* {{depotAddress}}\n' +
+        '📞 *Depot Desk:* {{supportPhone}}\n\n' +
+        'We look forward to serving you!',
+    },
+    pending_payment: {
+      id: 'pending_payment',
+      name: 'Pending Amount Due Reminder',
+      title: 'Outstanding Payment Notice',
+      description: 'Sent manually from Pending Payments card actions or automatically every 4 hours until return.',
+      enabled: true,
+      availablePlaceholders: [
+        'customerName',
+        'bookingId',
+        'vehicleName',
+        'vehicleManufacturer',
+        'vehicleRegNo',
+        'finalRentalAmount',
+        'amountPaid',
+        'pendingAmount',
+        'companyName',
+        'supportPhone',
+      ],
+      templateText:
+        '💳 *{{companyName}} - Payment Balance Reminder*\n\n' +
+        'Dear {{customerName}},\n' +
+        'This is a friendly reminder regarding the outstanding balance for your booking #{{bookingId}} ({{vehicleRegNo}}).\n\n' +
+        '💰 *Outstanding Dues:* *₹{{pendingAmount}}*\n' +
+        '• Total Rent: ₹{{finalRentalAmount}}\n' +
+        '• Amount Paid: ₹{{amountPaid}}\n\n' +
+        'Kindly settle the pending dues via UPI or at our office at your earliest convenience.\n' +
+        'For payment queries or assistance, contact {{supportPhone}}.',
+    },
+    end_booking_invoice: {
+      id: 'end_booking_invoice',
+      name: 'End Booking Tax Invoice (24h Link)',
+      title: 'Trip Completed & Invoice',
+      description: 'Sent to customer mobile upon trip completion with a secure 24-hour time-limited invoice link.',
+      enabled: true,
+      availablePlaceholders: [
+        'customerName',
+        'bookingId',
+        'vehicleName',
+        'vehicleManufacturer',
+        'vehicleRegNo',
+        'invoiceLink',
+        'companyName',
+        'supportPhone',
+      ],
+      templateText:
+        '🧾 *{{companyName}} - Rental Completed & Tax Invoice*\n\n' +
+        'Dear {{customerName}},\n' +
+        'Thank you for traveling with {{companyName}}! Your rental trip for {{vehicleManufacturer}} {{vehicleName}} ({{vehicleRegNo}}) has ended.\n\n' +
+        '📄 *Digital Tax Invoice Download:*\n' +
+        '👉 {{invoiceLink}}\n' +
+        '*(⚠️ Note: For privacy and security, this download link is valid for 24 hours).*\n\n' +
+        'We hope you had a comfortable drive! See you on your next trip.\n' +
+        '📞 *Support:* {{supportPhone}}',
+    },
+  },
+};
 
