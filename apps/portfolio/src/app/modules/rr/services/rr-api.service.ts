@@ -60,6 +60,10 @@ import {
   RR_FEEDBACK_ISSUE_TYPES,
   ICloseAdvanceBookingPayload,
   IAutoCloseSweepResult,
+  IRRWhatsAppConfig,
+  IRRWhatsAppTemplate,
+  IRRWhatsAppTemplateId,
+  DEFAULT_RR_WHATSAPP_CONFIG,
 } from '@portfolio/shared-types';
 
 export {
@@ -1357,6 +1361,123 @@ export class RRApiService {
         `${this.baseUrl}/feedback/${id}`,
         { headers: this.getHeaders() }
       )
+    );
+  }
+
+  // ==========================================
+  // WHATSAPP MESSAGING & NOTIFICATIONS
+  // ==========================================
+
+  async getWhatsAppConfig(): Promise<IRRWhatsAppConfig> {
+    return firstValueFrom(
+      this.http.get<IRRWhatsAppConfig>(`${this.baseUrl}/whatsapp/config`, {
+        headers: this.getHeaders(),
+      })
+    );
+  }
+
+  async updateWhatsAppConfig(
+    config: Partial<IRRWhatsAppConfig>
+  ): Promise<{ success: boolean; message: string; config: IRRWhatsAppConfig }> {
+    return firstValueFrom(
+      this.http.put<{ success: boolean; message: string; config: IRRWhatsAppConfig }>(
+        `${this.baseUrl}/whatsapp/config`,
+        config,
+        { headers: this.getHeaders() }
+      )
+    );
+  }
+
+  async testWhatsAppMessage(
+    phone: string,
+    message: string
+  ): Promise<{ success: boolean; message: string; provider: string; messageId?: string }> {
+    return firstValueFrom(
+      this.http.post<{ success: boolean; message: string; provider: string; messageId?: string }>(
+        `${this.baseUrl}/whatsapp/test`,
+        { phone, message },
+        { headers: this.getHeaders() }
+      )
+    );
+  }
+
+  async getWhatsAppPreview(
+    bookingId: string,
+    templateType: IRRWhatsAppTemplateId,
+    customText?: string
+  ): Promise<{
+    success: boolean;
+    bookingId: string;
+    templateType: IRRWhatsAppTemplateId;
+    template: IRRWhatsAppTemplate;
+    compiledText: string;
+    directWhatsAppUrl: string;
+    phone: string;
+    customerName: string;
+    invoiceLink?: string;
+    provider: string;
+  }> {
+    let params = new HttpParams().set('templateType', templateType);
+    if (customText) {
+      params = params.set('customText', customText);
+    }
+    return firstValueFrom(
+      this.http.get<any>(`${this.baseUrl}/bookings/${bookingId}/whatsapp/preview`, {
+        headers: this.getHeaders(),
+        params,
+      })
+    );
+  }
+
+  async sendWhatsAppNotification(
+    bookingId: string,
+    templateType: IRRWhatsAppTemplateId,
+    customText?: string
+  ): Promise<{
+    success: boolean;
+    provider: string;
+    message: string;
+    compiledText: string;
+    directWhatsAppUrl: string;
+    invoiceLink?: string;
+    error?: string;
+  }> {
+    return firstValueFrom(
+      this.http.post<any>(
+        `${this.baseUrl}/bookings/${bookingId}/whatsapp/send`,
+        { templateType, customText },
+        { headers: this.getHeaders() }
+      )
+    );
+  }
+
+  async runWhatsAppSchedulerSweep(): Promise<{
+    success: boolean;
+    message: string;
+    stats: {
+      activeRemindersSent: number;
+      reserve12hSent: number;
+      reserve4hSent: number;
+      pendingRemindersSent: number;
+    };
+  }> {
+    return firstValueFrom(
+      this.http.post<any>(
+        `${this.baseUrl}/whatsapp/run-scheduler-sweep`,
+        {},
+        { headers: this.getHeaders() }
+      )
+    );
+  }
+
+  async getPublicInvoice(token: string): Promise<{
+    success: boolean;
+    booking: IBooking;
+    company: { name: string; supportPhone: string; depotAddress: string };
+    verifiedAt: string;
+  }> {
+    return firstValueFrom(
+      this.http.get<any>(`${this.baseUrl}/public/invoice/${token}`)
     );
   }
 }

@@ -1,0 +1,236 @@
+<div class="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between p-4 sm:p-8">
+  <!-- Top brand bar -->
+  <header class="max-w-4xl mx-auto w-full flex items-center justify-between pb-6 border-b border-slate-800">
+    <div class="flex items-center gap-2.5">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-md">
+        <ng-icon name="lucideCar" class="text-xl"></ng-icon>
+      </div>
+      <div>
+        <h1 class="text-lg font-black tracking-tight text-white m-0">{{ company().name }}</h1>
+        <p class="text-xs text-slate-400">Digital Tax Invoice Portal</p>
+      </div>
+    </div>
+
+    <a
+      routerLink="/user/rr/home"
+      hlmBtn
+      variant="ghost"
+      size="sm"
+      class="text-xs text-slate-400 hover:text-white gap-1.5"
+    >
+      <ng-icon name="lucideArrowLeft" class="text-xs"></ng-icon>
+      <span>RoadReady Portal</span>
+    </a>
+  </header>
+
+  <main class="max-w-4xl mx-auto w-full my-8 flex-1 flex flex-col justify-center">
+    @if (isLoading()) {
+      <div class="p-16 rounded-3xl border border-slate-800 bg-slate-900/50 backdrop-blur-md text-center flex flex-col items-center justify-center gap-3">
+        <div class="w-12 h-12 rounded-full border-4 border-cyan-500/20 border-t-cyan-500 animate-spin"></div>
+        <p class="text-sm font-semibold text-slate-300">Verifying secure 24-hour token & loading invoice...</p>
+      </div>
+    } @else if (isExpired()) {
+      <!-- Expired Screen (>24 hours) -->
+      <div class="p-8 sm:p-12 rounded-3xl border border-rose-500/30 bg-rose-950/20 backdrop-blur-md text-center max-w-xl mx-auto shadow-2xl">
+        <div class="w-16 h-16 rounded-2xl bg-rose-500/15 text-rose-500 flex items-center justify-center mx-auto mb-4 border border-rose-500/30">
+          <ng-icon name="lucideClock" class="text-3xl"></ng-icon>
+        </div>
+        <span hlmBadge variant="outline" class="font-bold text-[10px] uppercase tracking-wider text-rose-400 bg-rose-500/10 border-rose-500/30 px-2.5 py-1 mb-3 inline-block">
+          Link Expired (24h Window)
+        </span>
+        <h2 class="text-xl sm:text-2xl font-black text-white mb-2">Invoice Access Expired</h2>
+        <p class="text-sm text-slate-300 leading-relaxed mb-6">
+          {{ errorMessage() }}
+        </p>
+
+        <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-800 text-xs text-slate-400 flex flex-col gap-2 mb-6">
+          <div class="flex items-center justify-center gap-2 text-slate-200 font-semibold">
+            <ng-icon name="lucidePhone" class="text-cyan-400"></ng-icon>
+            <span>Customer Support Hotline:</span>
+            <span class="font-mono text-cyan-400 font-bold">{{ company().supportPhone }}</span>
+          </div>
+          <span>Depot: {{ company().depotAddress }}</span>
+        </div>
+
+        <a
+          routerLink="/user/rr/home"
+          hlmBtn
+          class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs px-6 py-2 rounded-xl shadow-lg"
+        >
+          Return to RoadReady
+        </a>
+      </div>
+    } @else if (errorMessage()) {
+      <!-- Error / Invalid Token Screen -->
+      <div class="p-8 sm:p-12 rounded-3xl border border-amber-500/30 bg-amber-950/20 backdrop-blur-md text-center max-w-xl mx-auto shadow-2xl">
+        <div class="w-16 h-16 rounded-2xl bg-amber-500/15 text-amber-500 flex items-center justify-center mx-auto mb-4 border border-amber-500/30">
+          <ng-icon name="lucideShieldAlert" class="text-3xl"></ng-icon>
+        </div>
+        <h2 class="text-xl font-black text-white mb-2">Invoice Retrieval Error</h2>
+        <p class="text-sm text-slate-300 mb-6">{{ errorMessage() }}</p>
+        <a
+          routerLink="/user/rr/home"
+          hlmBtn
+          variant="outline"
+          class="border-slate-700 text-slate-300 hover:text-white"
+        >
+          Return to Portal
+        </a>
+      </div>
+    } @else if (booking(); as b) {
+      <!-- Official Digital Tax Invoice View -->
+      <div class="rounded-3xl border border-slate-800 bg-slate-900/60 backdrop-blur-md shadow-2xl overflow-hidden">
+        <!-- Invoice Header Ribbon -->
+        <div class="p-6 sm:p-8 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border-b border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2 mb-1 flex-wrap">
+              <span class="text-xs font-mono font-bold text-cyan-400">INVOICE #INV-{{ b.id }}</span>
+              <span hlmBadge variant="outline" class="font-bold text-[10px] text-emerald-400 bg-emerald-500/10 border-emerald-500/30">
+                COMPLETED & SETTLED
+              </span>
+              <span hlmBadge variant="outline" class="font-bold text-[10px] text-blue-400 bg-blue-500/10 border-blue-500/30">
+                24H ACTIVE LINK
+              </span>
+            </div>
+            <h2 class="text-2xl font-black text-white tracking-tight">Official Rental Tax Invoice</h2>
+            <p class="text-xs text-slate-400 mt-0.5">
+              Issued on {{ b.endedAt || b.createdAt | indianDate:{ includeTime: true } }}
+            </p>
+          </div>
+
+          <!-- Quick Action Buttons -->
+          <div class="flex items-center gap-2 shrink-0">
+            <button
+              hlmBtn
+              variant="outline"
+              size="sm"
+              class="border-slate-700 hover:bg-slate-800 text-xs text-slate-200 gap-1.5"
+              (click)="printPdf()"
+            >
+              <ng-icon name="lucidePrinter" class="text-xs"></ng-icon>
+              <span>Print</span>
+            </button>
+            <button
+              hlmBtn
+              size="sm"
+              class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs gap-1.5 shadow-sm"
+              (click)="downloadPdf()"
+            >
+              <ng-icon name="lucideDownload" class="text-xs"></ng-icon>
+              <span>Download PDF</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="p-6 sm:p-8 space-y-6 text-xs text-slate-300">
+          <!-- Billed To & Vehicle Details Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 rounded-2xl bg-slate-950/40 border border-slate-800">
+            <!-- Customer -->
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Renter / Billed To</span>
+              <h3 class="text-base font-bold text-white">{{ b.renterFirstName }} {{ b.renterSecondName }}</h3>
+              <p class="text-slate-400 font-mono mt-0.5">{{ b.renterPhone }}</p>
+              @if (b.renterEmail) {
+                <p class="text-slate-400 mt-0.5">{{ b.renterEmail }}</p>
+              }
+              @if (b.renterAadhar) {
+                <p class="text-[11px] text-slate-500 font-mono mt-1">Aadhaar: {{ b.renterAadhar | aadharVisible }}</p>
+              }
+            </div>
+
+            <!-- Vehicle & Schedule -->
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Vehicle & Trip Schedule</span>
+              <h3 class="text-base font-bold text-white">{{ b.vehicleManufacturer }} {{ b.vehicleName }}</h3>
+              <p class="text-cyan-400 font-mono font-bold">{{ b.vehicleRegNo }}</p>
+              <div class="mt-2 space-y-0.5 text-[11px] text-slate-400">
+                <div>Pickup: <span class="text-slate-200 font-medium">{{ b.pickupDateTime | indianDate:{ includeTime: true } }}</span></div>
+                <div>Returned: <span class="text-slate-200 font-medium">{{ (b.returnDateTimeActual || b.returnDateTime) | indianDate:{ includeTime: true } }}</span></div>
+                <div>Duration: <span class="text-slate-200 font-medium">{{ b.durationDays }}d {{ b.durationHours }}h</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Financial Breakdown Table -->
+          <div class="overflow-x-auto rounded-xl border border-slate-800">
+            <table class="w-full text-left">
+              <thead class="bg-slate-950/80 border-b border-slate-800 text-[10px] uppercase font-bold text-slate-400">
+                <tr>
+                  <th class="p-3">Fee Description</th>
+                  <th class="p-3 text-right">Amount (₹)</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800 text-xs">
+                <tr>
+                  <td class="p-3 font-medium">Standard Rental Charges (Duration limit)</td>
+                  <td class="p-3 text-right font-mono font-semibold">₹{{ b.totalRentalAmount || b.finalRentalAmount }}</td>
+                </tr>
+                @if (num(b.discount) > 0) {
+                  <tr class="text-emerald-400">
+                    <td class="p-3">Discount Applied ({{ b.discountType }})</td>
+                    <td class="p-3 text-right font-mono">-₹{{ b.discount }}</td>
+                  </tr>
+                }
+                @if (num(b.cleanlinessFee) > 0) {
+                  <tr>
+                    <td class="p-3 text-slate-400">Cleanliness & Valet Fee</td>
+                    <td class="p-3 text-right font-mono">₹{{ b.cleanlinessFee }}</td>
+                  </tr>
+                }
+                @if (num(b.extraKmFee) > 0) {
+                  <tr>
+                    <td class="p-3 text-slate-400">Extra Distance Fee ({{ b.extraKmsTravelled }} km)</td>
+                    <td class="p-3 text-right font-mono">₹{{ b.extraKmFee }}</td>
+                  </tr>
+                }
+                @if (num(b.extraHourFee) > 0) {
+                  <tr>
+                    <td class="p-3 text-slate-400">Late Return Extension Fee ({{ b.extraHoursTaken }} hrs)</td>
+                    <td class="p-3 text-right font-mono">₹{{ b.extraHourFee }}</td>
+                  </tr>
+                }
+                @if (num(b.damagesTotal) > 0) {
+                  <tr>
+                    <td class="p-3 text-rose-400">Vehicle Damages & Repairs Fee</td>
+                    <td class="p-3 text-right font-mono text-rose-400">₹{{ b.damagesTotal }}</td>
+                  </tr>
+                }
+                @if (num(b.nonIntimationFine) > 0) {
+                  <tr>
+                    <td class="p-3 text-rose-400">Non-Intimation Delay Fine</td>
+                    <td class="p-3 text-right font-mono text-rose-400">₹{{ b.nonIntimationFine }}</td>
+                  </tr>
+                }
+                <!-- Total Row -->
+                <tr class="bg-slate-950/60 font-bold text-white text-sm">
+                  <td class="p-3">Total Final Rental Settlement</td>
+                  <td class="p-3 text-right font-mono text-cyan-400">₹{{ b.finalRentalAmount }}</td>
+                </tr>
+                <tr class="text-xs text-slate-300">
+                  <td class="p-3 font-semibold">Total Paid to Date ({{ b.paymentMode }})</td>
+                  <td class="p-3 text-right font-mono font-bold text-emerald-400">₹{{ b.amountPaid }}</td>
+                </tr>
+                <tr class="text-xs text-slate-300">
+                  <td class="p-3 font-semibold">Outstanding Pending Balance</td>
+                  <td class="p-3 text-right font-mono font-bold" [ngClass]="num(b.pendingAmount) > 0 ? 'text-rose-400' : 'text-emerald-400'">
+                    ₹{{ b.pendingAmount || '0' }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Security Footer Note -->
+          <div class="p-4 rounded-xl bg-slate-950/40 border border-slate-800 text-[11px] text-slate-400 flex items-center justify-between flex-wrap gap-2">
+            <span>This is a computer-generated tax invoice. Download link expires in 24 hours.</span>
+            <span class="font-mono text-slate-500">RoadReady Rental Operations</span>
+          </div>
+        </div>
+      </div>
+    }
+  </main>
+
+  <footer class="max-w-4xl mx-auto w-full pt-6 border-t border-slate-800 text-center text-xs text-slate-500">
+    &copy; RoadReady Car Rentals. Safe travels and drive responsibly!
+  </footer>
+</div>
