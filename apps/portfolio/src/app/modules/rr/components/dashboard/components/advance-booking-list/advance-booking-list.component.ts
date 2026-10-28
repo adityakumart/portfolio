@@ -28,6 +28,7 @@ import {
   lucideMail,
   lucideXCircle,
   lucideAlertTriangle,
+  lucideMessageSquare,
 } from '@ng-icons/lucide';
 import { IBooking, IVehicle } from '@portfolio/shared-types';
 import { RRApiService } from '../../../../services/rr-api.service';
@@ -35,6 +36,7 @@ import {
   RRNewBookingDialogComponent,
   RRReserveBookingDialogComponent,
   RRCloseAdvanceBookingDialogComponent,
+  RRWhatsAppPreviewDialogComponent,
   AadharVisiblePipe,
 } from '../../../../shared';
 import { IndianDatePipe } from '../../../../../../shared/pipes/indian-date.pipe';
@@ -73,6 +75,7 @@ import { IndianDatePipe } from '../../../../../../shared/pipes/indian-date.pipe'
       lucideMail,
       lucideXCircle,
       lucideAlertTriangle,
+      lucideMessageSquare,
     }),
   ],
   templateUrl: './advance-booking-list.component.html',
@@ -242,6 +245,22 @@ export class RRAdvanceBookingListComponent implements OnInit {
       if (result) {
         this.loadBookings();
         this.loadVehicles();
+      }
+    });
+  }
+
+  openWhatsAppModal(reservation: IBooking) {
+    const ref = this.dialog.open(RRWhatsAppPreviewDialogComponent, {
+      context: {
+        booking: reservation,
+        templateType: 'reserve_intimation',
+      },
+      contentClass: 'max-w-xl w-full p-0 border-0 bg-transparent shadow-none',
+    });
+
+    ref.closed$.subscribe((result) => {
+      if (result) {
+        this.loadBookings();
       }
     });
   }

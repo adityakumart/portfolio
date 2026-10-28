@@ -352,6 +352,21 @@
                       <span>Feedback Desk</span>
                     </div>
                   </li>
+                  <li
+                    class="menu-item submenu-item"
+                    [routerLink]="['/user/rr/whatsapp-templates']"
+                    routerLinkActive="active-menu"
+                    [hlmTooltip]="'WhatsApp & Notifications'"
+                    [tooltipDisabled]="!isSidebarCollapsed()"
+                    tooltipPosition="right"
+                    (click)="closeMobileSidebar()"
+                  >
+                    <div class="menu-item-pill"></div>
+                    <div class="menu-item-content">
+                      <ng-icon name="lucideMessageSquare"></ng-icon>
+                      <span>WhatsApp & Templates</span>
+                    </div>
+                  </li>
                 </div>
               }
             } @else {

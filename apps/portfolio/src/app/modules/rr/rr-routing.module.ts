@@ -17,6 +17,8 @@ import { RRAnnouncementsComponent } from './components/dashboard/components/anno
 import { RRHomeContentAdminComponent } from './components/dashboard/components/home-content/home-content.component';
 import { RRFeedbackSubmissionComponent } from './components/dashboard/components/feedback/feedback.component';
 import { RRFeedbackAdminComponent } from './components/dashboard/components/feedback-admin/feedback-admin.component';
+import { RRWhatsAppTemplatesComponent } from './components/dashboard/components/whatsapp-templates/whatsapp-templates.component';
+import { RRPublicInvoiceComponent } from './components/public-invoice/rr-public-invoice.component';
 
 export const RR_ROUTES: Routes = [
   {
@@ -70,6 +72,17 @@ export const RR_ROUTES: Routes = [
         keywords: ['Rental Login', 'Royal Rentals Sign In', 'Fleet Portal'],
         robots: 'index, follow',
         ogType: 'website',
+      },
+    },
+  },
+  {
+    path: 'invoice/:token',
+    component: RRPublicInvoiceComponent,
+    data: {
+      seo: {
+        title: 'Digital Tax Invoice | Royal Rentals',
+        description: 'View and download official Royal Rentals car rental tax invoice.',
+        robots: 'noindex, nofollow',
       },
     },
   },
@@ -212,6 +225,17 @@ export const RR_ROUTES: Routes = [
           seo: {
             title: 'Feedback Management Desk | Royal Rentals',
             description: 'Administrative console for reviewing, triaging, and resolving feedback tickets.',
+            robots: 'noindex, nofollow',
+          },
+        },
+      },
+      {
+        path: 'whatsapp-templates',
+        component: RRWhatsAppTemplatesComponent,
+        data: {
+          seo: {
+            title: 'WhatsApp Notifications & Templates | Royal Rentals',
+            description: 'Personalized message templates and automated notification rules.',
             robots: 'noindex, nofollow',
           },
         },

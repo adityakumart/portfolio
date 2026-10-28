@@ -1,0 +1,411 @@
+<div class="space-y-6">
+  <!-- Page Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
+    <div class="flex items-center gap-3">
+      <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-600 text-white flex items-center justify-center shadow-md">
+        <ng-icon name="lucideMessageSquare" class="text-2xl"></ng-icon>
+      </div>
+      <div>
+        <h2 class="text-2xl font-black tracking-tight text-foreground m-0">WhatsApp Notifications & Templates</h2>
+        <p class="text-xs text-muted-foreground mt-0.5">
+          Configure personalized customer WhatsApp messages, automated trigger rules, and delivery gateway.
+        </p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2 flex-wrap">
+      <button
+        hlmBtn
+        variant="outline"
+        size="sm"
+        class="text-xs font-semibold gap-1.5"
+        (click)="runManualSweep()"
+        [disabled]="isSweeping()"
+        hlmTooltip="Trigger an immediate evaluation sweep for 4hr return, 12h/4h pickup, and pending dues"
+      >
+        <ng-icon [name]="isSweeping() ? 'lucideRefreshCw' : 'lucideZap'" [class.animate-spin]="isSweeping()" class="text-xs text-amber-500"></ng-icon>
+        <span>Run Scheduler Sweep</span>
+      </button>
+
+      <button
+        hlmBtn
+        size="sm"
+        class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-xs gap-1.5 shadow-sm"
+        (click)="saveConfig()"
+        [disabled]="isSaving()"
+      >
+        @if (isSaving()) {
+          <ng-icon name="lucideRefreshCw" class="animate-spin text-xs"></ng-icon>
+          <span>Saving...</span>
+        } @else {
+          <ng-icon name="lucideSave" class="text-xs"></ng-icon>
+          <span>Save Changes</span>
+        }
+      </button>
+    </div>
+  </div>
+
+  <!-- Tab Switcher -->
+  <div class="flex items-center gap-2 border-b border-border pb-2 text-xs font-bold">
+    <button
+      type="button"
+      class="px-4 py-2 rounded-xl transition-all flex items-center gap-2"
+      [ngClass]="{
+        'bg-primary text-primary-foreground shadow-xs': activeTab() === 'templates',
+        'text-muted-foreground hover:text-foreground hover:bg-muted/40': activeTab() !== 'templates'
+      }"
+      (click)="activeTab.set('templates')"
+    >
+      <ng-icon name="lucideMessageSquare" class="text-sm"></ng-icon>
+      <span>Personalized Templates</span>
+    </button>
+    <button
+      type="button"
+      class="px-4 py-2 rounded-xl transition-all flex items-center gap-2"
+      [ngClass]="{
+        'bg-primary text-primary-foreground shadow-xs': activeTab() === 'automation',
+        'text-muted-foreground hover:text-foreground hover:bg-muted/40': activeTab() !== 'automation'
+      }"
+      (click)="activeTab.set('automation')"
+    >
+      <ng-icon name="lucideClock" class="text-sm"></ng-icon>
+      <span>Automated Trigger Rules</span>
+    </button>
+    <button
+      type="button"
+      class="px-4 py-2 rounded-xl transition-all flex items-center gap-2"
+      [ngClass]="{
+        'bg-primary text-primary-foreground shadow-xs': activeTab() === 'gateway',
+        'text-muted-foreground hover:text-foreground hover:bg-muted/40': activeTab() !== 'gateway'
+      }"
+      (click)="activeTab.set('gateway')"
+    >
+      <ng-icon name="lucideSettings" class="text-sm"></ng-icon>
+      <span>Gateway & Test Console</span>
+    </button>
+  </div>
+
+  <!-- TAB 1: PERSONALIZED TEMPLATES -->
+  @if (activeTab() === 'templates') {
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <!-- Left sidebar: List of templates -->
+      <div class="lg:col-span-4 space-y-2">
+        <label class="text-xs font-bold uppercase tracking-wider text-muted-foreground block mb-2">
+          Notification Scenarios (6 Events)
+        </label>
+        @for (item of templateTypes; track item.id) {
+          <div
+            (click)="selectTemplate(item.id)"
+            class="p-3.5 rounded-2xl border transition-all cursor-pointer flex flex-col gap-1.5"
+            [ngClass]="{
+              'bg-emerald-500/10 border-emerald-500/50 shadow-sm ring-1 ring-emerald-500/30': selectedTemplateId() === item.id,
+              'bg-card border-border hover:bg-muted/40 text-muted-foreground hover:text-foreground': selectedTemplateId() !== item.id
+            }"
+          >
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2 font-bold text-xs" [class.text-foreground]="selectedTemplateId() === item.id">
+                <ng-icon [name]="item.icon" class="text-sm text-emerald-500 shrink-0"></ng-icon>
+                <span>{{ item.label }}</span>
+              </div>
+              <span
+                hlmBadge
+                variant="outline"
+                class="text-[9px] font-mono uppercase"
+                [ngClass]="config.templates[item.id]?.enabled ? 'text-emerald-500 border-emerald-500/30 bg-emerald-500/10' : 'text-muted-foreground border-border bg-muted/40'"
+              >
+                {{ config.templates[item.id]?.enabled ? 'Active' : 'Disabled' }}
+              </span>
+            </div>
+            <p class="text-[11px] text-muted-foreground leading-snug">
+              {{ item.triggerNote }}
+            </p>
+          </div>
+        }
+      </div>
+
+      <!-- Right Area: Editor + Live Phone Mockup -->
+      <div class="lg:col-span-8 space-y-4">
+        @if (currentTemplate; as tpl) {
+          <div class="p-5 sm:p-6 rounded-2xl border border-border bg-card shadow-xs space-y-5">
+            <!-- Header of selected template -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border">
+              <div>
+                <h3 class="text-base font-extrabold text-foreground">{{ tpl.name }}</h3>
+                <p class="text-xs text-muted-foreground">{{ tpl.description }}</p>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <label class="flex items-center gap-2 cursor-pointer text-xs font-semibold">
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="tpl.enabled"
+                    class="rounded border-border text-emerald-600 focus:ring-emerald-500 h-4 w-4"
+                  />
+                  <span>Enable Auto Trigger</span>
+                </label>
+                <button
+                  hlmBtn
+                  variant="outline"
+                  size="sm"
+                  class="h-7 text-xs gap-1"
+                  (click)="resetCurrentTemplate()"
+                  hlmTooltip="Reset this template back to factory default"
+                >
+                  <ng-icon name="lucideRotateCcw" class="text-xs"></ng-icon>
+                  <span>Reset</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Dynamic Placeholders Chips -->
+            <div>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block mb-1.5">
+                Available Dynamic Placeholders (Click to insert):
+              </span>
+              <div class="flex flex-wrap gap-1.5">
+                @for (placeholder of tpl.availablePlaceholders; track placeholder) {
+                  <button
+                    type="button"
+                    (click)="insertPlaceholder(placeholder)"
+                    class="px-2 py-0.5 rounded-md bg-muted/60 hover:bg-emerald-500/15 hover:text-emerald-500 border border-border/70 text-[11px] font-mono font-medium transition-colors"
+                  >
+                    + {{ '{{' + placeholder + '}}' }}
+                  </button>
+                }
+              </div>
+            </div>
+
+            <!-- Textarea Editor -->
+            <div>
+              <div class="flex items-center justify-between mb-1 text-xs">
+                <label hlmLabel class="font-bold text-foreground">Message Body Text</label>
+                <span class="text-muted-foreground font-mono text-[11px]">{{ (tpl.templateText || '').length }} characters</span>
+              </div>
+              <textarea
+                [(ngModel)]="tpl.templateText"
+                rows="10"
+                class="w-full rounded-xl border border-border bg-slate-950/5 dark:bg-slate-950/40 p-3.5 text-xs font-sans leading-relaxed text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                placeholder="Enter customized message content with placeholders..."
+              ></textarea>
+              <span class="text-[11px] text-muted-foreground block mt-1">
+                WhatsApp styling supported: *bold*, _italics_, ~strikethrough~.
+              </span>
+            </div>
+
+            <!-- Live Phone Preview Simulation -->
+            <div>
+              <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground block mb-2">
+                Simulated Customer Device Preview:
+              </span>
+              <div class="max-w-md p-4 rounded-2xl bg-emerald-950/10 dark:bg-slate-950/60 border border-emerald-500/20 shadow-inner">
+                <div class="p-3 rounded-2xl bg-card border border-border text-xs leading-relaxed whitespace-pre-line text-foreground shadow-sm">
+                  {{ tpl.templateText }}
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- TAB 2: AUTOMATION TRIGGER RULES -->
+  @if (activeTab() === 'automation') {
+    <div class="max-w-3xl space-y-4">
+      <div class="p-5 rounded-2xl border border-border bg-card shadow-xs space-y-4">
+        <h3 class="text-sm font-extrabold text-foreground flex items-center gap-2">
+          <ng-icon name="lucideClock" class="text-emerald-500"></ng-icon>
+          <span>Automated Background Dispatch Engine</span>
+        </h3>
+        <p class="text-xs text-muted-foreground">
+          The background scheduler runs every 5 minutes and evaluates active rentals and advance reservations against these time triggers.
+        </p>
+
+        <div class="space-y-3 pt-2 divide-y divide-border">
+          <!-- 1. 4h Return Reminder -->
+          <div class="pt-3 flex items-start justify-between gap-4">
+            <div>
+              <span class="font-bold text-xs text-foreground block">Active Booking Return Reminder (4 Hours Before)</span>
+              <span class="text-xs text-muted-foreground leading-snug block">
+                Automatically alerts the customer 4 hours before their scheduled return time with depot address & extension advisory.
+              </span>
+            </div>
+            <input
+              type="checkbox"
+              [(ngModel)]="config.generalSettings.sendAutomaticActiveReminder"
+              class="rounded border-border text-emerald-600 focus:ring-emerald-500 h-5 w-5 mt-1 shrink-0"
+            />
+          </div>
+
+          <!-- 2. Reserve Intimation (12h & 4h) -->
+          <div class="pt-3 flex items-start justify-between gap-4">
+            <div>
+              <span class="font-bold text-xs text-foreground block">Reserve Intimation (12 Hours & 4 Hours Before Pickup)</span>
+              <span class="text-xs text-muted-foreground leading-snug block">
+                Automatically notifies advance booking customers twice: 12 hours prior and 4 hours prior to their reserved pickup schedule.
+              </span>
+            </div>
+            <input
+              type="checkbox"
+              [(ngModel)]="config.generalSettings.sendAutomaticReserveIntimation"
+              class="rounded border-border text-emerald-600 focus:ring-emerald-500 h-5 w-5 mt-1 shrink-0"
+            />
+          </div>
+
+          <!-- 3. Pending Dues (Every 4h till return) -->
+          <div class="pt-3 flex items-start justify-between gap-4">
+            <div>
+              <span class="font-bold text-xs text-foreground block">Pending Amount Due Reminder (Every 4 Hours Until Return)</span>
+              <span class="text-xs text-muted-foreground leading-snug block">
+                Periodically sends gentle payment balance notices every 4 hours while the rental is active and has an outstanding balance.
+              </span>
+            </div>
+            <input
+              type="checkbox"
+              [(ngModel)]="config.generalSettings.sendAutomaticPendingReminders"
+              class="rounded border-border text-emerald-600 focus:ring-emerald-500 h-5 w-5 mt-1 shrink-0"
+            />
+          </div>
+
+          <!-- 4. New Booking Instant -->
+          <div class="pt-3 flex items-start justify-between gap-4">
+            <div>
+              <span class="font-bold text-xs text-foreground block">Instant New Booking Confirmation</span>
+              <span class="text-xs text-muted-foreground leading-snug block">
+                Sends a WhatsApp confirmation to customer mobile immediately when an active rental agreement is recorded.
+              </span>
+            </div>
+            <input
+              type="checkbox"
+              [(ngModel)]="config.generalSettings.sendAutomaticNewBooking"
+              class="rounded border-border text-emerald-600 focus:ring-emerald-500 h-5 w-5 mt-1 shrink-0"
+            />
+          </div>
+
+          <!-- 5. End Booking Invoice with 24h link -->
+          <div class="pt-3 flex items-start justify-between gap-4">
+            <div>
+              <span class="font-bold text-xs text-foreground block">End Booking Tax Invoice (24-Hour Link)</span>
+              <span class="text-xs text-muted-foreground leading-snug block">
+                Sends a thank-you note and secure 24-hour time-limited tax invoice download link to customer mobile upon rental return.
+              </span>
+            </div>
+            <input
+              type="checkbox"
+              [(ngModel)]="config.generalSettings.sendAutomaticEndBookingInvoice"
+              class="rounded border-border text-emerald-600 focus:ring-emerald-500 h-5 w-5 mt-1 shrink-0"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- TAB 3: GATEWAY CONFIG & TEST CONSOLE -->
+  @if (activeTab() === 'gateway') {
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Left: Provider & General Setup -->
+      <div class="p-5 sm:p-6 rounded-2xl border border-border bg-card shadow-xs space-y-4">
+        <h3 class="text-sm font-extrabold text-foreground flex items-center gap-2">
+          <ng-icon name="lucideSettings" class="text-emerald-500"></ng-icon>
+          <span>Delivery Gateway Provider</span>
+        </h3>
+
+        <!-- Provider Selector -->
+        <div>
+          <label hlmLabel class="text-xs font-bold block mb-1">WhatsApp Provider</label>
+          <select
+            [(ngModel)]="config.provider"
+            class="w-full rounded-xl border border-border bg-card p-2 text-xs text-foreground"
+          >
+            <option value="manual_only">Manual Only / Direct WhatsApp Web (wa.me) [Zero Setup]</option>
+            <option value="meta_cloud">Meta Official WhatsApp Cloud API (Graph API)</option>
+            <option value="twilio">Twilio Programmable Messaging (WhatsApp)</option>
+            <option value="custom_webhook">Custom Webhook / Aggregator</option>
+          </select>
+        </div>
+
+        @if (config.provider === 'meta_cloud') {
+          <div class="space-y-3 p-3.5 rounded-xl bg-muted/30 border border-border text-xs">
+            <span class="font-bold text-foreground block">Meta Cloud API Credentials</span>
+            <div>
+              <label class="text-[10px] uppercase font-semibold text-muted-foreground block mb-1">Phone Number ID</label>
+              <input hlmInput [(ngModel)]="config.metaConfig!.phoneNumberId" placeholder="e.g. 1092837465..." class="text-xs h-8" />
+            </div>
+            <div>
+              <label class="text-[10px] uppercase font-semibold text-muted-foreground block mb-1">System User Access Token</label>
+              <input hlmInput type="password" [(ngModel)]="config.metaConfig!.accessToken" placeholder="EAAB..." class="text-xs h-8" />
+            </div>
+          </div>
+        }
+
+        <!-- General Brand Details -->
+        <div class="space-y-3 pt-2">
+          <div>
+            <label hlmLabel class="text-xs font-bold block mb-1">Company Display Name</label>
+            <input hlmInput [(ngModel)]="config.generalSettings.companyName" class="text-xs h-8" />
+          </div>
+          <div>
+            <label hlmLabel class="text-xs font-bold block mb-1">Support Phone Hotline</label>
+            <input hlmInput [(ngModel)]="config.generalSettings.supportPhoneNumber" class="text-xs h-8" />
+          </div>
+          <div>
+            <label hlmLabel class="text-xs font-bold block mb-1">Depot / Branch Address</label>
+            <input hlmInput [(ngModel)]="config.generalSettings.depotAddress" class="text-xs h-8" />
+          </div>
+          <div>
+            <label hlmLabel class="text-xs font-bold block mb-1">Country Calling Code</label>
+            <input hlmInput [(ngModel)]="config.generalSettings.countryCodePrefix" placeholder="+91" class="text-xs h-8 w-24 font-mono" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Test Console -->
+      <div class="p-5 sm:p-6 rounded-2xl border border-border bg-card shadow-xs space-y-4">
+        <h3 class="text-sm font-extrabold text-foreground flex items-center gap-2">
+          <ng-icon name="lucideSend" class="text-emerald-500"></ng-icon>
+          <span>Test WhatsApp Message Console</span>
+        </h3>
+        <p class="text-xs text-muted-foreground">
+          Send a live test message to any phone number to verify provider connectivity and phone formatting.
+        </p>
+
+        <div>
+          <label hlmLabel class="text-xs font-bold block mb-1">Destination Mobile Number</label>
+          <input
+            hlmInput
+            type="tel"
+            [(ngModel)]="testPhone"
+            placeholder="e.g. 9876543210"
+            class="text-xs h-8 font-mono"
+          />
+        </div>
+
+        <div>
+          <label hlmLabel class="text-xs font-bold block mb-1">Message Text</label>
+          <textarea
+            [(ngModel)]="testMessage"
+            rows="4"
+            class="w-full rounded-xl border border-border bg-card p-3 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500"
+          ></textarea>
+        </div>
+
+        <button
+          hlmBtn
+          size="sm"
+          (click)="sendTestMessage()"
+          [disabled]="isTesting() || !testPhone().trim()"
+          class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-xs gap-1.5 shadow-sm w-full"
+        >
+          @if (isTesting()) {
+            <ng-icon name="lucideRefreshCw" class="animate-spin text-xs"></ng-icon>
+            <span>Dispatching Test...</span>
+          } @else {
+            <ng-icon name="lucideSend" class="text-xs"></ng-icon>
+            <span>Send Test WhatsApp Message</span>
+          }
+        </button>
+      </div>
+    </div>
+  }
+</div>

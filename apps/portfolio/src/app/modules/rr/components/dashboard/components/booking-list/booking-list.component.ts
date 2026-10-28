@@ -30,8 +30,9 @@ import {
   lucideDownload,
   lucideMail,
   lucideAlertCircle,
+  lucideMessageSquare,
 } from '@ng-icons/lucide';
-import { IBooking, IVehicle, ICustomerIntimation } from '@portfolio/shared-types';
+import { IBooking, IVehicle, ICustomerIntimation, IRRWhatsAppTemplateId } from '@portfolio/shared-types';
 import { RRApiService } from '../../../../services/rr-api.service';
 import { RRInvoicePdfService } from '../../../../services/rr-invoice-pdf.service';
 import {
@@ -39,6 +40,7 @@ import {
   RRReserveBookingDialogComponent,
   RREndBookingDialogComponent,
   RRModifyBookingDialogComponent,
+  RRWhatsAppPreviewDialogComponent,
   AadharVisiblePipe,
 } from '../../../../shared';
 import { IndianDatePipe } from '../../../../../../shared/pipes/indian-date.pipe';
@@ -80,6 +82,7 @@ import { IndianDatePipe } from '../../../../../../shared/pipes/indian-date.pipe'
       lucideDownload,
       lucideMail,
       lucideAlertCircle,
+      lucideMessageSquare,
     }),
   ],
   templateUrl: './booking-list.component.html',
@@ -299,6 +302,22 @@ export class RRBookingListComponent implements OnInit, OnDestroy {
     notes: ['', [Validators.required, Validators.minLength(3)]],
     expectedReturnDateTime: [''],
   });
+
+  openWhatsAppModal(booking: IBooking, templateType: IRRWhatsAppTemplateId = 'active_reminder') {
+    const ref = this.dialog.open(RRWhatsAppPreviewDialogComponent, {
+      context: {
+        booking,
+        templateType,
+      },
+      contentClass: 'max-w-xl w-full p-0 border-0 bg-transparent shadow-none',
+    });
+
+    ref.closed$.subscribe((result) => {
+      if (result) {
+        this.loadBookings();
+      }
+    });
+  }
 
   viewBookingPdf(b: IBooking) {
     this.invoicePdf.viewAgreementPdf(b);

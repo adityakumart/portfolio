@@ -5,3 +5,4 @@ export * from './pdf-viewer-dialog/rr-pdf-viewer-dialog.component';
 export * from './reserve-booking-dialog/reserve-booking-dialog.component';
 export * from './close-advance-booking-dialog/close-advance-booking-dialog.component';
 export * from './agreement-upload-dialog/agreement-upload-dialog.component';
+export * from './whatsapp-preview-dialog/rr-whatsapp-preview-dialog.component';
