@@ -37,7 +37,7 @@
               <div class="text-[11px] text-muted-foreground sm:hidden font-mono mt-0.5">{{ e.id }}</div>
             </td>
             <td hlmTd>
-              <span hlmBadge [variant]="e.role === 'admin' ? 'destructive' : 'secondary'" class="font-bold uppercase text-[10px]">
+              <span hlmBadge [variant]="e.role === 'admin' ? 'destructive' : (e.role === 'manager' ? 'default' : 'secondary')" class="font-bold uppercase text-[10px]">
                 {{ e.role }}
               </span>
             </td>
@@ -213,6 +213,7 @@
             <label hlmLabel class="text-xs text-muted-foreground block mb-1">System Access Role</label>
             <select hlmInput formControlName="role" class="w-full text-sm">
               <option value="employee">Employee Agent</option>
+              <option value="manager">Operations Manager</option>
               <option value="admin">System Administrator</option>
             </select>
           </div>

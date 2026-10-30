@@ -175,6 +175,11 @@ export class RRApiService {
   // Signals
   currentUser = signal<IRRUser | null>(null);
   isAdmin = computed(() => this.currentUser()?.role === 'admin');
+  isManager = computed(() => this.currentUser()?.role === 'manager');
+  isManagerOrAdmin = computed(() => {
+    const role = this.currentUser()?.role;
+    return role === 'admin' || role === 'manager';
+  });
   passwordPolicyState = signal<{
     mustChangePassword: boolean;
     isFirstLogin?: boolean;
