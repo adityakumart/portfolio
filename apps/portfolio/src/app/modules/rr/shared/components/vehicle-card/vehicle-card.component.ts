@@ -28,6 +28,7 @@ import {
   lucideMoreVertical,
   lucideImage,
   lucideCalendarClock,
+  lucideCalendar,
   lucideWrench,
   lucideFileText,
   lucideClock,
@@ -64,6 +65,7 @@ export type VehicleCardVariant = 'fleet' | 'stats' | 'homepage';
       lucideMoreVertical,
       lucideImage,
       lucideCalendarClock,
+      lucideCalendar,
       lucideWrench,
       lucideFileText,
       lucideClock,
@@ -76,6 +78,7 @@ export class RRVehicleCardComponent implements OnInit, OnDestroy {
   @Input({ required: true }) vehicle!: IVehicle | IPublicVehicle | any;
   @Input() variant: VehicleCardVariant = 'fleet';
   @Input() isAdmin = false;
+  @Input() canUpdateAvailability = false;
   @Input() showReserveBtn = false;
   @Input() isCardClickable = true;
   @Input() reservation?: IBooking | any;
@@ -90,9 +93,16 @@ export class RRVehicleCardComponent implements OnInit, OnDestroy {
   @Output() reserveClick = new EventEmitter<any>();
   @Output() whatsappClick = new EventEmitter<any>();
   @Output() phoneClick = new EventEmitter<any>();
+  @Output() updateAvailabilityClick = new EventEmitter<IVehicle>();
 
   get showBookNowOverlay(): boolean {
     return this.variant === 'stats' && this.vehicle?.status === 'available';
+  }
+
+  get showUpdateAvailability(): boolean {
+    if (!this.canUpdateAvailability) return false;
+    const st = this.vehicle?.status;
+    return st === 'maintenance' || st === 'contract' || st === 'in_contract';
   }
 
   get statusBadgeVariant(): 'secondary' | 'destructive' | 'outline' {
@@ -218,5 +228,10 @@ export class RRVehicleCardComponent implements OnInit, OnDestroy {
   onPhoneClick(event: Event) {
     event.stopPropagation();
     this.phoneClick.emit(this.vehicle);
+  }
+
+  onUpdateAvailabilityClick(event: Event) {
+    event.stopPropagation();
+    this.updateAvailabilityClick.emit(this.vehicle);
   }
 }

@@ -38,6 +38,8 @@ import {
   lucideMoreVertical,
   lucideDownload,
   lucideCalendarClock,
+  lucideCalendar,
+  lucideBellRing,
   lucideMessageSquare,
 } from '@ng-icons/lucide';
 import { Router, RouterLink } from '@angular/router';
@@ -51,6 +53,7 @@ import {
   RREndBookingDialogComponent,
   RRReserveBookingDialogComponent,
   RRWhatsAppPreviewDialogComponent,
+  RRUpdateVehicleAvailabilityDialogComponent,
 } from '../../../../shared';
 import { IndianDatePipe } from '../../../../../../shared/pipes/indian-date.pipe';
 
@@ -110,6 +113,8 @@ export type SeatingFilter = 'all' | '5' | '7';
       lucideMoreVertical,
       lucideDownload,
       lucideCalendarClock,
+      lucideCalendar,
+      lucideBellRing,
       lucideMessageSquare,
     }),
   ],
@@ -124,6 +129,7 @@ export class RRStatsViewComponent implements OnInit, OnDestroy {
   bookings = signal<IBooking[]>([]);
   recentLogs = signal<ILog[]>([]);
   isAdmin = computed(() => this.rrApi.currentUser()?.role === 'admin');
+  isManagerOrAdmin = computed(() => this.rrApi.isManagerOrAdmin());
 
   currentTime = signal<Date>(new Date());
   private timeTickerInterval: any = null;
@@ -532,8 +538,45 @@ export class RRStatsViewComponent implements OnInit, OnDestroy {
     if (event && typeof event.stopPropagation === 'function') {
       event.stopPropagation();
     }
-    this.router.navigate(['/user/rr/booking/list'], {
-      queryParams: { vehicleRegNo: vehicle.regNo, reserve: 'true' },
+    const ref = this.dialog.open(RRReserveBookingDialogComponent, {
+      context: {
+        vehicleRegNo: vehicle.regNo,
+        vehicles: this.vehicles(),
+        isEditMode: false,
+      },
+      contentClass:
+        'max-w-4xl w-full p-6 max-h-[90vh] flex flex-col overflow-hidden',
+    });
+
+    ref.closed$.subscribe((result) => {
+      if (result) {
+        this.loadVehicles();
+        this.loadBookings();
+        this.loadStats();
+      }
+    });
+  }
+
+  openUpdateAvailabilityModal(vehicle: IVehicle, event?: any) {
+    if (event && typeof event.stopPropagation === 'function') {
+      event.stopPropagation();
+    }
+    if (!this.isManagerOrAdmin()) {
+      return;
+    }
+    const ref = this.dialog.open(RRUpdateVehicleAvailabilityDialogComponent, {
+      context: {
+        vehicle,
+      },
+      contentClass:
+        'max-w-lg w-full p-0 border-0 bg-transparent shadow-none',
+    });
+
+    ref.closed$.subscribe((updated) => {
+      if (updated) {
+        this.loadVehicles();
+        this.loadStats();
+      }
     });
   }
 

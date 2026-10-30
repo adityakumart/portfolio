@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb';
 
-export type RRRole = 'admin' | 'employee';
+export type RRRole = 'admin' | 'manager' | 'employee';
 
 export interface IRRUser {
   id: string;

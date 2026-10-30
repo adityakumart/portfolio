@@ -291,7 +291,7 @@
           </button>
         </div>
 
-        <button hlmBtn variant="outline" size="sm" class="flex items-center gap-1.5 font-semibold text-xs rounded-xl" (click)="closeAccordion()">
+        <button hlmBtn variant="outline" size="sm" class="flex items-center gap-1.5 font-semibold text-xs rounded-xl cursor-pointer" (click)="closeAccordion()">
           <ng-icon name="lucideChevronUp" class="text-sm"></ng-icon>
           <span>Collapse View</span>
         </button>
@@ -323,15 +323,34 @@
 
               <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 @for (v of activeVehicles5Seater; track v.regNo) {
-                  <app-rr-vehicle-card
-                    [vehicle]="v"
-                    variant="stats"
-                    [showReserveBtn]="activeCategory() === 'fleet'"
-                    [isCardClickable]="activeCategory() !== 'fleet'"
-                    (reserveClick)="reserveVehicle(v)"
-                    (bookNow)="bookVehicle($event)"
-                    (cardClick)="activeCategory() === 'fleet' ? null : (v.status === 'available' ? bookVehicle($event) : null)"
-                  />
+                  <div class="flex flex-col">
+                    <app-rr-vehicle-card
+                      [vehicle]="v"
+                      variant="stats"
+                      [showReserveBtn]="activeCategory() === 'fleet'"
+                      [canUpdateAvailability]="isManagerOrAdmin()"
+                      [isCardClickable]="activeCategory() !== 'fleet'"
+                      (reserveClick)="reserveVehicle(v)"
+                      (bookNow)="bookVehicle($event)"
+                      (updateAvailabilityClick)="openUpdateAvailabilityModal($event)"
+                      (cardClick)="activeCategory() === 'fleet' ? null : (v.status === 'available' ? bookVehicle($event) : null)"
+                    />
+                    @if ((activeCategory() === 'maintenance' || activeCategory() === 'contract') && isManagerOrAdmin()) {
+                      <div class="mt-2 px-1">
+                        <button
+                          hlmBtn
+                          size="sm"
+                          variant="outline"
+                          class="w-full text-xs h-7.5 gap-1.5 font-bold border-amber-500/40 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 cursor-pointer shadow-2xs"
+                          (click)="openUpdateAvailabilityModal(v, $event)"
+                          hlmTooltip="Update Next Available Date (Manager & Admin)"
+                        >
+                          <ng-icon name="lucideCalendar" class="text-xs text-amber-500"></ng-icon>
+                          <span>Update Available Date</span>
+                        </button>
+                      </div>
+                    }
+                  </div>
                 }
               </div>
             </div>
@@ -357,15 +376,34 @@
 
               <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 @for (v of activeVehicles7Seater; track v.regNo) {
-                  <app-rr-vehicle-card
-                    [vehicle]="v"
-                    variant="stats"
-                    [showReserveBtn]="activeCategory() === 'fleet'"
-                    [isCardClickable]="activeCategory() !== 'fleet'"
-                    (reserveClick)="reserveVehicle(v)"
-                    (bookNow)="bookVehicle($event)"
-                    (cardClick)="activeCategory() === 'fleet' ? null : (v.status === 'available' ? bookVehicle($event) : null)"
-                  />
+                  <div class="flex flex-col">
+                    <app-rr-vehicle-card
+                      [vehicle]="v"
+                      variant="stats"
+                      [showReserveBtn]="activeCategory() === 'fleet'"
+                      [canUpdateAvailability]="isManagerOrAdmin()"
+                      [isCardClickable]="activeCategory() !== 'fleet'"
+                      (reserveClick)="reserveVehicle(v)"
+                      (bookNow)="bookVehicle($event)"
+                      (updateAvailabilityClick)="openUpdateAvailabilityModal($event)"
+                      (cardClick)="activeCategory() === 'fleet' ? null : (v.status === 'available' ? bookVehicle($event) : null)"
+                    />
+                    @if ((activeCategory() === 'maintenance' || activeCategory() === 'contract') && isManagerOrAdmin()) {
+                      <div class="mt-2 px-1">
+                        <button
+                          hlmBtn
+                          size="sm"
+                          variant="outline"
+                          class="w-full text-xs h-7.5 gap-1.5 font-bold border-amber-500/40 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 cursor-pointer shadow-2xs"
+                          (click)="openUpdateAvailabilityModal(v, $event)"
+                          hlmTooltip="Update Next Available Date (Manager & Admin)"
+                        >
+                          <ng-icon name="lucideCalendar" class="text-xs text-amber-500"></ng-icon>
+                          <span>Update Available Date</span>
+                        </button>
+                      </div>
+                    }
+                  </div>
                 }
               </div>
             </div>
@@ -377,15 +415,34 @@
           @if (activeVehicles5Seater.length > 0) {
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               @for (v of activeVehicles5Seater; track v.regNo) {
-                <app-rr-vehicle-card
-                  [vehicle]="v"
-                  variant="stats"
-                  [showReserveBtn]="activeCategory() === 'fleet'"
-                  [isCardClickable]="activeCategory() !== 'fleet'"
-                  (reserveClick)="reserveVehicle(v)"
-                  (bookNow)="bookVehicle($event)"
-                  (cardClick)="activeCategory() === 'fleet' ? null : (v.status === 'available' ? bookVehicle($event) : null)"
-                />
+                <div class="flex flex-col">
+                  <app-rr-vehicle-card
+                    [vehicle]="v"
+                    variant="stats"
+                    [showReserveBtn]="activeCategory() === 'fleet'"
+                    [canUpdateAvailability]="isManagerOrAdmin()"
+                    [isCardClickable]="activeCategory() !== 'fleet'"
+                    (reserveClick)="reserveVehicle(v)"
+                    (bookNow)="bookVehicle($event)"
+                    (updateAvailabilityClick)="openUpdateAvailabilityModal($event)"
+                    (cardClick)="activeCategory() === 'fleet' ? null : (v.status === 'available' ? bookVehicle($event) : null)"
+                  />
+                  @if ((activeCategory() === 'maintenance' || activeCategory() === 'contract') && isManagerOrAdmin()) {
+                    <div class="mt-2 px-1">
+                      <button
+                        hlmBtn
+                        size="sm"
+                        variant="outline"
+                        class="w-full text-xs h-7.5 gap-1.5 font-bold border-amber-500/40 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 cursor-pointer shadow-2xs"
+                        (click)="openUpdateAvailabilityModal(v, $event)"
+                        hlmTooltip="Update Next Available Date (Manager & Admin)"
+                      >
+                        <ng-icon name="lucideCalendar" class="text-xs text-amber-500"></ng-icon>
+                        <span>Update Available Date</span>
+                      </button>
+                    </div>
+                  }
+                </div>
               }
             </div>
           } @else {
@@ -402,15 +459,34 @@
           @if (activeVehicles7Seater.length > 0) {
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               @for (v of activeVehicles7Seater; track v.regNo) {
-                <app-rr-vehicle-card
-                  [vehicle]="v"
-                  variant="stats"
-                  [showReserveBtn]="activeCategory() === 'fleet'"
-                  [isCardClickable]="activeCategory() !== 'fleet'"
-                  (reserveClick)="reserveVehicle(v)"
-                  (bookNow)="bookVehicle($event)"
-                  (cardClick)="activeCategory() === 'fleet' ? null : (v.status === 'available' ? bookVehicle($event) : null)"
-                />
+                <div class="flex flex-col">
+                  <app-rr-vehicle-card
+                    [vehicle]="v"
+                    variant="stats"
+                    [showReserveBtn]="activeCategory() === 'fleet'"
+                    [canUpdateAvailability]="isManagerOrAdmin()"
+                    [isCardClickable]="activeCategory() !== 'fleet'"
+                    (reserveClick)="reserveVehicle(v)"
+                    (bookNow)="bookVehicle($event)"
+                    (updateAvailabilityClick)="openUpdateAvailabilityModal($event)"
+                    (cardClick)="activeCategory() === 'fleet' ? null : (v.status === 'available' ? bookVehicle($event) : null)"
+                  />
+                  @if ((activeCategory() === 'maintenance' || activeCategory() === 'contract') && isManagerOrAdmin()) {
+                    <div class="mt-2 px-1">
+                      <button
+                        hlmBtn
+                        size="sm"
+                        variant="outline"
+                        class="w-full text-xs h-7.5 gap-1.5 font-bold border-amber-500/40 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 cursor-pointer shadow-2xs"
+                        (click)="openUpdateAvailabilityModal(v, $event)"
+                        hlmTooltip="Update Next Available Date (Manager & Admin)"
+                      >
+                        <ng-icon name="lucideCalendar" class="text-xs text-amber-500"></ng-icon>
+                        <span>Update Available Date</span>
+                      </button>
+                    </div>
+                  }
+                </div>
               }
             </div>
           } @else {
@@ -559,16 +635,38 @@
                       [isCardClickable]="false"
                       [reservation]="item.reservation"
                     />
-                    <div class="mt-2 flex items-center justify-between gap-2 px-1">
+                    <div class="mt-2.5 flex items-center gap-1.5 px-0.5">
                       <button
                         hlmBtn
                         size="sm"
                         variant="outline"
-                        class="text-xs h-7 gap-1 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10 w-full"
+                        class="text-xs h-7.5 px-2 flex-1 gap-1 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10 font-semibold cursor-pointer"
                         (click)="modifyReservation(item.reservation, $event)"
+                        hlmTooltip="Modify reservation details"
                       >
                         <ng-icon name="lucidePencil" class="text-xs"></ng-icon>
-                        <span>Modify Reservation</span>
+                        <span>Modify</span>
+                      </button>
+                      <button
+                        hlmBtn
+                        size="sm"
+                        class="text-xs h-7.5 px-2 flex-1 gap-1 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold shadow-xs cursor-pointer active:scale-95 transition-transform"
+                        (click)="bookVehicleFromReservation(item.reservation, $event)"
+                        hlmTooltip="Convert reservation to active booking"
+                      >
+                        <ng-icon name="lucideKey" class="text-xs"></ng-icon>
+                        <span>Book Now</span>
+                      </button>
+                      <button
+                        hlmBtn
+                        size="sm"
+                        variant="outline"
+                        class="text-xs h-7.5 px-2 gap-1 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 font-semibold cursor-pointer"
+                        (click)="openWhatsAppModal(item.reservation, 'reserve_intimation', $event)"
+                        hlmTooltip="Remind Customer about upcoming reservation/booking"
+                      >
+                        <ng-icon name="lucideBellRing" class="text-xs text-emerald-500"></ng-icon>
+                        <span class="hidden sm:inline">Remind</span>
                       </button>
                     </div>
                   </div>
@@ -603,16 +701,38 @@
                       [isCardClickable]="false"
                       [reservation]="item.reservation"
                     />
-                    <div class="mt-2 flex items-center justify-between gap-2 px-1">
+                    <div class="mt-2.5 flex items-center gap-1.5 px-0.5">
                       <button
                         hlmBtn
                         size="sm"
                         variant="outline"
-                        class="text-xs h-7 gap-1 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10 w-full"
+                        class="text-xs h-7.5 px-2 flex-1 gap-1 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10 font-semibold cursor-pointer"
                         (click)="modifyReservation(item.reservation, $event)"
+                        hlmTooltip="Modify reservation details"
                       >
                         <ng-icon name="lucidePencil" class="text-xs"></ng-icon>
-                        <span>Modify Reservation</span>
+                        <span>Modify</span>
+                      </button>
+                      <button
+                        hlmBtn
+                        size="sm"
+                        class="text-xs h-7.5 px-2 flex-1 gap-1 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold shadow-xs cursor-pointer active:scale-95 transition-transform"
+                        (click)="bookVehicleFromReservation(item.reservation, $event)"
+                        hlmTooltip="Convert reservation to active booking"
+                      >
+                        <ng-icon name="lucideKey" class="text-xs"></ng-icon>
+                        <span>Book Now</span>
+                      </button>
+                      <button
+                        hlmBtn
+                        size="sm"
+                        variant="outline"
+                        class="text-xs h-7.5 px-2 gap-1 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 font-semibold cursor-pointer"
+                        (click)="openWhatsAppModal(item.reservation, 'reserve_intimation', $event)"
+                        hlmTooltip="Remind Customer about upcoming reservation/booking"
+                      >
+                        <ng-icon name="lucideBellRing" class="text-xs text-emerald-500"></ng-icon>
+                        <span class="hidden sm:inline">Remind</span>
                       </button>
                     </div>
                   </div>
@@ -634,13 +754,14 @@
                     [isCardClickable]="false"
                     [reservation]="item.reservation"
                   />
-                  <div class="mt-2 flex items-center justify-between gap-2 px-1">
+                  <div class="mt-2.5 flex items-center gap-1.5 px-0.5">
                     <button
                       hlmBtn
                       size="sm"
                       variant="outline"
-                      class="text-xs h-7 gap-1 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10 flex-1"
+                      class="text-xs h-7.5 px-2 flex-1 gap-1 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10 font-semibold cursor-pointer"
                       (click)="modifyReservation(item.reservation, $event)"
+                      hlmTooltip="Modify reservation details"
                     >
                       <ng-icon name="lucidePencil" class="text-xs"></ng-icon>
                       <span>Modify</span>
@@ -648,13 +769,23 @@
                     <button
                       hlmBtn
                       size="sm"
-                      variant="outline"
-                      class="text-xs h-7 gap-1 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 flex-1 font-semibold"
-                      (click)="openWhatsAppModal(item.reservation, 'reserve_intimation', $event)"
-                      hlmTooltip="Send WhatsApp Pickup Intimation"
+                      class="text-xs h-7.5 px-2 flex-1 gap-1 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold shadow-xs cursor-pointer active:scale-95 transition-transform"
+                      (click)="bookVehicleFromReservation(item.reservation, $event)"
+                      hlmTooltip="Convert reservation to active booking"
                     >
-                      <ng-icon name="lucideMessageSquare" class="text-xs"></ng-icon>
-                      <span>WhatsApp</span>
+                      <ng-icon name="lucideKey" class="text-xs"></ng-icon>
+                      <span>Book Now</span>
+                    </button>
+                    <button
+                      hlmBtn
+                      size="sm"
+                      variant="outline"
+                      class="text-xs h-7.5 px-2 gap-1 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 font-semibold cursor-pointer"
+                      (click)="openWhatsAppModal(item.reservation, 'reserve_intimation', $event)"
+                      hlmTooltip="Remind Customer about upcoming reservation/booking"
+                    >
+                      <ng-icon name="lucideBellRing" class="text-xs text-emerald-500"></ng-icon>
+                      <span class="hidden sm:inline">Remind</span>
                     </button>
                   </div>
                 </div>
@@ -681,13 +812,14 @@
                     [isCardClickable]="false"
                     [reservation]="item.reservation"
                   />
-                  <div class="mt-2 flex items-center justify-between gap-2 px-1">
+                  <div class="mt-2.5 flex items-center gap-1.5 px-0.5">
                     <button
                       hlmBtn
                       size="sm"
                       variant="outline"
-                      class="text-xs h-7 gap-1 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10 flex-1"
+                      class="text-xs h-7.5 px-2 flex-1 gap-1 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/10 font-semibold cursor-pointer"
                       (click)="modifyReservation(item.reservation, $event)"
+                      hlmTooltip="Modify reservation details"
                     >
                       <ng-icon name="lucidePencil" class="text-xs"></ng-icon>
                       <span>Modify</span>
@@ -695,13 +827,23 @@
                     <button
                       hlmBtn
                       size="sm"
-                      variant="outline"
-                      class="text-xs h-7 gap-1 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 flex-1 font-semibold"
-                      (click)="openWhatsAppModal(item.reservation, 'reserve_intimation', $event)"
-                      hlmTooltip="Send WhatsApp Pickup Intimation"
+                      class="text-xs h-7.5 px-2 flex-1 gap-1 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold shadow-xs cursor-pointer active:scale-95 transition-transform"
+                      (click)="bookVehicleFromReservation(item.reservation, $event)"
+                      hlmTooltip="Convert reservation to active booking"
                     >
-                      <ng-icon name="lucideMessageSquare" class="text-xs"></ng-icon>
-                      <span>WhatsApp</span>
+                      <ng-icon name="lucideKey" class="text-xs"></ng-icon>
+                      <span>Book Now</span>
+                    </button>
+                    <button
+                      hlmBtn
+                      size="sm"
+                      variant="outline"
+                      class="text-xs h-7.5 px-2 gap-1 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 font-semibold cursor-pointer"
+                      (click)="openWhatsAppModal(item.reservation, 'reserve_intimation', $event)"
+                      hlmTooltip="Remind Customer about upcoming reservation/booking"
+                    >
+                      <ng-icon name="lucideBellRing" class="text-xs text-emerald-500"></ng-icon>
+                      <span class="hidden sm:inline">Remind</span>
                     </button>
                   </div>
                 </div>
@@ -744,7 +886,7 @@
         hlmBtn
         variant="outline"
         size="sm"
-        class="h-8 text-xs flex items-center gap-1.5"
+        class="h-8 text-xs flex items-center gap-1.5 cursor-pointer"
       >
         <span>Full Audit Console</span>
         <ng-icon name="lucideExternalLink" class="text-xs"></ng-icon>
@@ -825,7 +967,7 @@
             hlmBtn
             size="icon"
             variant="secondary"
-            class="h-7 w-7 rounded-full shadow-sm bg-background/90 backdrop-blur-xs border border-border/80 text-foreground hover:bg-muted"
+            class="h-7 w-7 rounded-full shadow-sm bg-background/90 backdrop-blur-xs border border-border/80 text-foreground hover:bg-muted cursor-pointer"
             [hlmDropdownMenuTrigger]="bookingActionMenu"
             (click)="$event.stopPropagation()"
             aria-label="Booking actions"
@@ -833,91 +975,135 @@
             <ng-icon name="lucideMoreVertical" class="text-xs"></ng-icon>
           </button>
           <ng-template #bookingActionMenu>
-            <div hlmDropdownMenu class="w-48 p-1 rounded-xl shadow-xl border border-border bg-card/95 backdrop-blur-md">
-              <button
-                hlmDropdownMenuItem
-                class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
-                (click)="modifyBooking(b, $event)"
-              >
-                <ng-icon name="lucidePencil" class="text-xs text-muted-foreground"></ng-icon>
-                <span>Modify Booking</span>
-              </button>
-              <button
-                hlmDropdownMenuItem
-                class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
-                (click)="viewAgreement(b, $event)"
-              >
-                <ng-icon name="lucideEye" class="text-xs text-primary"></ng-icon>
-                <span>View Agreement</span>
-              </button>
-              <button
-                hlmDropdownMenuItem
-                class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 w-full text-left"
-                (click)="openWhatsAppModal(b, activeCategory() === 'payments' || +b.pendingAmount > 0 ? 'pending_payment' : 'active_reminder', $event)"
-              >
-                <ng-icon name="lucideMessageSquare" class="text-xs"></ng-icon>
-                <span>Send WhatsApp {{ activeCategory() === 'payments' || +b.pendingAmount > 0 ? 'Due Notice' : 'Return Reminder' }}</span>
-              </button>
-              <button
-                hlmDropdownMenuItem
-                class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg text-rose-500 hover:bg-rose-500/10 w-full text-left"
-                (click)="endBooking(b, $event)"
-              >
-                <ng-icon name="lucideCalendarX" class="text-xs text-rose-500"></ng-icon>
-                <span>End Booking</span>
-              </button>
+            <div hlmDropdownMenu class="w-56 p-1 rounded-xl shadow-xl border border-border bg-card/95 backdrop-blur-md">
+              @if (activeCategory() === 'payments') {
+                <button
+                  hlmDropdownMenuItem
+                  class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
+                  (click)="modifyBooking(b, $event)"
+                >
+                  <ng-icon name="lucidePencil" class="text-xs text-muted-foreground"></ng-icon>
+                  <span>Modify Booking</span>
+                </button>
+                <button
+                  hlmDropdownMenuItem
+                  class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 w-full text-left"
+                  (click)="openWhatsAppModal(b, 'pending_payment', $event)"
+                >
+                  <ng-icon name="lucideMessageSquare" class="text-xs text-emerald-500"></ng-icon>
+                  <span>Remind Customer (Pending Dues)</span>
+                </button>
+              } @else {
+                <button
+                  hlmDropdownMenuItem
+                  class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
+                  (click)="modifyBooking(b, $event)"
+                >
+                  <ng-icon name="lucidePencil" class="text-xs text-muted-foreground"></ng-icon>
+                  <span>Modify Booking</span>
+                </button>
+                <button
+                  hlmDropdownMenuItem
+                  class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
+                  (click)="viewAgreement(b, $event)"
+                >
+                  <ng-icon name="lucideEye" class="text-xs text-primary"></ng-icon>
+                  <span>View Agreement</span>
+                </button>
+                <button
+                  hlmDropdownMenuItem
+                  class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 w-full text-left"
+                  (click)="openWhatsAppModal(b, 'active_reminder', $event)"
+                >
+                  <ng-icon name="lucideClock" class="text-xs text-emerald-500"></ng-icon>
+                  <span>Remind Customer (Time Left)</span>
+                </button>
+                <button
+                  hlmDropdownMenuItem
+                  class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg text-rose-500 hover:bg-rose-500/10 w-full text-left"
+                  (click)="endBooking(b, $event)"
+                >
+                  <ng-icon name="lucideCalendarX" class="text-xs text-rose-500"></ng-icon>
+                  <span>End Booking</span>
+                </button>
+              }
             </div>
           </ng-template>
         </div>
       </div>
 
-      <!-- Hover action overlay: Modify, Print Agreement, End Booking (Desktop Mouse) -->
+      <!-- Hover action overlay: Desktop Mouse -->
       <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-xs flex flex-col items-center justify-center gap-2 p-2 hover-overlay-desktop z-10">
-        <button
-          hlmBtn
-          variant="secondary"
-          size="sm"
-          class="w-36 h-7.5 text-xs font-medium rounded-lg shadow-sm border border-border/40 flex items-center justify-center gap-1.5 transition-all active:scale-95"
-          (click)="modifyBooking(b, $event)"
-        >
-          <ng-icon name="lucidePencil" class="text-xs"></ng-icon>
-          <span>Modify</span>
-        </button>
+        @if (activeCategory() === 'payments') {
+          <button
+            hlmBtn
+            variant="secondary"
+            size="sm"
+            class="w-40 h-7.5 text-xs font-medium rounded-lg shadow-sm border border-border/40 flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer"
+            (click)="modifyBooking(b, $event)"
+          >
+            <ng-icon name="lucidePencil" class="text-xs"></ng-icon>
+            <span>Modify</span>
+          </button>
 
-        <button
-          hlmBtn
-          variant="secondary"
-          size="sm"
-          class="w-36 h-7.5 text-xs font-medium rounded-lg shadow-sm border border-border/40 flex items-center justify-center gap-1.5 transition-all active:scale-95"
-          (click)="viewAgreement(b, $event)"
-          title="View Agreement"
-        >
-          <ng-icon name="lucideFileText" class="text-xs"></ng-icon>
-          <span>Agreement</span>
-        </button>
+          <button
+            hlmBtn
+            variant="secondary"
+            size="sm"
+            class="w-40 h-7.5 text-xs font-semibold rounded-lg shadow-sm border border-emerald-500/40 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer"
+            (click)="openWhatsAppModal(b, 'pending_payment', $event)"
+            title="Remind Customer about pending payment"
+          >
+            <ng-icon name="lucideMessageSquare" class="text-xs text-emerald-500"></ng-icon>
+            <span>Remind Payment</span>
+          </button>
+        } @else {
+          <button
+            hlmBtn
+            variant="secondary"
+            size="sm"
+            class="w-40 h-7.5 text-xs font-medium rounded-lg shadow-sm border border-border/40 flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer"
+            (click)="modifyBooking(b, $event)"
+          >
+            <ng-icon name="lucidePencil" class="text-xs"></ng-icon>
+            <span>Modify</span>
+          </button>
 
-        <button
-          hlmBtn
-          variant="secondary"
-          size="sm"
-          class="w-36 h-7.5 text-xs font-medium rounded-lg shadow-sm border border-border/40 flex items-center justify-center gap-1.5 transition-all active:scale-95 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
-          (click)="openWhatsAppModal(b, activeCategory() === 'payments' || +b.pendingAmount > 0 ? 'pending_payment' : 'active_reminder', $event)"
-          [title]="activeCategory() === 'payments' || +b.pendingAmount > 0 ? 'Send WhatsApp Payment Reminder' : 'Send WhatsApp Return Reminder'"
-        >
-          <ng-icon name="lucideMessageSquare" class="text-xs text-emerald-500"></ng-icon>
-          <span>WhatsApp</span>
-        </button>
+          <button
+            hlmBtn
+            variant="secondary"
+            size="sm"
+            class="w-40 h-7.5 text-xs font-medium rounded-lg shadow-sm border border-border/40 flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer"
+            (click)="viewAgreement(b, $event)"
+            title="View Agreement"
+          >
+            <ng-icon name="lucideFileText" class="text-xs"></ng-icon>
+            <span>Agreement</span>
+          </button>
 
-        <button
-          hlmBtn
-          variant="secondary"
-          size="sm"
-          class="w-36 h-7.5 text-xs font-medium rounded-lg shadow-sm border border-border/40 flex items-center justify-center gap-1.5 transition-all active:scale-95"
-          (click)="endBooking(b, $event)"
-        >
-          <ng-icon name="lucideCalendarX" class="text-xs"></ng-icon>
-          <span>End Booking</span>
-        </button>
+          <button
+            hlmBtn
+            variant="secondary"
+            size="sm"
+            class="w-40 h-7.5 text-xs font-semibold rounded-lg shadow-sm border border-emerald-500/40 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer"
+            (click)="openWhatsAppModal(b, 'active_reminder', $event)"
+            title="Remind Customer about remaining time in current booking"
+          >
+            <ng-icon name="lucideClock" class="text-xs text-emerald-500"></ng-icon>
+            <span>Remind Customer</span>
+          </button>
+
+          <button
+            hlmBtn
+            variant="secondary"
+            size="sm"
+            class="w-40 h-7.5 text-xs font-medium rounded-lg shadow-sm border border-border/40 flex items-center justify-center gap-1.5 transition-all active:scale-95 text-rose-500 hover:bg-rose-500/10 cursor-pointer"
+            (click)="endBooking(b, $event)"
+          >
+            <ng-icon name="lucideCalendarX" class="text-xs text-rose-500"></ng-icon>
+            <span>End Booking</span>
+          </button>
+        }
       </div>
     </div>
 
@@ -1000,4 +1186,3 @@
     </div>
   </div>
 </ng-template>
-
