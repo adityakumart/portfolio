@@ -76,3 +76,4 @@ export interface IKycServiceStatus {
   mode: 'live' | 'sandbox';
   baseUrl: string;
 }
+
