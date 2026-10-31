@@ -31,6 +31,14 @@ import {
   lucideTag,
   lucideAlertCircle,
   lucideCalendarCheck,
+  lucidePaperclip,
+  lucidePrinter,
+  lucideUpload,
+  lucideTrash2,
+  lucideCamera,
+  lucideCheckCircle2,
+  lucideExternalLink,
+  lucideImage,
 } from '@ng-icons/lucide';
 import { toast } from '@spartan-ng/hel/sonner';
 import { HlmDropdownMenuImports } from '@spartan-ng/hel/dropdown-menu';
@@ -41,6 +49,7 @@ import {
   ICustomerMembershipDiscount,
   ICustomerAutocompleteItem,
   IRegularCustomerMasked,
+  IBookingAttachments,
 } from '@portfolio/shared-types';
 import { RRApiService } from '../../../services/rr-api.service';
 import { RRInvoicePdfService } from '../../../services/rr-invoice-pdf.service';
@@ -102,6 +111,14 @@ export interface NewBookingDialogContext {
       lucideTag,
       lucideAlertCircle,
       lucideCalendarCheck,
+  lucidePaperclip,
+  lucidePrinter,
+  lucideUpload,
+  lucideTrash2,
+  lucideCamera,
+  lucideCheckCircle2,
+  lucideExternalLink,
+  lucideImage,
     }),
   ],
   templateUrl: './new-booking-dialog.component.html',
@@ -124,10 +141,72 @@ export class RRNewBookingDialogComponent implements OnInit {
   membershipDiscount = signal<ICustomerMembershipDiscount | null>(null);
 
   // Documentation & Agreement workflow state
-  isAgreementReviewed = signal<boolean>(false);
-  hasUploadedAttachments = signal<boolean>(false);
+  isAgreementPrinted = signal<boolean>(false);
   signedAgreementUrl = signal<string | null>(null);
+
+  instrumentClusterImages = signal<string[]>([]);
+  vehicleImages = signal<string[]>([]);
+  customerIds = signal<string[]>([]);
+  guaranteePersonIds = signal<string[]>([]);
+  securityDepositImages = signal<string[]>([]);
+
+  previewImageUrl = signal<string | null>(null);
+
+  isUploadingSignedAgreement = signal<boolean>(false);
+  isUploadingInstrumentCluster = signal<boolean>(false);
+  isUploadingVehicleImages = signal<boolean>(false);
+  isUploadingCustomerIds = signal<boolean>(false);
+  isUploadingGuaranteeIds = signal<boolean>(false);
+  isUploadingDepositImages = signal<boolean>(false);
   uploadedAttachments = signal<AgreementUploadItem[]>([]);
+
+
+  isAgreementReviewed = computed(() => this.isAgreementPrinted());
+  hasUploadedAttachments = computed(() => this.isAttachmentsValid());
+
+  isSecurityDepositImageRequired = computed(() => {
+    const depType = this.bookingFormGroup?.get('depositType')?.value;
+    return depType !== 'none' && depType !== 'cash';
+  });
+
+  isAttachmentsValid = computed(() => {
+    if (!this.isAgreementPrinted()) return false;
+    if (!this.signedAgreementUrl()) return false;
+    if (this.instrumentClusterImages().length < 1) return false;
+    if (this.vehicleImages().length < 1 || this.vehicleImages().length > 10) return false;
+    if (this.customerIds().length < 1 || this.customerIds().length > 3) return false;
+    if (this.guaranteePersonIds().length > 3) return false;
+    if (this.isSecurityDepositImageRequired()) {
+      if (this.securityDepositImages().length < 1 || this.securityDepositImages().length > 10) return false;
+    }
+    return true;
+  });
+
+  missingAttachmentsList = computed(() => {
+    const list: string[] = [];
+    if (!this.isAgreementPrinted()) {
+      list.push('Print Agreement');
+    }
+    if (!this.signedAgreementUrl()) {
+      list.push('Signed Agreement (*)');
+    }
+    if (this.instrumentClusterImages().length < 1) {
+      list.push('Vehicle Instrument Cluster (*)');
+    }
+    if (this.vehicleImages().length < 1) {
+      list.push('Vehicle Images (*)');
+    }
+    if (this.customerIds().length < 1) {
+      list.push("Customer ID's (*)");
+    }
+    if (this.isSecurityDepositImageRequired() && this.securityDepositImages().length < 1) {
+      list.push('Security Deposit Images (*)');
+    }
+    return list;
+  });
+
+
+
 
   // Real-time schedule conflict status against advance reservations
   scheduleConflict = signal<ScheduleConflict>({ hasConflict: false });
@@ -639,15 +718,37 @@ export class RRNewBookingDialogComponent implements OnInit {
       }
       if (resv.signedAgreementUrl) {
         this.signedAgreementUrl.set(resv.signedAgreementUrl);
-        this.isAgreementReviewed.set(true);
+        this.isAgreementPrinted.set(true);
       }
       if (resv.attachments && resv.attachments.length > 0) {
         const atts: AgreementUploadItem[] = resv.attachments.map((url, i) => ({
           name: `Attachment ${i + 1}`,
           url,
         }));
-        this.uploadedAttachments.set(atts);
-        this.hasUploadedAttachments.set(true);
+        this.vehicleImages.set(resv.attachments);
+      }
+      if (resv.bookingAttachments) {
+        const ba = resv.bookingAttachments;
+        if (ba.signedAgreement) {
+          this.signedAgreementUrl.set(ba.signedAgreement);
+          this.isAgreementPrinted.set(true);
+        }
+        if (ba.instrumentCluster) {
+          this.instrumentClusterImages.set(ba.instrumentCluster);
+        }
+        if (ba.vehicleImages) {
+          this.vehicleImages.set(ba.vehicleImages);
+        }
+        if (ba.customerIds) {
+          this.customerIds.set(ba.customerIds);
+        }
+        if (ba.guaranteePersonIds) {
+          this.guaranteePersonIds.set(ba.guaranteePersonIds);
+        }
+        if (ba.securityDepositImages) {
+          this.securityDepositImages.set(ba.securityDepositImages);
+        }
+
       }
       this.validateScheduleOverlap();
       return;
@@ -1018,8 +1119,12 @@ export class RRNewBookingDialogComponent implements OnInit {
       return;
     }
 
-    if (!this.isAgreementReviewed() || !this.hasUploadedAttachments()) {
-      toast.error('Please review the agreement and upload the signed agreement and attachment proofs before creating the booking.');
+    if (!this.isAttachmentsValid()) {
+      const missing = this.missingAttachmentsList().join(', ');
+      toast.error(`Please complete mandatory attachment requirements: ${missing}`);
+
+
+
       return;
     }
 
@@ -1030,7 +1135,22 @@ export class RRNewBookingDialogComponent implements OnInit {
         ...this.bookingFormGroup.value,
         status: 'active',
         signedAgreementUrl: this.signedAgreementUrl(),
-        attachments: this.uploadedAttachments().map((a) => a.url),
+        attachments: [
+          ...this.instrumentClusterImages(),
+          ...this.vehicleImages(),
+          ...this.customerIds(),
+          ...this.guaranteePersonIds(),
+          ...this.securityDepositImages(),
+        ],
+        bookingAttachments: {
+          signedAgreement: this.signedAgreementUrl(),
+          instrumentCluster: this.instrumentClusterImages(),
+          vehicleImages: this.vehicleImages(),
+          customerIds: this.customerIds(),
+          guaranteePersonIds: this.guaranteePersonIds(),
+          securityDepositImages: this.securityDepositImages(),
+          verifiedAfterReturn: false,
+        },
         bookedBy: currentUser?.id,
         bookedByName: currentUser ? `${currentUser.firstName} ${currentUser.lastName}`.trim() : undefined,
       };
@@ -1126,9 +1246,9 @@ export class RRNewBookingDialogComponent implements OnInit {
         if (result) {
           this.signedAgreementUrl.set(result.signedAgreementUrl || null);
           this.uploadedAttachments.set(result.attachments || []);
-          this.isAgreementReviewed.set(true);
+          this.isAgreementPrinted.set(true);
           const hasDocs = Boolean(result.signedAgreementUrl && result.attachments && result.attachments.length > 0);
-          this.hasUploadedAttachments.set(hasDocs);
+
           if (hasDocs) {
             toast.success('Agreement and attachments saved and verified.');
           } else {
@@ -1146,8 +1266,258 @@ export class RRNewBookingDialogComponent implements OnInit {
     this.viewAgreementPDFFromForm();
   }
 
-  printAgreementPDFFromForm() {
-    this.viewAgreementPDFFromForm();
+  async printAgreementPDF() {
+    if (this.bookingFormGroup.invalid) {
+      this.bookingFormGroup.markAllAsTouched();
+      toast.error('Please complete all required booking details before printing the agreement.');
+      return;
+    }
+
+    try {
+      const bObj = this.getAgreementDraftObject();
+      const doc = await this.invoicePdf.generateAgreementPdfDoc(bObj);
+      if (!doc) {
+        toast.error('Failed to generate agreement PDF.');
+        return;
+      }
+
+      const id = bObj.id || 'DRAFT';
+      const blob = doc.output('blob');
+      const blobUrl = URL.createObjectURL(blob);
+
+      const win = window.open(blobUrl, '_blank');
+      if (win) {
+        win.focus();
+        setTimeout(() => win.print(), 500);
+      }
+
+      this.isAgreementPrinted.set(true);
+      toast.success('Rental Agreement sent to print. Attachments section is now unlocked!');
+    } catch (err: any) {
+      console.error(err);
+      toast.error('Error generating agreement for printing: ' + (err?.message || 'unknown error'));
+    }
+  }
+
+  async onSignedAgreementFileSelected(event: Event) {
+    const target = event.target as HTMLInputElement;
+    const file = target.files?.[0];
+    if (!file) return;
+
+    try {
+      this.isUploadingSignedAgreement.set(true);
+      const res = await this.rrApi.uploadVehicleImage(file);
+      if (res && res.url) {
+        this.signedAgreementUrl.set(res.url);
+        toast.success('Signed agreement uploaded successfully.');
+      } else {
+        toast.error('Failed to obtain uploaded agreement URL.');
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || 'Error uploading signed agreement.');
+    } finally {
+      this.isUploadingSignedAgreement.set(false);
+      target.value = '';
+    }
+  }
+
+  removeSignedAgreement() {
+    this.signedAgreementUrl.set(null);
+  }
+
+  async onInstrumentClusterSelected(event: Event) {
+    const target = event.target as HTMLInputElement;
+    const files = target.files;
+    if (!files || files.length === 0) return;
+
+    try {
+      this.isUploadingInstrumentCluster.set(true);
+      const urls = await this.uploadFiles(files);
+      if (urls.length > 0) {
+        this.instrumentClusterImages.update((curr) => [...curr, ...urls]);
+        toast.success(`${urls.length} instrument cluster photo(s) uploaded.`);
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || 'Error uploading instrument cluster photos.');
+    } finally {
+      this.isUploadingInstrumentCluster.set(false);
+      target.value = '';
+    }
+  }
+
+  removeInstrumentCluster(idx: number) {
+    this.instrumentClusterImages.update((curr) => curr.filter((_, i) => i !== idx));
+  }
+
+  async onVehicleImagesSelected(event: Event) {
+    const target = event.target as HTMLInputElement;
+    const files = target.files;
+    if (!files || files.length === 0) return;
+
+    const remaining = 10 - this.vehicleImages().length;
+    if (remaining <= 0) {
+      toast.error('Maximum 10 vehicle images allowed.');
+      target.value = '';
+      return;
+    }
+
+    const filesToUpload = Array.from(files).slice(0, remaining);
+    if (files.length > remaining) {
+      toast.warning(`Only ${remaining} images were accepted (max 10 allowed).`);
+    }
+
+    try {
+      this.isUploadingVehicleImages.set(true);
+      const urls = await this.uploadFiles(filesToUpload);
+      if (urls.length > 0) {
+        this.vehicleImages.update((curr) => [...curr, ...urls]);
+        toast.success(`${urls.length} vehicle photo(s) uploaded.`);
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || 'Error uploading vehicle images.');
+    } finally {
+      this.isUploadingVehicleImages.set(false);
+      target.value = '';
+    }
+  }
+
+  removeVehicleImage(idx: number) {
+    this.vehicleImages.update((curr) => curr.filter((_, i) => i !== idx));
+  }
+
+  async onCustomerIdsSelected(event: Event) {
+    const target = event.target as HTMLInputElement;
+    const files = target.files;
+    if (!files || files.length === 0) return;
+
+    const remaining = 3 - this.customerIds().length;
+    if (remaining <= 0) {
+      toast.error("Maximum 3 customer ID's allowed.");
+      target.value = '';
+      return;
+    }
+
+    const filesToUpload = Array.from(files).slice(0, remaining);
+    if (files.length > remaining) {
+      toast.warning(`Only ${remaining} file(s) accepted (max 3 customer ID's).`);
+    }
+
+    try {
+      this.isUploadingCustomerIds.set(true);
+      const urls = await this.uploadFiles(filesToUpload);
+      if (urls.length > 0) {
+        this.customerIds.update((curr) => [...curr, ...urls]);
+        toast.success(`${urls.length} customer ID(s) uploaded.`);
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || 'Error uploading customer IDs.');
+    } finally {
+      this.isUploadingCustomerIds.set(false);
+      target.value = '';
+    }
+  }
+
+  removeCustomerId(idx: number) {
+    this.customerIds.update((curr) => curr.filter((_, i) => i !== idx));
+  }
+
+  async onGuaranteeIdsSelected(event: Event) {
+    const target = event.target as HTMLInputElement;
+    const files = target.files;
+    if (!files || files.length === 0) return;
+
+    const remaining = 3 - this.guaranteePersonIds().length;
+    if (remaining <= 0) {
+      toast.error("Maximum 3 guarantee person ID's allowed.");
+      target.value = '';
+      return;
+    }
+
+    const filesToUpload = Array.from(files).slice(0, remaining);
+    if (files.length > remaining) {
+      toast.warning(`Only ${remaining} file(s) accepted (max 3 guarantee person ID's).`);
+    }
+
+    try {
+      this.isUploadingGuaranteeIds.set(true);
+      const urls = await this.uploadFiles(filesToUpload);
+      if (urls.length > 0) {
+        this.guaranteePersonIds.update((curr) => [...curr, ...urls]);
+        toast.success(`${urls.length} guarantee ID(s) uploaded.`);
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || 'Error uploading guarantee person IDs.');
+    } finally {
+      this.isUploadingGuaranteeIds.set(false);
+      target.value = '';
+    }
+  }
+
+  removeGuaranteeId(idx: number) {
+    this.guaranteePersonIds.update((curr) => curr.filter((_, i) => i !== idx));
+  }
+
+  async onDepositImagesSelected(event: Event) {
+    const target = event.target as HTMLInputElement;
+    const files = target.files;
+    if (!files || files.length === 0) return;
+
+    const remaining = 10 - this.securityDepositImages().length;
+    if (remaining <= 0) {
+      toast.error('Maximum 10 security deposit images allowed.');
+      target.value = '';
+      return;
+    }
+
+    const filesToUpload = Array.from(files).slice(0, remaining);
+    if (files.length > remaining) {
+      toast.warning(`Only ${remaining} file(s) accepted (max 10 deposit images).`);
+    }
+
+    try {
+      this.isUploadingDepositImages.set(true);
+      const urls = await this.uploadFiles(filesToUpload);
+      if (urls.length > 0) {
+        this.securityDepositImages.update((curr) => [...curr, ...urls]);
+        toast.success(`${urls.length} security deposit image(s) uploaded.`);
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || 'Error uploading security deposit images.');
+    } finally {
+      this.isUploadingDepositImages.set(false);
+      target.value = '';
+    }
+  }
+
+  removeDepositImage(idx: number) {
+    this.securityDepositImages.update((curr) => curr.filter((_, i) => i !== idx));
+  }
+
+  private async uploadFiles(files: FileList | File[]): Promise<string[]> {
+    const list = Array.from(files);
+    if (list.length === 0) return [];
+    const res = await this.rrApi.uploadVehicleImages(list);
+    if (res.images && res.images.length > 0) {
+      return res.images.map((img) => img.url);
+    }
+    if (res.url) {
+      return [res.url];
+    }
+    return [];
+  }
+
+  openImagePreview(url: string) {
+    this.previewImageUrl.set(url);
+  }
+
+  closeImagePreview() {
+    this.previewImageUrl.set(null);
   }
 
   closeDialog() {

@@ -252,6 +252,258 @@
       </div>
     </div>
 
+    <!-- SECTION: Attachments & Pre-pickup Documentation (View Only) -->
+    <div class="rounded-xl border border-border overflow-hidden bg-card transition-all">
+      <div class="bg-muted/40 border-b border-border px-3 py-2 flex items-center justify-between">
+        <h4 class="font-bold text-xs text-foreground uppercase tracking-wide flex items-center gap-1.5">
+          <ng-icon name="lucidePaperclip" class="text-sm text-primary"></ng-icon>
+          <span>Attachments & Pre-Pickup Documentation (View Only)</span>
+        </h4>
+        @if (attachmentsVerified()) {
+          <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+            <ng-icon name="lucideCheck" class="text-xs"></ng-icon>
+            Vehicle Verified
+          </span>
+        } @else {
+          <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+            <ng-icon name="lucideAlertCircle" class="text-xs"></ng-icon>
+            Verification Required
+          </span>
+        }
+      </div>
+
+      <div class="p-3.5 space-y-3">
+        <!-- 6 Categories Grid in View-Only Mode -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+
+          <!-- 1. Signed Agreement -->
+          <div class="p-3 rounded-lg border border-border/70 bg-muted/20 space-y-2 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between gap-1 mb-1">
+                <span class="text-xs font-bold text-foreground">
+                  * Signed Agreement
+                </span>
+                @if (bookingAttachments().signedAgreement) {
+                  <span class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/15 px-1.5 py-0.5 rounded">Uploaded</span>
+                } @else {
+                  <span class="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">Not Attached</span>
+                }
+              </div>
+              <p class="text-[11px] text-muted-foreground">Signed agreement terms document.</p>
+            </div>
+
+            @if (bookingAttachments().signedAgreement; as url) {
+              <div class="pt-1">
+                <a
+                  [href]="url"
+                  target="_blank"
+                  class="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline bg-primary/10 px-2.5 py-1.5 rounded-md w-full justify-center"
+                >
+                  <ng-icon name="lucideFileText" class="text-sm"></ng-icon>
+                  <span>View Signed Agreement</span>
+                  <ng-icon name="lucideExternalLink" class="text-xs"></ng-icon>
+                </a>
+              </div>
+            } @else {
+              <div class="text-[11px] text-muted-foreground italic py-1">No signed agreement file.</div>
+            }
+          </div>
+
+          <!-- 2. Vehicle Instrument Cluster -->
+          <div class="p-3 rounded-lg border border-border/70 bg-muted/20 space-y-2 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between gap-1 mb-1">
+                <span class="text-xs font-bold text-foreground">
+                  * Vehicle Instrument Cluster
+                </span>
+                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                  {{ (bookingAttachments().instrumentCluster || []).length }} Photo(s)
+                </span>
+              </div>
+              <p class="text-[11px] text-muted-foreground">
+                Pickup ODO: <strong class="text-foreground">{{ booking()?.vehicleOdometerStart || '0' }} km</strong>.
+              </p>
+            </div>
+
+            @if ((bookingAttachments().instrumentCluster || []).length > 0) {
+              <div class="flex flex-wrap gap-1.5 pt-1">
+                @for (img of bookingAttachments().instrumentCluster; track img) {
+                  <img
+                    [src]="img"
+                    alt="Instrument Cluster"
+                    class="h-12 w-12 rounded object-cover border border-border cursor-pointer hover:opacity-80 transition-opacity"
+                    (click)="openImagePreview(img)"
+                    title="Click to view full cluster image"
+                  />
+                }
+              </div>
+            } @else {
+              <div class="text-[11px] text-muted-foreground italic py-1">No pre-pickup cluster photo recorded.</div>
+            }
+          </div>
+
+          <!-- 3. Vehicle Images -->
+          <div class="p-3 rounded-lg border border-border/70 bg-muted/20 space-y-2 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between gap-1 mb-1">
+                <span class="text-xs font-bold text-foreground">
+                  * Vehicle Images
+                </span>
+                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                  {{ (bookingAttachments().vehicleImages || []).length }} Photo(s)
+                </span>
+              </div>
+              <p class="text-[11px] text-muted-foreground">Pre-pickup exterior/interior condition.</p>
+            </div>
+
+            @if ((bookingAttachments().vehicleImages || []).length > 0) {
+              <div class="flex flex-wrap gap-1.5 pt-1 max-h-24 overflow-y-auto">
+                @for (img of bookingAttachments().vehicleImages; track img) {
+                  <img
+                    [src]="img"
+                    alt="Vehicle Pre-trip"
+                    class="h-12 w-12 rounded object-cover border border-border cursor-pointer hover:opacity-80 transition-opacity"
+                    (click)="openImagePreview(img)"
+                    title="Click to zoom image"
+                  />
+                }
+              </div>
+            } @else {
+              <div class="text-[11px] text-muted-foreground italic py-1">No vehicle photos recorded.</div>
+            }
+          </div>
+
+          <!-- 4. Customer ID's -->
+          <div class="p-3 rounded-lg border border-border/70 bg-muted/20 space-y-2 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between gap-1 mb-1">
+                <span class="text-xs font-bold text-foreground">
+                  * Customer ID's
+                </span>
+                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                  {{ (bookingAttachments().customerIds || []).length }} File(s)
+                </span>
+              </div>
+              <p class="text-[11px] text-muted-foreground">Customer identity proof proofs.</p>
+            </div>
+
+            @if ((bookingAttachments().customerIds || []).length > 0) {
+              <div class="flex flex-wrap gap-1.5 pt-1 max-h-24 overflow-y-auto">
+                @for (file of bookingAttachments().customerIds; track file) {
+                  @if (file.endsWith('.pdf')) {
+                    <a [href]="file" target="_blank" class="h-12 w-12 rounded border border-border flex flex-col items-center justify-center text-primary bg-background hover:bg-muted text-[8px] font-bold">
+                      <ng-icon name="lucideFileText" class="text-base"></ng-icon>
+                      <span>PDF</span>
+                    </a>
+                  } @else {
+                    <img
+                      [src]="file"
+                      alt="Customer ID"
+                      class="h-12 w-12 rounded object-cover border border-border cursor-pointer hover:opacity-80"
+                      (click)="openImagePreview(file)"
+                    />
+                  }
+                }
+              </div>
+            } @else {
+              <div class="text-[11px] text-muted-foreground italic py-1">No customer ID files recorded.</div>
+            }
+          </div>
+
+          <!-- 5. Guarantee person ID's -->
+          <div class="p-3 rounded-lg border border-border/70 bg-muted/20 space-y-2 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between gap-1 mb-1">
+                <span class="text-xs font-bold text-foreground">
+                  Guarantee person ID's
+                </span>
+                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                  {{ (bookingAttachments().guaranteePersonIds || []).length }} File(s)
+                </span>
+              </div>
+              <p class="text-[11px] text-muted-foreground">Guarantor identity proof copies.</p>
+            </div>
+
+            @if ((bookingAttachments().guaranteePersonIds || []).length > 0) {
+              <div class="flex flex-wrap gap-1.5 pt-1 max-h-24 overflow-y-auto">
+                @for (file of bookingAttachments().guaranteePersonIds; track file) {
+                  @if (file.endsWith('.pdf')) {
+                    <a [href]="file" target="_blank" class="h-12 w-12 rounded border border-border flex flex-col items-center justify-center text-primary bg-background hover:bg-muted text-[8px] font-bold">
+                      <ng-icon name="lucideFileText" class="text-base"></ng-icon>
+                      <span>PDF</span>
+                    </a>
+                  } @else {
+                    <img
+                      [src]="file"
+                      alt="Guarantor ID"
+                      class="h-12 w-12 rounded object-cover border border-border cursor-pointer hover:opacity-80"
+                      (click)="openImagePreview(file)"
+                    />
+                  }
+                }
+              </div>
+            } @else {
+              <div class="text-[11px] text-muted-foreground italic py-1">No guarantor IDs recorded.</div>
+            }
+          </div>
+
+          <!-- 6. Security Deposit Images -->
+          <div class="p-3 rounded-lg border border-border/70 bg-muted/20 space-y-2 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between gap-1 mb-1">
+                <span class="text-xs font-bold text-foreground">
+                  Security Deposit Images
+                </span>
+                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                  {{ (bookingAttachments().securityDepositImages || []).length }} Image(s)
+                </span>
+              </div>
+              <p class="text-[11px] text-muted-foreground">
+                Deposit: <strong class="text-foreground">{{ booking()?.depositType | uppercase }}</strong>
+              </p>
+            </div>
+
+            @if ((bookingAttachments().securityDepositImages || []).length > 0) {
+              <div class="flex flex-wrap gap-1.5 pt-1 max-h-24 overflow-y-auto">
+                @for (img of bookingAttachments().securityDepositImages; track img) {
+                  <img
+                    [src]="img"
+                    alt="Deposit"
+                    class="h-12 w-12 rounded object-cover border border-border cursor-pointer hover:opacity-80"
+                    (click)="openImagePreview(img)"
+                  />
+                }
+              </div>
+            } @else {
+              <div class="text-[11px] text-muted-foreground italic py-1">
+                {{ booking()?.depositType === 'none' || booking()?.depositType === 'cash' ? 'No deposit images required (None/Cash)' : 'No deposit images recorded' }}
+              </div>
+            }
+          </div>
+
+        </div>
+
+        <!-- Verified Checkbox at the Bottom of Attachments Section -->
+        <div class="p-3 rounded-xl border border-primary/30 bg-primary/5 flex items-start gap-3 mt-2">
+          <input
+            type="checkbox"
+            id="attachmentsVerifiedCheck"
+            [checked]="attachmentsVerified()"
+            (change)="attachmentsVerified.set($any($event.target).checked)"
+            class="mt-0.5 h-5 w-5 rounded border-border text-primary cursor-pointer accent-primary shrink-0"
+          />
+          <label for="attachmentsVerifiedCheck" class="cursor-pointer select-none">
+            <span class="text-xs font-bold text-foreground block">
+              Vehicle & Attachments Verified After Return
+            </span>
+            <span class="text-[11px] text-muted-foreground block mt-0.5">
+              I have inspected the vehicle, cross-checked the instrument cluster odometer reading and pre-pickup images against the returned vehicle condition, and verified all attachments.
+            </span>
+          </label>
+        </div>
+      </div>
+    </div>
+
     <!-- SECTION 1: Cleanliness Fee/Charges -->
     <div
       class="rounded-xl border overflow-hidden bg-card transition-all"
@@ -669,6 +921,47 @@
                     min="0"
                   />
                 </div>
+
+                <!-- Upload photo option for damage (optional) -->
+                @if (dmg.imageUrl) {
+                  <div class="flex items-center gap-1.5 shrink-0 bg-background/80 p-1 rounded-md border border-border">
+                    <img
+                      [src]="dmg.imageUrl"
+                      alt="Damage"
+                      class="h-7 w-7 rounded object-cover cursor-pointer hover:opacity-80"
+                      (click)="openImagePreview(dmg.imageUrl)"
+                      title="Click to view photo"
+                    />
+                    <button
+                      type="button"
+                      (click)="removeDamagePhoto(dmg)"
+                      class="h-6 w-6 rounded flex items-center justify-center text-destructive hover:bg-destructive/10"
+                      title="Remove damage photo"
+                    >
+                      <ng-icon name="lucideTrash2" class="text-xs"></ng-icon>
+                    </button>
+                  </div>
+                } @else {
+                  <label
+                    class="h-8 px-2.5 rounded-md border border-dashed border-border bg-background hover:bg-muted/80 text-muted-foreground hover:text-foreground text-xs flex items-center gap-1.5 cursor-pointer shrink-0 transition-colors"
+                    title="Upload damage photo (optional)"
+                  >
+                    @if (dmg.isUploadingImage) {
+                      <ng-icon name="lucideRefreshCw" class="text-xs animate-spin text-primary"></ng-icon>
+                      <span class="text-[11px]">Uploading...</span>
+                    } @else {
+                      <ng-icon name="lucideCamera" class="text-xs text-primary"></ng-icon>
+                      <span class="text-[11px]">Add Photo</span>
+                    }
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      class="hidden"
+                      [disabled]="dmg.isUploadingImage"
+                      (change)="uploadDamagePhoto($event, dmg)"
+                    />
+                  </label>
+                }
 
                 <!-- Action Button beside added damage -->
                 <div class="flex items-center gap-1 shrink-0">
@@ -1093,17 +1386,43 @@
         </div>
       }
       <button hlmBtn variant="outline" (click)="closeDialog()">Cancel</button>
-      <button
-        hlmBtn
-        class="action-btn success flex items-center gap-1.5 font-bold shadow-md"
-        [disabled]="!isFormValid() || isSubmitting()"
-        (click)="submitEndBooking()"
-      >
-        <ng-icon name="lucideReceipt"></ng-icon>
-        <span>{{
-          isSubmitting() ? 'Finalizing...' : 'End Booking & Generate Invoice'
-        }}</span>
-      </button>
+      @if (attachmentsVerified()) {
+        <button
+          hlmBtn
+          class="action-btn success flex items-center gap-1.5 font-bold shadow-md"
+          [disabled]="!isFormValid() || isSubmitting()"
+          (click)="submitEndBooking()"
+        >
+          <ng-icon name="lucideReceipt"></ng-icon>
+          <span>{{
+            isSubmitting() ? 'Finalizing...' : 'End Booking & Generate Invoice'
+          }}</span>
+        </button>
+      } @else {
+        <div class="inline-flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/25 px-3 py-1.5 rounded-lg font-medium">
+          <ng-icon name="lucideAlertCircle" class="text-xs"></ng-icon>
+          <span>Verify return attachments above to display End Booking</span>
+        </div>
+      }
     </div>
   </div>
+
+  <!-- Modal Image Lightbox Preview -->
+  @if (previewImageUrl()) {
+    <div
+      class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm"
+      (click)="closeImagePreview()"
+    >
+      <div class="relative max-w-4xl max-h-[90vh] bg-card rounded-2xl overflow-hidden border border-border shadow-2xl" (click)="$event.stopPropagation()">
+        <button
+          type="button"
+          class="absolute top-3 right-3 z-10 h-8 w-8 rounded-full bg-black/60 text-white hover:bg-black flex items-center justify-center"
+          (click)="closeImagePreview()"
+        >
+          <ng-icon name="lucideX" class="text-base"></ng-icon>
+        </button>
+        <img [src]="previewImageUrl()" alt="Attachment Preview" class="w-full h-auto max-h-[85vh] object-contain" />
+      </div>
+    </div>
+  }
 </div>

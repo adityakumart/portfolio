@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BrnDialogRef, injectBrnDialogContext } from '@spartan-ng/brain/dialog';
@@ -21,6 +21,15 @@ import {
   lucideSparkles,
   lucideInfo,
   lucidePhoneCall,
+  lucideCamera,
+  lucideUpload,
+  lucideImage,
+  lucideFileText,
+  lucideExternalLink,
+  lucidePaperclip,
+  lucideCheckCircle2,
+  lucideEye,
+  lucideRefreshCw,
 } from '@ng-icons/lucide';
 import { toast } from '@spartan-ng/hel/sonner';
 import {
@@ -28,6 +37,7 @@ import {
   IVehicle,
   IVehiclePricing,
   IDamageItem,
+  IBookingAttachments,
 } from '@portfolio/shared-types';
 import { RRApiService } from '../../../services/rr-api.service';
 import { RRInvoicePdfService } from '../../../services/rr-invoice-pdf.service';
@@ -76,6 +86,15 @@ export type EndBookingScenario =
       lucideSparkles,
       lucideInfo,
       lucidePhoneCall,
+      lucideCamera,
+      lucideUpload,
+      lucideImage,
+      lucideFileText,
+      lucideExternalLink,
+      lucidePaperclip,
+      lucideCheckCircle2,
+      lucideEye,
+      lucideRefreshCw,
     }),
   ],
   templateUrl: './end-booking-dialog.component.html',
@@ -94,6 +113,21 @@ export class RREndBookingDialogComponent implements OnInit {
 
   // Active validation scenario (Case 1, 2, 3, 4.1, 4.2)
   activeScenario = signal<EndBookingScenario>('case1');
+
+  attachmentsVerified = signal<boolean>(false);
+  previewImageUrl = signal<string | null>(null);
+
+  bookingAttachments = computed<IBookingAttachments>(() => {
+    const b = this.booking();
+    if (!b) return {};
+    if (b.bookingAttachments) {
+      return b.bookingAttachments;
+    }
+    return {
+      signedAgreement: b.signedAgreementUrl || null,
+      vehicleImages: b.attachments || [],
+    };
+  });
 
   // Fields state
   endBookingFields = {
@@ -152,7 +186,7 @@ export class RREndBookingDialogComponent implements OnInit {
   };
 
   // Dynamic Damages list
-  damages: IDamageItem[] = [];
+  damages: (IDamageItem & { isUploadingImage?: boolean })[] = [];
 
   isOdometerEndInvalid(): boolean {
     if (
@@ -281,6 +315,11 @@ export class RREndBookingDialogComponent implements OnInit {
       return false;
     }
 
+    // 6. Return attachments must be verified after vehicle inspection
+    if (!this.attachmentsVerified()) {
+      return false;
+    }
+
     return true;
   }
 
@@ -319,6 +358,9 @@ export class RREndBookingDialogComponent implements OnInit {
         Number(this.endBookingFields.nonIntimationFine) < 0)
     ) {
       return 'Enter valid non-intimation fine amount';
+    }
+    if (!this.attachmentsVerified()) {
+      return 'Verify return attachments after inspecting the vehicle';
     }
     return '';
   }
@@ -457,6 +499,8 @@ export class RREndBookingDialogComponent implements OnInit {
       description: '',
       amount: '' as any,
       confirmed: true,
+      imageUrl: '',
+      isUploadingImage: false,
     };
     this.damages.push(newDamage);
     this.calculateEndBookingFees();
@@ -469,6 +513,41 @@ export class RREndBookingDialogComponent implements OnInit {
 
   toggleDamageConfirm(damage: IDamageItem) {
     damage.confirmed = !damage.confirmed;
+  }
+
+  async uploadDamagePhoto(event: Event, dmg: IDamageItem & { isUploadingImage?: boolean }) {
+    const target = event.target as HTMLInputElement;
+    const file = target.files?.[0];
+    if (!file) return;
+
+    try {
+      dmg.isUploadingImage = true;
+      const res = await this.rrApi.uploadVehicleImage(file);
+      if (res && res.url) {
+        dmg.imageUrl = res.url;
+        toast.success('Damage photo uploaded successfully.');
+      } else {
+        toast.error('Failed to obtain uploaded image URL.');
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error('Error uploading damage photo: ' + (err?.message || 'unknown error'));
+    } finally {
+      dmg.isUploadingImage = false;
+      target.value = '';
+    }
+  }
+
+  removeDamagePhoto(dmg: IDamageItem) {
+    dmg.imageUrl = undefined;
+  }
+
+  openImagePreview(url: string) {
+    this.previewImageUrl.set(url);
+  }
+
+  closeImagePreview() {
+    this.previewImageUrl.set(null);
   }
 
   // --- Non-Intimation Fine ---
@@ -780,7 +859,21 @@ export class RREndBookingDialogComponent implements OnInit {
         extraKmFee: String(this.endBookingFields.extraKmFee),
         extraHoursTaken: String(this.endBookingFields.extraHours),
         extraHourFee: String(this.endBookingFields.extraHourFee),
-        damages: this.damages,
+        damages: this.damages.map((d) => ({
+          id: d.id,
+          description: d.description,
+          amount: Number(d.amount),
+          confirmed: d.confirmed,
+          imageUrl: d.imageUrl || undefined,
+        })),
+        attachmentsVerified: true,
+        bookingAttachments: {
+          ...(b.bookingAttachments || {}),
+          verifiedAfterReturn: true,
+          verifiedAt: new Date().toISOString(),
+          verifiedBy: currentUser?.id,
+          verifiedByName: currentUser ? `${currentUser.firstName} ${currentUser.lastName}`.trim() : undefined,
+        },
         damagesTotal: String(this.endBookingFields.damagesTotal),
         challanaAmount: String(this.endBookingFields.challanaAmount || 0),
         tollAmount: String(this.endBookingFields.tollAmount || 0),
