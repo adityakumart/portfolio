@@ -166,6 +166,21 @@ export interface IDamageItem {
   description: string;
   amount: number;
   confirmed?: boolean;
+  imageUrl?: string;
+  isUploadingImage?: boolean;
+}
+
+export interface IBookingAttachments {
+  signedAgreement?: string | null;
+  instrumentCluster?: string[];
+  vehicleImages?: string[];
+  customerIds?: string[];
+  guaranteePersonIds?: string[];
+  securityDepositImages?: string[];
+  verifiedAfterReturn?: boolean;
+  verifiedAt?: string | null;
+  verifiedBy?: string | null;
+  verifiedByName?: string | null;
 }
 
 export interface IBooking {
@@ -232,6 +247,8 @@ export interface IBooking {
   activityLogs?: string[];
   signedAgreementUrl?: string | null;
   attachments?: string[];
+  bookingAttachments?: IBookingAttachments;
+  attachmentsVerified?: boolean;
 
   // Staff audit tracking (who booked and who ended)
   bookedBy?: string;
@@ -708,6 +725,7 @@ export interface IRRFeedback {
   issueType: RRFeedbackIssueType;
   description: string; // min 10, max 1000 characters
   imageUrl?: string;
+  isUploadingImage?: boolean;
   imageKey?: string;
   imageOriginalName?: string;
   status: RRFeedbackStatus;
@@ -723,6 +741,7 @@ export interface IRRCreateFeedbackPayload {
   issueType: RRFeedbackIssueType;
   description: string;
   imageUrl?: string;
+  isUploadingImage?: boolean;
   imageKey?: string;
   imageOriginalName?: string;
 }

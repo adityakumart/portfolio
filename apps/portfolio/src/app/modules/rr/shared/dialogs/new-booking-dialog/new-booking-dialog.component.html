@@ -647,6 +647,459 @@
             </div>
           </div>
         </div>
+
+        <!-- 6. Attachments (Step 6) -->
+        <div class="p-4 rounded-xl border border-border bg-card/60 space-y-4">
+          <div class="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-border/40">
+            <div class="flex items-center gap-2">
+              <h4 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <ng-icon name="lucidePaperclip" class="text-primary"></ng-icon>
+                <span>Attachments (Step 6)</span>
+              </h4>
+              @if (isAgreementPrinted()) {
+                <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                  <ng-icon name="lucideCheck" class="text-xs"></ng-icon>
+                  Agreement Printed
+                </span>
+              } @else {
+                <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                  <ng-icon name="lucideAlertCircle" class="text-xs"></ng-icon>
+                  Print Agreement to Enable
+                </span>
+              }
+            </div>
+
+            <!-- Print Agreement Action Button -->
+            <div class="flex items-center gap-2">
+              <button
+                type="button"
+                hlmBtn
+                size="sm"
+                [variant]="isAgreementPrinted() ? 'outline' : 'default'"
+                class="h-8 text-xs font-bold gap-1.5"
+                [disabled]="bookingFormGroup.invalid"
+                (click)="printAgreementPDF()"
+                title="Print Draft Agreement for Physical Customer Signature"
+              >
+                <ng-icon name="lucidePrinter" class="text-sm"></ng-icon>
+                <span>{{ isAgreementPrinted() ? 'Re-print Agreement' : 'Print Rental Agreement' }}</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- If agreement is NOT printed: show lock warning banner -->
+          @if (!isAgreementPrinted()) {
+            <div class="p-5 rounded-xl border border-dashed border-amber-500/40 bg-amber-500/5 text-center space-y-2">
+              <div class="inline-flex p-3 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400">
+                <ng-icon name="lucidePrinter" class="text-2xl"></ng-icon>
+              </div>
+              <h5 class="text-sm font-bold text-foreground">Attachments Section Locked</h5>
+              <p class="text-xs text-muted-foreground max-w-md mx-auto">
+                This section is enabled only after the Rental Agreement is printed. Click the button below to generate and print the customer agreement document.
+              </p>
+              <button
+                type="button"
+                hlmBtn
+                class="h-8 text-xs font-bold gap-1.5 mt-2"
+                [disabled]="bookingFormGroup.invalid"
+                (click)="printAgreementPDF()"
+              >
+                <ng-icon name="lucidePrinter" class="text-sm"></ng-icon>
+                <span>Print Rental Agreement Now</span>
+              </button>
+            </div>
+          } @else {
+            <!-- Enabled Attachments Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+              <!-- 1. *Signed Agreement (Mandatory) -->
+              <div class="p-3.5 rounded-xl border border-border bg-background/50 space-y-2 flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between gap-1 mb-1">
+                    <label class="text-xs font-bold text-foreground flex items-center gap-1">
+                      <span>* Signed Agreement</span>
+                      <span class="text-[10px] text-destructive font-black">* Mandatory</span>
+                    </label>
+                    @if (signedAgreementUrl()) {
+                      <span class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/15 px-1.5 py-0.5 rounded">Uploaded</span>
+                    } @else {
+                      <span class="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/15 px-1.5 py-0.5 rounded">Required</span>
+                    }
+                  </div>
+                  <p class="text-[11px] text-muted-foreground">Upload physically signed agreement document (PDF or Photo).</p>
+                </div>
+
+                @if (signedAgreementUrl()) {
+                  <div class="p-2.5 rounded-lg border border-emerald-500/30 bg-emerald-500/5 flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2 truncate">
+                      <ng-icon name="lucideFileText" class="text-emerald-600 dark:text-emerald-400 text-lg shrink-0"></ng-icon>
+                      <a [href]="signedAgreementUrl()" target="_blank" class="text-xs font-medium text-primary hover:underline truncate" title="View signed agreement">
+                        View Signed Document
+                      </a>
+                    </div>
+                    <div class="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        hlmBtn
+                        size="sm"
+                        variant="ghost"
+                        class="h-7 text-xs text-destructive hover:bg-destructive/10"
+                        (click)="removeSignedAgreement()"
+                      >
+                        <ng-icon name="lucideTrash2" class="text-xs mr-1"></ng-icon>
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                } @else {
+                  <label class="border-2 border-dashed border-border rounded-xl p-3 text-center hover:bg-muted/30 cursor-pointer transition-colors block">
+                    <input
+                      type="file"
+                      accept=".pdf,image/png,image/jpeg,image/webp"
+                      class="hidden"
+                      [disabled]="isUploadingSignedAgreement()"
+                      (change)="onSignedAgreementFileSelected($event)"
+                    />
+                    <div class="flex items-center justify-center gap-2 text-xs font-semibold text-foreground">
+                      @if (isUploadingSignedAgreement()) {
+                        <ng-icon name="lucideRefreshCw" class="text-sm animate-spin text-primary"></ng-icon>
+                        <span>Uploading signed agreement...</span>
+                      } @else {
+                        <ng-icon name="lucideUpload" class="text-sm text-primary"></ng-icon>
+                        <span>Upload Signed Agreement</span>
+                      }
+                    </div>
+                  </label>
+                }
+              </div>
+
+              <!-- 2. *Vehicle Instrument Cluster (Mandatory) -->
+              <div class="p-3.5 rounded-xl border border-border bg-background/50 space-y-2 flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between gap-1 mb-1">
+                    <label class="text-xs font-bold text-foreground flex items-center gap-1">
+                      <span>* Vehicle Instrument Cluster</span>
+                      <span class="text-[10px] text-destructive font-black">* Mandatory</span>
+                    </label>
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded" [ngClass]="instrumentClusterImages().length > 0 ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/15' : 'text-amber-600 dark:text-amber-400 bg-amber-500/15'">
+                      {{ instrumentClusterImages().length }} Uploaded
+                    </span>
+                  </div>
+                  <p class="text-[11px] text-muted-foreground">For ODO reading & pre-pickup display.</p>
+                </div>
+
+                <div class="space-y-2">
+                  @if (instrumentClusterImages().length > 0) {
+                    <div class="flex flex-wrap gap-2">
+                      @for (img of instrumentClusterImages(); track img; let i = $index) {
+                        <div class="relative group h-14 w-14 rounded-lg overflow-hidden border border-border bg-muted/40">
+                          <img [src]="img" alt="Cluster" class="h-full w-full object-cover cursor-pointer" (click)="openImagePreview(img)" />
+                          <button
+                            type="button"
+                            (click)="removeInstrumentCluster(i)"
+                            class="absolute top-0.5 right-0.5 h-4 w-4 rounded-full bg-destructive text-white flex items-center justify-center opacity-80 group-hover:opacity-100"
+                            title="Delete"
+                          >
+                            <ng-icon name="lucideX" class="text-[9px]"></ng-icon>
+                          </button>
+                        </div>
+                      }
+                    </div>
+                  }
+
+                  <label class="border-2 border-dashed border-border rounded-xl p-2.5 text-center hover:bg-muted/30 cursor-pointer transition-colors block">
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      multiple
+                      class="hidden"
+                      [disabled]="isUploadingInstrumentCluster()"
+                      (change)="onInstrumentClusterSelected($event)"
+                    />
+                    <div class="flex items-center justify-center gap-2 text-xs font-semibold text-foreground">
+                      @if (isUploadingInstrumentCluster()) {
+                        <ng-icon name="lucideRefreshCw" class="text-sm animate-spin text-primary"></ng-icon>
+                        <span>Uploading cluster photo...</span>
+                      } @else {
+                        <ng-icon name="lucideCamera" class="text-sm text-primary"></ng-icon>
+                        <span>Add Cluster Photo(s)</span>
+                      }
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <!-- 3. *Vehicle Images (max 10) (Mandatory) -->
+              <div class="p-3.5 rounded-xl border border-border bg-background/50 space-y-2 flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between gap-1 mb-1">
+                    <label class="text-xs font-bold text-foreground flex items-center gap-1">
+                      <span>* Vehicle Images (max 10)</span>
+                      <span class="text-[10px] text-destructive font-black">* Mandatory</span>
+                    </label>
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded" [ngClass]="vehicleImages().length > 0 ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/15' : 'text-amber-600 dark:text-amber-400 bg-amber-500/15'">
+                      {{ vehicleImages().length }}/10
+                    </span>
+                  </div>
+                  <p class="text-[11px] text-muted-foreground">Pre-pickup exterior/interior images (min 1, max 10).</p>
+                </div>
+
+                <div class="space-y-2">
+                  @if (vehicleImages().length > 0) {
+                    <div class="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                      @for (img of vehicleImages(); track img; let i = $index) {
+                        <div class="relative group h-14 w-14 rounded-lg overflow-hidden border border-border bg-muted/40">
+                          <img [src]="img" alt="Vehicle" class="h-full w-full object-cover cursor-pointer" (click)="openImagePreview(img)" />
+                          <button
+                            type="button"
+                            (click)="removeVehicleImage(i)"
+                            class="absolute top-0.5 right-0.5 h-4 w-4 rounded-full bg-destructive text-white flex items-center justify-center opacity-80 group-hover:opacity-100"
+                            title="Delete"
+                          >
+                            <ng-icon name="lucideX" class="text-[9px]"></ng-icon>
+                          </button>
+                        </div>
+                      }
+                    </div>
+                  }
+
+                  @if (vehicleImages().length < 10) {
+                    <label class="border-2 border-dashed border-border rounded-xl p-2.5 text-center hover:bg-muted/30 cursor-pointer transition-colors block">
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp"
+                        multiple
+                        class="hidden"
+                        [disabled]="isUploadingVehicleImages()"
+                        (change)="onVehicleImagesSelected($event)"
+                      />
+                      <div class="flex items-center justify-center gap-2 text-xs font-semibold text-foreground">
+                        @if (isUploadingVehicleImages()) {
+                          <ng-icon name="lucideRefreshCw" class="text-sm animate-spin text-primary"></ng-icon>
+                          <span>Uploading vehicle images...</span>
+                        } @else {
+                          <ng-icon name="lucideImage" class="text-sm text-primary"></ng-icon>
+                          <span>Add Vehicle Image(s)</span>
+                        }
+                      </div>
+                    </label>
+                  }
+                </div>
+              </div>
+
+              <!-- 4. *Customer ID's (max 3) (Mandatory) -->
+              <div class="p-3.5 rounded-xl border border-border bg-background/50 space-y-2 flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between gap-1 mb-1">
+                    <label class="text-xs font-bold text-foreground flex items-center gap-1">
+                      <span>* Customer ID's (max 3)</span>
+                      <span class="text-[10px] text-destructive font-black">* Mandatory</span>
+                    </label>
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded" [ngClass]="customerIds().length > 0 ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/15' : 'text-amber-600 dark:text-amber-400 bg-amber-500/15'">
+                      {{ customerIds().length }}/3
+                    </span>
+                  </div>
+                  <p class="text-[11px] text-muted-foreground">Aadhaar, Driving License, or ID proofs (min 1, max 3).</p>
+                </div>
+
+                <div class="space-y-2">
+                  @if (customerIds().length > 0) {
+                    <div class="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                      @for (file of customerIds(); track file; let i = $index) {
+                        <div class="relative group h-14 w-14 rounded-lg overflow-hidden border border-border bg-muted/40 flex items-center justify-center">
+                          @if (file.endsWith('.pdf')) {
+                            <a [href]="file" target="_blank" class="flex flex-col items-center justify-center text-primary p-1">
+                              <ng-icon name="lucideFileText" class="text-base"></ng-icon>
+                              <span class="text-[8px] font-bold">PDF</span>
+                            </a>
+                          } @else {
+                            <img [src]="file" alt="ID" class="h-full w-full object-cover cursor-pointer" (click)="openImagePreview(file)" />
+                          }
+                          <button
+                            type="button"
+                            (click)="removeCustomerId(i)"
+                            class="absolute top-0.5 right-0.5 h-4 w-4 rounded-full bg-destructive text-white flex items-center justify-center opacity-80 group-hover:opacity-100"
+                            title="Delete"
+                          >
+                            <ng-icon name="lucideX" class="text-[9px]"></ng-icon>
+                          </button>
+                        </div>
+                      }
+                    </div>
+                  }
+
+                  @if (customerIds().length < 3) {
+                    <label class="border-2 border-dashed border-border rounded-xl p-2.5 text-center hover:bg-muted/30 cursor-pointer transition-colors block">
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp,application/pdf"
+                        multiple
+                        class="hidden"
+                        [disabled]="isUploadingCustomerIds()"
+                        (change)="onCustomerIdsSelected($event)"
+                      />
+                      <div class="flex items-center justify-center gap-2 text-xs font-semibold text-foreground">
+                        @if (isUploadingCustomerIds()) {
+                          <ng-icon name="lucideRefreshCw" class="text-sm animate-spin text-primary"></ng-icon>
+                          <span>Uploading ID proof...</span>
+                        } @else {
+                          <ng-icon name="lucideUpload" class="text-sm text-primary"></ng-icon>
+                          <span>Add Customer ID(s)</span>
+                        }
+                      </div>
+                    </label>
+                  }
+                </div>
+              </div>
+
+              <!-- 5. Guarantee person ID's (max 3) (Optional) -->
+              <div class="p-3.5 rounded-xl border border-border bg-background/50 space-y-2 flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between gap-1 mb-1">
+                    <label class="text-xs font-bold text-foreground flex items-center gap-1">
+                      <span>Guarantee person ID's (max 3)</span>
+                      <span class="text-[10px] text-muted-foreground font-semibold">(Optional)</span>
+                    </label>
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                      {{ guaranteePersonIds().length }}/3
+                    </span>
+                  </div>
+                  <p class="text-[11px] text-muted-foreground">Guarantor identity proof copies (optional, max 3).</p>
+                </div>
+
+                <div class="space-y-2">
+                  @if (guaranteePersonIds().length > 0) {
+                    <div class="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                      @for (file of guaranteePersonIds(); track file; let i = $index) {
+                        <div class="relative group h-14 w-14 rounded-lg overflow-hidden border border-border bg-muted/40 flex items-center justify-center">
+                          @if (file.endsWith('.pdf')) {
+                            <a [href]="file" target="_blank" class="flex flex-col items-center justify-center text-primary p-1">
+                              <ng-icon name="lucideFileText" class="text-base"></ng-icon>
+                              <span class="text-[8px] font-bold">PDF</span>
+                            </a>
+                          } @else {
+                            <img [src]="file" alt="Guarantor ID" class="h-full w-full object-cover cursor-pointer" (click)="openImagePreview(file)" />
+                          }
+                          <button
+                            type="button"
+                            (click)="removeGuaranteeId(i)"
+                            class="absolute top-0.5 right-0.5 h-4 w-4 rounded-full bg-destructive text-white flex items-center justify-center opacity-80 group-hover:opacity-100"
+                            title="Delete"
+                          >
+                            <ng-icon name="lucideX" class="text-[9px]"></ng-icon>
+                          </button>
+                        </div>
+                      }
+                    </div>
+                  }
+
+                  @if (guaranteePersonIds().length < 3) {
+                    <label class="border-2 border-dashed border-border rounded-xl p-2.5 text-center hover:bg-muted/30 cursor-pointer transition-colors block">
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp,application/pdf"
+                        multiple
+                        class="hidden"
+                        [disabled]="isUploadingGuaranteeIds()"
+                        (change)="onGuaranteeIdsSelected($event)"
+                      />
+                      <div class="flex items-center justify-center gap-2 text-xs font-semibold text-foreground">
+                        @if (isUploadingGuaranteeIds()) {
+                          <ng-icon name="lucideRefreshCw" class="text-sm animate-spin text-primary"></ng-icon>
+                          <span>Uploading guarantor ID...</span>
+                        } @else {
+                          <ng-icon name="lucideUpload" class="text-sm text-primary"></ng-icon>
+                          <span>Add Guarantor ID(s)</span>
+                        }
+                      </div>
+                    </label>
+                  }
+                </div>
+              </div>
+
+              <!-- 6. *Security Deposit Images (max 10) -->
+              <div class="p-3.5 rounded-xl border border-border bg-background/50 space-y-2 flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between gap-1 mb-1">
+                    <label class="text-xs font-bold text-foreground flex items-center gap-1">
+                      <span>* Security Deposit Images (max 10)</span>
+                      @if (isSecurityDepositImageRequired()) {
+                        <span class="text-[10px] text-destructive font-black">* Mandatory</span>
+                      } @else {
+                        <span class="text-[10px] text-muted-foreground font-semibold">(Not Required)</span>
+                      }
+                    </label>
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded" [ngClass]="isSecurityDepositImageRequired() ? (securityDepositImages().length > 0 ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/15' : 'text-amber-600 dark:text-amber-400 bg-amber-500/15') : 'bg-muted text-muted-foreground'">
+                      {{ securityDepositImages().length }}/10
+                    </span>
+                  </div>
+                  <p class="text-[11px] text-muted-foreground">
+                    @if (isSecurityDepositImageRequired()) {
+                      Photos of deposited Two Wheeler/Asset proof.
+                    } @else {
+                      Security deposit is None or Cash; proof images are not required.
+                    }
+                  </p>
+                </div>
+
+                <div class="space-y-2">
+                  @if (!isSecurityDepositImageRequired()) {
+                    <div class="p-2.5 rounded-lg bg-muted/40 text-muted-foreground text-[11px] flex items-center gap-2">
+                      <ng-icon name="lucideCheckCircle2" class="text-sm text-emerald-500 shrink-0"></ng-icon>
+                      <span>No deposit image required for <strong>{{ bookingFormGroup.get('depositType')?.value | uppercase }}</strong> deposit.</span>
+                    </div>
+                  } @else {
+                    @if (securityDepositImages().length > 0) {
+                      <div class="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                        @for (img of securityDepositImages(); track img; let i = $index) {
+                          <div class="relative group h-14 w-14 rounded-lg overflow-hidden border border-border bg-muted/40">
+                            <img [src]="img" alt="Deposit" class="h-full w-full object-cover cursor-pointer" (click)="openImagePreview(img)" />
+                            <button
+                              type="button"
+                              (click)="removeDepositImage(i)"
+                              class="absolute top-0.5 right-0.5 h-4 w-4 rounded-full bg-destructive text-white flex items-center justify-center opacity-80 group-hover:opacity-100"
+                              title="Delete"
+                            >
+                              <ng-icon name="lucideX" class="text-[9px]"></ng-icon>
+                            </button>
+                          </div>
+                        }
+                      </div>
+                    }
+
+                    @if (securityDepositImages().length < 10) {
+                      <label class="border-2 border-dashed border-border rounded-xl p-2.5 text-center hover:bg-muted/30 cursor-pointer transition-colors block">
+                        <input
+                          type="file"
+                          accept="image/png,image/jpeg,image/webp"
+                          multiple
+                          class="hidden"
+                          [disabled]="isUploadingDepositImages()"
+                          (change)="onDepositImagesSelected($event)"
+                        />
+                        <div class="flex items-center justify-center gap-2 text-xs font-semibold text-foreground">
+                          @if (isUploadingDepositImages()) {
+                            <ng-icon name="lucideRefreshCw" class="text-sm animate-spin text-primary"></ng-icon>
+                            <span>Uploading deposit image...</span>
+                          } @else {
+                            <ng-icon name="lucideImage" class="text-sm text-primary"></ng-icon>
+                            <span>Add Deposit Image(s)</span>
+                          }
+                        </div>
+                      </label>
+                    }
+                  }
+                </div>
+              </div>
+            </div>
+
+            <div class="text-[11px] text-muted-foreground flex items-center gap-1.5 pt-1">
+              <span class="text-destructive font-black">*</span>
+              <span>Items marked with an asterisk are mandatory to establish booking.</span>
+            </div>
+          }
+        </div>
+
       </fieldset>
     </div>
 
@@ -654,7 +1107,7 @@
     <div class="shrink-0 flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-border">
       <!-- Status Badge on Agreement & Attachments Readiness -->
       <div class="flex items-center gap-2 text-xs">
-        @if (isAgreementReviewed() && hasUploadedAttachments()) {
+        @if (isAttachmentsValid()) {
           <span class="inline-flex items-center gap-1.5 font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 px-2.5 py-1 rounded-full text-[11px]">
             <ng-icon name="lucideCheck" class="text-xs"></ng-icon>
             <span>Documentation Complete</span>
@@ -662,7 +1115,7 @@
         } @else {
           <span class="inline-flex items-center gap-1.5 font-semibold text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/25 px-2.5 py-1 rounded-full text-[11px]">
             <ng-icon name="lucideAlertCircle" class="text-xs"></ng-icon>
-            <span>Agreement & Attachments Required</span>
+            <span>Missing: {{ missingAttachmentsList().join(', ') }}</span>
           </span>
         }
       </div>
@@ -675,22 +1128,17 @@
           type="button"
           class="action-btn flex items-center gap-1.5"
           [disabled]="bookingFormGroup.invalid"
-          (click)="viewAgreementPDFFromForm()"
-          title="Open Draft Agreement and Upload Attachments"
+          (click)="printAgreementPDF()"
+          title="Print Draft Agreement"
         >
-          <ng-icon name="lucideFileText"></ng-icon>
-          <span>Agreement & Documents</span>
-          @if (isAgreementReviewed() && hasUploadedAttachments()) {
-            <span class="inline-flex items-center justify-center h-4 w-4 rounded-full bg-emerald-500 text-white text-[9px] font-black">
-              ✓
-            </span>
-          }
+          <ng-icon name="lucidePrinter"></ng-icon>
+          <span>{{ isAgreementPrinted() ? 'Re-print Agreement' : 'Print Agreement' }}</span>
         </button>
         <button
           hlmBtn
           type="button"
           class="action-btn success flex items-center gap-1.5 font-bold shadow-sm"
-          [disabled]="bookingFormGroup.invalid || isSubmitting() || scheduleConflict().hasConflict || !isAgreementReviewed() || !hasUploadedAttachments()"
+          [disabled]="bookingFormGroup.invalid || isSubmitting() || scheduleConflict().hasConflict || !isAttachmentsValid()"
           (click)="createBooking($event)"
         >
           <ng-icon name="lucideCheck"></ng-icon>
@@ -699,4 +1147,23 @@
       </div>
     </div>
   </form>
+
+  <!-- Modal Image Lightbox Preview -->
+  @if (previewImageUrl()) {
+    <div
+      class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm"
+      (click)="closeImagePreview()"
+    >
+      <div class="relative max-w-4xl max-h-[90vh] bg-card rounded-2xl overflow-hidden border border-border shadow-2xl" (click)="$event.stopPropagation()">
+        <button
+          type="button"
+          class="absolute top-3 right-3 z-10 h-8 w-8 rounded-full bg-black/60 text-white hover:bg-black flex items-center justify-center"
+          (click)="closeImagePreview()"
+        >
+          <ng-icon name="lucideX" class="text-base"></ng-icon>
+        </button>
+        <img [src]="previewImageUrl()" alt="Attachment Preview" class="w-full h-auto max-h-[85vh] object-contain" />
+      </div>
+    </div>
+  }
 </div>

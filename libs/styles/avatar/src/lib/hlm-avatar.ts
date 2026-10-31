@@ -10,7 +10,7 @@ import { classes } from '@spartan-ng/hel/utils';
 		'[attr.data-size]': 'size()',
 	},
 	template: `
-		@if (_image()?.canShow()) {
+		@if (status() === 'loaded') {
 			<ng-content select="[hlmAvatarImage],[brnAvatarImage]" />
 		} @else {
 			<ng-content select="[hlmAvatarFallback],[brnAvatarFallback]" />
