@@ -1,0 +1,554 @@
+<div class="kyc-container max-w-5xl mx-auto px-4 py-6 sm:py-8 space-y-6">
+  <!-- Page Header -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-5">
+    <div>
+      <div class="inline-flex items-center gap-2 text-xs font-semibold text-primary uppercase tracking-wider mb-1.5">
+        <ng-icon name="lucideShieldCheck" class="size-4"></ng-icon>
+        <span>Identity & Regulatory Compliance</span>
+      </div>
+      <h1 class="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight m-0">
+        KYC Identity Verification
+      </h1>
+      <p class="text-sm text-muted-foreground mt-1 mb-0">
+        Verify official Indian identity credentials with Surepass. All authentication and cryptographic secrets remain safely secured on the backend.
+      </p>
+    </div>
+
+    <!-- Gateway Status Pill -->
+    <div class="flex items-center gap-2 self-start md:self-auto">
+      @if (serviceStatus()?.mode === 'sandbox') {
+        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+          <span class="size-2 rounded-full bg-amber-500 animate-pulse"></span>
+          <span>Surepass Sandbox Mode</span>
+        </span>
+      } @else {
+        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+          <span class="size-2 rounded-full bg-emerald-500"></span>
+          <span>Surepass Production Gateway</span>
+        </span>
+      }
+    </div>
+  </div>
+
+  <!-- Tab Selector Navigation -->
+  <div class="flex items-center gap-2 p-1 bg-muted/60 rounded-xl border border-border w-full sm:w-fit">
+    <button
+      type="button"
+      (click)="setTab('aadhaar')"
+      [class.bg-background]="activeTab() === 'aadhaar'"
+      [class.text-foreground]="activeTab() === 'aadhaar'"
+      [class.shadow-sm]="activeTab() === 'aadhaar'"
+      [class.text-muted-foreground]="activeTab() !== 'aadhaar'"
+      class="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 cursor-pointer"
+    >
+      <ng-icon name="lucideFileText" class="size-4"></ng-icon>
+      <span>Aadhaar Verification</span>
+      @if (aadhaarStep() === 'verified') {
+        <span class="size-2 rounded-full bg-emerald-500"></span>
+      }
+    </button>
+
+    <button
+      type="button"
+      (click)="setTab('dl')"
+      [class.bg-background]="activeTab() === 'dl'"
+      [class.text-foreground]="activeTab() === 'dl'"
+      [class.shadow-sm]="activeTab() === 'dl'"
+      [class.text-muted-foreground]="activeTab() !== 'dl'"
+      class="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 cursor-pointer"
+    >
+      <ng-icon name="lucideCar" class="size-4"></ng-icon>
+      <span>Driving License</span>
+      @if (dlResult()) {
+        <span class="size-2 rounded-full bg-emerald-500"></span>
+      }
+    </button>
+  </div>
+
+  <!-- TAB 1: AADHAAR VERIFICATION -->
+  @if (activeTab() === 'aadhaar') {
+    <div class="space-y-6">
+      <!-- Input & OTP Phase -->
+      @if (aadhaarStep() !== 'verified') {
+        <div class="bg-card text-card-foreground rounded-2xl border border-border p-6 shadow-sm space-y-6">
+          <!-- Flow Stepper Header -->
+          <div class="flex items-center justify-between pb-4 border-b border-border">
+            <div class="flex items-center gap-3">
+              <div class="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
+                UIDAI
+              </div>
+              <div>
+                <h3 class="text-base font-bold text-foreground m-0">Aadhaar Paperless e-KYC</h3>
+                <p class="text-xs text-muted-foreground m-0">Two-step OTP authentication linked to UIDAI mobile number</p>
+              </div>
+            </div>
+
+            <!-- Stepper indicators -->
+            <div class="hidden sm:flex items-center gap-2 text-xs font-semibold">
+              <span [class.text-primary]="aadhaarStep() === 'input'" [class.text-muted-foreground]="aadhaarStep() !== 'input'">
+                1. Aadhaar Number
+              </span>
+              <span class="text-muted-foreground">→</span>
+              <span [class.text-primary]="aadhaarStep() === 'otp'" [class.text-muted-foreground]="aadhaarStep() !== 'otp'">
+                2. OTP Verification
+              </span>
+            </div>
+          </div>
+
+          <!-- Error Alert Banner -->
+          @if (aadhaarError()) {
+            <div class="flex items-start gap-3 p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+              <ng-icon name="lucideAlertCircle" class="size-5 shrink-0 mt-0.5"></ng-icon>
+              <div class="flex-1">
+                <p class="font-semibold m-0">Validation Error</p>
+                <p class="text-xs opacity-90 mt-0.5 m-0">{{ aadhaarError() }}</p>
+              </div>
+            </div>
+          }
+
+          <!-- STEP 1: Enter 12-digit Aadhaar -->
+          @if (aadhaarStep() === 'input') {
+            <div class="max-w-md space-y-4">
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                  12-Digit Aadhaar Number
+                </label>
+                <div class="relative">
+                  <input
+                    type="text"
+                    [value]="aadhaarNumber()"
+                    (input)="formatAadhaarInput($event)"
+                    placeholder="XXXX XXXX XXXX"
+                    maxlength="14"
+                    class="w-full px-4 py-3 rounded-xl border border-input bg-background text-foreground font-mono text-lg tracking-widest placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition"
+                  />
+                  <div class="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-mono">
+                    {{ cleanAadhaar.length }}/12
+                  </div>
+                </div>
+                <p class="text-xs text-muted-foreground mt-1.5 mb-0">
+                  A one-time password (OTP) will be sent to the mobile number registered with this Aadhaar.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                (click)="sendAadhaarOtp()"
+                [disabled]="cleanAadhaar.length !== 12 || aadhaarLoading()"
+                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-primary-foreground bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm cursor-pointer"
+              >
+                @if (aadhaarLoading()) {
+                  <ng-icon name="lucideRefreshCw" class="size-4 animate-spin"></ng-icon>
+                  <span>Sending OTP...</span>
+                } @else {
+                  <span>Send OTP via Surepass</span>
+                  <ng-icon name="lucideArrowRight" class="size-4"></ng-icon>
+                }
+              </button>
+            </div>
+          }
+
+          <!-- STEP 2: Enter OTP -->
+          @if (aadhaarStep() === 'otp') {
+            <div class="max-w-md space-y-4">
+              <div class="p-3 rounded-xl bg-muted/60 border border-border flex items-center justify-between text-xs">
+                <div>
+                  <span class="text-muted-foreground">Verifying Aadhaar:</span>
+                  <span class="font-mono font-bold ml-1 text-foreground">{{ aadhaarNumber() }}</span>
+                </div>
+                <button
+                  type="button"
+                  (click)="resetAadhaar()"
+                  class="text-primary hover:underline font-semibold cursor-pointer"
+                >
+                  Change
+                </button>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                  Enter 6-Digit OTP
+                </label>
+                <input
+                  type="text"
+                  [(ngModel)]="aadhaarOtp"
+                  placeholder="123456"
+                  maxlength="8"
+                  class="w-full px-4 py-3 rounded-xl border border-input bg-background text-foreground font-mono text-xl tracking-widest text-center placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition"
+                />
+              </div>
+
+              <div class="flex items-center justify-between pt-1">
+                @if (otpCountdown() > 0) {
+                  <span class="text-xs text-muted-foreground inline-flex items-center gap-1">
+                    <ng-icon name="lucideRefreshCw" class="size-3 animate-spin"></ng-icon>
+                    Resend available in {{ otpCountdown() }}s
+                  </span>
+                } @else {
+                  <button
+                    type="button"
+                    (click)="sendAadhaarOtp()"
+                    [disabled]="aadhaarLoading()"
+                    class="text-xs text-primary hover:underline font-semibold cursor-pointer"
+                  >
+                    Resend OTP
+                  </button>
+                }
+              </div>
+
+              <div class="flex items-center gap-3 pt-2">
+                <button
+                  type="button"
+                  (click)="submitAadhaarOtp()"
+                  [disabled]="!aadhaarOtp() || aadhaarLoading()"
+                  class="flex-1 inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-primary-foreground bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm cursor-pointer"
+                >
+                  @if (aadhaarLoading()) {
+                    <ng-icon name="lucideRefreshCw" class="size-4 animate-spin"></ng-icon>
+                    <span>Verifying...</span>
+                  } @else {
+                    <ng-icon name="lucideShieldCheck" class="size-4"></ng-icon>
+                    <span>Verify Identity</span>
+                  }
+                </button>
+
+                <button
+                  type="button"
+                  (click)="resetAadhaar()"
+                  class="px-4 py-2.5 rounded-xl border border-border text-sm font-semibold hover:bg-muted transition cursor-pointer"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- STEP 3: Verified Aadhaar Card Display -->
+      @if (aadhaarStep() === 'verified' && aadhaarResult(); as res) {
+        <div class="bg-card text-card-foreground rounded-2xl border-2 border-emerald-500/40 p-6 sm:p-8 shadow-lg space-y-6 relative overflow-hidden">
+          <!-- Subtle watermark badge -->
+          <div class="absolute -right-8 -bottom-8 opacity-5 pointer-events-none">
+            <ng-icon name="lucideShieldCheck" class="size-64 text-emerald-500"></ng-icon>
+          </div>
+
+          <!-- Aadhaar Card Header -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-border">
+            <div class="flex items-center gap-3">
+              <div class="size-11 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                <ng-icon name="lucideShieldCheck" class="size-6"></ng-icon>
+              </div>
+              <div>
+                <span class="text-[11px] font-extrabold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 block">
+                  UIDAI Government of India
+                </span>
+                <h3 class="text-lg sm:text-xl font-extrabold text-foreground m-0">
+                  Verified Aadhaar Identity
+                </h3>
+              </div>
+            </div>
+
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 self-start sm:self-auto">
+              <ng-icon name="lucideCheckCircle2" class="size-3.5"></ng-icon>
+              <span>Authenticity Confirmed</span>
+            </span>
+          </div>
+
+          <!-- Identity Details Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Left: Avatar / Portrait -->
+            <div class="flex flex-col items-center justify-center p-4 rounded-xl bg-muted/40 border border-border text-center">
+              @if (res.profileImage) {
+                <img
+                  [src]="res.profileImage"
+                  alt="Verified Citizen Photo"
+                  class="size-28 rounded-2xl object-cover shadow-sm border-2 border-border mb-3"
+                />
+              } @else {
+                <div class="size-24 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-3">
+                  <ng-icon name="lucideUser" class="size-12"></ng-icon>
+                </div>
+              }
+              <span class="text-sm font-bold text-foreground">{{ res.fullName }}</span>
+              <span class="text-xs text-muted-foreground mt-0.5">Gender: {{ res.gender === 'M' ? 'Male' : (res.gender === 'F' ? 'Female' : res.gender) }}</span>
+            </div>
+
+            <!-- Middle & Right: Metadata -->
+            <div class="md:col-span-2 space-y-4">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="p-3.5 rounded-xl bg-muted/30 border border-border/80">
+                  <span class="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">Masked Aadhaar</span>
+                  <span class="text-base font-mono font-bold text-foreground mt-0.5 block tracking-wider">
+                    {{ res.maskedAadhaar }}
+                  </span>
+                </div>
+
+                <div class="p-3.5 rounded-xl bg-muted/30 border border-border/80">
+                  <span class="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">Date of Birth</span>
+                  <span class="text-sm font-bold text-foreground mt-0.5 block">
+                    {{ res.dob || 'Not provided' }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Address Block -->
+              <div class="p-4 rounded-xl bg-muted/30 border border-border/80 space-y-1">
+                <div class="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                  <ng-icon name="lucideMapPin" class="size-3.5 text-primary"></ng-icon>
+                  <span>Registered Address</span>
+                </div>
+                <p class="text-xs sm:text-sm text-foreground font-medium m-0 leading-relaxed">
+                  {{ formatAddress(res.address) }}
+                </p>
+              </div>
+
+              <!-- Verification Metadata Footer -->
+              <div class="flex flex-wrap items-center justify-between text-[11px] text-muted-foreground pt-1 gap-2">
+                <span>Verified At: {{ res.verifiedAt | date:'medium' }}</span>
+                <span class="font-mono">Client ID: {{ res.clientId }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Action Buttons -->
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-border">
+            <button
+              type="button"
+              (click)="copyToClipboard(res.fullName + ' | Aadhaar: ' + res.maskedAadhaar + ' | Address: ' + formatAddress(res.address), 'Aadhaar Profile')"
+              class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold border border-border hover:bg-muted transition cursor-pointer"
+            >
+              @if (copiedField() === 'Aadhaar Profile') {
+                <ng-icon name="lucideCheck" class="size-3.5 text-emerald-500"></ng-icon>
+                <span class="text-emerald-500">Copied!</span>
+              } @else {
+                <ng-icon name="lucideCopy" class="size-3.5"></ng-icon>
+                <span>Copy Summary</span>
+              }
+            </button>
+
+            <button
+              type="button"
+              (click)="resetAadhaar()"
+              class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 transition cursor-pointer"
+            >
+              <ng-icon name="lucideRefreshCw" class="size-3.5"></ng-icon>
+              <span>Validate Another Aadhaar</span>
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- TAB 2: DRIVING LICENSE VERIFICATION -->
+  @if (activeTab() === 'dl') {
+    <div class="space-y-6">
+      <div class="bg-card text-card-foreground rounded-2xl border border-border p-6 shadow-sm space-y-6">
+        <!-- Header -->
+        <div class="flex items-center justify-between pb-4 border-b border-border">
+          <div class="flex items-center gap-3">
+            <div class="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
+              <ng-icon name="lucideCar" class="size-5"></ng-icon>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-foreground m-0">Driving License Verification</h3>
+              <p class="text-xs text-muted-foreground m-0">Validate license validity, transport classes, and driver credentials with Surepass</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Error Alert Banner -->
+        @if (dlError()) {
+          <div class="flex items-start gap-3 p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+            <ng-icon name="lucideAlertCircle" class="size-5 shrink-0 mt-0.5"></ng-icon>
+            <div class="flex-1">
+              <p class="font-semibold m-0">Validation Failed</p>
+              <p class="text-xs opacity-90 mt-0.5 m-0">{{ dlError() }}</p>
+            </div>
+          </div>
+        }
+
+        <!-- DL Input Form -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+              Driving License Number *
+            </label>
+            <input
+              type="text"
+              [value]="dlNumber()"
+              (input)="formatDlInput($event)"
+              placeholder="e.g. DL1420110012345"
+              maxlength="20"
+              class="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-foreground font-mono text-sm tracking-wider uppercase placeholder:normal-case placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition"
+            />
+            <span class="text-[11px] text-muted-foreground mt-1 block">Includes 2-letter state code (e.g. TS, MH, DL, KA)</span>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+              Date of Birth (Optional)
+            </label>
+            <input
+              type="date"
+              [(ngModel)]="dlDob"
+              class="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition"
+            />
+            <span class="text-[11px] text-muted-foreground mt-1 block">Required by certain state transport authorities</span>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="flex items-center gap-3">
+          <button
+            type="button"
+            (click)="verifyDrivingLicense()"
+            [disabled]="dlNumber().length < 10 || dlLoading()"
+            class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-primary-foreground bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm cursor-pointer"
+          >
+            @if (dlLoading()) {
+              <ng-icon name="lucideRefreshCw" class="size-4 animate-spin"></ng-icon>
+              <span>Verifying License...</span>
+            } @else {
+              <ng-icon name="lucideShieldCheck" class="size-4"></ng-icon>
+              <span>Verify Driving License</span>
+            }
+          </button>
+
+          @if (dlResult()) {
+            <button
+              type="button"
+              (click)="resetDl()"
+              class="px-4 py-2.5 rounded-xl border border-border text-sm font-semibold hover:bg-muted transition cursor-pointer"
+            >
+              Clear
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Verified DL Card Display -->
+      @if (dlResult(); as res) {
+        <div
+          class="bg-card text-card-foreground rounded-2xl border-2 p-6 sm:p-8 shadow-lg space-y-6 relative overflow-hidden"
+          [class.border-emerald-500/40]="res.status === 'ACTIVE'"
+          [class.border-rose-500/40]="res.status !== 'ACTIVE'"
+        >
+          <!-- Header -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-border">
+            <div class="flex items-center gap-3">
+              <div
+                class="size-11 rounded-xl flex items-center justify-center"
+                [class.bg-emerald-500/10]="res.status === 'ACTIVE'"
+                [class.text-emerald-500]="res.status === 'ACTIVE'"
+                [class.bg-rose-500/10]="res.status !== 'ACTIVE'"
+                [class.text-rose-500]="res.status !== 'ACTIVE'"
+              >
+                <ng-icon name="lucideAward" class="size-6"></ng-icon>
+              </div>
+              <div>
+                <span class="text-[11px] font-extrabold uppercase tracking-widest text-muted-foreground block">
+                  Ministry of Road Transport and Highways
+                </span>
+                <h3 class="text-lg sm:text-xl font-extrabold text-foreground m-0">
+                  Driving License Credential
+                </h3>
+              </div>
+            </div>
+
+            <!-- Status Pill -->
+            <span
+              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border self-start sm:self-auto uppercase tracking-wider"
+              [class.bg-emerald-500/15]="res.status === 'ACTIVE'"
+              [class.text-emerald-600]="res.status === 'ACTIVE'"
+              [class.dark:text-emerald-400]="res.status === 'ACTIVE'"
+              [class.border-emerald-500/30]="res.status === 'ACTIVE'"
+              [class.bg-rose-500/15]="res.status !== 'ACTIVE'"
+              [class.text-rose-600]="res.status !== 'ACTIVE'"
+              [class.border-rose-500/30]="res.status !== 'ACTIVE'"
+            >
+              <ng-icon [name]="res.status === 'ACTIVE' ? 'lucideCheckCircle2' : 'lucideAlertCircle'" class="size-3.5"></ng-icon>
+              <span>{{ res.status }}</span>
+            </span>
+          </div>
+
+          <!-- License Data Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="p-3.5 rounded-xl bg-muted/30 border border-border/80">
+              <span class="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">Holder Name</span>
+              <span class="text-sm font-bold text-foreground mt-0.5 block">{{ res.holderName }}</span>
+            </div>
+
+            <div class="p-3.5 rounded-xl bg-muted/30 border border-border/80">
+              <span class="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">License Number</span>
+              <span class="text-sm font-mono font-bold text-foreground mt-0.5 block tracking-wider">{{ res.licenseNumber }}</span>
+            </div>
+
+            <div class="p-3.5 rounded-xl bg-muted/30 border border-border/80">
+              <span class="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">Relation Name</span>
+              <span class="text-sm font-medium text-foreground mt-0.5 block">{{ res.fatherOrHusbandName || 'N/A' }}</span>
+            </div>
+
+            <div class="p-3.5 rounded-xl bg-muted/30 border border-border/80">
+              <span class="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">Valid Till</span>
+              <span class="text-sm font-bold text-foreground mt-0.5 block">{{ res.validTill || 'N/A' }}</span>
+            </div>
+          </div>
+
+          <!-- Class of Vehicle Badges -->
+          <div class="p-4 rounded-xl bg-muted/30 border border-border/80 space-y-2">
+            <span class="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
+              Authorized Vehicle Categories (COV)
+            </span>
+            <div class="flex flex-wrap gap-2">
+              @for (cov of res.covDetails; track cov.cov) {
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-background border border-border shadow-xs">
+                  <ng-icon name="lucideCar" class="size-3.5 text-primary"></ng-icon>
+                  <span>{{ cov.cov }}</span>
+                  @if (cov.issueDate) {
+                    <span class="text-[10px] text-muted-foreground">({{ cov.issueDate }})</span>
+                  }
+                </span>
+              }
+            </div>
+          </div>
+
+          <!-- Address & Jurisdiction -->
+          @if (res.address) {
+            <div class="p-4 rounded-xl bg-muted/30 border border-border/80 space-y-1">
+              <div class="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                <ng-icon name="lucideMapPin" class="size-3.5 text-primary"></ng-icon>
+                <span>Registered Address & RTO Authority</span>
+              </div>
+              <p class="text-xs sm:text-sm text-foreground font-medium m-0">
+                {{ res.address }}
+              </p>
+            </div>
+          }
+
+          <!-- Footer Actions -->
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-border">
+            <button
+              type="button"
+              (click)="copyToClipboard(res.holderName + ' | DL: ' + res.licenseNumber + ' | Status: ' + res.status + ' | Valid Till: ' + res.validTill, 'DL Summary')"
+              class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold border border-border hover:bg-muted transition cursor-pointer"
+            >
+              @if (copiedField() === 'DL Summary') {
+                <ng-icon name="lucideCheck" class="size-3.5 text-emerald-500"></ng-icon>
+                <span class="text-emerald-500">Copied!</span>
+              } @else {
+                <ng-icon name="lucideCopy" class="size-3.5"></ng-icon>
+                <span>Copy License Summary</span>
+              }
+            </button>
+
+            <span class="text-[11px] text-muted-foreground font-mono">
+              Verified via Surepass Gateway
+            </span>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
