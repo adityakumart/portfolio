@@ -54,8 +54,9 @@ export type EndBookingScenario =
   | 'case1'
   | 'case2'
   | 'case3'
-  | 'case4_1'
-  | 'case4_2';
+  | 'case4';
+
+export type Case4ResolvedScenario = 'case1' | 'case2' | null;
 
 @Component({
   selector: 'app-rr-end-booking-dialog',
@@ -111,8 +112,9 @@ export class RREndBookingDialogComponent implements OnInit {
   booking = signal<IBooking | null>(null);
   vehicle = signal<IVehicle | null>(null);
 
-  // Active validation scenario (Case 1, 2, 3, 4.1, 4.2)
+  // Active validation scenario (Case 1, 2, 3, 4)
   activeScenario = signal<EndBookingScenario>('case1');
+  case4ResolvedScenario = signal<Case4ResolvedScenario>(null);
 
   attachmentsVerified = signal<boolean>(false);
   previewImageUrl = signal<string | null>(null);
@@ -751,6 +753,8 @@ export class RREndBookingDialogComponent implements OnInit {
     if (!isKmExceeded && !isHrsExceeded) {
       // Case 1: if Km's and Hrs are in limit (extra kms & hrs are zero)
       this.activeScenario.set('case1');
+      this.case4ResolvedScenario.set(null);
+      this.endBookingFields.recalculateSlabMode = false;
       extraKms = 0;
       extraKmFee = 0;
       extraHours = 0;
@@ -758,6 +762,8 @@ export class RREndBookingDialogComponent implements OnInit {
     } else if (isKmExceeded && !isHrsExceeded) {
       // Case 2: If Km's exceeded and returned within Hrs (extra hrs is zero)
       this.activeScenario.set('case2');
+      this.case4ResolvedScenario.set(null);
+      this.endBookingFields.recalculateSlabMode = false;
       extraKms = rawKmsExceeded;
       extraKmFee = extraKms * extraKmPrice;
       extraHours = 0;
@@ -765,56 +771,49 @@ export class RREndBookingDialogComponent implements OnInit {
     } else if (!isKmExceeded && isHrsExceeded) {
       // Case 3: If Hr's exceed and returned within Km's (extra kms is zero)
       this.activeScenario.set('case3');
+      this.case4ResolvedScenario.set(null);
+      this.endBookingFields.recalculateSlabMode = false;
       extraKms = 0;
       extraKmFee = 0;
       extraHours = rawHoursExceeded;
       extraHourFee = extraHours * extraHourPrice;
     } else {
-      // Case 4: If both Km's and Hrs exceeded
-      if (this.endBookingFields.recalculateSlabMode) {
-        // Case 4.2: Recalculate extra kms and hrs field (by new time calculate extra time and add its respective kms limit)
-        this.activeScenario.set('case4_2');
-        const veh = this.vehicle();
-        if (veh && veh.pricing) {
-          const addedKmLimit = this.calculateSlabKm(
-            rawHoursExceeded,
-            veh.pricing,
-          );
-          const addedRent = this.calculateSlabRent(
-            rawHoursExceeded,
-            veh.pricing,
-          );
+      // Case 4: If both Km's and Hrs exceeded -> Recalculation done based on recalculation slabs
+      this.activeScenario.set('case4');
+      this.endBookingFields.recalculateSlabMode = true;
 
-          this.endBookingFields.slabExtraKmAllowance = addedKmLimit;
-          this.endBookingFields.slabExtraRent = addedRent;
+      const veh = this.vehicle();
+      const pricing = veh?.pricing || (b as any).vehiclePricing;
+      const { slabExtraRent, slabExtraKm } = this.calculateCase4Slabs(
+        rawHoursExceeded,
+        pricing,
+      );
 
-          const newEffectiveKmLimit = baseKmLimit + addedKmLimit;
-          this.endBookingFields.effectiveKmLimit = newEffectiveKmLimit;
+      this.endBookingFields.slabExtraKmAllowance = slabExtraKm;
+      this.endBookingFields.slabExtraRent = slabExtraRent;
 
-          extraKms = Math.max(0, distanceDriven - newEffectiveKmLimit);
-          extraKmFee = extraKms * extraKmPrice;
+      const newEffectiveKmLimit = baseKmLimit + slabExtraKm;
+      this.endBookingFields.effectiveKmLimit = newEffectiveKmLimit;
 
-          // Rent section changed as new duration and limit gives new renting price
-          finalRent = (Number(b.finalRentalAmount) || 0) + addedRent;
-          basePending = finalRent - (Number(b.amountPaid) || 0);
+      // Rent updated as new duration and limit gives new renting price
+      finalRent = (Number(b.finalRentalAmount) || 0) + slabExtraRent;
+      basePending = finalRent - (Number(b.amountPaid) || 0);
 
-          // Extra hours absorbed into the new slab rental duration
-          extraHours = rawHoursExceeded;
-          extraHourFee = 0; // Absorbed into slab rent
-        } else {
-          // Fallback if vehicle pricing not present
-          extraKms = rawKmsExceeded;
-          extraKmFee = extraKms * extraKmPrice;
-          extraHours = rawHoursExceeded;
-          extraHourFee = extraHours * extraHourPrice;
-        }
+      // Extra hours absorbed into the new slab rental duration
+      extraHours = rawHoursExceeded;
+      extraHourFee = 0; // Absorbed into slab rent
+
+      // Check distance driven against new recalculated KM limit:
+      // Km. and Hr. within after recalculation ---- Case 1
+      // Km. exceed and Hr. within after recalculation ---- Case 2
+      if (distanceDriven <= newEffectiveKmLimit) {
+        this.case4ResolvedScenario.set('case1');
+        extraKms = 0;
+        extraKmFee = 0;
       } else {
-        // Case 4.1: Standard mode (all will be added)
-        this.activeScenario.set('case4_1');
-        extraKms = rawKmsExceeded;
+        this.case4ResolvedScenario.set('case2');
+        extraKms = distanceDriven - newEffectiveKmLimit;
         extraKmFee = extraKms * extraKmPrice;
-        extraHours = rawHoursExceeded;
-        extraHourFee = extraHours * extraHourPrice;
       }
     }
 
@@ -884,9 +883,7 @@ export class RREndBookingDialogComponent implements OnInit {
         ? String(this.endBookingFields.finalTotalPayable)
         : String(b.amountPaid || '0');
 
-      const isBothExceeded =
-        this.activeScenario() === 'case4_1' ||
-        this.activeScenario() === 'case4_2';
+      const isBothExceeded = this.activeScenario() === 'case4';
       const currentUser = this.rrApi.currentUser();
       const patch: Partial<IBooking> = {
         status: 'completed',
