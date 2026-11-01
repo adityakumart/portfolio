@@ -631,6 +631,34 @@ export class RREndBookingDialogComponent implements OnInit {
     return totalKm;
   }
 
+  /**
+   * Calculates extra hours exceeding scheduled return based on standard 30-min threshold rule:
+   * - < 30 mins: round down to previous hour (e.g. 5:00 - 5:29 -> 5 hrs, 0:00 - 0:29 -> 0 hrs)
+   * - >= 30 mins: round up to next hour (e.g. 5:30 - 5:59 -> 6 hrs, 0:30 - 0:59 -> 1 hr)
+   */
+  calculateExtraHours(
+    actualReturnStr?: string | null,
+    scheduledReturnStr?: string | null,
+  ): number {
+    if (!actualReturnStr || !scheduledReturnStr) return 0;
+    const actualReturn = new Date(actualReturnStr).getTime();
+    const expectedReturn = new Date(scheduledReturnStr).getTime();
+    if (
+      isNaN(actualReturn) ||
+      isNaN(expectedReturn) ||
+      actualReturn <= expectedReturn
+    ) {
+      return 0;
+    }
+
+    const diffMs = actualReturn - expectedReturn;
+    const totalMinutes = Math.floor(diffMs / (1000 * 60));
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+
+    return minutes >= 30 ? hours + 1 : hours;
+  }
+
   // --- Main Calculation & Validation Engine ---
   calculateEndBookingFees() {
     const b = this.booking();
@@ -644,16 +672,11 @@ export class RREndBookingDialogComponent implements OnInit {
     const distanceDriven = endOdo > startOdo ? endOdo - startOdo : 0;
     this.endBookingFields.actualDistanceDriven = distanceDriven;
 
-    // 2. Extra hours driven
-    let rawHoursExceeded = 0;
-    if (this.endBookingFields.returnDateTimeActual && b.returnDateTime) {
-      const expectedReturn = new Date(b.returnDateTime);
-      const actualReturn = new Date(this.endBookingFields.returnDateTimeActual);
-      if (actualReturn > expectedReturn) {
-        const diffMs = actualReturn.getTime() - expectedReturn.getTime();
-        rawHoursExceeded = Math.ceil(diffMs / (1000 * 60 * 60));
-      }
-    }
+    // 2. Extra hours driven (< 30min -> previous hour, >= 30min -> next hour)
+    const rawHoursExceeded = this.calculateExtraHours(
+      this.endBookingFields.returnDateTimeActual,
+      b.returnDateTime,
+    );
 
     const rawKmsExceeded =
       baseKmLimit > 0 ? Math.max(0, distanceDriven - baseKmLimit) : 0;
