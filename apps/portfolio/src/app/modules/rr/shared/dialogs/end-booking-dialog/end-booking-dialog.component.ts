@@ -927,6 +927,17 @@ export class RREndBookingDialogComponent implements OnInit {
             ? String(this.endBookingFields.nonIntimationFine || 0)
             : '0',
         recalculateSlabMode: this.endBookingFields.recalculateSlabMode,
+        totalKmLimit:
+          this.endBookingFields.effectiveKmLimit > 0
+            ? String(this.endBookingFields.effectiveKmLimit)
+            : b.totalKmLimit,
+        totalRentalAmount:
+          this.endBookingFields.slabExtraRent > 0
+            ? String(
+                (Number(b.totalRentalAmount) || 0) +
+                  this.endBookingFields.slabExtraRent,
+              )
+            : b.totalRentalAmount,
         totalAdditionalFees: String(this.endBookingFields.totalAdditionalFees),
         finalRentalAmount: finalRentalAmountToSave,
         pendingAmount: pendingAmountToSave,

@@ -695,7 +695,13 @@ export class RRInvoicePdfService {
       });
     }
 
-    if (extraHours > 0 || extraHourFee > 0) {
+    if (b.recalculateSlabMode && extraHours > 0) {
+      lineItems.push({
+        desc: `Extra Time (Absorbed into Tariff via Vehicle Slabs)`,
+        basis: `${extraHours} Hr(s) Slab Extension`,
+        amount: 0,
+      });
+    } else if (extraHours > 0 || extraHourFee > 0) {
       lineItems.push({
         desc: `Extra Time / Late Handover Fee`,
         basis: `${extraHours} Hr(s) @ Rs. ${extraHourPrice}/HR`,
