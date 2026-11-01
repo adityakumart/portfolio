@@ -36,3 +36,19 @@ export function getRefreshSecret(): string {
 export function getKycSecret(): string {
   return process.env['KYC_ENCRYPTION_KEY'] || getJwtSecret();
 }
+
+export function getSurepassToken(): string {
+  return process.env['SUREPASS_API_TOKEN'] || '';
+}
+
+export function getSurepassBaseUrl(): string {
+  return (process.env['SUREPASS_BASE_URL'] || 'https://kyc-api.surepass.io').replace(/\/+$/, '');
+}
+
+export function isSurepassSandbox(): boolean {
+  if (process.env['SUREPASS_SANDBOX_MODE'] === 'true') {
+    return true;
+  }
+  const token = getSurepassToken();
+  return !token || token === 'sandbox' || token === 'mock';
+}

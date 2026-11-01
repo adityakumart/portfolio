@@ -321,6 +321,22 @@ const routes: Routes = [
         },
       },
       {
+        path: 'kyc-verification',
+        loadComponent: () =>
+          import(
+            './components/kyc-verification/kyc-verification.component'
+          ).then((m) => m.KycVerificationComponent),
+        canActivate: [authGuard],
+        data: {
+          seo: {
+            title: 'KYC Identity Verification | Aadhaar & Driving License',
+            description:
+              'Verify official Indian identity credentials (Aadhaar and Driving License) powered by Surepass API.',
+            robots: 'noindex, nofollow',
+          },
+        },
+      },
+      {
         path: 'dev-tools',
         loadChildren: () =>
           import('../dev-tools/dev-tools-routing.module').then(

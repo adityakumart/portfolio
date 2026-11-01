@@ -111,3 +111,24 @@ export const uploadRateLimiter = rateLimit({
     'Too many file upload requests. Please wait a few minutes before trying again.'
   ),
 });
+
+/**
+ * 5. KYC & Document Verification Rate Limiter
+ * Applied to Aadhaar OTP and Driving License verification to prevent quota exhaustion.
+ * Window: 15 minutes
+ * Limit: 20 requests per IP (configurable via KYC_RATE_LIMIT_MAX)
+ */
+export const kycRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: process.env['KYC_RATE_LIMIT_MAX']
+    ? Number(process.env['KYC_RATE_LIMIT_MAX'])
+    : 20,
+  message: 'Too many KYC verification requests. Please wait a few minutes before trying again.',
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  validate: { trustProxy: false },
+  skip: (req) => req.method === 'OPTIONS',
+  handler: createRateLimitHandler(
+    'Too many KYC verification requests. Please wait a few minutes before trying again.'
+  ),
+});

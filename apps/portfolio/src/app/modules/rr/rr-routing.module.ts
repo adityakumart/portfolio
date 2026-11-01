@@ -141,6 +141,20 @@ export const RR_ROUTES: Routes = [
         },
       },
       {
+        path: 'kyc-verification',
+        loadComponent: () =>
+          import('../user/components/kyc-verification/kyc-verification.component').then(
+            (m) => m.KycVerificationComponent,
+          ),
+        data: {
+          seo: {
+            title: 'Customer KYC & License Verification | Royal Rentals',
+            description: 'Validate customer Aadhaar and Driving License credentials with Surepass.',
+            robots: 'noindex, nofollow',
+          },
+        },
+      },
+      {
         path: 'customer/list',
         component: RRCustomerListComponent,
         data: {
