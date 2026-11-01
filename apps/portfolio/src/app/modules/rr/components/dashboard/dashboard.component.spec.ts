@@ -250,5 +250,113 @@ test.describe('RR Module - Dashboard Shell Component', () => {
       // Modal closes upon successful update
       await expect(policyDialog).not.toBeVisible();
     });
+
+    test('should enforce mandatory password creation for new users on first login and prevent closing when clicking outside or pressing Escape', async ({ page }) => {
+      await setupRRRouteMocks(page);
+      // Override auth/permissions to return first login state
+      await page.route('**/api/rr/auth/permissions*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            success: true,
+            user: MOCK_EMPLOYEE_USER,
+            role: 'employee',
+            status: 'active',
+            mustChangePassword: true,
+            isFirstLogin: true,
+            passwordAgeDays: 0,
+            passwordExpiresInDays: 0,
+            isBufferPeriod: false,
+            isExpired: false,
+          }),
+        });
+      });
+
+      await injectRRSession(page, { user: MOCK_EMPLOYEE_USER });
+      await page.goto('/user/rr/dashboard');
+      await page.waitForLoadState('domcontentloaded');
+
+      // The password policy modal automatically triggers
+      const policyDialog = page.locator('dialog, [role="dialog"]').first();
+      await expect(policyDialog).toBeVisible({ timeout: 10000 });
+      await expect(policyDialog.getByText('First Login • Create Password')).toBeVisible();
+
+      // 'X' close button and 'Remind Me Later' button must NOT be present
+      await expect(policyDialog.locator('button[aria-label="Skip dialog"]')).not.toBeVisible();
+      await expect(policyDialog.getByRole('button', { name: /Remind Me Later/i })).not.toBeVisible();
+
+      // Sign Out option must be available as a safe exit
+      const signOutBtn = policyDialog.getByRole('button', { name: /Sign Out/i });
+      await expect(signOutBtn).toBeVisible();
+
+      // Attempt to dismiss by clicking outside the dialog (on the backdrop overlay)
+      await page.mouse.click(10, 10);
+      await page.waitForTimeout(300);
+
+      // Dialog must remain visible and open
+      await expect(policyDialog).toBeVisible();
+      await expect(policyDialog.getByText('First Login • Create Password')).toBeVisible();
+
+      // Attempt to dismiss by pressing Escape
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(300);
+
+      // Dialog must still remain visible and open
+      await expect(policyDialog).toBeVisible();
+
+      // Now create password to complete first login
+      const currentPassInput = policyDialog.locator('input[formcontrolname="currentPassword"]');
+      const newPassInput = policyDialog.locator('input[formcontrolname="newPassword"]');
+      const confirmPassInput = policyDialog.locator('input[formcontrolname="confirmPassword"]');
+
+      await currentPassInput.fill('TemporaryDobPassword');
+      await newPassInput.fill('PersonalSecurePass@123');
+      await confirmPassInput.fill('PersonalSecurePass@123');
+
+      const submitBtn = policyDialog.getByRole('button', { name: /Set Password & Continue/i });
+      await expect(submitBtn).toBeEnabled();
+      await submitBtn.click();
+
+      // Modal closes upon successful update
+      await expect(policyDialog).not.toBeVisible();
+    });
+
+    test('should allow user to sign out from mandatory password creation dialog', async ({ page }) => {
+      await setupRRRouteMocks(page);
+      await page.route('**/api/rr/auth/permissions*', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            success: true,
+            user: MOCK_EMPLOYEE_USER,
+            role: 'employee',
+            status: 'active',
+            mustChangePassword: true,
+            isFirstLogin: true,
+            passwordAgeDays: 0,
+            passwordExpiresInDays: 0,
+            isBufferPeriod: false,
+            isExpired: false,
+          }),
+        });
+      });
+
+      await injectRRSession(page, { user: MOCK_EMPLOYEE_USER });
+      await page.goto('/user/rr/dashboard');
+      await page.waitForLoadState('domcontentloaded');
+
+      const policyDialog = page.locator('dialog, [role="dialog"]').first();
+      await expect(policyDialog).toBeVisible({ timeout: 10000 });
+
+      const signOutBtn = policyDialog.getByRole('button', { name: /Sign Out/i });
+      await expect(signOutBtn).toBeVisible();
+      await signOutBtn.click();
+
+      // Should redirect to login page
+      await page.waitForURL(/.*\/user\/rr\/login/, { timeout: 10000 });
+      await expect(page).toHaveURL(/.*\/user\/rr\/login/);
+    });
   });
 });

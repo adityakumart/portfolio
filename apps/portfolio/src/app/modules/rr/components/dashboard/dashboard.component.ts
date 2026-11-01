@@ -116,6 +116,10 @@ export class RRDashboardComponent implements OnInit {
   currentUser = computed(() => this.rrApi.currentUser());
   isAdmin = computed(() => this.currentUser()?.role === 'admin');
   policyState = computed(() => this.rrApi.passwordPolicyState());
+  isMandatoryPasswordChange = computed(() => {
+    const policy = this.policyState();
+    return !!(policy && (policy.mustChangePassword || policy.isExpired || policy.isFirstLogin));
+  });
 
   getInitials(): string {
     const user = this.currentUser();
@@ -174,9 +178,28 @@ export class RRDashboardComponent implements OnInit {
       if (policy && (policy.mustChangePassword || policy.isExpired || policy.isBufferPeriod)) {
         setTimeout(() => {
           if (!this.policyDialogRef && this.passwordPolicyDialog) {
-            const isMandatory = policy.mustChangePassword || policy.isExpired;
-            this.policyDialogRef = this.dialog.open(this.passwordPolicyDialog, {
+            const isMandatory = !!(policy.mustChangePassword || policy.isExpired || policy.isFirstLogin);
+            const ref = this.dialog.open(this.passwordPolicyDialog, {
               contentClass: 'max-w-md w-full p-6 max-h-[85vh] flex flex-col overflow-hidden',
+              disableClose: isMandatory,
+              closeOnOutsidePointerEvents: !isMandatory,
+            });
+            this.policyDialogRef = ref;
+
+            ref.closed$.subscribe(() => {
+              this.policyDialogRef = null;
+              // If closed while password change is still mandatory (e.g. unexpected dismissal), re-open
+              if (this.isMandatoryPasswordChange()) {
+                setTimeout(() => {
+                  if (!this.policyDialogRef && this.passwordPolicyDialog && this.isMandatoryPasswordChange()) {
+                    this.policyDialogRef = this.dialog.open(this.passwordPolicyDialog, {
+                      contentClass: 'max-w-md w-full p-6 max-h-[85vh] flex flex-col overflow-hidden',
+                      disableClose: true,
+                      closeOnOutsidePointerEvents: false,
+                    });
+                  }
+                }, 100);
+              }
             });
           }
         }, 400);
@@ -305,10 +328,10 @@ export class RRDashboardComponent implements OnInit {
         newPassword: newPassword || '',
       });
       toast.success('Password configured successfully. Welcome!');
+      this.rrApi.passwordPolicyState.set(null);
       this.policyDialogRef?.close();
       this.policyDialogRef = null;
       this.policyForm.reset();
-      this.rrApi.passwordPolicyState.set(null);
     } catch (err: any) {
       toast.error(err.error?.message || err.message || 'Failed to set password.');
     } finally {
@@ -317,13 +340,14 @@ export class RRDashboardComponent implements OnInit {
   }
 
   skipPolicyWarning() {
+    this.rrApi.passwordPolicyState.set(null);
     this.policyDialogRef?.close();
     this.policyDialogRef = null;
-    this.rrApi.passwordPolicyState.set(null);
   }
 
   logout() {
     this.closeProfilePopup();
+    this.rrApi.passwordPolicyState.set(null);
     this.policyDialogRef?.close();
     this.policyDialogRef = null;
     this.inactivityService.clearStorageState();

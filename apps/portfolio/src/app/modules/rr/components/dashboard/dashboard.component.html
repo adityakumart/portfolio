@@ -723,6 +723,18 @@
                 >
                   Remind Me Later (Skip)
                 </button>
+              } @else if (isMandatoryPasswordChange()) {
+                <button
+                  type="button"
+                  hlmBtn
+                  variant="ghost"
+                  size="sm"
+                  class="text-muted-foreground hover:text-destructive text-xs flex items-center gap-1.5"
+                  (click)="logout()"
+                >
+                  <ng-icon name="lucideLogOut" class="size-3.5"></ng-icon>
+                  <span>Sign Out</span>
+                </button>
               }
             </div>
             <button
