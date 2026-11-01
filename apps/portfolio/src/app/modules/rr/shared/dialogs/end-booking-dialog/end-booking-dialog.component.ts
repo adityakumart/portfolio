@@ -570,65 +570,86 @@ export class RREndBookingDialogComponent implements OnInit {
   }
 
   // --- Slab calculation algorithms ---
+  /**
+   * Recalculates extra rent and extra KM limit for Case 4 based on custom recalculation slabs:
+   * 1hr: 1hr P * 1, 1hr L * 1
+   * 2hr: 1hr P * 2, 1hr L * 2
+   * 3hr to 4hr: 4hr P, 4hr L
+   * 5hr: 4hr P + 1hr P * 1, 4hr L + 1hr L * 1
+   * 6hr: 4hr P + 1hr P * 2, 4hr L + 1hr L * 2
+   * 7hr to 12hr: 12hr P, 12hr L
+   * 13hr: 12hr P + 1hr P * 1, 12hr L + 1hr L * 1
+   * 14hr: 12hr P + 1hr P * 2, 12hr L + 1hr L * 2
+   * 15hr to 24hr: 24hr P, 24hr L
+   * If > 24hrs: repeated for full days + remaining hours as above.
+   */
+  calculateCase4Slabs(
+    hours: number,
+    pricing?: IVehiclePricing,
+  ): { slabExtraRent: number; slabExtraKm: number } {
+    if (!pricing || hours <= 0) {
+      return { slabExtraRent: 0, slabExtraKm: 0 };
+    }
+
+    const p24 = Number(pricing.h23?.price || 0);
+    const km24 = Number(pricing.h23?.km || 0);
+
+    const p12 = Number(pricing.h11?.price || 0);
+    const km12 = Number(pricing.h11?.km || 0);
+
+    const p4 = Number(pricing.h3?.price || 0);
+    const km4 = Number(pricing.h3?.km || 0);
+
+    const p1 = Number(pricing.h1?.price || (p4 > 0 ? Math.round(p4 / 4) : 0));
+    const km1 = Number(pricing.h1?.km || (km4 > 0 ? Math.round(km4 / 4) : 0));
+
+    const fullDays = Math.floor(hours / 24);
+    const remHours = hours % 24;
+
+    let remRent = 0;
+    let remKm = 0;
+
+    if (remHours === 1) {
+      remRent = p1 * 1;
+      remKm = km1 * 1;
+    } else if (remHours === 2) {
+      remRent = p1 * 2;
+      remKm = km1 * 2;
+    } else if (remHours === 3 || remHours === 4) {
+      remRent = p4;
+      remKm = km4;
+    } else if (remHours === 5) {
+      remRent = p4 + p1 * 1;
+      remKm = km4 + km1 * 1;
+    } else if (remHours === 6) {
+      remRent = p4 + p1 * 2;
+      remKm = km4 + km1 * 2;
+    } else if (remHours >= 7 && remHours <= 12) {
+      remRent = p12;
+      remKm = km12;
+    } else if (remHours === 13) {
+      remRent = p12 + p1 * 1;
+      remKm = km12 + km1 * 1;
+    } else if (remHours === 14) {
+      remRent = p12 + p1 * 2;
+      remKm = km12 + km1 * 2;
+    } else if (remHours >= 15 && remHours <= 23) {
+      remRent = p24;
+      remKm = km24;
+    }
+
+    const totalRent = fullDays * p24 + remRent;
+    const totalKm = fullDays * km24 + remKm;
+
+    return { slabExtraRent: totalRent, slabExtraKm: totalKm };
+  }
+
   calculateSlabRent(hours: number, pricing?: IVehiclePricing): number {
-    if (!pricing || hours <= 0) return 0;
-    let remaining = hours;
-    let totalRent = 0;
-
-    const p23 = Number(pricing.h23?.price || 0);
-    const p11 = Number(pricing.h11?.price || 0);
-    const p3 = Number(pricing.h3?.price || 0);
-    const p1 = Number(pricing.h1?.price || 0);
-
-    if (remaining >= 24) {
-      const count = Math.floor(remaining / 24);
-      totalRent += count * p23;
-      remaining -= count * 24;
-    }
-    if (remaining >= 12) {
-      const count = Math.floor(remaining / 12);
-      totalRent += count * p11;
-      remaining -= count * 12;
-    }
-    if (remaining >= 4) {
-      const count = Math.floor(remaining / 4);
-      totalRent += count * p3;
-      remaining -= count * 4;
-    }
-    if (remaining > 0) {
-      totalRent += remaining * p1;
-    }
-    return totalRent;
+    return this.calculateCase4Slabs(hours, pricing).slabExtraRent;
   }
 
   calculateSlabKm(hours: number, pricing?: IVehiclePricing): number {
-    if (!pricing || hours <= 0) return 0;
-    let remaining = hours;
-    let totalKm = 0;
-
-    const km23 = Number(pricing.h23?.km || 0);
-    const km11 = Number(pricing.h11?.km || 0);
-    const km3 = Number(pricing.h3?.km || 0);
-
-    if (remaining >= 24) {
-      const count = Math.floor(remaining / 24);
-      totalKm += count * km23;
-      remaining -= count * 24;
-    }
-    if (remaining >= 12) {
-      const count = Math.floor(remaining / 12);
-      totalKm += count * km11;
-      remaining -= count * 12;
-    }
-    if (remaining >= 4) {
-      const count = Math.floor(remaining / 4);
-      totalKm += count * km3;
-      remaining -= count * 4;
-    }
-    if (remaining > 0) {
-      totalKm += km3;
-    }
-    return totalKm;
+    return this.calculateCase4Slabs(hours, pricing).slabExtraKm;
   }
 
   /**
