@@ -739,6 +739,7 @@ export class RRApiService {
         this.validateCurrentRouteAccess(res.user);
         this.passwordPolicyState.set({
           mustChangePassword: !!res.mustChangePassword,
+          isFirstLogin: !!res.isFirstLogin,
           passwordAgeDays: res.passwordAgeDays ?? 0,
           passwordExpiresInDays: res.passwordExpiresInDays ?? 45,
           isBufferPeriod: !!res.isBufferPeriod,
