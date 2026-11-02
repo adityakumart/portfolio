@@ -37,20 +37,20 @@ test.describe('KYC Verification Component (<app-kyc-verification>)', () => {
         contentType: 'application/json',
         body: JSON.stringify({
           clientId: 'mock_adh_client_123',
-          fullName: 'Aditya Kumar Talapula',
+          fullName: 'Alex Morgan',
           dob: '1995-08-15',
           gender: 'M',
           maskedAadhaar: 'XXXX-XXXX-8899',
           address: {
-            line: 'Flat 402, Royal Residency',
-            locality: 'Banjara Hills',
-            district: 'Hyderabad',
-            state: 'Telangana',
-            pin: '500034',
+            line: 'Flat 101, Skyline Towers',
+            locality: 'Central District',
+            district: 'Metro City',
+            state: 'State',
+            pin: '500001',
             country: 'India',
           },
           profileImage: '',
-          zip: '500034',
+          zip: '500001',
           verifiedAt: new Date().toISOString(),
         }),
       });
@@ -63,9 +63,9 @@ test.describe('KYC Verification Component (<app-kyc-verification>)', () => {
         contentType: 'application/json',
         body: JSON.stringify({
           clientId: 'mock_dl_123',
-          licenseNumber: 'TS0920200001234',
-          holderName: 'Aditya Kumar Talapula',
-          fatherOrHusbandName: 'Satyanarayana Talapula',
+          licenseNumber: 'DL0120200001234',
+          holderName: 'Alex Morgan',
+          fatherOrHusbandName: 'Robert Morgan',
           dob: '1995-08-15',
           status: 'ACTIVE',
           validTill: '2036-04-11',
@@ -73,8 +73,8 @@ test.describe('KYC Verification Component (<app-kyc-verification>)', () => {
             { cov: 'MCWG (Motor Cycle With Gear)' },
             { cov: 'LMV (Light Motor Vehicle - Car)' },
           ],
-          address: 'Banjara Hills, Hyderabad, Telangana - 500034',
-          state: 'Telangana',
+          address: 'Flat 101, Skyline Towers, Tech Park Road, Metro City - 500001',
+          state: 'State',
           verifiedAt: new Date().toISOString(),
         }),
       });
@@ -130,7 +130,7 @@ test.describe('KYC Verification Component (<app-kyc-verification>)', () => {
     await expect(
       page.getByRole('heading', { name: 'Verified Aadhaar Identity' }),
     ).toBeVisible({ timeout: 5000 });
-    await expect(page.getByText('Aditya Kumar Talapula')).toBeVisible();
+    await expect(page.getByText('Alex Morgan')).toBeVisible();
     await expect(page.getByText('XXXX-XXXX-8899')).toBeVisible();
     await expect(page.getByText('Authenticity Confirmed')).toBeVisible();
   });
@@ -147,7 +147,7 @@ test.describe('KYC Verification Component (<app-kyc-verification>)', () => {
 
     // Fill DL Number
     const dlInput = page.locator('input[placeholder="e.g. DL1420110012345"]');
-    await dlInput.fill('TS0920200001234');
+    await dlInput.fill('DL0120200001234');
 
     // Click Verify
     const verifyDlBtn = page.getByRole('button', {

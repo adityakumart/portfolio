@@ -116,7 +116,7 @@ test.describe('RR Module - Login Component', () => {
     await expect(passwordInput).toHaveAttribute('type', 'password');
 
     // Fill valid admin credentials
-    await usernameInput.fill('admin@rams-cars.com');
+    await usernameInput.fill('admin@fleetops.local');
     await passwordInput.fill('AdminPD');
     await expect(submitBtn).toBeEnabled();
 

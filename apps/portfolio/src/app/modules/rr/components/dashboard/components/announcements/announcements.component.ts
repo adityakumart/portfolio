@@ -242,7 +242,7 @@ export class RRAnnouncementsComponent implements OnInit {
       validUntil: '',
       ctaText: 'Claim Offer',
       ctaAction: 'call',
-      ctaLink: '+91 9494873336',
+      ctaLink: '+91 9800000001',
       priority: 0,
       isActive: true,
     });

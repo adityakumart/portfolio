@@ -122,22 +122,22 @@ export class KycVerificationService {
       const lastDigits = clientId.split('_').pop() || '8899';
       return {
         clientId,
-        fullName: 'Aditya Kumar Talapula',
+        fullName: 'Alex Morgan',
         dob: '1995-08-15',
         gender: 'M',
         maskedAadhaar: `XXXX-XXXX-${lastDigits}`,
         address: {
-          careOf: 'S/O Satyanarayana T',
-          line: 'Flat 402, Royal Residency',
-          street: 'Road No. 12, Banjara Hills',
-          locality: 'Banjara Hills',
-          district: 'Hyderabad',
-          state: 'Telangana',
-          pin: '500034',
+          careOf: 'S/O Robert Morgan',
+          line: 'Flat 101, Skyline Towers',
+          street: 'Tech Park Road',
+          locality: 'Central District',
+          district: 'Metro City',
+          state: 'State',
+          pin: '500001',
           country: 'India',
         },
         profileImage: '',
-        zip: '500034',
+        zip: '500001',
         verifiedAt: new Date().toISOString(),
       };
     }
@@ -221,8 +221,8 @@ export class KycVerificationService {
       return {
         clientId: `sandbox_dl_${Date.now()}`,
         licenseNumber: cleanDl,
-        holderName: 'Aditya Kumar Talapula',
-        fatherOrHusbandName: 'Satyanarayana Talapula',
+        holderName: 'Alex Morgan',
+        fatherOrHusbandName: 'Robert Morgan',
         dob: formattedDob || '1995-08-15',
         bloodGroup: 'O+',
         status: 'ACTIVE',
@@ -240,8 +240,8 @@ export class KycVerificationService {
           { cov: 'MCWG (Motor Cycle With Gear)', issueDate: '2016-04-12' },
           { cov: 'LMV (Light Motor Vehicle - Car)', issueDate: '2016-04-12' },
         ],
-        address: 'H No. 8-2-293/82, Banjara Hills, Hyderabad, Telangana - 500034',
-        state: 'Telangana',
+        address: 'Flat 101, Skyline Towers, Tech Park Road, Metro City - 500001',
+        state: 'State',
         verifiedAt: new Date().toISOString(),
       };
     }

@@ -59,7 +59,7 @@ test.describe('RR Module - Dashboard Shell Component', () => {
       const textboxes = dialog.getByRole('textbox');
       await expect(textboxes.nth(0)).toHaveValue('RRA002');
       await expect(textboxes.nth(1)).toHaveValue('Desk Agent');
-      await expect(textboxes.nth(2)).toHaveValue('agent@rams-cars.com');
+      await expect(textboxes.nth(2)).toHaveValue('agent@fleetops.local');
       await expect(textboxes.nth(3)).toHaveValue('EMPLOYEE');
 
       // Verify Change Password section in profile

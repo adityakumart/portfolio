@@ -116,11 +116,11 @@ export class RRHomepageComponent implements OnInit, OnDestroy {
   homeContent = signal<IRRHomePageContent>(DEFAULT_RR_HOMEPAGE_CONTENT);
 
   // Dynamic Desk Phone Info derived from content
-  primaryPhone = computed(() => this.homeContent().contact.primaryPhone || '+91 9494873336');
-  primaryPhoneRaw = computed(() => this.homeContent().contact.primaryPhoneRaw || '9494873336');
-  secondaryPhone = computed(() => this.homeContent().contact.secondaryPhone || '+91 9494893336');
-  secondaryPhoneRaw = computed(() => this.homeContent().contact.secondaryPhoneRaw || '9494893336');
-  whatsappNumberRaw = computed(() => this.homeContent().contact.whatsappNumberRaw || '9494873336');
+  primaryPhone = computed(() => this.homeContent().contact.primaryPhone || '+91 9800000001');
+  primaryPhoneRaw = computed(() => this.homeContent().contact.primaryPhoneRaw || '9800000001');
+  secondaryPhone = computed(() => this.homeContent().contact.secondaryPhone || '+91 9800000002');
+  secondaryPhoneRaw = computed(() => this.homeContent().contact.secondaryPhoneRaw || '9800000002');
+  whatsappNumberRaw = computed(() => this.homeContent().contact.whatsappNumberRaw || '9800000001');
 
   // Hero Banners Carousel State
   activeHeroBannerIndex = signal<number>(0);
