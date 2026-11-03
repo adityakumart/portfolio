@@ -115,10 +115,8 @@
             activeScenario() === 'case2',
           'bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-300':
             activeScenario() === 'case3',
-          'bg-purple-500/10 border-purple-500/30 text-purple-700 dark:text-purple-300':
-            activeScenario() === 'case4_1',
           'bg-indigo-500/10 border-indigo-500/30 text-indigo-700 dark:text-indigo-300':
-            activeScenario() === 'case4_2',
+            activeScenario() === 'case4',
         }"
       >
         <div class="flex items-center gap-2">
@@ -133,19 +131,24 @@
             } @else if (activeScenario() === 'case3') {
               <span class="font-bold">Case 3 Applied:</span> Hours exceeded &
               returned within KMs limit. Extra KMs charge is ₹0.
-            } @else if (activeScenario() === 'case4_1') {
-              <span class="font-bold">Case 4.1 Applied:</span> Both KMs & Hours
-              exceeded (Standard mode: all charges added).
-            } @else if (activeScenario() === 'case4_2') {
-              <span class="font-bold">Case 4.2 Applied:</span> Extension / Slab
-              Recalculation Mode (New limit & renting price applied).
+            } @else if (activeScenario() === 'case4') {
+              <span class="font-bold">Case 4 Applied:</span> Both KMs & Hours exceeded. Recalculation done via Slabs
+              @if (case4ResolvedScenario() === 'case1') {
+                <span class="font-semibold text-emerald-600 dark:text-emerald-400"> &rarr; Resolved to Case 1 (Within limit after recalculation)</span>.
+              } @else if (case4ResolvedScenario() === 'case2') {
+                <span class="font-semibold text-blue-600 dark:text-blue-400"> &rarr; Resolved to Case 2 (Exceeds new limit by {{ endBookingFields.extraKms }} KM)</span>.
+              }
             }
           </div>
         </div>
         <span
           class="text-[10px] font-mono uppercase px-2 py-0.5 rounded font-bold bg-background/50 border shrink-0"
         >
-          {{ activeScenario().toUpperCase() }}
+          @if (activeScenario() === 'case4') {
+            CASE 4 &bull; {{ case4ResolvedScenario() === 'case1' ? 'WITHIN LIMIT' : 'EXCEEDED KM' }}
+          } @else {
+            {{ activeScenario().toUpperCase() }}
+          }
         </span>
       </div>
     }
@@ -781,63 +784,54 @@
           </div>
         </div>
 
-        <!-- Case 4.2 Extension Option (When both KMs & Hours exceeded) -->
-        @if (activeScenario() === 'case4_1' || activeScenario() === 'case4_2') {
+        <!-- Case 4 Slab Recalculation Breakdown -->
+        @if (activeScenario() === 'case4') {
           <div
-            class="p-3 rounded-xl border border-indigo-500/30 bg-indigo-500/5 space-y-2"
+            class="p-3 rounded-xl border border-indigo-500/30 bg-indigo-500/5 space-y-2.5"
           >
             <div class="flex items-center justify-between">
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  [(ngModel)]="endBookingFields.recalculateSlabMode"
-                  (change)="calculateEndBookingFees()"
-                  class="rounded accent-indigo-600 h-4 w-4"
-                />
+              <div class="flex items-center gap-2">
+                <span class="h-2 w-2 rounded-full bg-indigo-500 animate-pulse"></span>
                 <span class="font-bold text-xs text-foreground">
-                  Case 4.2: Recalculate Extra KMs & Hrs via Vehicle Slab Pricing
+                  Case 4: Recalculated via Vehicle Slabs ({{ endBookingFields.extraHours }} Extra Hrs)
                 </span>
-              </label>
+              </div>
               <span
-                class="text-[10px] bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 font-semibold px-2 py-0.5 rounded"
+                class="text-[10px] bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 font-semibold px-2 py-0.5 rounded font-mono"
               >
-                Slab Extension
+                {{ case4ResolvedScenario() === 'case1' ? 'Resolved: Case 1 (Within Limit)' : 'Resolved: Case 2 (Excess KMs)' }}
               </span>
             </div>
             <p class="text-[11px] text-muted-foreground leading-relaxed">
-              Adds respective KM limit for extra hours and re-evaluates renting
-              price, producing updated extra KMs and extra hours values.
+              Added KM allowance and slab rental price calculated for extra time ({{ endBookingFields.extraHours }} hrs). Extra hour charge is absorbed into rent (₹0), and remaining excess KMs are re-evaluated against the new KM limit.
             </p>
 
-            @if (endBookingFields.recalculateSlabMode) {
-              <div
-                class="pt-2 border-t border-indigo-500/20 grid grid-cols-2 gap-2 text-xs font-mono"
-              >
-                <div class="p-2 rounded bg-background border border-border">
-                  <span class="text-[10px] text-muted-foreground block"
-                    >Added KM Allowance</span
-                  >
-                  <span class="font-bold text-indigo-600"
-                    >+{{ endBookingFields.slabExtraKmAllowance }} KM</span
-                  >
-                  <span class="text-[10px] text-muted-foreground block"
-                    >(New Limit:
-                    {{ endBookingFields.effectiveKmLimit }} KM)</span
-                  >
-                </div>
-                <div class="p-2 rounded bg-background border border-border">
-                  <span class="text-[10px] text-muted-foreground block"
-                    >Slab Rent for Extra Time</span
-                  >
-                  <span class="font-bold text-indigo-600"
-                    >+₹{{ endBookingFields.slabExtraRent }}</span
-                  >
-                  <span class="text-[10px] text-muted-foreground block"
-                    >(Included in Rent)</span
-                  >
-                </div>
+            <div
+              class="pt-2 border-t border-indigo-500/20 grid grid-cols-2 gap-2 text-xs font-mono"
+            >
+              <div class="p-2 rounded bg-background border border-border">
+                <span class="text-[10px] text-muted-foreground block"
+                  >Added KM Allowance</span
+                >
+                <span class="font-bold text-indigo-600"
+                  >+{{ endBookingFields.slabExtraKmAllowance }} KM</span
+                >
+                <span class="text-[10px] text-muted-foreground block"
+                  >(New Limit: {{ endBookingFields.effectiveKmLimit }} KM)</span
+                >
               </div>
-            }
+              <div class="p-2 rounded bg-background border border-border">
+                <span class="text-[10px] text-muted-foreground block"
+                  >Slab Rent for Extra Time</span
+                >
+                <span class="font-bold text-indigo-600"
+                  >+₹{{ endBookingFields.slabExtraRent }}</span
+                >
+                <span class="text-[10px] text-muted-foreground block"
+                  >(Added to Rent)</span
+                >
+              </div>
+            </div>
           </div>
         }
       </div>
@@ -1060,7 +1054,7 @@
     </div>
 
     <!-- SECTION 5: Late / Non-Intimation Fine (Only when both KMs & Hours are exceeded) -->
-    @if (activeScenario() === 'case4_1' || activeScenario() === 'case4_2') {
+    @if (activeScenario() === 'case4') {
       <div class="p-3 rounded-xl border border-border bg-muted/10 space-y-2.5">
         @if (booking()?.lastIntimation) {
           <div class="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-xs text-amber-700 dark:text-amber-400 flex items-start gap-2">
@@ -1281,7 +1275,7 @@
           <span class="font-bold text-foreground">₹{{ endBookingFields.challanaTollFinesTotal }}</span>
         </div>
 
-        @if ((activeScenario() === 'case4_1' || activeScenario() === 'case4_2') && endBookingFields.applyNonIntimationFine) {
+        @if (activeScenario() === 'case4' && endBookingFields.applyNonIntimationFine) {
           <div class="flex items-center justify-between py-1 border-b border-border/40 text-muted-foreground">
             <span>Late / Non-Intimation Fine</span>
             <span class="font-bold text-foreground">₹{{ endBookingFields.nonIntimationFine }}</span>
