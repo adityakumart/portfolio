@@ -1,24 +1,38 @@
+import { CellCoord, Wall } from './barricade-board.interface';
+import { PlayerId } from './barricade-game.interface';
+
 /**
- * Barricade Movement & Move Tracking Interfaces
+ * 9x9 Quoridor (Barricade) Movement & Move History Interfaces
  */
 
 export interface ValidMove {
-  targetNodeId: string;
-  path: string[];
-  capturesBarricade: boolean;
-  capturesOpponentTokenId?: string;
+  targetCoord: CellCoord;
+  isJump: boolean;
 }
+
+export interface PawnMoveAction {
+  type: 'pawn';
+  playerId: PlayerId;
+  from: CellCoord;
+  to: CellCoord;
+  isJump: boolean;
+}
+
+export interface WallMoveAction {
+  type: 'wall';
+  playerId: PlayerId;
+  wall: Wall;
+}
+
+export type MoveAction = PawnMoveAction | WallMoveAction;
 
 export interface MoveRecord {
   turnNumber: number;
-  playerId: string;
-  playerName: string;
-  tokenId: string;
-  fromNodeId: string;
-  toNodeId: string;
-  diceRoll: number;
-  capturedBarricade: boolean;
-  capturedOpponentTokenId?: string;
-  barricadeRelocatedTo?: string;
+  playerId: PlayerId;
+  action: MoveAction;
+  previousPlayer1Pos: CellCoord;
+  previousPlayer2Pos: CellCoord;
+  previousPlayer1Walls: number;
+  previousPlayer2Walls: number;
   timestamp: number;
 }

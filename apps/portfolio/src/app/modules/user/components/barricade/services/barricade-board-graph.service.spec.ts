@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { BarricadeBoardGraphService } from './barricade-board-graph.service';
+import { Wall } from '../../../../../shared/barricade';
 
 describe('BarricadeBoardGraphService', () => {
   let service: BarricadeBoardGraphService;
@@ -15,93 +16,133 @@ describe('BarricadeBoardGraphService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should initialize the complete classic pyramid board graph with 66 nodes', () => {
-    const graph = service.getGraph();
-    const allNodes = service.getAllNodes();
-    expect(allNodes.length).toBe(66);
-    expect(Object.keys(graph).length).toBe(66);
+  describe('Board Boundaries', () => {
+    it('should validate 1..9 coordinates', () => {
+      expect(service.isWithinBounds(1, 1)).toBe(true);
+      expect(service.isWithinBounds(9, 9)).toBe(true);
+      expect(service.isWithinBounds(0, 5)).toBe(false);
+      expect(service.isWithinBounds(5, 10)).toBe(false);
+    });
   });
 
-  it('should configure the summit castle node correctly at row 0', () => {
-    const castle = service.getNode('castle_1');
-    expect(castle).toBeDefined();
-    expect(castle?.id).toBe('castle_1');
-    expect(castle?.type).toBe('castle');
-    expect(castle?.row).toBe(0);
-    expect(castle?.col).toBe(8);
-    expect(castle?.allowedForBarricade).toBe(false);
-    expect(castle?.neighbors).toContain('r1_c8');
+  describe('Wall Collision Detection', () => {
+    it('should detect vertical movement blocked by horizontal wall', () => {
+      // Horizontal wall between row 6 and 7 spanning cols 3 and 4
+      const walls: Wall[] = [
+        { id: 'w1', row: 6, col: 3, orientation: 'horizontal', placedBy: 'player1' },
+      ];
+
+      // Vertical move between (6, 3) and (7, 3) should be blocked
+      expect(
+        service.isMoveBlockedByWall({ row: 6, col: 3 }, { row: 7, col: 3 }, walls)
+      ).toBe(true);
+
+      // Vertical move between (6, 4) and (7, 4) should be blocked (2nd cell of wall)
+      expect(
+        service.isMoveBlockedByWall({ row: 6, col: 4 }, { row: 7, col: 4 }, walls)
+      ).toBe(true);
+
+      // Vertical move between (6, 5) and (7, 5) should NOT be blocked
+      expect(
+        service.isMoveBlockedByWall({ row: 6, col: 5 }, { row: 7, col: 5 }, walls)
+      ).toBe(false);
+    });
+
+    it('should detect horizontal movement blocked by vertical wall', () => {
+      // Vertical wall between col 2 and 3 spanning rows 4 and 5
+      const walls: Wall[] = [
+        { id: 'w2', row: 4, col: 2, orientation: 'vertical', placedBy: 'player1' },
+      ];
+
+      // Horizontal move between (4, 2) and (4, 3) should be blocked
+      expect(
+        service.isMoveBlockedByWall({ row: 4, col: 2 }, { row: 4, col: 3 }, walls)
+      ).toBe(true);
+
+      // Horizontal move between (5, 2) and (5, 3) should be blocked
+      expect(
+        service.isMoveBlockedByWall({ row: 5, col: 2 }, { row: 5, col: 3 }, walls)
+      ).toBe(true);
+
+      // Horizontal move between (3, 2) and (3, 3) should NOT be blocked
+      expect(
+        service.isMoveBlockedByWall({ row: 3, col: 2 }, { row: 3, col: 3 }, walls)
+      ).toBe(false);
+    });
+
+    it('should detect overlapping and crossing wall placement', () => {
+      const existing: Wall[] = [
+        { id: 'w1', row: 4, col: 4, orientation: 'horizontal', placedBy: 'player1' },
+      ];
+
+      // Same spot & orientation
+      expect(
+        service.doesWallCollide({ row: 4, col: 4, orientation: 'horizontal' }, existing)
+      ).toBe(true);
+
+      // Perpendicular crossing at same center
+      expect(
+        service.doesWallCollide({ row: 4, col: 4, orientation: 'vertical' }, existing)
+      ).toBe(true);
+
+      // Overlapping parallel wall on same row
+      expect(
+        service.doesWallCollide({ row: 4, col: 3, orientation: 'horizontal' }, existing)
+      ).toBe(true);
+      expect(
+        service.doesWallCollide({ row: 4, col: 5, orientation: 'horizontal' }, existing)
+      ).toBe(true);
+
+      // Non-overlapping horizontal wall
+      expect(
+        service.doesWallCollide({ row: 4, col: 6, orientation: 'horizontal' }, existing)
+      ).toBe(false);
+    });
   });
 
-  it('should configure exactly 11 default barricade positions across bottlenecks', () => {
-    const barricades = service.getDefaultBarricadePositions();
-    expect(barricades.length).toBe(11);
-    expect(barricades).toEqual([
-      'r1_c8',
-      'r3_c6',
-      'r3_c10',
-      'r5_c4',
-      'r5_c8',
-      'r5_c12',
-      'r7_c2',
-      'r7_c5',
-      'r7_c8',
-      'r7_c11',
-      'r7_c14',
-    ]);
+  describe('Pawn Moves & Jumps', () => {
+    it('should return 4 orthogonal moves in center of empty board', () => {
+      const moves = service.getLegalPawnMoves(
+        { row: 5, col: 5 },
+        { row: 9, col: 5 },
+        []
+      );
+      expect(moves.length).toBe(4);
+      expect(moves.every((m) => !m.isJump)).toBe(true);
+    });
 
-    for (const bId of barricades) {
-      const node = service.getNode(bId);
-      expect(node).toBeDefined();
-      expect(node?.allowedForBarricade).toBe(true);
-    }
-  });
+    it('should perform straight jump over opponent when no wall behind', () => {
+      // Player 1 at (4, 5), Opponent at (5, 5)
+      const moves = service.getLegalPawnMoves(
+        { row: 4, col: 5 },
+        { row: 5, col: 5 },
+        []
+      );
 
-  it('should ensure undirected adjacency symmetry across all connected nodes', () => {
-    const allNodes = service.getAllNodes();
-    for (const node of allNodes) {
-      for (const neighborId of node.neighbors) {
-        const neighbor = service.getNode(neighborId);
-        expect(neighbor).toBeDefined();
-        expect(neighbor?.neighbors).toContain(
-          node.id,
-          `Edge between ${node.id} and ${neighborId} must be bidirectional`,
-        );
-      }
-    }
-  });
+      // Should include jump to (6, 5)
+      const jumpMove = moves.find(
+        (m) => m.target.row === 6 && m.target.col === 5
+      );
+      expect(jumpMove).toBeDefined();
+      expect(jumpMove?.isJump).toBe(true);
+    });
 
-  it('should configure starting positions and 5 base slots for Player 1 and Player 2', () => {
-    const p1 = service.getPlayerStartPositions('blue');
-    expect(p1.startNodeId).toBe('start_p1');
-    expect(p1.baseSlots.length).toBe(5);
-    expect(p1.baseSlots).toContain('base_p1_1');
+    it('should perform diagonal jumps when wall is behind opponent', () => {
+      // Player 1 at (4, 5), Opponent at (5, 5), wall behind opponent between row 5 & 6
+      const walls: Wall[] = [
+        { id: 'w1', row: 5, col: 5, orientation: 'horizontal', placedBy: 'player2' },
+      ];
 
-    const p2 = service.getPlayerStartPositions('red');
-    expect(p2.startNodeId).toBe('start_p2');
-    expect(p2.baseSlots.length).toBe(5);
-    expect(p2.baseSlots).toContain('base_p2_1');
-  });
+      const moves = service.getLegalPawnMoves(
+        { row: 4, col: 5 },
+        { row: 5, col: 5 },
+        walls
+      );
 
-  it('should disallow placing barricades in base camps, starting rows, and the summit castle', () => {
-    const castle = service.getNode('castle_1');
-    expect(castle?.allowedForBarricade).toBe(false);
-
-    const baseline = service.getNode('r8_c4');
-    expect(baseline?.allowedForBarricade).toBe(false);
-
-    const startP1 = service.getNode('start_p1');
-    expect(startP1?.allowedForBarricade).toBe(false);
-
-    const baseSlot = service.getNode('base_p1_1');
-    expect(baseSlot?.allowedForBarricade).toBe(false);
-
-    const allowedNodeIds = service.getAllowedBarricadeNodeIds();
-    expect(allowedNodeIds).not.toContain('castle_1');
-    expect(allowedNodeIds).not.toContain('r8_c4');
-    expect(allowedNodeIds).not.toContain('start_p1');
-    expect(allowedNodeIds).not.toContain('base_p1_1');
-    expect(allowedNodeIds).toContain('r1_c8');
-    expect(allowedNodeIds).toContain('r4_c8');
+      // Straight jump to (6, 5) is blocked; diagonal jumps to (5, 4) and (5, 6) should be present
+      expect(moves.some((m) => m.target.row === 6 && m.target.col === 5)).toBe(false);
+      expect(moves.some((m) => m.target.row === 5 && m.target.col === 4 && m.isJump)).toBe(true);
+      expect(moves.some((m) => m.target.row === 5 && m.target.col === 6 && m.isJump)).toBe(true);
+    });
   });
 });

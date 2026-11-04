@@ -1,11 +1,17 @@
 import { Injectable, inject } from '@angular/core';
 import {
-  Barricade,
-  Player,
-  Token,
-  ValidMove,
+  CellCoord,
+  Wall,
+  WallCoord,
+  coordToAlgebraic,
 } from '../../../../../shared/barricade';
 import { BarricadeBoardGraphService } from './barricade-board-graph.service';
+
+export interface BfsPathResult {
+  hasPath: boolean;
+  distance: number;
+  path: CellCoord[];
+}
 
 @Injectable({
   providedIn: 'root',
@@ -14,185 +20,116 @@ export class BarricadeBfsEngineService {
   private readonly graphService = inject(BarricadeBoardGraphService);
 
   /**
-   * Calculates all legal moves for a given token with an exact dice roll value (1–6).
-   * Enforces Malefiz rules:
-   * - Cannot pass through a barricade (blocks path)
-   * - Can land on a barricade (captures it)
-   * - Cannot land on own friendly token
-   * - Can land on opponent token (captures and returns to base)
-   * - No backtracking within the same turn
-   * - Base camp slots are non-traversable
+   * Calculates the shortest path and minimum distance from a starting cell
+   * to any cell on the designated goal row using Breadth-First Search.
    */
-  calculateValidMoves(
-    token: Token,
-    diceRoll: number,
-    player: Player,
-    allPlayers: Player[],
-    barricades: Barricade[],
-  ): ValidMove[] {
-    if (diceRoll <= 0 || diceRoll > 6) {
-      return [];
+  findShortestPathToGoal(
+    start: CellCoord,
+    goalRow: number,
+    walls: Wall[]
+  ): BfsPathResult {
+    // If already on goal row
+    if (start.row === goalRow) {
+      return { hasPath: true, distance: 0, path: [start] };
     }
 
-    const graph = this.graphService.getGraph();
-    const barricadePositions = new Set(barricades.map((b) => b.currentPosition));
+    const queue: { coord: CellCoord; path: CellCoord[] }[] = [
+      { coord: start, path: [start] },
+    ];
+    const visited = new Set<string>();
+    visited.add(coordToAlgebraic(start));
 
-    // Friendly occupied nodes (excluding the active token itself)
-    const friendlyPositions = new Set(
-      player.tokens
-        .filter((t) => !t.isInBase && t.id !== token.id)
-        .map((t) => t.currentPosition),
-    );
+    const directions = [
+      { dRow: 1, dCol: 0 },
+      { dRow: -1, dCol: 0 },
+      { dRow: 0, dCol: -1 },
+      { dRow: 0, dCol: 1 },
+    ];
 
-    // Opponent tokens lookup: Map from position -> Token
-    const opponentTokensByPosition = new Map<string, Token>();
-    for (const otherPlayer of allPlayers) {
-      if (otherPlayer.id !== player.id) {
-        for (const opToken of otherPlayer.tokens) {
-          if (!opToken.isInBase) {
-            opponentTokensByPosition.set(opToken.currentPosition, opToken);
-          }
-        }
-      }
-    }
-
-    // Structure for BFS queue items
-    interface PathState {
-      currentNodeId: string;
-      path: string[]; // History of visited nodes in this move
-    }
-
-    const queue: PathState[] = [];
-    const validMovesByTarget = new Map<string, ValidMove>();
-
-    // Initial BFS state
-    if (token.isInBase) {
-      // Step 1: Token emerges from base directly onto its player's start node
-      const startNodeId = player.startNodeId;
-      const startNode = graph[startNodeId];
-      if (!startNode) {
-        return [];
-      }
-
-      queue.push({
-        currentNodeId: startNodeId,
-        path: [startNodeId],
-      });
-    } else {
-      // Starting from an active position on the board
-      const startNode = graph[token.currentPosition];
-      if (!startNode) {
-        return [];
-      }
-
-      for (const neighborId of startNode.neighbors) {
-        // Exclude base slots
-        if (neighborId.startsWith('base_')) {
-          continue;
-        }
-
-        queue.push({
-          currentNodeId: neighborId,
-          path: [neighborId],
-        });
-      }
-    }
-
-    // Process BFS queue
     while (queue.length > 0) {
-      const { currentNodeId, path } = queue.shift()!;
-      const stepsTaken = path.length;
+      const current = queue.shift()!;
 
-      // Check if we reached the exact dice roll distance
-      if (stepsTaken === diceRoll) {
-        // Rule: cannot land on own friendly token
-        if (friendlyPositions.has(currentNodeId)) {
+      for (const dir of directions) {
+        const neighbor: CellCoord = {
+          row: current.coord.row + dir.dRow,
+          col: current.coord.col + dir.dCol,
+        };
+
+        if (!this.graphService.isWithinBounds(neighbor.row, neighbor.col)) {
           continue;
         }
 
-        const capturesBarricade = barricadePositions.has(currentNodeId);
-        const opponentToken = opponentTokensByPosition.get(currentNodeId);
-
-        if (!validMovesByTarget.has(currentNodeId)) {
-          validMovesByTarget.set(currentNodeId, {
-            targetNodeId: currentNodeId,
-            path: [...path],
-            capturesBarricade,
-            capturesOpponentTokenId: opponentToken?.id,
-          });
-        }
-        continue;
-      }
-
-      // Intermediate step (stepsTaken < diceRoll):
-      // Rule: cannot pass through a barricade!
-      if (barricadePositions.has(currentNodeId)) {
-        continue;
-      }
-
-      // Explore neighbors from current node
-      const currentNode = graph[currentNodeId];
-      if (!currentNode) {
-        continue;
-      }
-
-      for (const nextNeighborId of currentNode.neighbors) {
-        // Never traverse into base camp slots
-        if (nextNeighborId.startsWith('base_')) {
+        const key = coordToAlgebraic(neighbor);
+        if (visited.has(key)) {
           continue;
         }
 
-        // Rule: No backtracking in the same turn
-        // Cannot revisit the token's original starting node if starting on board
-        if (!token.isInBase && nextNeighborId === token.currentPosition) {
+        // Check wall collision
+        if (this.graphService.isMoveBlockedByWall(current.coord, neighbor, walls)) {
           continue;
         }
 
-        // Cannot revisit any node already in this path
-        if (path.includes(nextNeighborId)) {
-          continue;
+        const newPath = [...current.path, neighbor];
+
+        // Win condition reached!
+        if (neighbor.row === goalRow) {
+          return {
+            hasPath: true,
+            distance: newPath.length - 1,
+            path: newPath,
+          };
         }
 
-        queue.push({
-          currentNodeId: nextNeighborId,
-          path: [...path, nextNeighborId],
-        });
+        visited.add(key);
+        queue.push({ coord: neighbor, path: newPath });
       }
     }
 
-    return Array.from(validMovesByTarget.values());
+    return {
+      hasPath: false,
+      distance: Infinity,
+      path: [],
+    };
   }
 
   /**
-   * Checks whether a board node is valid for relocating a captured barricade.
-   * Rules:
-   * - Node must exist in graph
-   * - Node must have allowedForBarricade === true (not base, not baseline row, not castle)
-   * - Node must not currently contain a barricade
-   * - Node must not currently contain any player's token
+   * Enforces the fundamental Quoridor Fair-Play rule:
+   * A wall may never be placed if it completely seals off either player from
+   * reaching any cell of their designated goal row.
    */
-  canPlaceBarricade(
-    targetNodeId: string,
-    allPlayers: Player[],
-    barricades: Barricade[],
+  canPlaceWall(
+    candidate: WallCoord,
+    existingWalls: Wall[],
+    player1Pos: CellCoord,
+    player2Pos: CellCoord
   ): boolean {
-    const node = this.graphService.getNode(targetNodeId);
-    if (!node || !node.allowedForBarricade) {
+    // 1. Structural collision check (overlap, crossing, out of bounds)
+    if (this.graphService.doesWallCollide(candidate, existingWalls)) {
       return false;
     }
 
-    // Check if occupied by existing barricade
-    if (barricades.some((b) => b.currentPosition === targetNodeId)) {
+    // 2. Simulate wall placement
+    const simulatedWalls: Wall[] = [
+      ...existingWalls,
+      {
+        id: 'simulation_test',
+        row: candidate.row,
+        col: candidate.col,
+        orientation: candidate.orientation,
+        placedBy: 'player1',
+      },
+    ];
+
+    // 3. Verify Player 1 (Red) still has an open path to Row 9
+    const p1Result = this.findShortestPathToGoal(player1Pos, 9, simulatedWalls);
+    if (!p1Result.hasPath) {
       return false;
     }
 
-    // Check if occupied by any player's active token
-    for (const player of allPlayers) {
-      for (const token of player.tokens) {
-        if (!token.isInBase && token.currentPosition === targetNodeId) {
-          return false;
-        }
-      }
+    // 4. Verify Player 2 / Computer (Blue) still has an open path to Row 1
+    const p2Result = this.findShortestPathToGoal(player2Pos, 1, simulatedWalls);
+    if (!p2Result.hasPath) {
+      return false;
     }
 
     return true;
