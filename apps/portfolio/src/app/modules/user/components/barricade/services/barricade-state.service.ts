@@ -1,13 +1,16 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import {
-  Barricade,
+  AiDifficulty,
+  CellCoord,
   GameMode,
-  GameState,
-  GameTurnPhase,
+  GameStatus,
   MoveRecord,
-  Player,
-  Token,
-  ValidMove,
+  Pawn,
+  TurnPhase,
+  Wall,
+  WallCoord,
+  WallOrientation,
+  areCoordsEqual,
 } from '../../../../../shared/barricade';
 import { BarricadeBoardGraphService } from './barricade-board-graph.service';
 import { BarricadeBfsEngineService } from './barricade-bfs-engine.service';
@@ -27,502 +30,384 @@ export class BarricadeStateService {
   private readonly soundService = inject(BarricadeSoundService);
   private readonly toastr = inject(ToastrService);
 
-  // Optional AI handler registered by BarricadeAiService
   private aiHandler: BarricadeAiHandler | null = null;
 
-  // --- Reactive Signals ---
-  readonly gameMode = signal<GameMode>('two_players');
-  readonly phase = signal<GameTurnPhase>('WAITING_FOR_DICE');
-  readonly currentPlayerIndex = signal<number>(0);
-  readonly diceValue = signal<number | null>(null);
-  readonly selectedTokenId = signal<string | null>(null);
-  readonly barricades = signal<Barricade[]>([]);
-  readonly players = signal<Player[]>([]);
-  readonly winner = signal<Player | null>(null);
-  readonly capturedBarricadeId = signal<string | null>(null);
+  // --- Core State Signals ---
+  readonly gameMode = signal<GameMode>('vs_computer');
+  readonly aiDifficulty = signal<AiDifficulty>('intro');
+  readonly status = signal<GameStatus>('playing');
+  readonly phase = signal<TurnPhase>('PLAYER_TURN');
+  readonly currentPlayerIndex = signal<number>(0); // 0 = Player 1 (Red), 1 = Player 2 (Blue)
   readonly turnCount = signal<number>(1);
+
+  readonly players = signal<[Pawn, Pawn]>([
+    {
+      id: 'p1',
+      playerId: 'player1',
+      name: 'Player 1 (You)',
+      color: 'red',
+      position: { row: 1, col: 5 }, // 'e1'
+      goalRow: 9,
+      wallsRemaining: 10,
+      isComputer: false,
+    },
+    {
+      id: 'p2',
+      playerId: 'player2',
+      name: 'Computer (Intro)',
+      color: 'blue',
+      position: { row: 9, col: 5 }, // 'e9'
+      goalRow: 1,
+      wallsRemaining: 10,
+      isComputer: true,
+    },
+  ]);
+
+  readonly walls = signal<Wall[]>([]);
+  readonly wallOrientation = signal<WallOrientation>('horizontal');
+  readonly hoveredWallSlot = signal<WallCoord | null>(null);
+  readonly previousOpponentTile = signal<CellCoord | null>(null); // For olive highlight (b7 in screenshot)
+  readonly winner = signal<Pawn | null>(null);
   readonly moveHistory = signal<MoveRecord[]>([]);
-
-  // UI state signals
-  readonly isRolling = signal<boolean>(false);
   readonly isAiThinking = signal<boolean>(false);
-  readonly statusMessage = signal<string>('Roll the dice to start your turn.');
 
-  // --- Computed Signals ---
-  readonly currentPlayer = computed<Player>(
-    () => this.players()[this.currentPlayerIndex()] || null,
-  );
-
-  readonly isCurrentPlayerComputer = computed<boolean>(
-    () => this.currentPlayer()?.isComputer ?? false,
-  );
-
-  readonly selectedToken = computed<Token | null>(() => {
-    const id = this.selectedTokenId();
-    if (!id) return null;
-    const player = this.currentPlayer();
-    if (!player) return null;
-    return player.tokens.find((t) => t.id === id) || null;
-  });
+  // --- Computed Projections ---
+  readonly player1 = computed(() => this.players()[0]);
+  readonly player2 = computed(() => this.players()[1]);
+  readonly currentPlayer = computed(() => this.players()[this.currentPlayerIndex()]);
+  readonly isPlayer1Active = computed(() => this.currentPlayerIndex() === 0);
+  readonly isGameOver = computed(() => this.phase() === 'GAME_OVER');
+  readonly canUndo = computed(() => this.moveHistory().length > 0 && !this.isGameOver());
 
   /**
-   * List of token IDs belonging to the active player that have at least 1 legal move
-   * with the current rolled dice value.
+   * Legal moves for the current active player.
    */
-  readonly tokensWithValidMoves = computed<string[]>(() => {
-    const roll = this.diceValue();
-    const player = this.currentPlayer();
-    if (!roll || !player || this.phase() === 'WAITING_FOR_DICE' || this.phase() === 'PLACING_BARRICADE' || this.phase() === 'GAME_OVER') {
+  readonly legalMoves = computed(() => {
+    if (this.isGameOver() || this.isAiThinking()) {
       return [];
     }
-
-    const result: string[] = [];
-    const allPlayers = this.players();
-    const barricades = this.barricades();
-
-    for (const token of player.tokens) {
-      const moves = this.bfsEngine.calculateValidMoves(
-        token,
-        roll,
-        player,
-        allPlayers,
-        barricades,
-      );
-      if (moves.length > 0) {
-        result.push(token.id);
-      }
-    }
-
-    return result;
-  });
-
-  /**
-   * Legal moves for the currently selected token.
-   */
-  readonly validMoves = computed<ValidMove[]>(() => {
-    const token = this.selectedToken();
-    const roll = this.diceValue();
-    const player = this.currentPlayer();
-
-    if (!token || !roll || !player || (this.phase() !== 'TOKEN_SELECTED' && this.phase() !== 'DICE_ROLLED')) {
-      return [];
-    }
-
-    return this.bfsEngine.calculateValidMoves(
-      token,
-      roll,
-      player,
-      this.players(),
-      this.barricades(),
+    const current = this.currentPlayer();
+    const opponent = this.players()[1 - this.currentPlayerIndex()];
+    return this.graphService.getLegalPawnMoves(
+      current.position,
+      opponent.position,
+      this.walls()
     );
   });
 
-  readonly isGameOver = computed<boolean>(
-    () => this.phase() === 'GAME_OVER' || !!this.winner(),
-  );
-
-  constructor() {
-    this.initGame('two_players');
-  }
-
-  /**
-   * Connects the AI handler to orchestrate automated computer turns.
-   */
   registerAiHandler(handler: BarricadeAiHandler): void {
     this.aiHandler = handler;
   }
 
   /**
-   * Initializes or resets the game board, players, tokens, and 11 default barricades.
+   * Initializes or restarts the game match.
    */
-  initGame(mode: GameMode = this.gameMode()): void {
+  initGame(
+    mode: GameMode = this.gameMode(),
+    difficulty: AiDifficulty = this.aiDifficulty()
+  ): void {
     this.gameMode.set(mode);
-    this.winner.set(null);
-    this.capturedBarricadeId.set(null);
-    this.selectedTokenId.set(null);
-    this.diceValue.set(null);
-    this.turnCount.set(1);
-    this.moveHistory.set([]);
+    this.aiDifficulty.set(difficulty);
     this.currentPlayerIndex.set(0);
-    this.phase.set('WAITING_FOR_DICE');
-    this.isRolling.set(false);
+    this.phase.set('PLAYER_TURN');
+    this.status.set('playing');
+    this.winner.set(null);
+    this.turnCount.set(1);
+    this.walls.set([]);
+    this.hoveredWallSlot.set(null);
+    this.previousOpponentTile.set(null);
+    this.moveHistory.set([]);
     this.isAiThinking.set(false);
 
-    // Initialize 11 default barricades
-    const defaultPositions = this.graphService.getDefaultBarricadePositions();
-    const initialBarricades: Barricade[] = defaultPositions.map((pos, idx) => ({
-      id: `barricade_${idx + 1}`,
-      currentPosition: pos,
-    }));
-    this.barricades.set(initialBarricades);
+    const isP2Computer = mode === 'vs_computer';
+    const p2Name = isP2Computer
+      ? `Computer (${difficulty.charAt(0).toUpperCase() + difficulty.slice(1)})`
+      : 'Player 2';
 
-    // Initialize 2 Players with 5 tokens each
-    const p1Config = this.graphService.getPlayerStartPositions('blue');
-    const p2Config = this.graphService.getPlayerStartPositions('red');
-
-    const p1: Player = {
-      id: 'p1',
-      name: 'Player 1',
-      color: 'blue',
-      isComputer: false,
-      startNodeId: p1Config.startNodeId,
-      tokens: p1Config.baseSlots.map((basePos, i) => ({
-        id: `p1_t${i + 1}`,
-        ownerId: 'p1',
-        currentPosition: basePos,
-        basePosition: basePos,
-        isInBase: true,
-      })),
-    };
-
-    const isVsComputer = mode === 'vs_computer';
-    const p2: Player = {
-      id: 'p2',
-      name: isVsComputer ? 'Computer (AI)' : 'Player 2',
-      color: 'red',
-      isComputer: isVsComputer,
-      startNodeId: p2Config.startNodeId,
-      tokens: p2Config.baseSlots.map((basePos, i) => ({
-        id: `p2_t${i + 1}`,
-        ownerId: 'p2',
-        currentPosition: basePos,
-        basePosition: basePos,
-        isInBase: true,
-      })),
-    };
-
-    this.players.set([p1, p2]);
-    this.statusMessage.set(`${p1.name}'s turn. Roll the dice.`);
-  }
-
-  setGameMode(mode: GameMode): void {
-    if (this.gameMode() !== mode) {
-      this.initGame(mode);
-    }
-  }
-
-  resetGame(): void {
-    this.initGame(this.gameMode());
+    this.players.set([
+      {
+        id: 'p1',
+        playerId: 'player1',
+        name: mode === 'vs_computer' ? 'Player 1 (You)' : 'Player 1',
+        color: 'red',
+        position: { row: 1, col: 5 },
+        goalRow: 9,
+        wallsRemaining: 10,
+        isComputer: false,
+      },
+      {
+        id: 'p2',
+        playerId: 'player2',
+        name: p2Name,
+        color: 'blue',
+        position: { row: 9, col: 5 },
+        goalRow: 1,
+        wallsRemaining: 10,
+        isComputer: isP2Computer,
+      },
+    ]);
   }
 
   /**
-   * Rolls the dice (1 to 6).
-   * Checks for legal moves across all tokens. If zero legal moves exist,
-   * automatically skips/passes the turn.
+   * Sets the game board directly to a given scenario (useful for presets or matching reference setups).
    */
-  rollDice(forcedValue?: number): number {
-    if (this.phase() !== 'WAITING_FOR_DICE' || this.isGameOver()) {
-      return this.diceValue() || 0;
-    }
-
-    const value =
-      forcedValue && forcedValue >= 1 && forcedValue <= 6
-        ? forcedValue
-        : Math.floor(Math.random() * 6) + 1;
-
-    this.soundService.playDiceRoll();
-    this.diceValue.set(value);
-    const movableTokens = this.tokensWithValidMoves();
-
-    if (movableTokens.length === 0) {
-      // Automatic turn pass: No valid moves possible with rolled value
-      this.toastr.info('No Legal Moves', {
-        description: `Rolled a ${value}. No path available, passing turn.`,
-      });
-      this.statusMessage.set(
-        `Rolled a ${value}. No legal moves possible! Passing turn...`,
-      );
-      this.selectedTokenId.set(null);
-      this.phase.set('WAITING_FOR_DICE');
-      this.advanceTurn();
-      return value;
-    }
-
-    // If exactly 1 token is movable, auto-select it for smooth UX
-    if (movableTokens.length === 1) {
-      this.selectedTokenId.set(movableTokens[0]);
-      this.phase.set('TOKEN_SELECTED');
-      this.statusMessage.set(
-        `Rolled a ${value}. Auto-selected token. Pick a destination.`,
-      );
-    } else {
-      this.phase.set('DICE_ROLLED');
-      this.statusMessage.set(`Rolled a ${value}. Choose a highlighted token to move.`);
-    }
-
-    return value;
+  setScenario(
+    p1Pos: CellCoord,
+    p2Pos: CellCoord,
+    walls: Wall[],
+    prevTile: CellCoord | null = null,
+    p1Walls = 7,
+    p2Walls = 10
+  ): void {
+    this.previousOpponentTile.set(prevTile);
+    this.walls.set(walls);
+    const p = this.players();
+    this.players.set([
+      { ...p[0], position: p1Pos, wallsRemaining: p1Walls },
+      { ...p[1], position: p2Pos, wallsRemaining: p2Walls },
+    ]);
   }
 
   /**
-   * Selects an active player token to view and choose valid moves.
+   * Moves active player's pawn to a designated target square.
    */
-  selectToken(tokenId: string): boolean {
-    if (this.phase() !== 'DICE_ROLLED' && this.phase() !== 'TOKEN_SELECTED') {
+  movePawn(target: CellCoord): boolean {
+    if (this.isGameOver() || this.isAiThinking()) return false;
+
+    const validMoves = this.legalMoves();
+    const move = validMoves.find((m) => areCoordsEqual(m.target, target));
+    if (!move) {
+      this.soundService.playInvalid();
       return false;
     }
 
-    const player = this.currentPlayer();
-    const token = player?.tokens.find((t) => t.id === tokenId);
-    if (!token) {
-      return false;
-    }
+    const currentPawn = this.currentPlayer();
+    const p1 = this.players()[0];
+    const p2 = this.players()[1];
 
-    // Verify token has at least 1 legal move
-    const moves = this.bfsEngine.calculateValidMoves(
-      token,
-      this.diceValue()!,
-      player,
-      this.players(),
-      this.barricades(),
-    );
-
-    if (moves.length === 0) {
-      return false;
-    }
-
-    this.selectedTokenId.set(tokenId);
-    this.phase.set('TOKEN_SELECTED');
-    this.statusMessage.set('Token selected. Click a highlighted node to move.');
-    return true;
-  }
-
-  /**
-   * Executes movement of the selected token to a legal target node.
-   * Handles:
-   * 1. Opponent piece knockout (sent back to base)
-   * 2. Barricade capture (triggers PLACING_BARRICADE phase)
-   * 3. Summit Castle win condition
-   */
-  moveToken(targetNodeId: string): boolean {
-    if (this.phase() !== 'TOKEN_SELECTED') {
-      return false;
-    }
-
-    const token = this.selectedToken();
-    const validMove = this.validMoves().find((m) => m.targetNodeId === targetNodeId);
-    if (!token || !validMove) {
-      return false;
-    }
-
-    const player = this.currentPlayer();
-    const fromNodeId = token.currentPosition;
-    const diceRoll = this.diceValue()!;
-
-    // 1. Move token to target
-    this.soundService.playTokenMove();
-    this.players.update((currentPlayers) => {
-      return currentPlayers.map((p) => {
-        if (p.id !== player.id) return p;
-        return {
-          ...p,
-          tokens: p.tokens.map((t) => {
-            if (t.id !== token.id) return t;
-            return {
-              ...t,
-              currentPosition: targetNodeId,
-              isInBase: false,
-            };
-          }),
-        };
-      });
-    });
-
-    // 2. Handle Opponent Knockout
-    let capturedOpponentTokenId: string | undefined;
-    if (validMove.capturesOpponentTokenId) {
-      capturedOpponentTokenId = validMove.capturesOpponentTokenId;
-      this.soundService.playKnockout();
-      this.toastr.warning('Knockout!', {
-        description: `${player.name} sent an opponent token back to start camp!`,
-      });
-      this.players.update((currentPlayers) => {
-        return currentPlayers.map((p) => {
-          if (p.id === player.id) return p;
-          return {
-            ...p,
-            tokens: p.tokens.map((t) => {
-              if (t.id !== capturedOpponentTokenId) return t;
-              return {
-                ...t,
-                currentPosition: t.basePosition,
-                isInBase: true,
-              };
-            }),
-          };
-        });
-      });
-    }
-
-    // 3. Record move in history
-    const record: MoveRecord = {
+    // Record for undo history
+    const historyEntry: MoveRecord = {
       turnNumber: this.turnCount(),
-      playerId: player.id,
-      playerName: player.name,
-      tokenId: token.id,
-      fromNodeId,
-      toNodeId: targetNodeId,
-      diceRoll,
-      capturedBarricade: validMove.capturesBarricade,
-      capturedOpponentTokenId,
+      playerId: currentPawn.playerId,
+      action: {
+        type: 'pawn',
+        playerId: currentPawn.playerId,
+        from: currentPawn.position,
+        to: target,
+        isJump: move.isJump,
+      },
+      previousPlayer1Pos: p1.position,
+      previousPlayer2Pos: p2.position,
+      previousPlayer1Walls: p1.wallsRemaining,
+      previousPlayer2Walls: p2.wallsRemaining,
       timestamp: Date.now(),
     };
-    this.moveHistory.update((h) => [...h, record]);
 
-    // 4. Check Summit Castle Win Condition
-    if (targetNodeId === this.graphService.getCastleNodeId()) {
-      this.winner.set(player);
+    this.moveHistory.update((h) => [...h, historyEntry]);
+
+    // Save previous tile if player 2 moved
+    if (this.currentPlayerIndex() === 1) {
+      this.previousOpponentTile.set(currentPawn.position);
+    }
+
+    // Update pawn position
+    this.players.update((plist) => {
+      const idx = this.currentPlayerIndex();
+      const updated = [...plist] as [Pawn, Pawn];
+      updated[idx] = { ...updated[idx], position: target };
+      return updated;
+    });
+
+    this.soundService.playMove();
+
+    // Check Victory
+    if (target.row === currentPawn.goalRow) {
+      this.winner.set(this.players()[this.currentPlayerIndex()]);
       this.phase.set('GAME_OVER');
-      this.soundService.playWinFanfare();
-      this.toastr.success('Castle Conquered!', {
-        description: `🎉 ${player.name} reached the Summit Castle and won the game!`,
-      });
-      this.statusMessage.set(`🎉 ${player.name} reached the Castle Summit and won the game!`);
+      this.status.set('game_over');
+      this.soundService.playVictory();
+      this.toastr.success(`${currentPawn.name} wins the match!`, 'Victory!');
       return true;
     }
 
-    // 5. Handle Barricade Capture
-    if (validMove.capturesBarricade) {
-      // Find the captured barricade
-      const barricade = this.barricades().find(
-        (b) => b.currentPosition === targetNodeId,
-      );
-      if (barricade) {
-        this.capturedBarricadeId.set(barricade.id);
-        this.phase.set('PLACING_BARRICADE');
-        this.soundService.playBarricadeCapture();
-        this.toastr.warning('Barricade Captured!', {
-          description: `${player.name} broke through a barricade and can now relocate it.`,
-        });
-        this.statusMessage.set(
-          `Barricade captured! Click any vacant track node to relocate it.`,
-        );
-
-        // If computer captured the barricade, let AI handle relocation
-        if (this.isCurrentPlayerComputer()) {
-          this.triggerAiRelocation();
-        }
-        return true;
-      }
-    }
-
-    // 6. Normal turn completion -> Advance turn
+    // Advance turn
     this.advanceTurn();
     return true;
   }
 
   /**
-   * Relocates a captured barricade to an eligible vacant board node.
+   * Attempts to place a 2-cell wall at the specified groove coordinate.
    */
-  relocateBarricade(targetNodeId: string): boolean {
-    if (this.phase() !== 'PLACING_BARRICADE') {
+  placeWall(slot: WallCoord): boolean {
+    if (this.isGameOver() || this.isAiThinking()) return false;
+
+    const currentPawn = this.currentPlayer();
+    if (currentPawn.wallsRemaining <= 0) {
+      this.soundService.playInvalid();
+      this.toastr.warning('No walls remaining in your inventory!', 'Wall Limit');
       return false;
     }
 
-    const barricadeId = this.capturedBarricadeId();
-    if (!barricadeId) {
-      return false;
-    }
+    const p1 = this.players()[0];
+    const p2 = this.players()[1];
 
-    const isValidPlacement = this.bfsEngine.canPlaceBarricade(
-      targetNodeId,
-      this.players(),
-      this.barricades().filter((b) => b.id !== barricadeId),
+    const isLegal = this.bfsEngine.canPlaceWall(
+      slot,
+      this.walls(),
+      p1.position,
+      p2.position
     );
 
-    if (!isValidPlacement) {
+    if (!isLegal) {
+      this.soundService.playInvalid();
+      this.toastr.error(
+        'Invalid wall placement! Walls cannot overlap, intersect, or completely block a player from reaching their goal.',
+        'Illegal Placement'
+      );
       return false;
     }
 
-    // Update barricade position
-    this.barricades.update((currentBarricades) => {
-      return currentBarricades.map((b) => {
-        if (b.id !== barricadeId) return b;
-        return { ...b, currentPosition: targetNodeId };
-      });
+    const newWall: Wall = {
+      id: `wall_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      row: slot.row,
+      col: slot.col,
+      orientation: slot.orientation,
+      placedBy: currentPawn.playerId,
+    };
+
+    // Record for undo history
+    const historyEntry: MoveRecord = {
+      turnNumber: this.turnCount(),
+      playerId: currentPawn.playerId,
+      action: {
+        type: 'wall',
+        playerId: currentPawn.playerId,
+        wall: newWall,
+      },
+      previousPlayer1Pos: p1.position,
+      previousPlayer2Pos: p2.position,
+      previousPlayer1Walls: p1.wallsRemaining,
+      previousPlayer2Walls: p2.wallsRemaining,
+      timestamp: Date.now(),
+    };
+
+    this.moveHistory.update((h) => [...h, historyEntry]);
+
+    // Append wall and deduct count
+    this.walls.update((w) => [...w, newWall]);
+    this.players.update((plist) => {
+      const idx = this.currentPlayerIndex();
+      const updated = [...plist] as [Pawn, Pawn];
+      updated[idx] = {
+        ...updated[idx],
+        wallsRemaining: updated[idx].wallsRemaining - 1,
+      };
+      return updated;
     });
 
-    // Update last move record with relocation position
-    this.moveHistory.update((history) => {
-      if (history.length === 0) return history;
-      const last = { ...history[history.length - 1], barricadeRelocatedTo: targetNodeId };
-      return [...history.slice(0, -1), last];
-    });
+    this.soundService.playWallPlace();
+    this.hoveredWallSlot.set(null);
 
-    this.soundService.playTokenMove();
-    this.toastr.info('Barricade Deployed', {
-      description: 'Obstacle relocated on the board.',
-    });
-
-    this.capturedBarricadeId.set(null);
+    // Advance turn
     this.advanceTurn();
     return true;
   }
 
+  toggleWallOrientation(): void {
+    const next =
+      this.wallOrientation() === 'horizontal' ? 'vertical' : 'horizontal';
+    this.wallOrientation.set(next);
+  }
+
+  setHoveredWallSlot(slot: WallCoord | null): void {
+    this.hoveredWallSlot.set(slot);
+  }
+
   /**
-   * Advances the game turn to the next player.
+   * Switches turn to the other player and triggers AI if applicable.
    */
   private advanceTurn(): void {
-    if (this.isGameOver()) return;
-
-    const nextIndex = (this.currentPlayerIndex() + 1) % this.players().length;
+    const nextIndex = 1 - this.currentPlayerIndex();
     this.currentPlayerIndex.set(nextIndex);
-    this.diceValue.set(null);
-    this.selectedTokenId.set(null);
-    this.phase.set('WAITING_FOR_DICE');
     this.turnCount.update((c) => c + 1);
 
     const nextPlayer = this.players()[nextIndex];
-    this.statusMessage.set(`${nextPlayer.name}'s turn. Roll the dice.`);
-
-    // If next player is computer AI, trigger their turn
-    if (nextPlayer.isComputer) {
-      this.triggerAiTurn();
-    }
-  }
-
-  /**
-   * Triggers computer AI turn execution.
-   */
-  private triggerAiTurn(): void {
-    if (this.aiHandler) {
+    if (nextPlayer.isComputer && !this.isGameOver()) {
+      this.phase.set('AI_THINKING');
       this.isAiThinking.set(true);
+
       setTimeout(() => {
-        this.aiHandler?.playTurn().finally(() => {
+        if (this.aiHandler && !this.isGameOver()) {
+          this.aiHandler.playTurn().finally(() => {
+            this.isAiThinking.set(false);
+            if (!this.isGameOver()) {
+              this.phase.set('PLAYER_TURN');
+            }
+          });
+        } else {
           this.isAiThinking.set(false);
-        });
-      }, 500);
+          this.phase.set('PLAYER_TURN');
+        }
+      }, 400);
+    } else {
+      this.phase.set('PLAYER_TURN');
     }
   }
 
   /**
-   * Triggers computer AI barricade relocation.
+   * Reverts the most recent move(s). In AI mode, rolls back 2 moves. In 2P mode, rolls back 1 move.
    */
-  private triggerAiRelocation(): void {
-    if (this.aiHandler) {
-      this.isAiThinking.set(true);
-      setTimeout(() => {
-        this.aiHandler?.playTurn().finally(() => {
-          this.isAiThinking.set(false);
-        });
-      }, 500);
+  undo(): void {
+    if (!this.canUndo()) return;
+
+    const history = this.moveHistory();
+    if (history.length === 0) return;
+
+    // Determine how many steps to pop
+    const stepsToPop =
+      this.gameMode() === 'vs_computer' && history.length >= 2 ? 2 : 1;
+    const targetEntry = history[history.length - stepsToPop];
+
+    // Restore walls up to target entry point
+    const remainingHistory = history.slice(0, history.length - stepsToPop);
+    const restoredWalls: Wall[] = [];
+    for (const h of remainingHistory) {
+      if (h.action.type === 'wall') {
+        restoredWalls.push(h.action.wall);
+      }
     }
+
+    this.walls.set(restoredWalls);
+    this.players.update((plist) => [
+      {
+        ...plist[0],
+        position: targetEntry.previousPlayer1Pos,
+        wallsRemaining: targetEntry.previousPlayer1Walls,
+      },
+      {
+        ...plist[1],
+        position: targetEntry.previousPlayer2Pos,
+        wallsRemaining: targetEntry.previousPlayer2Walls,
+      },
+    ]);
+
+    this.moveHistory.set(remainingHistory);
+    this.currentPlayerIndex.set(0); // Return turn to Player 1
+    this.phase.set('PLAYER_TURN');
+    this.winner.set(null);
+    this.status.set('playing');
+    this.soundService.playMove();
   }
 
   /**
-   * Returns current snapshot of full game state.
+   * Concedes the game to the opponent.
    */
-  getSnapshot(): GameState {
-    return {
-      gameMode: this.gameMode(),
-      phase: this.phase(),
-      currentPlayerIndex: this.currentPlayerIndex(),
-      players: this.players(),
-      barricades: this.barricades(),
-      diceValue: this.diceValue(),
-      selectedTokenId: this.selectedTokenId(),
-      capturedBarricadeId: this.capturedBarricadeId(),
-      winner: this.winner(),
-      turnCount: this.turnCount(),
-    };
+  resign(): void {
+    if (this.isGameOver()) return;
+    const opponent = this.players()[1 - this.currentPlayerIndex()];
+    this.winner.set(opponent);
+    this.phase.set('GAME_OVER');
+    this.status.set('game_over');
+    this.toastr.info(`${opponent.name} wins by resignation!`, 'Match Ended');
   }
 }
