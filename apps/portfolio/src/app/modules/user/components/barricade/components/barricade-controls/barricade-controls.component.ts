@@ -5,22 +5,25 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
-  lucideDices,
-  lucideRotateCcw,
-  lucideUsers,
-  lucideBot,
-  lucideSparkles,
-  lucideShieldAlert,
-  lucideTrophy,
+  lucideChevronLeft,
   lucideVolume2,
   lucideVolumeX,
+  lucideMoreHorizontal,
+  lucideFlag,
+  lucideRotateCcw,
+  lucideBot,
+  lucideUsers,
+  lucideSparkles,
+  lucideTrophy,
+  lucideCheck,
 } from '@ng-icons/lucide';
 import { HlmCardImports } from '@spartan-ng/hel/card';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmBadgeImports } from '@spartan-ng/hel/badge';
-import { GameMode } from '../../../../../../shared/barricade';
+import { AiDifficulty, GameMode } from '../../../../../../shared/barricade';
 import { BarricadeStateService } from '../../services/barricade-state.service';
 import { BarricadeSoundService } from '../../services/barricade-sound.service';
 
@@ -36,15 +39,17 @@ import { BarricadeSoundService } from '../../services/barricade-sound.service';
   ],
   providers: [
     provideIcons({
-      lucideDices,
-      lucideRotateCcw,
-      lucideUsers,
-      lucideBot,
-      lucideSparkles,
-      lucideShieldAlert,
-      lucideTrophy,
+      lucideChevronLeft,
       lucideVolume2,
       lucideVolumeX,
+      lucideMoreHorizontal,
+      lucideFlag,
+      lucideRotateCcw,
+      lucideBot,
+      lucideUsers,
+      lucideSparkles,
+      lucideTrophy,
+      lucideCheck,
     }),
   ],
   templateUrl: './barricade-controls.component.html',
@@ -54,33 +59,47 @@ import { BarricadeSoundService } from '../../services/barricade-sound.service';
 export class BarricadeControlsComponent {
   readonly state = inject(BarricadeStateService);
   readonly sound = inject(BarricadeSoundService);
-  readonly isRollingAnimation = signal<boolean>(false);
+  private readonly router = inject(Router);
 
-  onRollDice(): void {
-    if (
-      this.state.phase() !== 'WAITING_FOR_DICE' ||
-      this.state.isCurrentPlayerComputer() ||
-      this.state.isGameOver()
-    ) {
-      return;
-    }
+  readonly isMenuOpen = signal<boolean>(false);
+  readonly showResignConfirm = signal<boolean>(false);
 
-    this.isRollingAnimation.set(true);
-    setTimeout(() => {
-      this.state.rollDice();
-      this.isRollingAnimation.set(false);
-    }, 400);
+  // Array of 10 indices for rendering the 10-segment wall meter
+  readonly wallSlots = Array.from({ length: 10 }, (_, i) => i);
+
+  onLobbyClick(): void {
+    // Navigate back to user games or trigger lobby mode
+    this.router.navigate(['/user/game']);
   }
 
-  onToggleMode(mode: GameMode): void {
-    this.state.setGameMode(mode);
+  onToggleSound(): void {
+    this.sound.toggleMute();
   }
 
-  onReset(): void {
-    this.state.resetGame();
+  onToggleMenu(): void {
+    this.isMenuOpen.update((v) => !v);
   }
 
-  toggleSound(): void {
-    this.sound.setSoundEnabled(!this.sound.isSoundEnabled());
+  onSelectMode(mode: GameMode, difficulty: AiDifficulty = 'intro'): void {
+    this.state.initGame(mode, difficulty);
+    this.isMenuOpen.set(false);
+  }
+
+  onUndo(): void {
+    this.state.undo();
+  }
+
+  onResignClick(): void {
+    if (this.state.isGameOver()) return;
+    this.showResignConfirm.set(true);
+  }
+
+  onConfirmResign(): void {
+    this.showResignConfirm.set(false);
+    this.state.resign();
+  }
+
+  onCancelResign(): void {
+    this.showResignConfirm.set(false);
   }
 }

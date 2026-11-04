@@ -1,182 +1,202 @@
-<div class="controls-panel w-full flex flex-col gap-4">
-  <!-- Top Bar: Player Status, Phase & Mode Switch -->
-  <div hlmCard class="p-4 md:p-5 rounded-2xl border border-border/80 bg-card/80 backdrop-blur-md shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
-    <!-- Active Player Indicator -->
-    <div class="flex items-center gap-3">
-      <div
-        class="h-10 w-10 rounded-xl flex items-center justify-center font-bold text-white shadow-md transition-colors"
-        [class.bg-blue-600]="state.currentPlayer().color === 'blue'"
-        [class.shadow-blue-500/20]="state.currentPlayer().color === 'blue'"
-        [class.bg-red-600]="state.currentPlayer().color === 'red'"
-        [class.shadow-red-500/20]="state.currentPlayer().color === 'red'"
-      >
-        @if (state.currentPlayer().isComputer) {
-          <ng-icon name="lucideBot" class="text-xl" />
-        } @else {
-          <ng-icon name="lucideUsers" class="text-xl" />
+<div class="sidebar-panel w-full max-w-[380px] flex flex-col justify-between bg-[#141416] p-4 md:p-5 rounded-3xl border border-zinc-800/80 shadow-2xl min-h-[460px] md:min-h-[520px]">
+  <!-- 1. Top Header Bar: < Lobby, Volume, Menu -->
+  <div class="w-full flex items-center justify-between pb-4 border-b border-zinc-800/60">
+    <button
+      type="button"
+      (click)="onLobbyClick()"
+      class="inline-flex items-center gap-1.5 text-zinc-300 hover:text-white transition-colors text-sm font-semibold tracking-tight active:scale-95">
+      <ng-icon name="lucideChevronLeft" class="text-base" />
+      <span>Lobby</span>
+    </button>
+
+    <div class="flex items-center gap-2">
+      <!-- Volume Toggle -->
+      <button
+        type="button"
+        (click)="onToggleSound()"
+        [title]="sound.isMuted() ? 'Unmute Sound' : 'Mute Sound'"
+        class="h-8 w-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors">
+        <ng-icon [name]="sound.isMuted() ? 'lucideVolumeX' : 'lucideVolume2'" class="text-base" />
+      </button>
+
+      <!-- Options / Mode Menu -->
+      <div class="relative">
+        <button
+          type="button"
+          (click)="onToggleMenu()"
+          title="Game Settings & Modes"
+          class="h-8 w-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors">
+          <ng-icon name="lucideMoreHorizontal" class="text-base" />
+        </button>
+
+        @if (isMenuOpen()) {
+          <div class="absolute right-0 top-10 w-48 rounded-xl bg-zinc-900 border border-zinc-700 p-2 shadow-2xl z-50 flex flex-col space-y-1">
+            <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider px-2 py-1">Game Mode</span>
+            <button
+              type="button"
+              (click)="onSelectMode('vs_computer', 'intro')"
+              class="w-full text-left px-2 py-1.5 rounded-lg text-xs font-medium text-zinc-200 hover:bg-zinc-800 flex items-center justify-between">
+              <span>Vs Computer (Intro)</span>
+              @if (state.gameMode() === 'vs_computer' && state.aiDifficulty() === 'intro') {
+                <ng-icon name="lucideCheck" class="text-emerald-400" />
+              }
+            </button>
+            <button
+              type="button"
+              (click)="onSelectMode('vs_computer', 'medium')"
+              class="w-full text-left px-2 py-1.5 rounded-lg text-xs font-medium text-zinc-200 hover:bg-zinc-800 flex items-center justify-between">
+              <span>Vs Computer (Medium)</span>
+              @if (state.gameMode() === 'vs_computer' && state.aiDifficulty() === 'medium') {
+                <ng-icon name="lucideCheck" class="text-emerald-400" />
+              }
+            </button>
+            <button
+              type="button"
+              (click)="onSelectMode('two_players')"
+              class="w-full text-left px-2 py-1.5 rounded-lg text-xs font-medium text-zinc-200 hover:bg-zinc-800 flex items-center justify-between">
+              <span>Pass &amp; Play (2P)</span>
+              @if (state.gameMode() === 'two_players') {
+                <ng-icon name="lucideCheck" class="text-emerald-400" />
+              }
+            </button>
+            <div class="h-px bg-zinc-800 my-1"></div>
+            <button
+              type="button"
+              (click)="onSelectMode(state.gameMode(), state.aiDifficulty())"
+              class="w-full text-left px-2 py-1.5 rounded-lg text-xs font-medium text-zinc-200 hover:bg-zinc-800 flex items-center gap-1.5">
+              <ng-icon name="lucideRotateCcw" class="text-xs" />
+              <span>Restart Match</span>
+            </button>
+          </div>
         }
       </div>
-
-      <div>
-        <div class="flex items-center gap-2">
-          <h3 class="font-bold text-sm md:text-base text-foreground">
-            {{ state.currentPlayer().name }}
-          </h3>
-          <span
-            hlmBadge
-            [class.bg-blue-500/10]="state.currentPlayer().color === 'blue'"
-            [class.text-blue-500]="state.currentPlayer().color === 'blue'"
-            [class.border-blue-500/20]="state.currentPlayer().color === 'blue'"
-            [class.bg-red-500/10]="state.currentPlayer().color === 'red'"
-            [class.text-red-500]="state.currentPlayer().color === 'red'"
-            [class.border-red-500/20]="state.currentPlayer().color === 'red'"
-            class="text-[10px] font-semibold uppercase tracking-wider"
-          >
-            Turn #{{ state.turnCount() }}
-          </span>
-        </div>
-
-        <p class="text-xs text-muted-foreground mt-0.5">
-          {{ state.statusMessage() }}
-        </p>
-      </div>
-    </div>
-
-    <!-- Center / Actions: Mode Switch & Reset -->
-    <div class="flex items-center gap-2">
-      <div class="inline-flex rounded-xl p-1 bg-muted/60 border border-border/60">
-        <button
-          hlmBtn
-          variant="ghost"
-          size="sm"
-          class="rounded-lg text-xs font-semibold px-3 h-8 transition-colors"
-          [class.bg-card]="state.gameMode() === 'two_players'"
-          [class.text-foreground]="state.gameMode() === 'two_players'"
-          [class.shadow-sm]="state.gameMode() === 'two_players'"
-          (click)="onToggleMode('two_players')"
-        >
-          2 Players
-        </button>
-        <button
-          hlmBtn
-          variant="ghost"
-          size="sm"
-          class="rounded-lg text-xs font-semibold px-3 h-8 transition-colors"
-          [class.bg-card]="state.gameMode() === 'vs_computer'"
-          [class.text-foreground]="state.gameMode() === 'vs_computer'"
-          [class.shadow-sm]="state.gameMode() === 'vs_computer'"
-          (click)="onToggleMode('vs_computer')"
-        >
-          Vs Computer
-        </button>
-      </div>
-
-      <button
-        hlmBtn
-        variant="outline"
-        size="icon"
-        class="h-9 w-9 rounded-xl border-border text-muted-foreground hover:text-foreground"
-        (click)="toggleSound()"
-        [title]="sound.isSoundEnabled() ? 'Mute Sound Effects' : 'Enable Sound Effects'"
-      >
-        <ng-icon [name]="sound.isSoundEnabled() ? 'lucideVolume2' : 'lucideVolumeX'" class="text-base" />
-      </button>
-
-      <button
-        hlmBtn
-        variant="outline"
-        size="icon"
-        class="h-9 w-9 rounded-xl border-border text-muted-foreground hover:text-foreground"
-        (click)="onReset()"
-        title="Reset Game"
-      >
-        <ng-icon name="lucideRotateCcw" class="text-base" />
-      </button>
     </div>
   </div>
 
-  <!-- Dice & Turn Actions Panel -->
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-stretch">
-    <!-- Dice Roller -->
-    <div hlmCard class="p-4 rounded-2xl border border-border/80 bg-card/60 backdrop-blur-sm flex items-center justify-between gap-4">
+  <!-- 2. Player Cards Area -->
+  <div class="w-full flex flex-col space-y-3.5 my-auto py-3">
+    <!-- Card 1: Player 2 / Computer -->
+    <div
+      class="w-full p-4 rounded-2xl bg-zinc-900/60 border transition-all duration-300"
+      [class.border-emerald-500]="!state.isPlayer1Active() && !state.isGameOver()"
+      [class.shadow-[0_0_15px_rgba(16,185,129,0.15)]]="!state.isPlayer1Active() && !state.isGameOver()"
+      [class.border-zinc-800/80]="state.isPlayer1Active() || state.isGameOver()">
+      <!-- Player Info Header -->
+      <div class="flex items-center justify-between mb-2.5">
+        <div class="flex items-center gap-2.5">
+          <span class="h-3.5 w-3.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></span>
+          <span class="font-bold text-white text-sm md:text-base tracking-tight">
+            {{ state.player2().name }}
+          </span>
+        </div>
+
+        @if (state.isAiThinking() && !state.isPlayer1Active()) {
+          <span class="text-[11px] font-medium text-blue-400 animate-pulse flex items-center gap-1">
+            <ng-icon name="lucideBot" class="text-xs" />
+            Thinking...
+          </span>
+        }
+      </div>
+
+      <!-- Segmented 10-Bar Wall Inventory Meter -->
       <div class="flex items-center gap-3">
-        <!-- Dice Face Visual -->
-        <div
-          class="h-14 w-14 rounded-2xl bg-gradient-to-br from-card to-secondary border-2 border-border/80 shadow-inner flex items-center justify-center transition-transform"
-          [class.animate-spin]="isRollingAnimation()"
-        >
-          @if (state.diceValue()) {
-            <span class="text-2xl font-black text-foreground">
-              {{ state.diceValue() }}
+        <div class="flex items-center gap-1">
+          @for (slot of wallSlots; track slot) {
+            <span
+              class="w-1.5 md:w-2 h-5 rounded-full transition-colors duration-200"
+              [class.bg-blue-500]="slot < state.player2().wallsRemaining"
+              [class.bg-zinc-700/50]="slot >= state.player2().wallsRemaining">
             </span>
-          } @else {
-            <ng-icon name="lucideDices" class="text-3xl text-muted-foreground/60" />
           }
         </div>
-
-        <div>
-          <span class="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Dice Roll</span>
-          <span class="text-sm font-semibold text-foreground">
-            {{ state.diceValue() ? 'Rolled ' + state.diceValue() : 'Waiting for roll' }}
-          </span>
-        </div>
-      </div>
-
-      <!-- Roll Button -->
-      <button
-        hlmBtn
-        class="h-11 px-5 rounded-xl font-bold bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-500 hover:to-amber-500 text-white shadow-lg shadow-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
-        [disabled]="state.phase() !== 'WAITING_FOR_DICE' || state.isCurrentPlayerComputer() || state.isGameOver()"
-        (click)="onRollDice()"
-      >
-        <span>Roll</span>
-        <ng-icon name="lucideDices" class="text-lg ml-1" />
-      </button>
-    </div>
-
-    <!-- Active Phase Status Card -->
-    <div hlmCard class="p-4 rounded-2xl border border-border/80 bg-card/60 backdrop-blur-sm flex items-center gap-3">
-      <div class="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-        <ng-icon name="lucideSparkles" class="text-xl" />
-      </div>
-
-      <div>
-        <span class="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Turn Phase</span>
-        <div class="flex items-center gap-2 mt-0.5">
-          <span class="text-sm font-bold text-foreground">
-            @switch (state.phase()) {
-              @case ('WAITING_FOR_DICE') { Roll Dice }
-              @case ('DICE_ROLLED') { Pick Token }
-              @case ('TOKEN_SELECTED') { Move Token }
-              @case ('PLACING_BARRICADE') { Place Barricade }
-              @case ('GAME_OVER') { Victory! }
-            }
-          </span>
-          @if (state.isAiThinking()) {
-            <span class="text-xs text-amber-500 font-semibold animate-pulse">AI thinking...</span>
-          }
-        </div>
-      </div>
-    </div>
-
-    <!-- Barricade Stock Status -->
-    <div hlmCard class="p-4 rounded-2xl border border-border/80 bg-card/60 backdrop-blur-sm flex items-center justify-between gap-3">
-      <div class="flex items-center gap-3">
-        <div class="h-10 w-10 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center shrink-0">
-          <ng-icon name="lucideShieldAlert" class="text-xl" />
-        </div>
-        <div>
-          <span class="text-xs text-muted-foreground uppercase font-bold tracking-wider block">Obstacles</span>
-          <span class="text-sm font-bold text-foreground">{{ state.barricades().length }} on Board</span>
-        </div>
-      </div>
-
-      <div class="text-right">
-        <span class="text-xs text-muted-foreground block">Goal</span>
-        <span class="text-xs font-bold text-amber-500 flex items-center gap-1">
-          <ng-icon name="lucideTrophy" class="text-sm" /> Summit
+        <span class="text-xs font-semibold text-zinc-400 font-mono">
+          {{ state.player2().wallsRemaining }}/10
         </span>
       </div>
     </div>
+
+    <!-- Card 2: Player 1 (You) -->
+    <div
+      class="w-full p-4 rounded-2xl bg-zinc-900/60 border transition-all duration-300"
+      [class.border-emerald-500]="state.isPlayer1Active() && !state.isGameOver()"
+      [class.shadow-[0_0_15px_rgba(16,185,129,0.15)]]="state.isPlayer1Active() && !state.isGameOver()"
+      [class.border-zinc-800/80]="!state.isPlayer1Active() || state.isGameOver()">
+      <!-- Player Info Header -->
+      <div class="flex items-center justify-between mb-2.5">
+        <div class="flex items-center gap-2.5">
+          <span class="h-3.5 w-3.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]"></span>
+          <div class="flex items-baseline gap-1">
+            <span class="font-bold text-white text-sm md:text-base tracking-tight">Player 1</span>
+            @if (state.gameMode() === 'vs_computer') {
+              <span class="text-xs text-zinc-400 font-medium">(You)</span>
+            }
+          </div>
+        </div>
+
+        @if (state.isPlayer1Active() && !state.isGameOver()) {
+          <span class="text-[11px] font-semibold text-emerald-400 tracking-wide uppercase">
+            Your Turn
+          </span>
+        }
+      </div>
+
+      <!-- Segmented 10-Bar Wall Inventory Meter -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-1">
+          @for (slot of wallSlots; track slot) {
+            <span
+              class="w-1.5 md:w-2 h-5 rounded-full transition-colors duration-200"
+              [class.bg-red-500]="slot < state.player1().wallsRemaining"
+              [class.bg-zinc-700/50]="slot >= state.player1().wallsRemaining">
+            </span>
+          }
+        </div>
+        <span class="text-xs font-semibold text-zinc-400 font-mono">
+          {{ state.player1().wallsRemaining }}/10
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Bottom Action Buttons: Undo & Resign -->
+  <div class="w-full pt-4 border-t border-zinc-800/60">
+    @if (showResignConfirm()) {
+      <div class="w-full p-3 rounded-2xl bg-zinc-900 border border-red-500/30 flex flex-col space-y-2">
+        <p class="text-xs text-zinc-300 font-medium text-center">Are you sure you want to resign?</p>
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            (click)="onConfirmResign()"
+            class="flex-1 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs transition-colors">
+            Yes, Resign
+          </button>
+          <button
+            type="button"
+            (click)="onCancelResign()"
+            class="flex-1 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-xs transition-colors">
+            Cancel
+          </button>
+        </div>
+      </div>
+    } @else {
+      <div class="flex items-center gap-3">
+        <button
+          type="button"
+          (click)="onUndo()"
+          [disabled]="!state.canUndo()"
+          class="flex-1 py-3 px-4 rounded-2xl bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 hover:text-white font-bold text-sm transition-all shadow-sm active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed">
+          Undo
+        </button>
+
+        <button
+          type="button"
+          (click)="onResignClick()"
+          [disabled]="state.isGameOver()"
+          class="flex-1 py-3 px-4 rounded-2xl bg-zinc-800/90 hover:bg-zinc-700 hover:text-red-400 text-zinc-200 font-bold text-sm transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
+          <ng-icon name="lucideFlag" class="text-base" />
+          <span>Resign</span>
+        </button>
+      </div>
+    }
   </div>
 </div>
