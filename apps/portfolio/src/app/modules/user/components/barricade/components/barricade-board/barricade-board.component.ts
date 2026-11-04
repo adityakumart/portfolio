@@ -3,42 +3,38 @@ import {
   ChangeDetectionStrategy,
   computed,
   inject,
+  signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
-  lucideCrown,
-  lucideShieldAlert,
-  lucideSwords,
-  lucideSparkles,
+  lucideRotateCw,
+  lucideShield,
+  lucideHand,
+  lucideInfo,
 } from '@ng-icons/lucide';
 import {
-  BoardNode,
-  Player,
-  Token,
-  ValidMove,
+  CellCoord,
+  COL_LETTERS,
+  Wall,
+  WallCoord,
+  WallOrientation,
+  areCoordsEqual,
+  coordToAlgebraic,
 } from '../../../../../../shared/barricade';
 import { BarricadeStateService } from '../../services/barricade-state.service';
-import { BarricadeBoardGraphService } from '../../services/barricade-board-graph.service';
 import { BarricadeBfsEngineService } from '../../services/barricade-bfs-engine.service';
 
-export interface BoardEdge {
-  fromId: string;
-  toId: string;
-  x1: number;
-  y1: number;
-  x2: number;
-  y2: number;
-}
-
-export interface RenderToken {
-  token: Token;
-  player: Player;
-  x: number;
-  y: number;
-  isCurrentPlayer: boolean;
-  isSelected: boolean;
-  canMove: boolean;
+interface RenderCell {
+  row: number;
+  col: number;
+  algebraic: string;
+  isRedGoal: boolean;
+  isBlueGoal: boolean;
+  isP1: boolean;
+  isP2: boolean;
+  isPreviousMove: boolean;
+  isLegalMove: boolean;
 }
 
 @Component({
@@ -47,10 +43,10 @@ export interface RenderToken {
   imports: [CommonModule, NgIconComponent],
   providers: [
     provideIcons({
-      lucideCrown,
-      lucideShieldAlert,
-      lucideSwords,
-      lucideSparkles,
+      lucideRotateCw,
+      lucideShield,
+      lucideHand,
+      lucideInfo,
     }),
   ],
   templateUrl: './barricade-board.component.html',
@@ -58,186 +54,98 @@ export interface RenderToken {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BarricadeBoardComponent {
-  readonly stateService = inject(BarricadeStateService);
-  readonly graphService = inject(BarricadeBoardGraphService);
-  readonly bfsEngine = inject(BarricadeBfsEngineService);
+  readonly state = inject(BarricadeStateService);
+  private readonly bfsEngine = inject(BarricadeBfsEngineService);
 
-  readonly allNodes = computed<BoardNode[]>(() => this.graphService.getAllNodes());
+  readonly colLetters = COL_LETTERS; // ['a'..'i']
+  readonly rowsDescending = [9, 8, 7, 6, 5, 4, 3, 2, 1]; // Ranks from top (9) to bottom (1)
+  readonly colsAscending = [1, 2, 3, 4, 5, 6, 7, 8, 9]; // Files from left (1) to right (9)
+
+  // Wall placement mode & hover preview
+  readonly isWallPlacementMode = signal<boolean>(false);
+  readonly hoveredSlot = signal<{ row: number; col: number; orientation: WallOrientation; isLegal: boolean } | null>(null);
 
   /**
-   * Precomputed unique undirected edges for SVG line rendering.
+   * Precomputed 9x9 grid cells for reactive rendering.
    */
-  readonly boardEdges = computed<BoardEdge[]>(() => {
-    const edges: BoardEdge[] = [];
-    const seen = new Set<string>();
-    const graph = this.graphService.getGraph();
+  readonly gridCells = computed<RenderCell[][]>(() => {
+    const p1Pos = this.state.player1().position;
+    const p2Pos = this.state.player2().position;
+    const prevTile = this.state.previousOpponentTile();
+    const legalMoves = this.state.legalMoves();
 
-    for (const node of Object.values(graph)) {
-      for (const neighborId of node.neighbors) {
-        const key = [node.id, neighborId].sort().join('--');
-        if (!seen.has(key)) {
-          seen.add(key);
-          const neighbor = graph[neighborId];
-          if (neighbor) {
-            edges.push({
-              fromId: node.id,
-              toId: neighborId,
-              x1: node.x,
-              y1: node.y,
-              x2: neighbor.x,
-              y2: neighbor.y,
-            });
-          }
-        }
-      }
-    }
-    return edges;
+    return this.rowsDescending.map((r) =>
+      this.colsAscending.map((c) => {
+        const coord: CellCoord = { row: r, col: c };
+        const algebraic = coordToAlgebraic(coord);
+        const isLegal = legalMoves.some((m) => areCoordsEqual(m.target, coord));
+
+        return {
+          row: r,
+          col: c,
+          algebraic,
+          isRedGoal: r === 9,
+          isBlueGoal: r === 1,
+          isP1: areCoordsEqual(p1Pos, coord),
+          isP2: areCoordsEqual(p2Pos, coord),
+          isPreviousMove: areCoordsEqual(prevTile, coord),
+          isLegalMove: isLegal,
+        };
+      })
+    );
   });
 
-  /**
-   * Map of valid move destinations for quick lookup during SVG click handling.
-   */
-  readonly validMovesMap = computed<Map<string, ValidMove>>(() => {
-    const map = new Map<string, ValidMove>();
-    for (const move of this.stateService.validMoves()) {
-      map.set(move.targetNodeId, move);
-    }
-    return map;
-  });
-
-  /**
-   * Active board barricades with coordinates.
-   */
-  readonly renderBarricades = computed(() => {
-    const graph = this.graphService.getGraph();
-    return this.stateService.barricades().map((b) => {
-      const node = graph[b.currentPosition];
-      return {
-        id: b.id,
-        nodeId: b.currentPosition,
-        x: node ? node.x : 0,
-        y: node ? node.y : 0,
-      };
-    });
-  });
-
-  /**
-   * Active tokens with player metadata and coordinates.
-   */
-  readonly renderTokens = computed<RenderToken[]>(() => {
-    const graph = this.graphService.getGraph();
-    const currPlayer = this.stateService.currentPlayer();
-    const selectedId = this.stateService.selectedTokenId();
-    const movableIds = new Set(this.stateService.tokensWithValidMoves());
-    const result: RenderToken[] = [];
-
-    for (const player of this.stateService.players()) {
-      for (const token of player.tokens) {
-        const node = graph[token.currentPosition];
-        if (node) {
-          result.push({
-            token,
-            player,
-            x: node.x,
-            y: node.y,
-            isCurrentPlayer: player.id === currPlayer?.id,
-            isSelected: token.id === selectedId,
-            canMove: player.id === currPlayer?.id && movableIds.has(token.id),
-          });
-        }
-      }
-    }
-    return result;
-  });
-
-  /**
-   * Nodes eligible for placing a captured barricade during PLACING_BARRICADE phase.
-   */
-  readonly eligiblePlacementNodeIds = computed<Set<string>>(() => {
-    if (this.stateService.phase() !== 'PLACING_BARRICADE') {
-      return new Set();
-    }
-    const capturedId = this.stateService.capturedBarricadeId();
-    const remainingBarricades = this.stateService
-      .barricades()
-      .filter((b) => b.id !== capturedId);
-    const players = this.stateService.players();
-
-    const allowed = new Set<string>();
-    for (const node of this.allNodes()) {
-      if (this.bfsEngine.canPlaceBarricade(node.id, players, remainingBarricades)) {
-        allowed.add(node.id);
-      }
-    }
-    return allowed;
-  });
-
-  /**
-   * Handles user clicks on a board node.
-   */
-  onNodeClick(nodeId: string): void {
-    if (this.stateService.isCurrentPlayerComputer()) {
-      return;
-    }
-
-    const phase = this.stateService.phase();
-
-    if (phase === 'PLACING_BARRICADE') {
-      if (this.eligiblePlacementNodeIds().has(nodeId)) {
-        this.stateService.relocateBarricade(nodeId);
-      }
-      return;
-    }
-
-    if (phase === 'TOKEN_SELECTED') {
-      const move = this.validMovesMap().get(nodeId);
-      if (move) {
-        this.stateService.moveToken(nodeId);
-      }
+  onCellClick(cell: RenderCell): void {
+    if (this.state.isGameOver() || this.state.isAiThinking()) return;
+    if (cell.isLegalMove) {
+      this.state.movePawn({ row: cell.row, col: cell.col });
     }
   }
 
-  /**
-   * Handles clicking on a token piece.
-   */
-  onTokenClick(renderToken: RenderToken, event: MouseEvent): void {
-    event.stopPropagation();
+  togglePlacementMode(): void {
+    this.isWallPlacementMode.update((v) => !v);
+  }
 
-    if (this.stateService.isCurrentPlayerComputer()) {
-      return;
-    }
-
-    // If active player's token can move, select it
-    if (renderToken.canMove) {
-      this.stateService.selectToken(renderToken.token.id);
-      return;
-    }
-
-    // If opponent token is at a valid move destination, click means capturing it!
-    if (
-      this.stateService.phase() === 'TOKEN_SELECTED' &&
-      this.validMovesMap().has(renderToken.token.currentPosition)
-    ) {
-      this.stateService.moveToken(renderToken.token.currentPosition);
+  toggleOrientation(): void {
+    this.state.toggleWallOrientation();
+    // Update preview if hovering
+    const cur = this.hoveredSlot();
+    if (cur) {
+      this.onWallSlotHover(cur.row, cur.col, this.state.wallOrientation());
     }
   }
 
-  /**
-   * Handles clicking on a barricade piece.
-   */
-  onBarricadeClick(nodeId: string, event: MouseEvent): void {
-    event.stopPropagation();
+  onWallSlotHover(row: number, col: number, orientation: WallOrientation): void {
+    if (this.state.isGameOver() || this.state.isAiThinking()) return;
+    const p1 = this.state.player1();
+    const p2 = this.state.player2();
+    const current = this.state.currentPlayer();
 
-    if (this.stateService.isCurrentPlayerComputer()) {
+    if (current.wallsRemaining <= 0) {
+      this.hoveredSlot.set({ row, col, orientation, isLegal: false });
       return;
     }
 
-    // If this barricade's node is a valid landing target, clicking it executes the move!
-    if (
-      this.stateService.phase() === 'TOKEN_SELECTED' &&
-      this.validMovesMap().has(nodeId)
-    ) {
-      this.stateService.moveToken(nodeId);
+    const isLegal = this.bfsEngine.canPlaceWall(
+      { row, col, orientation },
+      this.state.walls(),
+      p1.position,
+      p2.position
+    );
+
+    this.hoveredSlot.set({ row, col, orientation, isLegal });
+  }
+
+  onWallSlotLeave(): void {
+    this.hoveredSlot.set(null);
+  }
+
+  onWallSlotClick(row: number, col: number): void {
+    if (this.state.isGameOver() || this.state.isAiThinking()) return;
+    const orientation = this.state.wallOrientation();
+    const success = this.state.placeWall({ row, col, orientation });
+    if (success) {
+      this.hoveredSlot.set(null);
     }
   }
 }

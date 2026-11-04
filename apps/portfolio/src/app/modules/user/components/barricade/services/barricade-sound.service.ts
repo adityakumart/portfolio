@@ -1,4 +1,4 @@
-import { Injectable, PLATFORM_ID, inject } from '@angular/core';
+import { Injectable, PLATFORM_ID, inject, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 
 @Injectable({
@@ -7,7 +7,7 @@ import { isPlatformBrowser } from '@angular/common';
 export class BarricadeSoundService {
   private readonly platformId = inject(PLATFORM_ID);
   private audioCtx: AudioContext | null = null;
-  private soundEnabled = true;
+  readonly isMuted = signal<boolean>(false);
 
   constructor() {
     if (isPlatformBrowser(this.platformId)) {
@@ -20,21 +20,19 @@ export class BarricadeSoundService {
           this.audioCtx = new AudioContextClass();
         }
       } catch {
-        this.soundEnabled = false;
+        this.isMuted.set(true);
       }
     }
   }
 
-  setSoundEnabled(enabled: boolean): void {
-    this.soundEnabled = enabled;
-  }
-
-  isSoundEnabled(): boolean {
-    return this.soundEnabled;
+  toggleMute(): boolean {
+    const next = !this.isMuted();
+    this.isMuted.set(next);
+    return next;
   }
 
   private ensureAudioContext(): boolean {
-    if (!this.soundEnabled || !this.audioCtx) return false;
+    if (this.isMuted() || !this.audioCtx) return false;
     if (this.audioCtx.state === 'suspended') {
       this.audioCtx.resume();
     }
@@ -42,127 +40,94 @@ export class BarricadeSoundService {
   }
 
   /**
-   * Subtle rolling click sound for dice rolls.
+   * Subtle pawn step click.
    */
-  playDiceRoll(): void {
+  playMove(): void {
     if (!this.ensureAudioContext() || !this.audioCtx) return;
     const now = this.audioCtx.currentTime;
-
-    for (let i = 0; i < 4; i++) {
-      const osc = this.audioCtx.createOscillator();
-      const gain = this.audioCtx.createGain();
-
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(300 + Math.random() * 200, now + i * 0.08);
-
-      gain.gain.setValueAtTime(0.12, now + i * 0.08);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.05);
-
-      osc.connect(gain);
-      gain.connect(this.audioCtx.destination);
-
-      osc.start(now + i * 0.08);
-      osc.stop(now + i * 0.08 + 0.05);
-    }
-  }
-
-  /**
-   * Crisp token step / placement sound.
-   */
-  playTokenMove(): void {
-    if (!this.ensureAudioContext() || !this.audioCtx) return;
-    const now = this.audioCtx.currentTime;
-
     const osc = this.audioCtx.createOscillator();
     const gain = this.audioCtx.createGain();
 
     osc.type = 'sine';
     osc.frequency.setValueAtTime(440, now);
-    osc.frequency.exponentialRampToValueAtTime(220, now + 0.08);
+    osc.frequency.exponentialRampToValueAtTime(320, now + 0.08);
 
-    gain.gain.setValueAtTime(0.18, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+    gain.gain.setValueAtTime(0.15, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
 
     osc.connect(gain);
     gain.connect(this.audioCtx.destination);
-
     osc.start(now);
-    osc.stop(now + 0.09);
+    osc.stop(now + 0.08);
   }
 
   /**
-   * Alert tone when a barricade obstacle is captured.
+   * Satisfying snap/wooden thud for wall barricade placement.
    */
-  playBarricadeCapture(): void {
+  playWallPlace(): void {
     if (!this.ensureAudioContext() || !this.audioCtx) return;
     const now = this.audioCtx.currentTime;
+    const osc = this.audioCtx.createOscillator();
+    const gain = this.audioCtx.createGain();
 
-    [523.25, 659.25, 783.99].forEach((freq, idx) => {
-      const osc = this.audioCtx!.createOscillator();
-      const gain = this.audioCtx!.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(260, now);
+    osc.frequency.exponentialRampToValueAtTime(140, now + 0.12);
 
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(freq, now + idx * 0.07);
+    gain.gain.setValueAtTime(0.2, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
 
-      gain.gain.setValueAtTime(0.1, now + idx * 0.07);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.07 + 0.12);
-
-      osc.connect(gain);
-      gain.connect(this.audioCtx!.destination);
-
-      osc.start(now + idx * 0.07);
-      osc.stop(now + idx * 0.07 + 0.12);
-    });
+    osc.connect(gain);
+    gain.connect(this.audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + 0.12);
   }
 
   /**
-   * Punchy hit sound when an opponent token is knocked out.
+   * Error or invalid action notification.
    */
-  playKnockout(): void {
+  playInvalid(): void {
     if (!this.ensureAudioContext() || !this.audioCtx) return;
     const now = this.audioCtx.currentTime;
-
     const osc = this.audioCtx.createOscillator();
     const gain = this.audioCtx.createGain();
 
     osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(260, now);
-    osc.frequency.exponentialRampToValueAtTime(80, now + 0.18);
+    osc.frequency.setValueAtTime(150, now);
+    osc.frequency.setValueAtTime(120, now + 0.08);
 
-    gain.gain.setValueAtTime(0.2, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+    gain.gain.setValueAtTime(0.12, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
 
     osc.connect(gain);
     gain.connect(this.audioCtx.destination);
-
     osc.start(now);
-    osc.stop(now + 0.2);
+    osc.stop(now + 0.15);
   }
 
   /**
-   * Triumphant fanfare chord when claiming summit castle victory.
+   * Celebratory ascending chime for victory.
    */
-  playWinFanfare(): void {
+  playVictory(): void {
     if (!this.ensureAudioContext() || !this.audioCtx) return;
+    const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
     const now = this.audioCtx.currentTime;
 
-    // C major triad ascending fanfare: C5, E5, G5, C6
-    const chord = [523.25, 659.25, 783.99, 1046.5];
-    chord.forEach((freq, idx) => {
+    notes.forEach((freq, idx) => {
+      const startTime = now + idx * 0.12;
       const osc = this.audioCtx!.createOscillator();
       const gain = this.audioCtx!.createGain();
 
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(freq, now + idx * 0.12);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, startTime);
 
-      gain.gain.setValueAtTime(0.22, now + idx * 0.12);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + 0.4);
+      gain.gain.setValueAtTime(0.18, startTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.35);
 
       osc.connect(gain);
       gain.connect(this.audioCtx!.destination);
-
-      osc.start(now + idx * 0.12);
-      osc.stop(now + idx * 0.12 + 0.4);
+      osc.start(startTime);
+      osc.stop(startTime + 0.35);
     });
   }
 }
