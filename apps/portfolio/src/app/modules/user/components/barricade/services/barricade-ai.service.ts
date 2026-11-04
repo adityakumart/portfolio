@@ -1,242 +1,219 @@
 import { Injectable, inject } from '@angular/core';
 import {
-  Barricade,
-  Player,
-  Token,
-  ValidMove,
+  CellCoord,
+  WallCoord,
+  WallOrientation,
+  areCoordsEqual,
 } from '../../../../../shared/barricade';
+import { BarricadeStateService, BarricadeAiHandler } from './barricade-state.service';
 import { BarricadeBoardGraphService } from './barricade-board-graph.service';
 import { BarricadeBfsEngineService } from './barricade-bfs-engine.service';
-import {
-  BarricadeAiHandler,
-  BarricadeStateService,
-} from './barricade-state.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class BarricadeAiService implements BarricadeAiHandler {
-  private readonly stateService = inject(BarricadeStateService);
-  private readonly graphService = inject(BarricadeBoardGraphService);
-  private readonly bfsEngine = inject(BarricadeBfsEngineService);
+  private readonly state = inject(BarricadeStateService);
+  private readonly graph = inject(BarricadeBoardGraphService);
+  private readonly bfs = inject(BarricadeBfsEngineService);
 
   constructor() {
-    // Register this AI service with the game state machine
-    this.stateService.registerAiHandler(this);
+    this.state.registerAiHandler(this);
   }
 
   /**
-   * Main entry point called by the state service when it is the computer player's turn.
+   * Main turn execution handler invoked automatically when AI's turn arrives.
    */
   async playTurn(): Promise<void> {
-    if (this.stateService.isGameOver()) {
+    if (this.state.isGameOver()) return;
+
+    const aiPawn = this.state.player2();
+    const playerPawn = this.state.player1();
+    const walls = this.state.walls();
+    const difficulty = this.state.aiDifficulty();
+
+    const aiBfs = this.bfs.findShortestPathToGoal(aiPawn.position, 1, walls);
+    const playerBfs = this.bfs.findShortestPathToGoal(playerPawn.position, 9, walls);
+
+    // AI Winning in 1 step? Always take the winning step!
+    const legalMoves = this.state.legalMoves();
+    const winningMove = legalMoves.find((m) => m.target.row === 1);
+    if (winningMove) {
+      this.state.movePawn(winningMove.target);
       return;
     }
 
-    const currentPhase = this.stateService.phase();
+    // Decide between wall placement vs. pawn movement
+    if (difficulty === 'intro') {
+      this.playIntroMove(aiBfs.path, playerBfs.path, legalMoves);
+    } else {
+      this.playStrategicMove(aiBfs.path, playerBfs.path, legalMoves);
+    }
+  }
 
-    if (currentPhase === 'WAITING_FOR_DICE') {
-      // 1. Roll dice
-      await this.delay(500);
-      this.stateService.rollDice();
+  /**
+   * Intro AI: Prefers straightforward shortest path movement; occasionally places defensive walls.
+   */
+  private playIntroMove(
+    aiPath: CellCoord[],
+    playerPath: CellCoord[],
+    legalMoves: { target: CellCoord; isJump: boolean }[]
+  ): void {
+    const aiPawn = this.state.player2();
+    const shouldConsiderWall =
+      aiPawn.wallsRemaining > 0 &&
+      playerPath.length <= 4 &&
+      Math.random() < 0.4;
 
-      // Check if turn was automatically passed (zero legal moves)
-      await this.delay(400);
-      if (
-        this.stateService.phase() === 'DICE_ROLLED' ||
-        this.stateService.phase() === 'TOKEN_SELECTED'
-      ) {
-        await this.executeMove();
+    if (shouldConsiderWall) {
+      const wallPlaced = this.tryPlaceInterferingWall(playerPath);
+      if (wallPlaced) return;
+    }
+
+    // Move along shortest path
+    this.moveAlongShortestPath(aiPath, legalMoves);
+  }
+
+  /**
+   * Medium/Hard AI: Evaluates delta distance (player delay vs self delay) from candidate walls.
+   */
+  private playStrategicMove(
+    aiPath: CellCoord[],
+    playerPath: CellCoord[],
+    legalMoves: { target: CellCoord; isJump: boolean }[]
+  ): void {
+    const aiPawn = this.state.player2();
+    const playerPawn = this.state.player1();
+    const walls = this.state.walls();
+
+    // If opponent is closer to victory than AI and AI has walls, evaluate wall blocking
+    const isPlayerAhead = playerPath.length <= aiPath.length;
+
+    if (isPlayerAhead && aiPawn.wallsRemaining > 0) {
+      const bestWall = this.findBestWall(playerPawn.position, aiPawn.position, walls, playerPath.length, aiPath.length);
+      if (bestWall) {
+        const success = this.state.placeWall(bestWall);
+        if (success) return;
       }
-    } else if (
-      currentPhase === 'DICE_ROLLED' ||
-      currentPhase === 'TOKEN_SELECTED'
-    ) {
-      await this.executeMove();
-    } else if (currentPhase === 'PLACING_BARRICADE') {
-      await this.executeBarricadePlacement();
     }
+
+    // Otherwise, advance along shortest path
+    this.moveAlongShortestPath(aiPath, legalMoves);
   }
 
   /**
-   * Evaluates all legal moves across all AI tokens and executes the highest-scoring move.
+   * Finds the next legal step along the BFS shortest path.
    */
-  async executeMove(): Promise<void> {
-    const aiPlayer = this.stateService.currentPlayer();
-    const diceRoll = this.stateService.diceValue();
-    if (!aiPlayer || !diceRoll) {
-      return;
-    }
-
-    const allPlayers = this.stateService.players();
-    const barricades = this.stateService.barricades();
-
-    // Gather and score all possible moves
-    interface CandidateMove {
-      token: Token;
-      move: ValidMove;
-      score: number;
-    }
-
-    const candidates: CandidateMove[] = [];
-
-    for (const token of aiPlayer.tokens) {
-      const moves = this.bfsEngine.calculateValidMoves(
-        token,
-        diceRoll,
-        aiPlayer,
-        allPlayers,
-        barricades,
-      );
-
-      for (const move of moves) {
-        const score = this.evaluateMove(move, token);
-        candidates.push({ token, move, score });
+  private moveAlongShortestPath(
+    aiPath: CellCoord[],
+    legalMoves: { target: CellCoord; isJump: boolean }[]
+  ): void {
+    if (aiPath.length > 1) {
+      const nextStep = aiPath[1];
+      const match = legalMoves.find((m) => areCoordsEqual(m.target, nextStep));
+      if (match) {
+        this.state.movePawn(match.target);
+        return;
       }
     }
 
-    if (candidates.length === 0) {
-      return;
-    }
+    // Fallback: pick the legal move that minimizes distance to row 1
+    if (legalMoves.length > 0) {
+      let bestMove = legalMoves[0];
+      let minRow = bestMove.target.row;
 
-    // Sort descending by heuristic score
-    candidates.sort((a, b) => b.score - a.score);
-    const chosen = candidates[0];
+      for (const m of legalMoves) {
+        if (m.target.row < minRow) {
+          minRow = m.target.row;
+          bestMove = m;
+        }
+      }
 
-    // Select token
-    this.stateService.selectToken(chosen.token.id);
-    await this.delay(400);
-
-    // Execute move
-    this.stateService.moveToken(chosen.move.targetNodeId);
-  }
-
-  /**
-   * Multi-factor heuristic evaluation function:
-   * - Summit Castle win: +10,000 pts
-   * - Barricade breakthrough / capture: +500 pts
-   * - Opponent token capture: +400 pts
-   * - Upward elevation progress: +100 pts per row closer to summit
-   * - Base mobilization: +200 pts for leaving start camp
-   */
-  evaluateMove(move: ValidMove, token: Token): number {
-    let score = 0;
-
-    // 1. Summit Castle Win (+10,000)
-    if (move.targetNodeId === this.graphService.getCastleNodeId()) {
-      return 10000;
-    }
-
-    // 2. Barricade Breakthrough / Capture (+500)
-    if (move.capturesBarricade) {
-      score += 500;
-    }
-
-    // 3. Opponent Token Knockout (+400)
-    if (move.capturesOpponentTokenId) {
-      score += 400;
-    }
-
-    // 4. Base Mobilization (+200)
-    if (token.isInBase) {
-      score += 200;
-    }
-
-    // 5. Upward elevation progress (+100 pts per row closer to summit)
-    const targetNode = this.graphService.getNode(move.targetNodeId);
-    if (targetNode) {
-      // Castle is row 0, baseline is row 8
-      const rowProgress = Math.max(0, 8 - targetNode.row);
-      score += rowProgress * 100;
-    }
-
-    return score;
-  }
-
-  /**
-   * Strategic Barricade Relocation:
-   * Locates human opponent's leading token and places captured barricade on the
-   * bottleneck directly ahead of them to hinder their ascent.
-   */
-  async executeBarricadePlacement(): Promise<void> {
-    const targetNodeId = this.selectStrategicBarricadePlacement();
-    if (targetNodeId) {
-      await this.delay(600);
-      this.stateService.relocateBarricade(targetNodeId);
+      this.state.movePawn(bestMove.target);
     }
   }
 
   /**
-   * Computes the best target node to place a captured barricade.
+   * Attempts to place a wall across the opponent's anticipated path.
    */
-  selectStrategicBarricadePlacement(): string | null {
-    const allPlayers = this.stateService.players();
-    const barricades = this.stateService.barricades();
-    const humanPlayer = allPlayers.find((p) => !p.isComputer) || allPlayers[0];
+  private tryPlaceInterferingWall(playerPath: CellCoord[]): boolean {
+    if (playerPath.length < 2) return false;
 
-    // Find human player's leading active token (closest to castle / lowest row number)
-    let leadingTokenNode: { row: number; col: number; id: string } | null = null;
-    for (const t of humanPlayer.tokens) {
-      if (!t.isInBase) {
-        const node = this.graphService.getNode(t.currentPosition);
-        if (node) {
-          if (!leadingTokenNode || node.row < leadingTokenNode.row) {
-            leadingTokenNode = { row: node.row, col: node.col, id: node.id };
+    const p1 = this.state.player1().position;
+    const p2 = this.state.player2().position;
+    const walls = this.state.walls();
+
+    // Look at next 2 steps along player's path
+    for (let i = 0; i < Math.min(3, playerPath.length - 1); i++) {
+      const step = playerPath[i];
+      const orientations: WallOrientation[] = ['horizontal', 'vertical'];
+
+      for (const orientation of orientations) {
+        const candidateSlots: WallCoord[] = [
+          { row: step.row, col: step.col, orientation },
+          { row: step.row, col: Math.max(1, step.col - 1), orientation },
+          { row: Math.max(1, step.row - 1), col: step.col, orientation },
+        ];
+
+        for (const slot of candidateSlots) {
+          if (this.bfs.canPlaceWall(slot, walls, p1, p2)) {
+            return this.state.placeWall(slot);
           }
         }
       }
     }
 
-    // Strategic chokepoint bottlenecks in order of importance
-    const bottleneckPriority = [
-      'r1_c8',
-      'r3_c6',
-      'r3_c10',
-      'r5_c4',
-      'r5_c8',
-      'r5_c12',
-      'r7_c2',
-      'r7_c5',
-      'r7_c8',
-      'r7_c11',
-      'r7_c14',
-    ];
-
-    if (leadingTokenNode) {
-      // Find eligible bottlenecks directly ahead of (above) the leading opponent token
-      const bottlenecksAhead = bottleneckPriority.filter((nodeId) => {
-        const node = this.graphService.getNode(nodeId);
-        return (
-          node &&
-          node.row <= leadingTokenNode!.row &&
-          this.bfsEngine.canPlaceBarricade(nodeId, allPlayers, barricades)
-        );
-      });
-
-      if (bottlenecksAhead.length > 0) {
-        return bottlenecksAhead[0];
-      }
-    }
-
-    // Fallback 1: Any available strategic bottleneck
-    for (const chokepointId of bottleneckPriority) {
-      if (this.bfsEngine.canPlaceBarricade(chokepointId, allPlayers, barricades)) {
-        return chokepointId;
-      }
-    }
-
-    // Fallback 2: Any allowed board node
-    const allowedNodes = this.graphService.getAllowedBarricadeNodeIds();
-    for (const nodeId of allowedNodes) {
-      if (this.bfsEngine.canPlaceBarricade(nodeId, allPlayers, barricades)) {
-        return nodeId;
-      }
-    }
-
-    return null;
+    return false;
   }
 
-  private delay(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+  /**
+   * Evaluates candidate walls to find one that maximizes player path delay without delaying AI.
+   */
+  private findBestWall(
+    playerPos: CellCoord,
+    aiPos: CellCoord,
+    walls: any[],
+    initialPlayerDist: number,
+    initialAiDist: number
+  ): WallCoord | null {
+    let bestScore = -Infinity;
+    let bestSlot: WallCoord | null = null;
+
+    // Search around player's neighborhood (within 2 cells)
+    const minR = Math.max(1, playerPos.row - 1);
+    const maxR = Math.min(8, playerPos.row + 2);
+    const minC = Math.max(1, playerPos.col - 2);
+    const maxC = Math.min(8, playerPos.col + 2);
+
+    for (let r = minR; r <= maxR; r++) {
+      for (let c = minC; c <= maxC; c++) {
+        for (const orientation of ['horizontal', 'vertical'] as WallOrientation[]) {
+          const candidate: WallCoord = { row: r, col: c, orientation };
+
+          if (!this.bfs.canPlaceWall(candidate, walls, playerPos, aiPos)) {
+            continue;
+          }
+
+          const simWalls = [
+            ...walls,
+            { id: 'sim', row: r, col: c, orientation, placedBy: 'player2' },
+          ];
+
+          const pBfs = this.bfs.findShortestPathToGoal(playerPos, 9, simWalls);
+          const aBfs = this.bfs.findShortestPathToGoal(aiPos, 1, simWalls);
+
+          const playerDelay = pBfs.distance - initialPlayerDist;
+          const aiDelay = aBfs.distance - initialAiDist;
+          const score = playerDelay * 2 - aiDelay;
+
+          if (playerDelay > 0 && score > bestScore) {
+            bestScore = score;
+            bestSlot = candidate;
+          }
+        }
+      }
+    }
+
+    return bestSlot;
   }
 }

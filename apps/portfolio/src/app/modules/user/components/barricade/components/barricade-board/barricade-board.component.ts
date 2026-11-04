@@ -4,6 +4,7 @@ import {
   computed,
   inject,
   signal,
+  HostListener,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
@@ -112,6 +113,14 @@ export class BarricadeBoardComponent {
     const cur = this.hoveredSlot();
     if (cur) {
       this.onWallSlotHover(cur.row, cur.col, this.state.wallOrientation());
+    }
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent): void {
+    if (event.code === 'Space' && !this.state.isGameOver()) {
+      event.preventDefault();
+      this.toggleOrientation();
     }
   }
 

@@ -226,7 +226,9 @@ export class BarricadeStateService {
       this.phase.set('GAME_OVER');
       this.status.set('game_over');
       this.soundService.playVictory();
-      this.toastr.success(`${currentPawn.name} wins the match!`, 'Victory!');
+      this.toastr.success(`${currentPawn.name} wins the match!`, {
+        description: 'Victory!',
+      });
       return true;
     }
 
@@ -244,7 +246,9 @@ export class BarricadeStateService {
     const currentPawn = this.currentPlayer();
     if (currentPawn.wallsRemaining <= 0) {
       this.soundService.playInvalid();
-      this.toastr.warning('No walls remaining in your inventory!', 'Wall Limit');
+      this.toastr.warning('No walls remaining in your inventory!', {
+        description: 'Wall Limit',
+      });
       return false;
     }
 
@@ -262,7 +266,7 @@ export class BarricadeStateService {
       this.soundService.playInvalid();
       this.toastr.error(
         'Invalid wall placement! Walls cannot overlap, intersect, or completely block a player from reaching their goal.',
-        'Illegal Placement'
+        { description: 'Illegal Placement' }
       );
       return false;
     }
@@ -408,6 +412,8 @@ export class BarricadeStateService {
     this.winner.set(opponent);
     this.phase.set('GAME_OVER');
     this.status.set('game_over');
-    this.toastr.info(`${opponent.name} wins by resignation!`, 'Match Ended');
+    this.toastr.info(`${opponent.name} wins by resignation!`, {
+      description: 'Match Ended',
+    });
   }
 }
