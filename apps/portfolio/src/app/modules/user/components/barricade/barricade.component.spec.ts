@@ -97,4 +97,24 @@ describe('BarricadeComponent - 9x9 Quoridor Integration', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('app-barricade-home')).toBeTruthy();
   });
+
+  it('should maintain customized player colors when launching a configured match', () => {
+    state.startConfiguredGame({
+      gameMode: 'two_players',
+      playerCount: 2,
+      aiDifficulty: 'intro',
+      actionEconomy: '3+2',
+      timeLimitMinutes: 15,
+      players: [
+        { name: 'Diana', color: 'purple', isComputer: false },
+        { name: 'Bruce', color: 'cyan', isComputer: false },
+      ],
+    });
+    fixture.detectChanges();
+
+    expect(state.player1().color).toBe('purple');
+    expect(state.player2().color).toBe('cyan');
+    expect(state.player1().name).toBe('Diana');
+    expect(state.player2().name).toBe('Bruce');
+  });
 });
