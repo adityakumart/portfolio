@@ -106,6 +106,28 @@ export class BarricadeSoundService {
   }
 
   /**
+   * Crisp warning tick for low clock time (< 10 seconds).
+   */
+  playLowTimeTick(): void {
+    if (!this.ensureAudioContext() || !this.audioCtx) return;
+    const now = this.audioCtx.currentTime;
+    const osc = this.audioCtx.createOscillator();
+    const gain = this.audioCtx.createGain();
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(880, now);
+    osc.frequency.exponentialRampToValueAtTime(440, now + 0.05);
+
+    gain.gain.setValueAtTime(0.08, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+
+    osc.connect(gain);
+    gain.connect(this.audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + 0.05);
+  }
+
+  /**
    * Celebratory ascending chime for victory.
    */
   playVictory(): void {

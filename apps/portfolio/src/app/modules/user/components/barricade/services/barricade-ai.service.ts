@@ -32,12 +32,25 @@ export class BarricadeAiService implements BarricadeAiHandler {
     const walls = this.state.walls();
     const difficulty = this.state.aiDifficulty();
 
-    const aiBfs = this.bfs.findShortestPathToGoal(aiPawn.position, 1, walls);
-    const playerBfs = this.bfs.findShortestPathToGoal(playerPawn.position, 9, walls);
+    const aiTargetType = aiPawn.goalTargetType ?? 'row';
+    const aiBfs =
+      aiTargetType === 'center'
+        ? this.bfs.findShortestPathToCenter(aiPawn.position, aiPawn.goalCoord ?? { row: 5, col: 5 }, walls)
+        : this.bfs.findShortestPathToGoal(aiPawn.position, aiPawn.goalRow ?? 1, walls);
+
+    const playerTargetType = playerPawn.goalTargetType ?? 'row';
+    const playerBfs =
+      playerTargetType === 'center'
+        ? this.bfs.findShortestPathToCenter(playerPawn.position, playerPawn.goalCoord ?? { row: 5, col: 5 }, walls)
+        : this.bfs.findShortestPathToGoal(playerPawn.position, playerPawn.goalRow ?? 9, walls);
 
     // AI Winning in 1 step? Always take the winning step!
     const legalMoves = this.state.legalMoves();
-    const winningMove = legalMoves.find((m) => m.target.row === 1);
+    const winningMove = legalMoves.find((m) =>
+      aiTargetType === 'center'
+        ? areCoordsEqual(m.target, aiPawn.goalCoord ?? { row: 5, col: 5 })
+        : m.target.row === (aiPawn.goalRow ?? 1)
+    );
     if (winningMove) {
       this.state.movePawn(winningMove.target);
       return;

@@ -1,5 +1,6 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, inject, signal, OnDestroy } from '@angular/core';
 import {
+  ACTION_ECONOMY_CONFIGS,
   ActionEconomyOption,
   AiDifficulty,
   BarricadeConfig,
@@ -30,13 +31,14 @@ export interface BarricadeAiHandler {
 @Injectable({
   providedIn: 'root',
 })
-export class BarricadeStateService {
+export class BarricadeStateService implements OnDestroy {
   private readonly graphService = inject(BarricadeBoardGraphService);
   private readonly bfsEngine = inject(BarricadeBfsEngineService);
   private readonly soundService = inject(BarricadeSoundService);
   private readonly toastr = inject(ToastrService);
 
   private aiHandler: BarricadeAiHandler | null = null;
+  private timerInterval: ReturnType<typeof setInterval> | null = null;
 
   // --- Core State Signals ---
   readonly gameMode = signal<GameMode>('vs_computer');
@@ -44,9 +46,9 @@ export class BarricadeStateService {
   readonly aiDifficulty = signal<AiDifficulty>('intro');
   readonly actionEconomy = signal<ActionEconomyOption>('1+0');
   readonly timeLimitMinutes = signal<TimeControlMinutes>(10);
-  readonly status = signal<GameStatus>('lobby'); // Default to home lobby view
+  readonly status = signal<GameStatus>('lobby'); // Initial page is Home Lobby
   readonly phase = signal<TurnPhase>('PLAYER_TURN');
-  readonly currentPlayerIndex = signal<number>(0); // 0 to playerCount - 1
+  readonly currentPlayerIndex = signal<number>(0);
   readonly turnCount = signal<number>(1);
   readonly turnActionUsage = signal<TurnActionUsage>({ stepsTaken: 0, wallsPlaced: 0 });
   readonly winReason = signal<'goal_reached' | 'timeout' | 'resignation' | null>(null);
@@ -83,7 +85,7 @@ export class BarricadeStateService {
   readonly walls = signal<Wall[]>([]);
   readonly wallOrientation = signal<WallOrientation>('horizontal');
   readonly hoveredWallSlot = signal<WallCoord | null>(null);
-  readonly previousOpponentTile = signal<CellCoord | null>(null); // For olive highlight
+  readonly previousOpponentTile = signal<CellCoord | null>(null); // For previous move highlight
   readonly winner = signal<Pawn | null>(null);
   readonly moveHistory = signal<MoveRecord[]>([]);
   readonly isAiThinking = signal<boolean>(false);
@@ -99,6 +101,21 @@ export class BarricadeStateService {
   readonly canUndo = computed(() => this.moveHistory().length > 0 && !this.isGameOver());
   readonly isFourPlayer = computed(() => this.playerCount() === 4);
 
+  // --- Turn Action Economy Computed Rules ---
+  readonly currentActionRules = computed(() => ACTION_ECONOMY_CONFIGS[this.actionEconomy()]);
+  readonly stepsAllowed = computed(() => this.currentActionRules().stepsPerTurn);
+  readonly wallsAllowed = computed(() => this.currentActionRules().wallsPerTurn);
+  readonly stepsRemainingThisTurn = computed(() =>
+    Math.max(0, this.stepsAllowed() - this.turnActionUsage().stepsTaken)
+  );
+  readonly wallsRemainingThisTurn = computed(() =>
+    Math.max(0, this.wallsAllowed() - this.turnActionUsage().wallsPlaced)
+  );
+  readonly canEndTurnManually = computed(() => {
+    const usage = this.turnActionUsage();
+    return usage.stepsTaken > 0 || usage.wallsPlaced > 0;
+  });
+
   /**
    * Legal moves for the current active player.
    */
@@ -107,6 +124,9 @@ export class BarricadeStateService {
       return [];
     }
     const current = this.currentPlayer();
+    if (current.isEliminated || this.stepsRemainingThisTurn() <= 0) {
+      return [];
+    }
     const otherPawns = this.players()
       .filter((_, idx) => idx !== this.currentPlayerIndex() && !_.isEliminated)
       .map((p) => p.position);
@@ -116,6 +136,10 @@ export class BarricadeStateService {
       this.walls()
     );
   });
+
+  ngOnDestroy(): void {
+    this.stopClockTimer();
+  }
 
   registerAiHandler(handler: BarricadeAiHandler): void {
     this.aiHandler = handler;
@@ -129,7 +153,12 @@ export class BarricadeStateService {
     this.status.set('playing');
   }
 
+  /**
+   * Initializes a new match using user-configured settings from the home lobby.
+   */
   startConfiguredGame(config: BarricadeConfig): void {
+    this.stopClockTimer();
+
     this.gameMode.set(config.gameMode);
     this.playerCount.set(config.playerCount);
     this.aiDifficulty.set(config.aiDifficulty);
@@ -148,7 +177,8 @@ export class BarricadeStateService {
     this.phase.set('PLAYER_TURN');
     this.status.set('playing');
 
-    const matchDurationMs = config.timeLimitMinutes > 0 ? config.timeLimitMinutes * 60 * 1000 : 0;
+    const matchDurationMs =
+      config.timeLimitMinutes > 0 ? config.timeLimitMinutes * 60 * 1000 : 0;
     const initialWalls = config.playerCount === 4 ? 5 : 10;
 
     const startCoords: Record<number, { pos: CellCoord; id: PlayerId }> = {
@@ -169,7 +199,7 @@ export class BarricadeStateService {
         position: { ...coordInfo.pos },
         startPosition: { ...coordInfo.pos },
         goalTargetType: is4P ? 'center' : 'row',
-        goalRow: is4P ? undefined : (idx === 0 ? 9 : 1),
+        goalRow: is4P ? undefined : idx === 0 ? 9 : 1,
         goalCoord: is4P ? { row: 5, col: 5 } : undefined,
         wallsRemaining: initialWalls,
         isComputer: draft.isComputer,
@@ -178,59 +208,32 @@ export class BarricadeStateService {
     });
 
     this.players.set(newPlayers);
+    this.startClockTimer();
   }
 
   /**
-   * Initializes or restarts the game match.
+   * Legacy init method for backward compatibility.
    */
   initGame(
     mode: GameMode = this.gameMode(),
     difficulty: AiDifficulty = this.aiDifficulty()
   ): void {
-    this.gameMode.set(mode);
-    this.aiDifficulty.set(difficulty);
-    this.currentPlayerIndex.set(0);
-    this.phase.set('PLAYER_TURN');
-    this.status.set('playing');
-    this.winner.set(null);
-    this.turnCount.set(1);
-    this.walls.set([]);
-    this.hoveredWallSlot.set(null);
-    this.previousOpponentTile.set(null);
-    this.moveHistory.set([]);
-    this.isAiThinking.set(false);
-
-    const isP2Computer = mode === 'vs_computer';
-    const p2Name = isP2Computer
-      ? `Computer (${difficulty.charAt(0).toUpperCase() + difficulty.slice(1)})`
-      : 'Player 2';
-
-    this.players.set([
-      {
-        id: 'p1',
-        playerId: 'player1',
-        name: mode === 'vs_computer' ? 'Player 1 (You)' : 'Player 1',
-        color: 'red',
-        position: { row: 1, col: 5 },
-        goalRow: 9,
-        wallsRemaining: 10,
-        isComputer: false,
-      },
-      {
-        id: 'p2',
-        playerId: 'player2',
-        name: p2Name,
-        color: 'blue',
-        position: { row: 9, col: 5 },
-        goalRow: 1,
-        wallsRemaining: 10,
-        isComputer: isP2Computer,
-      },
-    ]);
+    const isAi = mode === 'vs_computer';
+    this.startConfiguredGame({
+      gameMode: mode,
+      playerCount: mode === 'four_players' ? 4 : 2,
+      aiDifficulty: difficulty,
+      actionEconomy: this.actionEconomy(),
+      timeLimitMinutes: this.timeLimitMinutes(),
+      players: [
+        { name: isAi ? 'Player 1 (You)' : 'Player 1', color: 'red', isComputer: false },
+        { name: isAi ? `Computer (${difficulty})` : 'Player 2', color: 'blue', isComputer: isAi },
+      ],
+    });
   }
 
   /**
-   * Sets the game board directly to a given scenario (useful for presets or matching reference setups).
+   * Sets up reference screenshot preset.
    */
   setScenario(
     p1Pos: CellCoord,
@@ -255,6 +258,14 @@ export class BarricadeStateService {
   movePawn(target: CellCoord): boolean {
     if (this.isGameOver() || this.isAiThinking()) return false;
 
+    if (this.stepsRemainingThisTurn() <= 0) {
+      this.soundService.playInvalid();
+      this.toastr.warning('No movement steps remaining for this turn!', {
+        description: 'Step Limit',
+      });
+      return false;
+    }
+
     const validMoves = this.legalMoves();
     const move = validMoves.find((m) => areCoordsEqual(m.target, target));
     if (!move) {
@@ -278,43 +289,68 @@ export class BarricadeStateService {
         isJump: move.isJump,
       },
       previousPlayer1Pos: p1.position,
-      previousPlayer2Pos: p2.position,
+      previousPlayer2Pos: p2?.position ?? { row: 9, col: 5 },
       previousPlayer1Walls: p1.wallsRemaining,
-      previousPlayer2Walls: p2.wallsRemaining,
+      previousPlayer2Walls: p2?.wallsRemaining ?? 10,
+      playersSnapshot: this.players().map((p) => ({
+        playerId: p.playerId,
+        position: { ...p.position },
+        wallsRemaining: p.wallsRemaining,
+        timeRemainingMs: p.timeRemainingMs ?? 0,
+      })),
       timestamp: Date.now(),
     };
 
     this.moveHistory.update((h) => [...h, historyEntry]);
 
-    // Save previous tile if player 2 moved
-    if (this.currentPlayerIndex() === 1) {
+    // Save previous tile for opponent highlight
+    if (this.currentPlayerIndex() !== 0) {
       this.previousOpponentTile.set(currentPawn.position);
     }
 
     // Update pawn position
     this.players.update((plist) => {
       const idx = this.currentPlayerIndex();
-      const updated = [...plist] as [Pawn, Pawn];
+      const updated = [...plist];
       updated[idx] = { ...updated[idx], position: target };
       return updated;
     });
 
+    // Increment steps taken
+    this.turnActionUsage.update((u) => ({ ...u, stepsTaken: u.stepsTaken + 1 }));
     this.soundService.playMove();
 
-    // Check Victory
-    if (target.row === currentPawn.goalRow) {
+    // Check Victory Condition
+    const hasWon =
+      currentPawn.goalTargetType === 'center'
+        ? areCoordsEqual(target, currentPawn.goalCoord ?? { row: 5, col: 5 })
+        : target.row === currentPawn.goalRow;
+
+    if (hasWon) {
       this.winner.set(this.players()[this.currentPlayerIndex()]);
+      this.winReason.set('goal_reached');
       this.phase.set('GAME_OVER');
       this.status.set('game_over');
+      this.stopClockTimer();
       this.soundService.playVictory();
-      this.toastr.success(`${currentPawn.name} wins the match!`, {
-        description: 'Victory!',
-      });
+      this.toastr.success(
+        `${currentPawn.name} wins! Reached the ${currentPawn.goalTargetType === 'center' ? 'Center Sanctum (e5)' : 'goal line'}!`,
+        { description: 'Victory!' }
+      );
       return true;
     }
 
-    // Advance turn
-    this.advanceTurn();
+    // Check if turn should auto-complete:
+    const stepsExhausted = this.stepsRemainingThisTurn() <= 0;
+    const wallsExhausted =
+      this.wallsAllowed() === 0 ||
+      this.wallsRemainingThisTurn() <= 0 ||
+      this.currentPlayer().wallsRemaining <= 0;
+
+    if (stepsExhausted && wallsExhausted) {
+      this.endTurn();
+    }
+
     return true;
   }
 
@@ -323,6 +359,22 @@ export class BarricadeStateService {
    */
   placeWall(slot: WallCoord): boolean {
     if (this.isGameOver() || this.isAiThinking()) return false;
+
+    if (this.wallsAllowed() === 0) {
+      this.soundService.playInvalid();
+      this.toastr.warning('Barricade walls are disabled in this game mode!', {
+        description: 'Sprint Mode',
+      });
+      return false;
+    }
+
+    if (this.wallsRemainingThisTurn() <= 0) {
+      this.soundService.playInvalid();
+      this.toastr.warning('Maximum walls placed for this turn!', {
+        description: 'Wall Limit',
+      });
+      return false;
+    }
 
     const currentPawn = this.currentPlayer();
     if (currentPawn.wallsRemaining <= 0) {
@@ -369,9 +421,15 @@ export class BarricadeStateService {
         wall: newWall,
       },
       previousPlayer1Pos: p1.position,
-      previousPlayer2Pos: p2.position,
+      previousPlayer2Pos: p2?.position ?? { row: 9, col: 5 },
       previousPlayer1Walls: p1.wallsRemaining,
-      previousPlayer2Walls: p2.wallsRemaining,
+      previousPlayer2Walls: p2?.wallsRemaining ?? 10,
+      playersSnapshot: this.players().map((p) => ({
+        playerId: p.playerId,
+        position: { ...p.position },
+        wallsRemaining: p.wallsRemaining,
+        timeRemainingMs: p.timeRemainingMs ?? 0,
+      })),
       timestamp: Date.now(),
     };
 
@@ -381,7 +439,7 @@ export class BarricadeStateService {
     this.walls.update((w) => [...w, newWall]);
     this.players.update((plist) => {
       const idx = this.currentPlayerIndex();
-      const updated = [...plist] as [Pawn, Pawn];
+      const updated = [...plist];
       updated[idx] = {
         ...updated[idx],
         wallsRemaining: updated[idx].wallsRemaining - 1,
@@ -389,12 +447,30 @@ export class BarricadeStateService {
       return updated;
     });
 
+    // Increment walls placed
+    this.turnActionUsage.update((u) => ({ ...u, wallsPlaced: u.wallsPlaced + 1 }));
     this.soundService.playWallPlace();
     this.hoveredWallSlot.set(null);
 
-    // Advance turn
-    this.advanceTurn();
+    // Check if turn should auto-complete
+    const stepsExhausted = this.stepsRemainingThisTurn() <= 0;
+    const wallsExhausted =
+      this.wallsRemainingThisTurn() <= 0 || this.currentPlayer().wallsRemaining <= 0;
+
+    if (stepsExhausted && wallsExhausted) {
+      this.endTurn();
+    }
+
     return true;
+  }
+
+  /**
+   * Concludes the active player's turn manually.
+   */
+  endTurn(): void {
+    if (this.isGameOver()) return;
+    this.turnActionUsage.set({ stepsTaken: 0, wallsPlaced: 0 });
+    this.advanceTurn();
   }
 
   toggleWallOrientation(): void {
@@ -408,12 +484,20 @@ export class BarricadeStateService {
   }
 
   /**
-   * Switches turn to the other player and triggers AI if applicable.
+   * Advances turn rotation to the next active player and triggers AI if applicable.
    */
   private advanceTurn(): void {
-    const nextIndex = 1 - this.currentPlayerIndex();
+    const total = this.playerCount();
+    let nextIndex = (this.currentPlayerIndex() + 1) % total;
+    let attempts = 0;
+    while (this.players()[nextIndex]?.isEliminated && attempts < total) {
+      nextIndex = (nextIndex + 1) % total;
+      attempts++;
+    }
+
     this.currentPlayerIndex.set(nextIndex);
     this.turnCount.update((c) => c + 1);
+    this.turnActionUsage.set({ stepsTaken: 0, wallsPlaced: 0 });
 
     const nextPlayer = this.players()[nextIndex];
     if (nextPlayer.isComputer && !this.isGameOver()) {
@@ -439,7 +523,112 @@ export class BarricadeStateService {
   }
 
   /**
-   * Reverts the most recent move(s). In AI mode, rolls back 2 moves. In 2P mode, rolls back 1 move.
+   * Starts live countdown match clock.
+   */
+  private startClockTimer(): void {
+    this.stopClockTimer();
+    if (this.timeLimitMinutes() === 0) return;
+
+    let lastTick = Date.now();
+    this.timerInterval = setInterval(() => {
+      if (this.status() !== 'playing' || this.isGameOver() || this.isAiThinking()) {
+        lastTick = Date.now();
+        return;
+      }
+
+      const now = Date.now();
+      const delta = now - lastTick;
+      lastTick = now;
+
+      const currentIdx = this.currentPlayerIndex();
+      const currentPawn = this.players()[currentIdx];
+      if (!currentPawn || currentPawn.isEliminated) return;
+
+      const newTime = Math.max(0, (currentPawn.timeRemainingMs ?? 0) - delta);
+
+      // Warning tick if under 10 seconds
+      if (
+        newTime > 0 &&
+        newTime <= 10000 &&
+        Math.floor(newTime / 1000) !==
+          Math.floor((currentPawn.timeRemainingMs ?? 0) / 1000)
+      ) {
+        this.soundService.playLowTimeTick();
+      }
+
+      this.players.update((plist) => {
+        const copy = [...plist];
+        copy[currentIdx] = { ...copy[currentIdx], timeRemainingMs: newTime };
+        return copy;
+      });
+
+      if (newTime <= 0) {
+        this.handleTimeout(currentPawn);
+      }
+    }, 100);
+  }
+
+  private stopClockTimer(): void {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
+    }
+  }
+
+  private handleTimeout(timedOutPawn: Pawn): void {
+    this.soundService.playInvalid();
+
+    if (this.playerCount() === 2) {
+      const winnerPawn =
+        this.players().find((p) => p.id !== timedOutPawn.id) ?? this.players()[0];
+      this.winner.set(winnerPawn);
+      this.winReason.set('timeout');
+      this.phase.set('GAME_OVER');
+      this.status.set('game_over');
+      this.stopClockTimer();
+      this.soundService.playVictory();
+      this.toastr.error(
+        `${timedOutPawn.name} ran out of time! ${winnerPawn.name} wins!`,
+        { description: 'Match Over - Timeout' }
+      );
+      return;
+    }
+
+    // 4-Player mode: eliminate timed-out player
+    this.toastr.warning(
+      `${timedOutPawn.name} ran out of time and has been eliminated!`,
+      { description: 'Player Eliminated' }
+    );
+
+    this.players.update((plist) =>
+      plist.map((p) =>
+        p.id === timedOutPawn.id
+          ? { ...p, isEliminated: true, timeRemainingMs: 0 }
+          : p
+      )
+    );
+
+    const activeRemaining = this.players().filter((p) => !p.isEliminated);
+    if (activeRemaining.length === 1) {
+      const soleWinner = activeRemaining[0];
+      this.winner.set(soleWinner);
+      this.winReason.set('timeout');
+      this.phase.set('GAME_OVER');
+      this.status.set('game_over');
+      this.stopClockTimer();
+      this.soundService.playVictory();
+      this.toastr.success(
+        `${soleWinner.name} is the sole survivor and wins the match!`,
+        { description: 'Victory!' }
+      );
+      return;
+    }
+
+    this.advanceTurn();
+  }
+
+  /**
+   * Reverts the most recent move(s).
    */
   undo(): void {
     if (!this.canUndo()) return;
@@ -447,12 +636,10 @@ export class BarricadeStateService {
     const history = this.moveHistory();
     if (history.length === 0) return;
 
-    // Determine how many steps to pop
     const stepsToPop =
       this.gameMode() === 'vs_computer' && history.length >= 2 ? 2 : 1;
     const targetEntry = history[history.length - stepsToPop];
 
-    // Restore walls up to target entry point
     const remainingHistory = history.slice(0, history.length - stepsToPop);
     const restoredWalls: Wall[] = [];
     for (const h of remainingHistory) {
@@ -462,38 +649,93 @@ export class BarricadeStateService {
     }
 
     this.walls.set(restoredWalls);
-    this.players.update((plist) => [
-      {
-        ...plist[0],
-        position: targetEntry.previousPlayer1Pos,
-        wallsRemaining: targetEntry.previousPlayer1Walls,
-      },
-      {
-        ...plist[1],
-        position: targetEntry.previousPlayer2Pos,
-        wallsRemaining: targetEntry.previousPlayer2Walls,
-      },
-    ]);
+
+    // If we have player snapshots, restore all players accurately
+    if (targetEntry.playersSnapshot && targetEntry.playersSnapshot.length > 0) {
+      this.players.update((plist) =>
+        plist.map((p) => {
+          const snap = targetEntry.playersSnapshot?.find(
+            (s) => s.playerId === p.playerId
+          );
+          if (snap) {
+            return {
+              ...p,
+              position: snap.position,
+              wallsRemaining: snap.wallsRemaining,
+              timeRemainingMs: snap.timeRemainingMs,
+            };
+          }
+          return p;
+        })
+      );
+    } else {
+      this.players.update((plist) => [
+        {
+          ...plist[0],
+          position: targetEntry.previousPlayer1Pos,
+          wallsRemaining: targetEntry.previousPlayer1Walls,
+        },
+        {
+          ...plist[1],
+          position: targetEntry.previousPlayer2Pos,
+          wallsRemaining: targetEntry.previousPlayer2Walls,
+        },
+      ]);
+    }
 
     this.moveHistory.set(remainingHistory);
-    this.currentPlayerIndex.set(0); // Return turn to Player 1
+    this.turnActionUsage.set({ stepsTaken: 0, wallsPlaced: 0 });
+    this.currentPlayerIndex.set(0);
     this.phase.set('PLAYER_TURN');
     this.winner.set(null);
+    this.winReason.set(null);
     this.status.set('playing');
     this.soundService.playMove();
   }
 
   /**
-   * Concedes the game to the opponent.
+   * Concedes the game to the opponent(s).
    */
   resign(): void {
     if (this.isGameOver()) return;
-    const opponent = this.players()[1 - this.currentPlayerIndex()];
-    this.winner.set(opponent);
-    this.phase.set('GAME_OVER');
-    this.status.set('game_over');
-    this.toastr.info(`${opponent.name} wins by resignation!`, {
-      description: 'Match Ended',
+
+    if (this.playerCount() === 2) {
+      const opponent = this.players()[1 - this.currentPlayerIndex()];
+      this.winner.set(opponent);
+      this.winReason.set('resignation');
+      this.phase.set('GAME_OVER');
+      this.status.set('game_over');
+      this.stopClockTimer();
+      this.toastr.info(`${opponent.name} wins by resignation!`, {
+        description: 'Match Ended',
+      });
+      return;
+    }
+
+    // 4-Player mode: eliminate resigning player
+    const resigning = this.currentPlayer();
+    this.toastr.info(`${resigning.name} resigned and is eliminated.`, {
+      description: 'Player Resigned',
     });
+
+    this.players.update((plist) =>
+      plist.map((p) =>
+        p.id === resigning.id ? { ...p, isEliminated: true } : p
+      )
+    );
+
+    const activeRemaining = this.players().filter((p) => !p.isEliminated);
+    if (activeRemaining.length === 1) {
+      const soleWinner = activeRemaining[0];
+      this.winner.set(soleWinner);
+      this.winReason.set('resignation');
+      this.phase.set('GAME_OVER');
+      this.status.set('game_over');
+      this.stopClockTimer();
+      this.soundService.playVictory();
+      return;
+    }
+
+    this.advanceTurn();
   }
 }
