@@ -26,6 +26,13 @@ export interface WallMoveAction {
 
 export type MoveAction = PawnMoveAction | WallMoveAction;
 
+export interface PlayerSnapshot {
+  playerId: PlayerId;
+  position: CellCoord;
+  wallsRemaining: number;
+  timeRemainingMs: number;
+}
+
 export interface MoveRecord {
   turnNumber: number;
   playerId: PlayerId;
@@ -34,5 +41,6 @@ export interface MoveRecord {
   previousPlayer2Pos: CellCoord;
   previousPlayer1Walls: number;
   previousPlayer2Walls: number;
+  playersSnapshot?: PlayerSnapshot[];
   timestamp: number;
 }
