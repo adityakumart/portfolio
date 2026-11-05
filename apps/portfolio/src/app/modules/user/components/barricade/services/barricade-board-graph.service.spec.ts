@@ -28,44 +28,36 @@ describe('BarricadeBoardGraphService', () => {
 
   describe('Wall Collision Detection', () => {
     it('should detect vertical movement blocked by horizontal wall', () => {
-      // Horizontal wall between row 6 and 7 spanning cols 3 and 4
       const walls: Wall[] = [
         { id: 'w1', row: 6, col: 3, orientation: 'horizontal', placedBy: 'player1' },
       ];
 
-      // Vertical move between (6, 3) and (7, 3) should be blocked
       expect(
         service.isMoveBlockedByWall({ row: 6, col: 3 }, { row: 7, col: 3 }, walls)
       ).toBe(true);
 
-      // Vertical move between (6, 4) and (7, 4) should be blocked (2nd cell of wall)
       expect(
         service.isMoveBlockedByWall({ row: 6, col: 4 }, { row: 7, col: 4 }, walls)
       ).toBe(true);
 
-      // Vertical move between (6, 5) and (7, 5) should NOT be blocked
       expect(
         service.isMoveBlockedByWall({ row: 6, col: 5 }, { row: 7, col: 5 }, walls)
       ).toBe(false);
     });
 
     it('should detect horizontal movement blocked by vertical wall', () => {
-      // Vertical wall between col 2 and 3 spanning rows 4 and 5
       const walls: Wall[] = [
         { id: 'w2', row: 4, col: 2, orientation: 'vertical', placedBy: 'player1' },
       ];
 
-      // Horizontal move between (4, 2) and (4, 3) should be blocked
       expect(
         service.isMoveBlockedByWall({ row: 4, col: 2 }, { row: 4, col: 3 }, walls)
       ).toBe(true);
 
-      // Horizontal move between (5, 2) and (5, 3) should be blocked
       expect(
         service.isMoveBlockedByWall({ row: 5, col: 2 }, { row: 5, col: 3 }, walls)
       ).toBe(true);
 
-      // Horizontal move between (3, 2) and (3, 3) should NOT be blocked
       expect(
         service.isMoveBlockedByWall({ row: 3, col: 2 }, { row: 3, col: 3 }, walls)
       ).toBe(false);
@@ -76,17 +68,14 @@ describe('BarricadeBoardGraphService', () => {
         { id: 'w1', row: 4, col: 4, orientation: 'horizontal', placedBy: 'player1' },
       ];
 
-      // Same spot & orientation
       expect(
         service.doesWallCollide({ row: 4, col: 4, orientation: 'horizontal' }, existing)
       ).toBe(true);
 
-      // Perpendicular crossing at same center
       expect(
         service.doesWallCollide({ row: 4, col: 4, orientation: 'vertical' }, existing)
       ).toBe(true);
 
-      // Overlapping parallel wall on same row
       expect(
         service.doesWallCollide({ row: 4, col: 3, orientation: 'horizontal' }, existing)
       ).toBe(true);
@@ -94,7 +83,6 @@ describe('BarricadeBoardGraphService', () => {
         service.doesWallCollide({ row: 4, col: 5, orientation: 'horizontal' }, existing)
       ).toBe(true);
 
-      // Non-overlapping horizontal wall
       expect(
         service.doesWallCollide({ row: 4, col: 6, orientation: 'horizontal' }, existing)
       ).toBe(false);
@@ -113,14 +101,12 @@ describe('BarricadeBoardGraphService', () => {
     });
 
     it('should perform straight jump over opponent when no wall behind', () => {
-      // Player 1 at (4, 5), Opponent at (5, 5)
       const moves = service.getLegalPawnMoves(
         { row: 4, col: 5 },
         { row: 5, col: 5 },
         []
       );
 
-      // Should include jump to (6, 5)
       const jumpMove = moves.find(
         (m) => m.target.row === 6 && m.target.col === 5
       );
@@ -129,7 +115,6 @@ describe('BarricadeBoardGraphService', () => {
     });
 
     it('should perform diagonal jumps when wall is behind opponent', () => {
-      // Player 1 at (4, 5), Opponent at (5, 5), wall behind opponent between row 5 & 6
       const walls: Wall[] = [
         { id: 'w1', row: 5, col: 5, orientation: 'horizontal', placedBy: 'player2' },
       ];
@@ -140,8 +125,24 @@ describe('BarricadeBoardGraphService', () => {
         walls
       );
 
-      // Straight jump to (6, 5) is blocked; diagonal jumps to (5, 4) and (5, 6) should be present
       expect(moves.some((m) => m.target.row === 6 && m.target.col === 5)).toBe(false);
+      expect(moves.some((m) => m.target.row === 5 && m.target.col === 4 && m.isJump)).toBe(true);
+      expect(moves.some((m) => m.target.row === 5 && m.target.col === 6 && m.isJump)).toBe(true);
+    });
+
+    it('should prohibit chain jumping over 2 adjacent opponents in 4-player mode', () => {
+      // Current player at (4, 5). Opponent 1 at (5, 5). Opponent 2 at (6, 5) directly behind Opponent 1!
+      const current = { row: 4, col: 5 };
+      const opponents = [
+        { row: 5, col: 5 },
+        { row: 6, col: 5 },
+      ];
+
+      const moves = service.getLegalPawnMovesMulti(current, opponents, []);
+
+      // Straight jump to (6, 5) is NOT allowed because it is occupied by Opponent 2!
+      expect(moves.some((m) => m.target.row === 6 && m.target.col === 5)).toBe(false);
+      // Diagonals around Opponent 1 to (5, 4) and (5, 6) should be available instead
       expect(moves.some((m) => m.target.row === 5 && m.target.col === 4 && m.isJump)).toBe(true);
       expect(moves.some((m) => m.target.row === 5 && m.target.col === 6 && m.isJump)).toBe(true);
     });

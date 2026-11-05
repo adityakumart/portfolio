@@ -42,12 +42,20 @@ describe('BarricadeComponent - 9x9 Quoridor Integration', () => {
     state = TestBed.inject(BarricadeStateService);
     ai = TestBed.inject(BarricadeAiService);
 
-    state.initGame('vs_computer', 'intro');
     fixture.detectChanges();
   });
 
-  it('should initialize component with board and sidebar controls', () => {
+  it('should initialize component with home lobby view by default', () => {
     expect(component).toBeTruthy();
+    expect(state.status()).toBe('lobby');
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('app-barricade-home')).toBeTruthy();
+  });
+
+  it('should render board and controls when match transitions to playing', () => {
+    state.initGame('vs_computer', 'intro');
+    fixture.detectChanges();
+
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('app-barricade-board')).toBeTruthy();
     expect(compiled.querySelector('app-barricade-controls')).toBeTruthy();
@@ -71,11 +79,22 @@ describe('BarricadeComponent - 9x9 Quoridor Integration', () => {
 
   it('should support pawn movements and turn transitions', () => {
     state.initGame('two_players');
-    // Player 1 moves from (1, 5) to (2, 5)
     const success = state.movePawn({ row: 2, col: 5 });
     expect(success).toBe(true);
     expect(state.player1().position).toEqual({ row: 2, col: 5 });
-    // Turn switches to player 2
     expect(state.currentPlayerIndex()).toBe(1);
+  });
+
+  it('should return to lobby when goToLobby is invoked', () => {
+    state.initGame('two_players');
+    fixture.detectChanges();
+    expect(state.status()).toBe('playing');
+
+    state.goToLobby();
+    fixture.detectChanges();
+
+    expect(state.status()).toBe('lobby');
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('app-barricade-home')).toBeTruthy();
   });
 });
