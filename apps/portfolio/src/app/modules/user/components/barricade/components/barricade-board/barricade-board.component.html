@@ -1,10 +1,10 @@
 <div class="board-wrapper w-full flex flex-col items-center justify-center space-y-3">
   <!-- Mode & Quick Wall Orientation Toolbar -->
-  <div class="w-full max-w-[560px] flex items-center justify-between px-3 py-2 rounded-2xl bg-card/70 border border-border/80 text-xs text-muted-foreground backdrop-blur-md shadow-lg">
+  <div class="w-full max-w-[560px] flex items-center justify-between px-3 py-2 rounded-2xl bg-card border border-border text-xs text-muted-foreground shadow-sm">
     <div class="flex items-center gap-2">
       <!-- Active Player Badge -->
       <span
-        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl font-bold text-xs shadow-sm border border-white/10"
+        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl font-bold text-xs shadow-sm border border-border"
         [style.background-color]="getColorHex(state.currentPlayer().color) + '22'"
         [style.color]="getColorHex(state.currentPlayer().color)">
         <span
@@ -14,13 +14,13 @@
       </span>
 
       <!-- Multi-Action Step & Wall Counts -->
-      <span class="text-zinc-600">|</span>
-      <span class="text-[11px] font-mono text-zinc-300">
-        Steps: <strong class="text-white">{{ state.stepsRemainingThisTurn() }}/{{ state.stepsAllowed() }}</strong>
+      <span class="text-border">|</span>
+      <span class="text-[11px] font-mono text-muted-foreground">
+        Steps: <strong class="text-foreground">{{ state.stepsRemainingThisTurn() }}/{{ state.stepsAllowed() }}</strong>
       </span>
-      <span class="text-zinc-600">|</span>
-      <span class="text-[11px] font-mono text-zinc-300">
-        Walls: <strong class="text-white">{{ state.wallsRemainingThisTurn() }}/{{ state.wallsAllowed() }}</strong>
+      <span class="text-border">|</span>
+      <span class="text-[11px] font-mono text-muted-foreground">
+        Walls: <strong class="text-foreground">{{ state.wallsRemainingThisTurn() }}/{{ state.wallsAllowed() }}</strong>
       </span>
     </div>
 
@@ -30,8 +30,7 @@
         <button
           type="button"
           (click)="state.endTurn()"
-          class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] shadow-sm transition-all active:scale-95"
-          title="Finish Turn Early">
+          class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] shadow-sm transition-all active:scale-95">
           <span>End Turn</span>
         </button>
       }
@@ -40,18 +39,18 @@
         <button
           type="button"
           (click)="toggleOrientation()"
-          class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition-all font-medium text-[11px] shadow-sm active:scale-95"
+          class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted hover:bg-muted/80 text-foreground border border-border transition-all font-medium text-[11px] shadow-sm active:scale-95"
           title="Toggle Wall Orientation (Space / Click)">
           <ng-icon name="lucideRotateCw" class="text-xs" />
-          <span>Wall: <strong class="text-white uppercase">{{ state.wallOrientation() }}</strong></span>
-          <span class="hidden md:inline text-[10px] text-zinc-400 font-mono">(Space)</span>
+          <span>Wall: <strong class="text-foreground uppercase">{{ state.wallOrientation() }}</strong></span>
+          <span class="hidden md:inline text-[10px] text-muted-foreground font-mono">(Space)</span>
         </button>
       }
     </div>
   </div>
 
   <!-- Main Game Arena with Coordinate Labels -->
-  <div class="relative w-full max-w-[560px] aspect-square rounded-3xl bg-[#141416] p-4 md:p-6 shadow-2xl border border-zinc-800/80 flex flex-col">
+  <div class="relative w-full max-w-[560px] aspect-square rounded-3xl bg-card text-card-foreground p-4 md:p-6 shadow-xl border border-border flex flex-col">
     <!-- SVG Grid Board -->
     <div class="relative flex-1 w-full h-full">
       <svg
@@ -65,7 +64,8 @@
             [attr.x]="i * 102 + 42"
             y="945"
             text-anchor="middle"
-            class="fill-zinc-500 font-mono text-[26px] font-semibold">
+            [attr.fill]="getCoordinateFill()"
+            class="font-mono text-[26px] font-semibold">
             {{ letter }}
           </text>
         }
@@ -77,7 +77,8 @@
             [attr.y]="i * 102 + 52"
             text-anchor="middle"
             dominant-baseline="middle"
-            class="fill-zinc-500 font-mono text-[26px] font-semibold">
+            [attr.fill]="getCoordinateFill()"
+            class="font-mono text-[26px] font-semibold">
             {{ row }}
           </text>
         }
@@ -94,17 +95,7 @@
                 height="84"
                 rx="14"
                 ry="14"
-                [attr.fill]="
-                  cell.isPreviousMove
-                    ? '#4e4321'
-                    : cell.isCenterGoal
-                    ? '#382810'
-                    : cell.isRedGoal
-                    ? '#2f1c20'
-                    : cell.isBlueGoal
-                    ? '#162335'
-                    : '#27272a'
-                "
+                [attr.fill]="getCellFill(cell)"
                 [attr.stroke]="cell.isCenterGoal ? '#f59e0b' : 'none'"
                 [attr.stroke-width]="cell.isCenterGoal ? '2' : '0'"
                 [attr.stroke-dasharray]="cell.isCenterGoal ? '5 3' : 'none'"
@@ -152,9 +143,9 @@
                   rx="15"
                   ry="15"
                   fill="none"
-                  stroke="#e4e4e7"
+                  [attr.stroke]="getLegalMoveStroke()"
                   stroke-width="3"
-                  class="cursor-pointer hover:stroke-white hover:fill-white/10 transition-all filter drop-shadow-[0_0_6px_rgba(255,255,255,0.25)]"
+                  class="cursor-pointer hover:stroke-primary hover:fill-primary/10 transition-all filter drop-shadow-[0_0_6px_rgba(0,0,0,0.15)]"
                   (click)="onCellClick(cell)"
                 />
               }
@@ -162,14 +153,14 @@
               <!-- Dynamic Multi-Player Pawn Rendering -->
               @if (cell.pawn; as p) {
                 <g class="pointer-events-none">
-                  <!-- Outer Pulsing Active Ring if Current Turn -->
+                  <!-- Outer Pulsing Active Ring in Player Color if Current Turn -->
                   @if (p.isCurrentTurn) {
                     <circle
                       [attr.cx]="(cell.col - 1) * 102 + 42"
                       [attr.cy]="(9 - cell.row) * 102 + 42"
                       r="29"
                       fill="none"
-                      stroke="#ffffff"
+                      [attr.stroke]="p.colorHex"
                       stroke-width="2.5"
                       stroke-dasharray="4 2"
                       class="animate-spin origin-center"
@@ -185,7 +176,7 @@
                     [attr.fill]="p.colorHex"
                     stroke="rgba(255,255,255,0.4)"
                     stroke-width="1.5"
-                    class="filter drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)] transition-all duration-300"
+                    class="filter drop-shadow-[0_2px_10px_rgba(0,0,0,0.4)] transition-all duration-300"
                   />
 
                   <!-- Pawn Label (P1, P2, P3, P4) -->
@@ -202,33 +193,51 @@
           }
         </g>
 
-        <!-- 4. Placed Walls (2-cell wide white rounded bars) -->
+        <!-- 4. Placed Walls (2-cell wide rounded bars with ownership pip) -->
         <g id="placed-walls">
           @for (w of state.walls(); track w.id) {
             @if (w.orientation === 'horizontal') {
               <!-- Horizontal Wall: between row w.row and w.row+1, spanning cols w.col & w.col+1 -->
-              <rect
-                [attr.x]="(w.col - 1) * 102"
-                [attr.y]="(8 - w.row) * 102 + 86"
-                width="186"
-                height="14"
-                rx="6"
-                ry="6"
-                fill="#f4f4f5"
-                class="filter drop-shadow-[0_2px_5px_rgba(0,0,0,0.7)]"
-              />
+              <g>
+                <rect
+                  [attr.x]="(w.col - 1) * 102"
+                  [attr.y]="(8 - w.row) * 102 + 86"
+                  width="186"
+                  height="14"
+                  rx="6"
+                  ry="6"
+                  [attr.fill]="getWallFill()"
+                  class="filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]"
+                />
+                <!-- Player Ownership Indicator Pip -->
+                <circle
+                  [attr.cx]="(w.col - 1) * 102 + 93"
+                  [attr.cy]="(8 - w.row) * 102 + 93"
+                  r="3.5"
+                  [attr.fill]="getPlayerPawnHex(w.placedBy)"
+                />
+              </g>
             } @else {
               <!-- Vertical Wall: between col w.col and w.col+1, spanning rows w.row & w.row+1 -->
-              <rect
-                [attr.x]="(w.col - 1) * 102 + 86"
-                [attr.y]="(8 - w.row) * 102"
-                width="14"
-                height="186"
-                rx="6"
-                ry="6"
-                fill="#f4f4f5"
-                class="filter drop-shadow-[0_2px_5px_rgba(0,0,0,0.7)]"
-              />
+              <g>
+                <rect
+                  [attr.x]="(w.col - 1) * 102 + 86"
+                  [attr.y]="(8 - w.row) * 102"
+                  width="14"
+                  height="186"
+                  rx="6"
+                  ry="6"
+                  [attr.fill]="getWallFill()"
+                  class="filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]"
+                />
+                <!-- Player Ownership Indicator Pip -->
+                <circle
+                  [attr.cx]="(w.col - 1) * 102 + 93"
+                  [attr.cy]="(8 - w.row) * 102 + 93"
+                  r="3.5"
+                  [attr.fill]="getPlayerPawnHex(w.placedBy)"
+                />
+              </g>
             }
           }
         </g>
@@ -243,8 +252,8 @@
               height="14"
               rx="6"
               ry="6"
-              [attr.fill]="preview.isLegal ? 'rgba(255, 255, 255, 0.75)' : 'rgba(239, 68, 68, 0.7)'"
-              [attr.stroke]="preview.isLegal ? '#ffffff' : '#ef4444'"
+              [attr.fill]="getWallPreviewFill(preview.isLegal)"
+              [attr.stroke]="getWallPreviewStroke(preview.isLegal)"
               stroke-width="1.5"
               class="pointer-events-none transition-all duration-100"
             />
@@ -256,8 +265,8 @@
               height="186"
               rx="6"
               ry="6"
-              [attr.fill]="preview.isLegal ? 'rgba(255, 255, 255, 0.75)' : 'rgba(239, 68, 68, 0.7)'"
-              [attr.stroke]="preview.isLegal ? '#ffffff' : '#ef4444'"
+              [attr.fill]="getWallPreviewFill(preview.isLegal)"
+              [attr.stroke]="getWallPreviewStroke(preview.isLegal)"
               stroke-width="1.5"
               class="pointer-events-none transition-all duration-100"
             />
