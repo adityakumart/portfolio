@@ -1,11 +1,17 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import {
+  ActionEconomyOption,
   AiDifficulty,
+  BarricadeConfig,
   CellCoord,
   GameMode,
   GameStatus,
   MoveRecord,
   Pawn,
+  PlayerCount,
+  PlayerId,
+  TimeControlMinutes,
+  TurnActionUsage,
   TurnPhase,
   Wall,
   WallCoord,
@@ -34,22 +40,30 @@ export class BarricadeStateService {
 
   // --- Core State Signals ---
   readonly gameMode = signal<GameMode>('vs_computer');
+  readonly playerCount = signal<PlayerCount>(2);
   readonly aiDifficulty = signal<AiDifficulty>('intro');
-  readonly status = signal<GameStatus>('playing');
+  readonly actionEconomy = signal<ActionEconomyOption>('1+0');
+  readonly timeLimitMinutes = signal<TimeControlMinutes>(10);
+  readonly status = signal<GameStatus>('lobby'); // Default to home lobby view
   readonly phase = signal<TurnPhase>('PLAYER_TURN');
-  readonly currentPlayerIndex = signal<number>(0); // 0 = Player 1 (Red), 1 = Player 2 (Blue)
+  readonly currentPlayerIndex = signal<number>(0); // 0 to playerCount - 1
   readonly turnCount = signal<number>(1);
+  readonly turnActionUsage = signal<TurnActionUsage>({ stepsTaken: 0, wallsPlaced: 0 });
+  readonly winReason = signal<'goal_reached' | 'timeout' | 'resignation' | null>(null);
 
-  readonly players = signal<[Pawn, Pawn]>([
+  readonly players = signal<Pawn[]>([
     {
       id: 'p1',
       playerId: 'player1',
       name: 'Player 1 (You)',
       color: 'red',
       position: { row: 1, col: 5 }, // 'e1'
+      startPosition: { row: 1, col: 5 },
+      goalTargetType: 'row',
       goalRow: 9,
       wallsRemaining: 10,
       isComputer: false,
+      timeRemainingMs: 600000,
     },
     {
       id: 'p2',
@@ -57,16 +71,19 @@ export class BarricadeStateService {
       name: 'Computer (Intro)',
       color: 'blue',
       position: { row: 9, col: 5 }, // 'e9'
+      startPosition: { row: 9, col: 5 },
+      goalTargetType: 'row',
       goalRow: 1,
       wallsRemaining: 10,
       isComputer: true,
+      timeRemainingMs: 600000,
     },
   ]);
 
   readonly walls = signal<Wall[]>([]);
   readonly wallOrientation = signal<WallOrientation>('horizontal');
   readonly hoveredWallSlot = signal<WallCoord | null>(null);
-  readonly previousOpponentTile = signal<CellCoord | null>(null); // For olive highlight (b7 in screenshot)
+  readonly previousOpponentTile = signal<CellCoord | null>(null); // For olive highlight
   readonly winner = signal<Pawn | null>(null);
   readonly moveHistory = signal<MoveRecord[]>([]);
   readonly isAiThinking = signal<boolean>(false);
@@ -74,10 +91,13 @@ export class BarricadeStateService {
   // --- Computed Projections ---
   readonly player1 = computed(() => this.players()[0]);
   readonly player2 = computed(() => this.players()[1]);
+  readonly player3 = computed(() => this.players()[2] ?? null);
+  readonly player4 = computed(() => this.players()[3] ?? null);
   readonly currentPlayer = computed(() => this.players()[this.currentPlayerIndex()]);
   readonly isPlayer1Active = computed(() => this.currentPlayerIndex() === 0);
   readonly isGameOver = computed(() => this.phase() === 'GAME_OVER');
   readonly canUndo = computed(() => this.moveHistory().length > 0 && !this.isGameOver());
+  readonly isFourPlayer = computed(() => this.playerCount() === 4);
 
   /**
    * Legal moves for the current active player.
@@ -87,16 +107,76 @@ export class BarricadeStateService {
       return [];
     }
     const current = this.currentPlayer();
-    const opponent = this.players()[1 - this.currentPlayerIndex()];
+    const otherPlayers = this.players().filter((_, idx) => idx !== this.currentPlayerIndex());
+    const primaryOpponent = otherPlayers[0] ?? current;
     return this.graphService.getLegalPawnMoves(
       current.position,
-      opponent.position,
+      primaryOpponent.position,
       this.walls()
     );
   });
 
   registerAiHandler(handler: BarricadeAiHandler): void {
     this.aiHandler = handler;
+  }
+
+  goToLobby(): void {
+    this.status.set('lobby');
+  }
+
+  resumeGame(): void {
+    this.status.set('playing');
+  }
+
+  startConfiguredGame(config: BarricadeConfig): void {
+    this.gameMode.set(config.gameMode);
+    this.playerCount.set(config.playerCount);
+    this.aiDifficulty.set(config.aiDifficulty);
+    this.actionEconomy.set(config.actionEconomy);
+    this.timeLimitMinutes.set(config.timeLimitMinutes);
+    this.turnActionUsage.set({ stepsTaken: 0, wallsPlaced: 0 });
+    this.currentPlayerIndex.set(0);
+    this.turnCount.set(1);
+    this.walls.set([]);
+    this.moveHistory.set([]);
+    this.hoveredWallSlot.set(null);
+    this.previousOpponentTile.set(null);
+    this.winner.set(null);
+    this.winReason.set(null);
+    this.isAiThinking.set(false);
+    this.phase.set('PLAYER_TURN');
+    this.status.set('playing');
+
+    const matchDurationMs = config.timeLimitMinutes > 0 ? config.timeLimitMinutes * 60 * 1000 : 0;
+    const initialWalls = config.playerCount === 4 ? 5 : 10;
+
+    const startCoords: Record<number, { pos: CellCoord; id: PlayerId }> = {
+      0: { pos: { row: 1, col: 5 }, id: 'player1' }, // South (e1)
+      1: { pos: { row: 9, col: 5 }, id: 'player2' }, // North (e9)
+      2: { pos: { row: 5, col: 1 }, id: 'player3' }, // West (a5)
+      3: { pos: { row: 5, col: 9 }, id: 'player4' }, // East (i5)
+    };
+
+    const newPlayers: Pawn[] = config.players.map((draft, idx) => {
+      const is4P = config.playerCount === 4;
+      const coordInfo = startCoords[idx];
+      return {
+        id: `p${idx + 1}`,
+        playerId: coordInfo.id,
+        name: draft.name,
+        color: draft.color,
+        position: { ...coordInfo.pos },
+        startPosition: { ...coordInfo.pos },
+        goalTargetType: is4P ? 'center' : 'row',
+        goalRow: is4P ? undefined : (idx === 0 ? 9 : 1),
+        goalCoord: is4P ? { row: 5, col: 5 } : undefined,
+        wallsRemaining: initialWalls,
+        isComputer: draft.isComputer,
+        timeRemainingMs: matchDurationMs,
+      };
+    });
+
+    this.players.set(newPlayers);
   }
 
   /**

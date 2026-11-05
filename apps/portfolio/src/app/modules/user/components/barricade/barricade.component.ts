@@ -21,6 +21,7 @@ import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmBadgeImports } from '@spartan-ng/hel/badge';
 import { BarricadeStateService } from './services/barricade-state.service';
 import { BarricadeAiService } from './services/barricade-ai.service';
+import { BarricadeHomeComponent } from './components/barricade-home/barricade-home.component';
 import { BarricadeBoardComponent } from './components/barricade-board/barricade-board.component';
 import { BarricadeControlsComponent } from './components/barricade-controls/barricade-controls.component';
 import { BarricadeWinDialogComponent } from './components/barricade-win-dialog/barricade-win-dialog.component';
@@ -35,6 +36,7 @@ import { BarricadeWinDialogComponent } from './components/barricade-win-dialog/b
     HlmCardImports,
     HlmButtonImports,
     HlmBadgeImports,
+    BarricadeHomeComponent,
     BarricadeBoardComponent,
     BarricadeControlsComponent,
     BarricadeWinDialogComponent,
@@ -60,10 +62,7 @@ export class BarricadeComponent implements OnInit {
   private readonly aiService = inject(BarricadeAiService);
 
   ngOnInit(): void {
-    // If empty game, start fresh
-    if (this.stateService.walls().length === 0 && this.stateService.moveHistory().length === 0) {
-      this.stateService.initGame('vs_computer', 'intro');
-    }
+    // Initial page defaults to lobby (home page)
   }
 
   /**

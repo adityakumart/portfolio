@@ -68,8 +68,8 @@ export class BarricadeControlsComponent {
   readonly wallSlots = Array.from({ length: 10 }, (_, i) => i);
 
   onLobbyClick(): void {
-    // Navigate back to user games or trigger lobby mode
-    this.router.navigate(['/user/game']);
+    // Return to the Barricade Home Lobby setup screen
+    this.state.goToLobby();
   }
 
   onToggleSound(): void {
