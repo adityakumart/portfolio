@@ -4,6 +4,7 @@ import {
   inject,
   signal,
   computed,
+  OnInit,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -80,7 +81,7 @@ interface PlayerDraft {
   styleUrl: './barricade-home.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class BarricadeHomeComponent {
+export class BarricadeHomeComponent implements OnInit {
   readonly stateService = inject(BarricadeStateService);
 
   readonly colorPalette = PLAYER_COLOR_PALETTE;
@@ -101,6 +102,32 @@ export class BarricadeHomeComponent {
     { name: 'Player 3', color: 'green', isComputer: false },
     { name: 'Player 4', color: 'amber', isComputer: false },
   ]);
+
+  ngOnInit(): void {
+    // Hydrate options and player colors from state service
+    this.selectedMode.set(this.stateService.gameMode());
+    this.selectedPlayerCount.set(this.stateService.playerCount());
+    this.selectedDifficulty.set(this.stateService.aiDifficulty());
+    this.selectedActionEconomy.set(this.stateService.actionEconomy());
+    this.selectedTimeControl.set(this.stateService.timeLimitMinutes());
+
+    const existingPlayers = this.stateService.players();
+    if (existingPlayers && existingPlayers.length > 0) {
+      this.playersDraft.update((drafts) => {
+        const copy = [...drafts];
+        existingPlayers.forEach((p, idx) => {
+          if (idx < copy.length) {
+            copy[idx] = {
+              name: p.name,
+              color: p.color,
+              isComputer: p.isComputer,
+            };
+          }
+        });
+        return copy;
+      });
+    }
+  }
 
   readonly activeDrafts = computed(() => {
     const count = this.selectedPlayerCount();

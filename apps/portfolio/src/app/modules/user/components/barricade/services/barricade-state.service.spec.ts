@@ -154,4 +154,27 @@ describe('BarricadeStateService', () => {
     service.undo();
     expect(service.player1().position).toEqual({ row: 1, col: 5 });
   });
+
+  it('should preserve player selected colors across game mode re-initializations', () => {
+    service.startConfiguredGame({
+      gameMode: 'two_players',
+      playerCount: 2,
+      aiDifficulty: 'intro',
+      actionEconomy: '1+0',
+      timeLimitMinutes: 10,
+      players: [
+        { name: 'Alice', color: 'purple', isComputer: false },
+        { name: 'Bob', color: 'cyan', isComputer: false },
+      ],
+    });
+
+    expect(service.player1().color).toBe('purple');
+    expect(service.player2().color).toBe('cyan');
+
+    // Call initGame to switch mode
+    service.initGame('vs_computer', 'medium');
+
+    expect(service.player1().color).toBe('purple');
+    expect(service.player2().color).toBe('cyan');
+  });
 });
