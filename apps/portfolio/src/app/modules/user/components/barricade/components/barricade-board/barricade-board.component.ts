@@ -252,4 +252,41 @@ export class BarricadeBoardComponent {
       this.hoveredSlot.set(null);
     }
   }
+
+  /**
+   * Two-tap placement for mobile touchscreens:
+   * 1st tap previews wall & validity, 2nd tap on the same slot places the wall.
+   */
+  onWallSlotTap(row: number, col: number): void {
+    if (this.state.isGameOver() || this.state.isAiThinking()) return;
+    const cur = this.hoveredSlot();
+    const orientation = this.state.wallOrientation();
+
+    if (cur && cur.row === row && cur.col === col && cur.orientation === orientation) {
+      if (cur.isLegal) {
+        this.onWallSlotClick(row, col);
+      }
+    } else {
+      this.onWallSlotHover(row, col, orientation);
+    }
+  }
+
+  formatClock(ms: number | undefined): string {
+    if (this.state.timeLimitMinutes() === 0) return '∞';
+    if (ms === undefined || ms === null) return '00:00';
+    const totalSec = Math.max(0, Math.ceil(ms / 1000));
+    const mins = Math.floor(totalSec / 60);
+    const secs = totalSec % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  isLowTime(ms: number | undefined): boolean {
+    if (this.state.timeLimitMinutes() === 0) return false;
+    return (ms ?? 0) > 0 && (ms ?? 0) <= 60000;
+  }
+
+  isCriticalTime(ms: number | undefined): boolean {
+    if (this.state.timeLimitMinutes() === 0) return false;
+    return (ms ?? 0) > 0 && (ms ?? 0) <= 10000;
+  }
 }

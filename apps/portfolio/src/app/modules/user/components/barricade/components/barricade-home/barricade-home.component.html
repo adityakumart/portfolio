@@ -238,7 +238,7 @@
               [class.border-border]="selectedTimeControl() !== time.value"
               [class.bg-muted\/50]="selectedTimeControl() !== time.value"
               [class.text-muted-foreground]="selectedTimeControl() !== time.value"
-              class="py-2 px-1 rounded-xl border text-center text-xs font-bold transition-all hover:border-purple-500/50">
+              class="py-2.5 px-1 sm:py-2 rounded-xl border text-center text-xs font-bold transition-all hover:border-purple-500/50 touch-manipulation">
               {{ time.label }}
             </button>
           }
@@ -285,7 +285,7 @@
               </div>
 
               <!-- Color Palette Swatches -->
-              <div class="flex items-center gap-1.5 flex-wrap pt-1">
+              <div class="flex items-center gap-2 flex-wrap pt-1">
                 @for (col of colorPalette; track col.key) {
                   <button
                     type="button"
@@ -297,7 +297,7 @@
                     [class.ring-offset-2]="player.color === col.key"
                     [class.ring-offset-background]="player.color === col.key"
                     [class.opacity-30]="isColorChosen(col.key, idx)"
-                    class="h-6 w-6 rounded-full border border-black/20 flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-sm">
+                    class="h-7 w-7 sm:h-6 sm:w-6 rounded-full border border-black/20 flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-sm touch-manipulation">
                     @if (player.color === col.key) {
                       <ng-icon name="lucideCheck" class="text-white text-[11px] drop-shadow" />
                     }
