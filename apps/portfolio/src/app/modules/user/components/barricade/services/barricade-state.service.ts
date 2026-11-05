@@ -107,11 +107,12 @@ export class BarricadeStateService {
       return [];
     }
     const current = this.currentPlayer();
-    const otherPlayers = this.players().filter((_, idx) => idx !== this.currentPlayerIndex());
-    const primaryOpponent = otherPlayers[0] ?? current;
-    return this.graphService.getLegalPawnMoves(
+    const otherPawns = this.players()
+      .filter((_, idx) => idx !== this.currentPlayerIndex() && !_.isEliminated)
+      .map((p) => p.position);
+    return this.graphService.getLegalPawnMovesMulti(
       current.position,
-      primaryOpponent.position,
+      otherPawns,
       this.walls()
     );
   });
@@ -335,11 +336,10 @@ export class BarricadeStateService {
     const p1 = this.players()[0];
     const p2 = this.players()[1];
 
-    const isLegal = this.bfsEngine.canPlaceWall(
+    const isLegal = this.bfsEngine.canPlaceWallMulti(
       slot,
       this.walls(),
-      p1.position,
-      p2.position
+      this.players()
     );
 
     if (!isLegal) {

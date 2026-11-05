@@ -118,12 +118,14 @@ export class BarricadeBoardGraphService {
   }
 
   /**
-   * Calculates all legal pawn move destinations for the active player, respecting board boundaries,
-   * walls, opponent occupancy, straight jumps, and diagonal jumps.
+   * Calculates legal moves supporting multiple opponent pawns (2-player and 4-player modes).
+   * Enforces official Quoridor jump rules:
+   * - Cannot jump two pawns in a single leap (no chain jumps).
+   * - Diagonal jumps allowed when straight jump is blocked by a wall, edge, or another pawn.
    */
-  getLegalPawnMoves(
+  getLegalPawnMovesMulti(
     currentPos: CellCoord,
-    opponentPos: CellCoord,
+    opponentPositions: CellCoord[],
     walls: Wall[]
   ): { target: CellCoord; isJump: boolean }[] {
     const legalMoves: { target: CellCoord; isJump: boolean }[] = [];
@@ -133,6 +135,9 @@ export class BarricadeBoardGraphService {
       { dRow: 0, dCol: -1 }, // Left
       { dRow: 0, dCol: 1 },  // Right
     ];
+
+    const isCellOccupied = (coord: CellCoord) =>
+      opponentPositions.some((pos) => areCoordsEqual(pos, coord));
 
     for (const dir of directions) {
       const neighbor: CellCoord = {
@@ -149,13 +154,13 @@ export class BarricadeBoardGraphService {
         continue;
       }
 
-      // If neighbor is NOT occupied by opponent pawn, it's a valid standard 1-step move
-      if (!areCoordsEqual(neighbor, opponentPos)) {
+      // If neighbor is NOT occupied by any opponent pawn, it's a valid standard 1-step move
+      if (!isCellOccupied(neighbor)) {
         legalMoves.push({ target: neighbor, isJump: false });
         continue;
       }
 
-      // If neighbor IS occupied by opponent pawn -> evaluate JUMP rules!
+      // Neighbor is occupied -> evaluate JUMP rules!
       const straightJumpSquare: CellCoord = {
         row: neighbor.row + dir.dRow,
         col: neighbor.col + dir.dCol,
@@ -163,12 +168,13 @@ export class BarricadeBoardGraphService {
 
       const canStraightJump =
         this.isWithinBounds(straightJumpSquare.row, straightJumpSquare.col) &&
-        !this.isMoveBlockedByWall(neighbor, straightJumpSquare, walls);
+        !this.isMoveBlockedByWall(neighbor, straightJumpSquare, walls) &&
+        !isCellOccupied(straightJumpSquare); // Prohibit jumping over 2 pawns
 
       if (canStraightJump) {
         legalMoves.push({ target: straightJumpSquare, isJump: true });
       } else {
-        // Straight jump is blocked by wall or board edge -> Diagonal jumps from opponent position!
+        // Straight jump is blocked by a wall, board edge, or another pawn -> Diagonal jumps!
         const diagonalDirections =
           dir.dRow !== 0
             ? [{ dRow: 0, dCol: -1 }, { dRow: 0, dCol: 1 }] // If moving vertically, diagonals are left & right
@@ -182,7 +188,8 @@ export class BarricadeBoardGraphService {
 
           if (
             this.isWithinBounds(diagSquare.row, diagSquare.col) &&
-            !this.isMoveBlockedByWall(neighbor, diagSquare, walls)
+            !this.isMoveBlockedByWall(neighbor, diagSquare, walls) &&
+            !isCellOccupied(diagSquare)
           ) {
             legalMoves.push({ target: diagSquare, isJump: true });
           }
@@ -191,5 +198,16 @@ export class BarricadeBoardGraphService {
     }
 
     return legalMoves;
+  }
+
+  /**
+   * Backward-compatible 2-player legal move calculator.
+   */
+  getLegalPawnMoves(
+    currentPos: CellCoord,
+    opponentPos: CellCoord,
+    walls: Wall[]
+  ): { target: CellCoord; isJump: boolean }[] {
+    return this.getLegalPawnMovesMulti(currentPos, [opponentPos], walls);
   }
 }
