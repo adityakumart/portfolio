@@ -1,31 +1,53 @@
 <div class="board-wrapper w-full flex flex-col items-center justify-center space-y-3">
   <!-- Mode & Quick Wall Orientation Toolbar -->
-  <div class="w-full max-w-[560px] flex items-center justify-between px-2 py-1.5 rounded-xl bg-card/60 border border-border/60 text-xs text-muted-foreground backdrop-blur-sm">
+  <div class="w-full max-w-[560px] flex items-center justify-between px-3 py-2 rounded-2xl bg-card/70 border border-border/80 text-xs text-muted-foreground backdrop-blur-md shadow-lg">
     <div class="flex items-center gap-2">
-      <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md font-semibold text-[11px]"
-        [class.bg-emerald-500/10]="state.isPlayer1Active()"
-        [class.text-emerald-500]="state.isPlayer1Active()"
-        [class.bg-blue-500/10]="!state.isPlayer1Active()"
-        [class.text-blue-500]="!state.isPlayer1Active()">
-        <span class="h-2 w-2 rounded-full" [class.bg-emerald-500]="state.isPlayer1Active()" [class.bg-blue-500]="!state.isPlayer1Active()"></span>
+      <!-- Active Player Badge -->
+      <span
+        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl font-bold text-xs shadow-sm border border-white/10"
+        [style.background-color]="getColorHex(state.currentPlayer().color) + '22'"
+        [style.color]="getColorHex(state.currentPlayer().color)">
+        <span
+          class="h-2.5 w-2.5 rounded-full shadow-sm"
+          [style.background-color]="getColorHex(state.currentPlayer().color)"></span>
         {{ state.currentPlayer().name }}'s Turn
       </span>
-      <span class="hidden sm:inline text-border">|</span>
-      <span class="hidden sm:inline text-[11px]">
-        Walls: <strong class="text-foreground">{{ state.currentPlayer().wallsRemaining }}/10</strong>
+
+      <!-- Multi-Action Step & Wall Counts -->
+      <span class="text-zinc-600">|</span>
+      <span class="text-[11px] font-mono text-zinc-300">
+        Steps: <strong class="text-white">{{ state.stepsRemainingThisTurn() }}/{{ state.stepsAllowed() }}</strong>
+      </span>
+      <span class="text-zinc-600">|</span>
+      <span class="text-[11px] font-mono text-zinc-300">
+        Walls: <strong class="text-white">{{ state.wallsRemainingThisTurn() }}/{{ state.wallsAllowed() }}</strong>
       </span>
     </div>
 
-    <!-- Wall Orientation Toggle -->
-    <button
-      type="button"
-      (click)="toggleOrientation()"
-      class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition-all font-medium text-[11px] shadow-sm active:scale-95"
-      title="Toggle Wall Orientation (Space / Click)">
-      <ng-icon name="lucideRotateCw" class="text-xs" />
-      <span>Wall: <strong class="text-white uppercase">{{ state.wallOrientation() }}</strong></span>
-      <span class="hidden md:inline text-[10px] text-zinc-400 font-mono">(Space)</span>
-    </button>
+    <!-- Actions: End Turn & Wall Orientation Toggle -->
+    <div class="flex items-center gap-2">
+      @if (state.canEndTurnManually()) {
+        <button
+          type="button"
+          (click)="state.endTurn()"
+          class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] shadow-sm transition-all active:scale-95"
+          title="Finish Turn Early">
+          <span>End Turn</span>
+        </button>
+      }
+
+      @if (state.wallsAllowed() > 0) {
+        <button
+          type="button"
+          (click)="toggleOrientation()"
+          class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition-all font-medium text-[11px] shadow-sm active:scale-95"
+          title="Toggle Wall Orientation (Space / Click)">
+          <ng-icon name="lucideRotateCw" class="text-xs" />
+          <span>Wall: <strong class="text-white uppercase">{{ state.wallOrientation() }}</strong></span>
+          <span class="hidden md:inline text-[10px] text-zinc-400 font-mono">(Space)</span>
+        </button>
+      }
+    </div>
   </div>
 
   <!-- Main Game Arena with Coordinate Labels -->
@@ -75,16 +97,52 @@
                 [attr.fill]="
                   cell.isPreviousMove
                     ? '#4e4321'
+                    : cell.isCenterGoal
+                    ? '#382810'
                     : cell.isRedGoal
                     ? '#2f1c20'
                     : cell.isBlueGoal
                     ? '#162335'
                     : '#27272a'
                 "
+                [attr.stroke]="cell.isCenterGoal ? '#f59e0b' : 'none'"
+                [attr.stroke-width]="cell.isCenterGoal ? '2' : '0'"
+                [attr.stroke-dasharray]="cell.isCenterGoal ? '5 3' : 'none'"
                 class="transition-colors duration-150"
               />
 
-              <!-- Legal Move Target Highlight (Hollow rounded square outline as in screenshot) -->
+              <!-- Center Sanctum Target Ring for 4-Player Mode -->
+              @if (cell.isCenterGoal) {
+                <circle
+                  [attr.cx]="(cell.col - 1) * 102 + 42"
+                  [attr.cy]="(9 - cell.row) * 102 + 42"
+                  r="30"
+                  fill="none"
+                  stroke="#f59e0b"
+                  stroke-width="1.5"
+                  opacity="0.6"
+                  class="pointer-events-none animate-pulse"
+                />
+                <circle
+                  [attr.cx]="(cell.col - 1) * 102 + 42"
+                  [attr.cy]="(9 - cell.row) * 102 + 42"
+                  r="14"
+                  fill="none"
+                  stroke="#fbbf24"
+                  stroke-width="1.5"
+                  opacity="0.8"
+                  class="pointer-events-none"
+                />
+                <circle
+                  [attr.cx]="(cell.col - 1) * 102 + 42"
+                  [attr.cy]="(9 - cell.row) * 102 + 42"
+                  r="3"
+                  fill="#fbbf24"
+                  class="pointer-events-none"
+                />
+              }
+
+              <!-- Legal Move Target Highlight (Hollow rounded square outline) -->
               @if (cell.isLegalMove) {
                 <rect
                   [attr.x]="(cell.col - 1) * 102 + 5"
@@ -96,31 +154,49 @@
                   fill="none"
                   stroke="#e4e4e7"
                   stroke-width="3"
-                  class="cursor-pointer hover:stroke-white hover:fill-white/10 transition-all filter drop-shadow-[0_0_6px_rgba(255,255,255,0.2)]"
+                  class="cursor-pointer hover:stroke-white hover:fill-white/10 transition-all filter drop-shadow-[0_0_6px_rgba(255,255,255,0.25)]"
                   (click)="onCellClick(cell)"
                 />
               }
 
-              <!-- Player 1 (Red Pawn) -->
-              @if (cell.isP1) {
-                <circle
-                  [attr.cx]="(cell.col - 1) * 102 + 42"
-                  [attr.cy]="(9 - cell.row) * 102 + 42"
-                  r="24"
-                  fill="#ef4444"
-                  class="filter drop-shadow-[0_2px_8px_rgba(239,68,68,0.5)] transition-all duration-300 pointer-events-none"
-                />
-              }
+              <!-- Dynamic Multi-Player Pawn Rendering -->
+              @if (cell.pawn; as p) {
+                <g class="pointer-events-none">
+                  <!-- Outer Pulsing Active Ring if Current Turn -->
+                  @if (p.isCurrentTurn) {
+                    <circle
+                      [attr.cx]="(cell.col - 1) * 102 + 42"
+                      [attr.cy]="(9 - cell.row) * 102 + 42"
+                      r="29"
+                      fill="none"
+                      stroke="#ffffff"
+                      stroke-width="2.5"
+                      stroke-dasharray="4 2"
+                      class="animate-spin origin-center"
+                      style="transform-origin: {{ (cell.col - 1) * 102 + 42 }}px {{ (9 - cell.row) * 102 + 42 }}px;"
+                    />
+                  }
 
-              <!-- Player 2 / Computer (Blue Pawn) -->
-              @if (cell.isP2) {
-                <circle
-                  [attr.cx]="(cell.col - 1) * 102 + 42"
-                  [attr.cy]="(9 - cell.row) * 102 + 42"
-                  r="24"
-                  fill="#3b82f6"
-                  class="filter drop-shadow-[0_2px_8px_rgba(59,130,246,0.5)] transition-all duration-300 pointer-events-none"
-                />
+                  <!-- Pawn Body -->
+                  <circle
+                    [attr.cx]="(cell.col - 1) * 102 + 42"
+                    [attr.cy]="(9 - cell.row) * 102 + 42"
+                    r="23"
+                    [attr.fill]="p.colorHex"
+                    stroke="rgba(255,255,255,0.4)"
+                    stroke-width="1.5"
+                    class="filter drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)] transition-all duration-300"
+                  />
+
+                  <!-- Pawn Label (P1, P2, P3, P4) -->
+                  <text
+                    [attr.x]="(cell.col - 1) * 102 + 42"
+                    [attr.y]="(9 - cell.row) * 102 + 47"
+                    text-anchor="middle"
+                    class="fill-white font-black text-[13px] font-mono select-none drop-shadow">
+                    {{ p.label }}
+                  </text>
+                </g>
               }
             }
           }
@@ -139,7 +215,7 @@
                 rx="6"
                 ry="6"
                 fill="#f4f4f5"
-                class="filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]"
+                class="filter drop-shadow-[0_2px_5px_rgba(0,0,0,0.7)]"
               />
             } @else {
               <!-- Vertical Wall: between col w.col and w.col+1, spanning rows w.row & w.row+1 -->
@@ -151,7 +227,7 @@
                 rx="6"
                 ry="6"
                 fill="#f4f4f5"
-                class="filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]"
+                class="filter drop-shadow-[0_2px_5px_rgba(0,0,0,0.7)]"
               />
             }
           }
@@ -189,50 +265,52 @@
         }
 
         <!-- 6. Interactive Wall Groove Hitboxes (8x8 intersections) -->
-        <g id="wall-hitboxes">
-          @for (r of [8, 7, 6, 5, 4, 3, 2, 1]; track r) {
-            @for (c of [1, 2, 3, 4, 5, 6, 7, 8]; track c) {
-              <!-- Hitbox at groove junction (r, c) -->
-              <rect
-                [attr.x]="(c - 1) * 102 + 76"
-                [attr.y]="(8 - r) * 102 + 76"
-                width="34"
-                height="34"
-                fill="transparent"
-                class="cursor-pointer"
-                (mouseenter)="onWallSlotHover(r, c, state.wallOrientation())"
-                (mouseleave)="onWallSlotLeave()"
-                (click)="onWallSlotClick(r, c)"
-              />
+        @if (state.wallsAllowed() > 0) {
+          <g id="wall-hitboxes">
+            @for (r of [8, 7, 6, 5, 4, 3, 2, 1]; track r) {
+              @for (c of [1, 2, 3, 4, 5, 6, 7, 8]; track c) {
+                <!-- Hitbox at groove junction (r, c) -->
+                <rect
+                  [attr.x]="(c - 1) * 102 + 76"
+                  [attr.y]="(8 - r) * 102 + 76"
+                  width="34"
+                  height="34"
+                  fill="transparent"
+                  class="cursor-pointer"
+                  (mouseenter)="onWallSlotHover(r, c, state.wallOrientation())"
+                  (mouseleave)="onWallSlotLeave()"
+                  (click)="onWallSlotClick(r, c)"
+                />
 
-              <!-- Extended Horizontal Hitbox -->
-              <rect
-                [attr.x]="(c - 1) * 102 + 10"
-                [attr.y]="(8 - r) * 102 + 82"
-                width="84"
-                height="22"
-                fill="transparent"
-                class="cursor-pointer"
-                (mouseenter)="onWallSlotHover(r, c, state.wallOrientation())"
-                (mouseleave)="onWallSlotLeave()"
-                (click)="onWallSlotClick(r, c)"
-              />
+                <!-- Extended Horizontal Hitbox -->
+                <rect
+                  [attr.x]="(c - 1) * 102 + 10"
+                  [attr.y]="(8 - r) * 102 + 82"
+                  width="84"
+                  height="22"
+                  fill="transparent"
+                  class="cursor-pointer"
+                  (mouseenter)="onWallSlotHover(r, c, state.wallOrientation())"
+                  (mouseleave)="onWallSlotLeave()"
+                  (click)="onWallSlotClick(r, c)"
+                />
 
-              <!-- Extended Vertical Hitbox -->
-              <rect
-                [attr.x]="(c - 1) * 102 + 82"
-                [attr.y]="(8 - r) * 102 + 10"
-                width="22"
-                height="84"
-                fill="transparent"
-                class="cursor-pointer"
-                (mouseenter)="onWallSlotHover(r, c, state.wallOrientation())"
-                (mouseleave)="onWallSlotLeave()"
-                (click)="onWallSlotClick(r, c)"
-              />
+                <!-- Extended Vertical Hitbox -->
+                <rect
+                  [attr.x]="(c - 1) * 102 + 82"
+                  [attr.y]="(8 - r) * 102 + 10"
+                  width="22"
+                  height="84"
+                  fill="transparent"
+                  class="cursor-pointer"
+                  (mouseenter)="onWallSlotHover(r, c, state.wallOrientation())"
+                  (mouseleave)="onWallSlotLeave()"
+                  (click)="onWallSlotClick(r, c)"
+                />
+              }
             }
-          }
-        </g>
+          </g>
+        }
       </svg>
     </div>
   </div>

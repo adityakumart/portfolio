@@ -13,10 +13,14 @@ import {
   lucideShield,
   lucideHand,
   lucideInfo,
+  lucideTarget,
+  lucideCrown,
 } from '@ng-icons/lucide';
 import {
   CellCoord,
   COL_LETTERS,
+  PLAYER_COLOR_PALETTE,
+  PlayerColor,
   Wall,
   WallCoord,
   WallOrientation,
@@ -26,14 +30,22 @@ import {
 import { BarricadeStateService } from '../../services/barricade-state.service';
 import { BarricadeBfsEngineService } from '../../services/barricade-bfs-engine.service';
 
-interface RenderCell {
+export interface RenderPawn {
+  id: string;
+  name: string;
+  colorHex: string;
+  label: string; // P1, P2, P3, P4
+  isCurrentTurn: boolean;
+}
+
+export interface RenderCell {
   row: number;
   col: number;
   algebraic: string;
-  isRedGoal: boolean;
-  isBlueGoal: boolean;
-  isP1: boolean;
-  isP2: boolean;
+  isCenterGoal: boolean; // row 5, col 5 in 4-player
+  isRedGoal: boolean; // row 9 in 2-player
+  isBlueGoal: boolean; // row 1 in 2-player
+  pawn: RenderPawn | null;
   isPreviousMove: boolean;
   isLegalMove: boolean;
 }
@@ -48,6 +60,8 @@ interface RenderCell {
       lucideShield,
       lucideHand,
       lucideInfo,
+      lucideTarget,
+      lucideCrown,
     }),
   ],
   templateUrl: './barricade-board.component.html',
@@ -62,16 +76,25 @@ export class BarricadeBoardComponent {
   readonly rowsDescending = [9, 8, 7, 6, 5, 4, 3, 2, 1]; // Ranks from top (9) to bottom (1)
   readonly colsAscending = [1, 2, 3, 4, 5, 6, 7, 8, 9]; // Files from left (1) to right (9)
 
-  // Wall placement mode & hover preview
   readonly isWallPlacementMode = signal<boolean>(false);
-  readonly hoveredSlot = signal<{ row: number; col: number; orientation: WallOrientation; isLegal: boolean } | null>(null);
+  readonly hoveredSlot = signal<{
+    row: number;
+    col: number;
+    orientation: WallOrientation;
+    isLegal: boolean;
+  } | null>(null);
+
+  getColorHex(color: PlayerColor): string {
+    return PLAYER_COLOR_PALETTE.find((c) => c.key === color)?.hex ?? '#ef4444';
+  }
 
   /**
    * Precomputed 9x9 grid cells for reactive rendering.
    */
   readonly gridCells = computed<RenderCell[][]>(() => {
-    const p1Pos = this.state.player1().position;
-    const p2Pos = this.state.player2().position;
+    const is4P = this.state.isFourPlayer();
+    const players = this.state.players();
+    const currentIdx = this.state.currentPlayerIndex();
     const prevTile = this.state.previousOpponentTile();
     const legalMoves = this.state.legalMoves();
 
@@ -81,14 +104,30 @@ export class BarricadeBoardComponent {
         const algebraic = coordToAlgebraic(coord);
         const isLegal = legalMoves.some((m) => areCoordsEqual(m.target, coord));
 
+        // Find pawn at this cell
+        const playerOnCell = players.find(
+          (p) => !p.isEliminated && areCoordsEqual(p.position, coord)
+        );
+        let pawn: RenderPawn | null = null;
+        if (playerOnCell) {
+          const pIndex = players.indexOf(playerOnCell);
+          pawn = {
+            id: playerOnCell.id,
+            name: playerOnCell.name,
+            colorHex: this.getColorHex(playerOnCell.color),
+            label: `P${pIndex + 1}`,
+            isCurrentTurn: pIndex === currentIdx,
+          };
+        }
+
         return {
           row: r,
           col: c,
           algebraic,
-          isRedGoal: r === 9,
-          isBlueGoal: r === 1,
-          isP1: areCoordsEqual(p1Pos, coord),
-          isP2: areCoordsEqual(p2Pos, coord),
+          isCenterGoal: is4P && r === 5 && c === 5,
+          isRedGoal: !is4P && r === 9,
+          isBlueGoal: !is4P && r === 1,
+          pawn,
           isPreviousMove: areCoordsEqual(prevTile, coord),
           isLegalMove: isLegal,
         };
@@ -103,13 +142,8 @@ export class BarricadeBoardComponent {
     }
   }
 
-  togglePlacementMode(): void {
-    this.isWallPlacementMode.update((v) => !v);
-  }
-
   toggleOrientation(): void {
     this.state.toggleWallOrientation();
-    // Update preview if hovering
     const cur = this.hoveredSlot();
     if (cur) {
       this.onWallSlotHover(cur.row, cur.col, this.state.wallOrientation());
@@ -126,20 +160,21 @@ export class BarricadeBoardComponent {
 
   onWallSlotHover(row: number, col: number, orientation: WallOrientation): void {
     if (this.state.isGameOver() || this.state.isAiThinking()) return;
-    const p1 = this.state.player1();
-    const p2 = this.state.player2();
     const current = this.state.currentPlayer();
 
-    if (current.wallsRemaining <= 0) {
+    if (
+      current.wallsRemaining <= 0 ||
+      this.state.wallsRemainingThisTurn() <= 0 ||
+      this.state.wallsAllowed() === 0
+    ) {
       this.hoveredSlot.set({ row, col, orientation, isLegal: false });
       return;
     }
 
-    const isLegal = this.bfsEngine.canPlaceWall(
+    const isLegal = this.bfsEngine.canPlaceWallMulti(
       { row, col, orientation },
       this.state.walls(),
-      p1.position,
-      p2.position
+      this.state.players()
     );
 
     this.hoveredSlot.set({ row, col, orientation, isLegal });

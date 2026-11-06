@@ -3,9 +3,9 @@ import {
   ChangeDetectionStrategy,
   inject,
   signal,
+  computed,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import {
   lucideChevronLeft,
@@ -19,11 +19,19 @@ import {
   lucideSparkles,
   lucideTrophy,
   lucideCheck,
+  lucideClock,
+  lucideLayers,
+  lucideCheckCircle2,
 } from '@ng-icons/lucide';
 import { HlmCardImports } from '@spartan-ng/hel/card';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmBadgeImports } from '@spartan-ng/hel/badge';
-import { AiDifficulty, GameMode } from '../../../../../../shared/barricade';
+import {
+  AiDifficulty,
+  GameMode,
+  PLAYER_COLOR_PALETTE,
+  PlayerColor,
+} from '../../../../../../shared/barricade';
 import { BarricadeStateService } from '../../services/barricade-state.service';
 import { BarricadeSoundService } from '../../services/barricade-sound.service';
 
@@ -50,6 +58,9 @@ import { BarricadeSoundService } from '../../services/barricade-sound.service';
       lucideSparkles,
       lucideTrophy,
       lucideCheck,
+      lucideClock,
+      lucideLayers,
+      lucideCheckCircle2,
     }),
   ],
   templateUrl: './barricade-controls.component.html',
@@ -59,17 +70,43 @@ import { BarricadeSoundService } from '../../services/barricade-sound.service';
 export class BarricadeControlsComponent {
   readonly state = inject(BarricadeStateService);
   readonly sound = inject(BarricadeSoundService);
-  private readonly router = inject(Router);
 
   readonly isMenuOpen = signal<boolean>(false);
   readonly showResignConfirm = signal<boolean>(false);
 
-  // Array of 10 indices for rendering the 10-segment wall meter
-  readonly wallSlots = Array.from({ length: 10 }, (_, i) => i);
+  readonly maxWallsPerPlayer = computed(() =>
+    this.state.isFourPlayer() ? 5 : 10
+  );
+
+  readonly wallSlots = computed(() =>
+    Array.from({ length: this.maxWallsPerPlayer() }, (_, i) => i)
+  );
+
+  getColorHex(color: PlayerColor): string {
+    return PLAYER_COLOR_PALETTE.find((c) => c.key === color)?.hex ?? '#ef4444';
+  }
+
+  formatClock(ms: number | undefined): string {
+    if (this.state.timeLimitMinutes() === 0) return '∞';
+    if (ms === undefined || ms === null) return '00:00';
+    const totalSec = Math.max(0, Math.ceil(ms / 1000));
+    const mins = Math.floor(totalSec / 60);
+    const secs = totalSec % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  isLowTime(ms: number | undefined): boolean {
+    if (this.state.timeLimitMinutes() === 0) return false;
+    return (ms ?? 0) > 0 && (ms ?? 0) <= 60000;
+  }
+
+  isCriticalTime(ms: number | undefined): boolean {
+    if (this.state.timeLimitMinutes() === 0) return false;
+    return (ms ?? 0) > 0 && (ms ?? 0) <= 10000;
+  }
 
   onLobbyClick(): void {
-    // Navigate back to user games or trigger lobby mode
-    this.router.navigate(['/user/game']);
+    this.state.goToLobby();
   }
 
   onToggleSound(): void {
@@ -94,12 +131,12 @@ export class BarricadeControlsComponent {
     this.showResignConfirm.set(true);
   }
 
+  onCancelResign(): void {
+    this.showResignConfirm.set(false);
+  }
+
   onConfirmResign(): void {
     this.showResignConfirm.set(false);
     this.state.resign();
-  }
-
-  onCancelResign(): void {
-    this.showResignConfirm.set(false);
   }
 }

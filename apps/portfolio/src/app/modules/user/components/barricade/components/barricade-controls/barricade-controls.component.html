@@ -1,22 +1,27 @@
-<div class="sidebar-panel w-full max-w-[380px] flex flex-col justify-between bg-[#141416] p-4 md:p-5 rounded-3xl border border-zinc-800/80 shadow-2xl min-h-[460px] md:min-h-[520px]">
-  <!-- 1. Top Header Bar: < Lobby, Volume, Menu -->
-  <div class="w-full flex items-center justify-between pb-4 border-b border-zinc-800/60">
+<div class="sidebar-panel w-full max-w-[380px] flex flex-col justify-between bg-[#141416] p-4 md:p-5 rounded-3xl border border-zinc-800/80 shadow-2xl min-h-[480px]">
+  <!-- 1. Top Header Bar: < Lobby, Clock/Mode Badge, Volume, Menu -->
+  <div class="w-full flex items-center justify-between pb-3.5 border-b border-zinc-800/60">
     <button
       type="button"
       (click)="onLobbyClick()"
-      class="inline-flex items-center gap-1.5 text-zinc-300 hover:text-white transition-colors text-sm font-semibold tracking-tight active:scale-95">
-      <ng-icon name="lucideChevronLeft" class="text-base" />
+      class="inline-flex items-center gap-1.5 text-zinc-300 hover:text-white transition-colors text-xs font-bold tracking-tight active:scale-95 bg-zinc-900/80 px-2.5 py-1 rounded-xl border border-zinc-700/60">
+      <ng-icon name="lucideChevronLeft" class="text-sm" />
       <span>Lobby</span>
     </button>
 
     <div class="flex items-center gap-2">
+      <!-- Mode & Time Badge -->
+      <span class="text-[10px] font-mono uppercase font-bold text-zinc-400 bg-zinc-900 px-2 py-0.5 rounded-md border border-zinc-800">
+        {{ state.actionEconomy() }} &bull; {{ state.timeLimitMinutes() > 0 ? state.timeLimitMinutes() + 'm' : 'Casual' }}
+      </span>
+
       <!-- Volume Toggle -->
       <button
         type="button"
         (click)="onToggleSound()"
         [title]="sound.isMuted() ? 'Unmute Sound' : 'Mute Sound'"
-        class="h-8 w-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors">
-        <ng-icon [name]="sound.isMuted() ? 'lucideVolumeX' : 'lucideVolume2'" class="text-base" />
+        class="h-7 w-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors">
+        <ng-icon [name]="sound.isMuted() ? 'lucideVolumeX' : 'lucideVolume2'" class="text-sm" />
       </button>
 
       <!-- Options / Mode Menu -->
@@ -25,28 +30,19 @@
           type="button"
           (click)="onToggleMenu()"
           title="Game Settings & Modes"
-          class="h-8 w-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors">
-          <ng-icon name="lucideMoreHorizontal" class="text-base" />
+          class="h-7 w-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors">
+          <ng-icon name="lucideMoreHorizontal" class="text-sm" />
         </button>
 
         @if (isMenuOpen()) {
-          <div class="absolute right-0 top-10 w-48 rounded-xl bg-zinc-900 border border-zinc-700 p-2 shadow-2xl z-50 flex flex-col space-y-1">
-            <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider px-2 py-1">Game Mode</span>
+          <div class="absolute right-0 top-9 w-48 rounded-xl bg-zinc-900 border border-zinc-700 p-2 shadow-2xl z-50 flex flex-col space-y-1">
+            <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider px-2 py-1">Quick Switch</span>
             <button
               type="button"
               (click)="onSelectMode('vs_computer', 'intro')"
               class="w-full text-left px-2 py-1.5 rounded-lg text-xs font-medium text-zinc-200 hover:bg-zinc-800 flex items-center justify-between">
-              <span>Vs Computer (Intro)</span>
+              <span>vs AI (Intro)</span>
               @if (state.gameMode() === 'vs_computer' && state.aiDifficulty() === 'intro') {
-                <ng-icon name="lucideCheck" class="text-emerald-400" />
-              }
-            </button>
-            <button
-              type="button"
-              (click)="onSelectMode('vs_computer', 'medium')"
-              class="w-full text-left px-2 py-1.5 rounded-lg text-xs font-medium text-zinc-200 hover:bg-zinc-800 flex items-center justify-between">
-              <span>Vs Computer (Medium)</span>
-              @if (state.gameMode() === 'vs_computer' && state.aiDifficulty() === 'medium') {
                 <ng-icon name="lucideCheck" class="text-emerald-400" />
               }
             </button>
@@ -62,10 +58,10 @@
             <div class="h-px bg-zinc-800 my-1"></div>
             <button
               type="button"
-              (click)="onSelectMode(state.gameMode(), state.aiDifficulty())"
-              class="w-full text-left px-2 py-1.5 rounded-lg text-xs font-medium text-zinc-200 hover:bg-zinc-800 flex items-center gap-1.5">
+              (click)="onLobbyClick()"
+              class="w-full text-left px-2 py-1.5 rounded-lg text-xs font-bold text-red-400 hover:bg-zinc-800 flex items-center gap-1.5">
               <ng-icon name="lucideRotateCcw" class="text-xs" />
-              <span>Restart Match</span>
+              <span>Configure in Lobby</span>
             </button>
           </div>
         }
@@ -73,93 +69,106 @@
     </div>
   </div>
 
-  <!-- 2. Player Cards Area -->
-  <div class="w-full flex flex-col space-y-3.5 my-auto py-3">
-    <!-- Card 1: Player 2 / Computer -->
-    <div
-      class="w-full p-4 rounded-2xl bg-zinc-900/60 border transition-all duration-300"
-      [class.border-emerald-500]="!state.isPlayer1Active() && !state.isGameOver()"
-      [class.shadow-[0_0_15px_rgba(16,185,129,0.15)]]="!state.isPlayer1Active() && !state.isGameOver()"
-      [class.border-zinc-800/80]="state.isPlayer1Active() || state.isGameOver()">
-      <!-- Player Info Header -->
-      <div class="flex items-center justify-between mb-2.5">
-        <div class="flex items-center gap-2.5">
-          <span class="h-3.5 w-3.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></span>
-          <span class="font-bold text-white text-sm md:text-base tracking-tight">
-            {{ state.player2().name }}
-          </span>
-        </div>
+  <!-- 2. Dynamic Player Cards Area (Supports 2 or 4 Players) -->
+  <div class="w-full flex flex-col space-y-2.5 my-auto py-2">
+    @for (player of state.players(); track player.id; let idx = $index) {
+      <div
+        class="w-full p-3 rounded-2xl bg-zinc-900/60 border transition-all duration-300 relative overflow-hidden"
+        [class.border-emerald-500]="idx === state.currentPlayerIndex() && !state.isGameOver() && !player.isEliminated"
+        [class.shadow-[0_0_14px_rgba(16,185,129,0.2)]]="idx === state.currentPlayerIndex() && !state.isGameOver() && !player.isEliminated"
+        [class.border-zinc-800\/80]="idx !== state.currentPlayerIndex() || state.isGameOver() || player.isEliminated"
+        [class.opacity-40]="player.isEliminated">
 
-        @if (state.isAiThinking() && !state.isPlayer1Active()) {
-          <span class="text-[11px] font-medium text-blue-400 animate-pulse flex items-center gap-1">
-            <ng-icon name="lucideBot" class="text-xs" />
-            Thinking...
-          </span>
-        }
-      </div>
+        <!-- Top Row: Avatar + Name + Clock Badge -->
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2">
+            <!-- Colored Pawn Circle -->
+            <div
+              class="h-6 w-6 rounded-full flex items-center justify-center font-bold text-[10px] text-white shadow-sm shrink-0 border border-white/20"
+              [style.background-color]="getColorHex(player.color)">
+              <span>P{{ idx + 1 }}</span>
+            </div>
 
-      <!-- Segmented 10-Bar Wall Inventory Meter -->
-      <div class="flex items-center gap-3">
-        <div class="flex items-center gap-1">
-          @for (slot of wallSlots; track slot) {
-            <span
-              class="w-1.5 md:w-2 h-5 rounded-full transition-colors duration-200"
-              [class.bg-blue-500]="slot < state.player2().wallsRemaining"
-              [class.bg-zinc-700/50]="slot >= state.player2().wallsRemaining">
-            </span>
-          }
-        </div>
-        <span class="text-xs font-semibold text-zinc-400 font-mono">
-          {{ state.player2().wallsRemaining }}/10
-        </span>
-      </div>
-    </div>
+            <!-- Name -->
+            <div class="flex items-baseline gap-1.5">
+              <span class="font-bold text-white text-xs md:text-sm tracking-tight truncate max-w-[130px]">
+                {{ player.name }}
+              </span>
+              @if (player.isEliminated) {
+                <span class="text-[9px] font-bold text-red-400 uppercase tracking-wider bg-red-500/10 px-1.5 py-0.2 rounded">
+                  Eliminated
+                </span>
+              } @else if (idx === state.currentPlayerIndex() && !state.isGameOver()) {
+                <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">
+                  Turn
+                </span>
+              }
+            </div>
+          </div>
 
-    <!-- Card 2: Player 1 (You) -->
-    <div
-      class="w-full p-4 rounded-2xl bg-zinc-900/60 border transition-all duration-300"
-      [class.border-emerald-500]="state.isPlayer1Active() && !state.isGameOver()"
-      [class.shadow-[0_0_15px_rgba(16,185,129,0.15)]]="state.isPlayer1Active() && !state.isGameOver()"
-      [class.border-zinc-800/80]="!state.isPlayer1Active() || state.isGameOver()">
-      <!-- Player Info Header -->
-      <div class="flex items-center justify-between mb-2.5">
-        <div class="flex items-center gap-2.5">
-          <span class="h-3.5 w-3.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]"></span>
-          <div class="flex items-baseline gap-1">
-            <span class="font-bold text-white text-sm md:text-base tracking-tight">Player 1</span>
-            @if (state.gameMode() === 'vs_computer') {
-              <span class="text-xs text-zinc-400 font-medium">(You)</span>
-            }
+          <!-- Countdown Timer Badge -->
+          <div
+            class="flex items-center gap-1 font-mono text-xs font-bold px-2 py-0.5 rounded-lg border transition-all"
+            [class.bg-red-500\/20]="isCriticalTime(player.timeRemainingMs)"
+            [class.text-red-400]="isCriticalTime(player.timeRemainingMs)"
+            [class.border-red-500\/40]="isCriticalTime(player.timeRemainingMs)"
+            [class.animate-pulse]="isCriticalTime(player.timeRemainingMs)"
+            [class.bg-amber-500\/10]="isLowTime(player.timeRemainingMs) && !isCriticalTime(player.timeRemainingMs)"
+            [class.text-amber-400]="isLowTime(player.timeRemainingMs) && !isCriticalTime(player.timeRemainingMs)"
+            [class.border-amber-500\/30]="isLowTime(player.timeRemainingMs) && !isCriticalTime(player.timeRemainingMs)"
+            [class.bg-zinc-950]="!isLowTime(player.timeRemainingMs)"
+            [class.text-zinc-300]="!isLowTime(player.timeRemainingMs)"
+            [class.border-zinc-800]="!isLowTime(player.timeRemainingMs)">
+            <ng-icon name="lucideClock" class="text-[11px]" />
+            <span>{{ formatClock(player.timeRemainingMs) }}</span>
           </div>
         </div>
 
-        @if (state.isPlayer1Active() && !state.isGameOver()) {
-          <span class="text-[11px] font-semibold text-emerald-400 tracking-wide uppercase">
-            Your Turn
-          </span>
+        <!-- Bottom Row: Segmented Wall Inventory Meter -->
+        @if (state.wallsAllowed() > 0) {
+          <div class="flex items-center justify-between pt-1">
+            <div class="flex items-center gap-1">
+              @for (slot of wallSlots(); track slot) {
+                <span
+                  class="w-2 h-3.5 rounded-sm transition-colors duration-200"
+                  [style.background-color]="slot < player.wallsRemaining ? getColorHex(player.color) : 'rgba(63, 63, 70, 0.4)'">
+                </span>
+              }
+            </div>
+            <span class="text-[10px] font-mono text-zinc-400">
+              {{ player.wallsRemaining }}/{{ maxWallsPerPlayer() }} walls
+            </span>
+          </div>
+        } @else {
+          <div class="text-[10px] text-zinc-500 italic">No barricades (Sprint mode)</div>
         }
       </div>
-
-      <!-- Segmented 10-Bar Wall Inventory Meter -->
-      <div class="flex items-center gap-3">
-        <div class="flex items-center gap-1">
-          @for (slot of wallSlots; track slot) {
-            <span
-              class="w-1.5 md:w-2 h-5 rounded-full transition-colors duration-200"
-              [class.bg-red-500]="slot < state.player1().wallsRemaining"
-              [class.bg-zinc-700/50]="slot >= state.player1().wallsRemaining">
-            </span>
-          }
-        </div>
-        <span class="text-xs font-semibold text-zinc-400 font-mono">
-          {{ state.player1().wallsRemaining }}/10
-        </span>
-      </div>
-    </div>
+    }
   </div>
 
-  <!-- 3. Bottom Action Buttons: Undo & Resign -->
-  <div class="w-full pt-4 border-t border-zinc-800/60">
+  <!-- 3. Turn Action Bar (When multi-action options active) -->
+  @if (!state.isGameOver()) {
+    <div class="w-full p-2.5 mb-2 rounded-xl bg-zinc-950 border border-zinc-800/80 flex items-center justify-between text-xs">
+      <div class="flex items-center gap-2">
+        <span class="text-[11px] text-zinc-400">Turn Actions:</span>
+        <span class="font-mono text-white text-[11px] font-bold">
+          {{ state.stepsRemainingThisTurn() }} steps, {{ state.wallsRemainingThisTurn() }} walls left
+        </span>
+      </div>
+
+      @if (state.canEndTurnManually()) {
+        <button
+          type="button"
+          (click)="state.endTurn()"
+          class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] shadow-sm transition-all active:scale-95">
+          End Turn
+        </button>
+      }
+    </div>
+  }
+
+  <!-- 4. Bottom Action Buttons: Undo & Resign -->
+  <div class="w-full pt-3 border-t border-zinc-800/60">
     @if (showResignConfirm()) {
       <div class="w-full p-3 rounded-2xl bg-zinc-900 border border-red-500/30 flex flex-col space-y-2">
         <p class="text-xs text-zinc-300 font-medium text-center">Are you sure you want to resign?</p>
@@ -184,7 +193,7 @@
           type="button"
           (click)="onUndo()"
           [disabled]="!state.canUndo()"
-          class="flex-1 py-3 px-4 rounded-2xl bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 hover:text-white font-bold text-sm transition-all shadow-sm active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed">
+          class="flex-1 py-2.5 px-4 rounded-2xl bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 hover:text-white font-bold text-xs transition-all shadow-sm active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed">
           Undo
         </button>
 
@@ -192,8 +201,8 @@
           type="button"
           (click)="onResignClick()"
           [disabled]="state.isGameOver()"
-          class="flex-1 py-3 px-4 rounded-2xl bg-zinc-800/90 hover:bg-zinc-700 hover:text-red-400 text-zinc-200 font-bold text-sm transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
-          <ng-icon name="lucideFlag" class="text-base" />
+          class="flex-1 py-2.5 px-4 rounded-2xl bg-zinc-800/90 hover:bg-zinc-700 hover:text-red-400 text-zinc-200 font-bold text-xs transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed">
+          <ng-icon name="lucideFlag" class="text-sm" />
           <span>Resign</span>
         </button>
       </div>
