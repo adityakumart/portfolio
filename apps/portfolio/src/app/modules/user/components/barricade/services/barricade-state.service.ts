@@ -1,4 +1,5 @@
-import { Injectable, computed, inject, signal, OnDestroy } from '@angular/core';
+import { Injectable, computed, inject, signal, OnDestroy, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import {
   ACTION_ECONOMY_CONFIGS,
   ActionEconomyOption,
@@ -9,6 +10,7 @@ import {
   GameStatus,
   MoveRecord,
   Pawn,
+  PlayerColor,
   PlayerCount,
   PlayerId,
   TimeControlMinutes,
@@ -36,11 +38,13 @@ export class BarricadeStateService implements OnDestroy {
   private readonly bfsEngine = inject(BarricadeBfsEngineService);
   private readonly soundService = inject(BarricadeSoundService);
   private readonly toastr = inject(ToastrService);
+  private readonly platformId = inject(PLATFORM_ID);
 
   private aiHandler: BarricadeAiHandler | null = null;
   private timerInterval: ReturnType<typeof setInterval> | null = null;
 
   // --- Core State Signals ---
+  readonly lastConfig = signal<BarricadeConfig | null>(null);
   readonly gameMode = signal<GameMode>('vs_computer');
   readonly playerCount = signal<PlayerCount>(2);
   readonly aiDifficulty = signal<AiDifficulty>('intro');
@@ -115,6 +119,53 @@ export class BarricadeStateService implements OnDestroy {
     const usage = this.turnActionUsage();
     return usage.stepsTaken > 0 || usage.wallsPlaced > 0;
   });
+
+  constructor() {
+    if (isPlatformBrowser(this.platformId)) {
+      try {
+        const saved = localStorage.getItem('barricade_user_config');
+        if (saved) {
+          const parsed: BarricadeConfig = JSON.parse(saved);
+          if (parsed && Array.isArray(parsed.players) && parsed.players.length >= 2) {
+            this.lastConfig.set(parsed);
+            this.gameMode.set(parsed.gameMode);
+            this.playerCount.set(parsed.playerCount);
+            this.aiDifficulty.set(parsed.aiDifficulty);
+            this.actionEconomy.set(parsed.actionEconomy);
+            this.timeLimitMinutes.set(parsed.timeLimitMinutes);
+
+            const startCoords: Record<number, { pos: CellCoord; id: PlayerId }> = {
+              0: { pos: { row: 1, col: 5 }, id: 'player1' },
+              1: { pos: { row: 9, col: 5 }, id: 'player2' },
+              2: { pos: { row: 5, col: 1 }, id: 'player3' },
+              3: { pos: { row: 5, col: 9 }, id: 'player4' },
+            };
+            const is4P = parsed.playerCount === 4;
+            const initialWalls = is4P ? 5 : 10;
+            const durationMs =
+              parsed.timeLimitMinutes > 0 ? parsed.timeLimitMinutes * 60 * 1000 : 0;
+
+            this.players.set(
+              parsed.players.map((draft, idx) => ({
+                id: `p${idx + 1}`,
+                playerId: startCoords[idx].id,
+                name: draft.name,
+                color: draft.color,
+                position: { ...startCoords[idx].pos },
+                startPosition: { ...startCoords[idx].pos },
+                goalTargetType: is4P ? 'center' : 'row',
+                goalRow: is4P ? undefined : idx === 0 ? 9 : 1,
+                goalCoord: is4P ? { row: 5, col: 5 } : undefined,
+                wallsRemaining: initialWalls,
+                isComputer: draft.isComputer,
+                timeRemainingMs: durationMs,
+              }))
+            );
+          }
+        }
+      } catch {}
+    }
+  }
 
   /**
    * Legal moves for the current active player.
@@ -208,27 +259,52 @@ export class BarricadeStateService implements OnDestroy {
     });
 
     this.players.set(newPlayers);
+    this.lastConfig.set(config);
+    if (isPlatformBrowser(this.platformId)) {
+      try {
+        localStorage.setItem('barricade_user_config', JSON.stringify(config));
+      } catch {}
+    }
     this.startClockTimer();
   }
 
   /**
-   * Legacy init method for backward compatibility.
+   * Initializes a new match using user-configured settings from the home lobby or preserves selected colors.
    */
   initGame(
     mode: GameMode = this.gameMode(),
     difficulty: AiDifficulty = this.aiDifficulty()
   ): void {
     const isAi = mode === 'vs_computer';
+    const targetCount = mode === 'four_players' ? 4 : 2;
+    const current = this.players();
+    const fallbackPalette: PlayerColor[] = ['red', 'blue', 'green', 'amber'];
+
+    const players = Array.from({ length: targetCount }).map((_, idx) => {
+      const existing = current[idx];
+      const color = existing?.color ?? fallbackPalette[idx] ?? 'red';
+      let name = existing?.name;
+      if (!name || name.startsWith('Player ') || name.startsWith('Computer')) {
+        name = isAi
+          ? idx === 0
+            ? 'Player 1 (You)'
+            : `Computer (${difficulty})`
+          : `Player ${idx + 1}`;
+      }
+      return {
+        name,
+        color,
+        isComputer: isAi ? idx !== 0 : false,
+      };
+    });
+
     this.startConfiguredGame({
       gameMode: mode,
-      playerCount: mode === 'four_players' ? 4 : 2,
+      playerCount: targetCount,
       aiDifficulty: difficulty,
       actionEconomy: this.actionEconomy(),
       timeLimitMinutes: this.timeLimitMinutes(),
-      players: [
-        { name: isAi ? 'Player 1 (You)' : 'Player 1', color: 'red', isComputer: false },
-        { name: isAi ? `Computer (${difficulty})` : 'Player 2', color: 'blue', isComputer: isAi },
-      ],
+      players,
     });
   }
 

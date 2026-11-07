@@ -1,17 +1,17 @@
-<div class="sidebar-panel w-full max-w-[380px] flex flex-col justify-between bg-[#141416] p-4 md:p-5 rounded-3xl border border-zinc-800/80 shadow-2xl min-h-[480px]">
+<div class="sidebar-panel w-full max-w-[380px] flex flex-col justify-between bg-card text-card-foreground p-4 md:p-5 rounded-3xl border border-border shadow-xl min-h-[480px]">
   <!-- 1. Top Header Bar: < Lobby, Clock/Mode Badge, Volume, Menu -->
-  <div class="w-full flex items-center justify-between pb-3.5 border-b border-zinc-800/60">
+  <div class="w-full flex items-center justify-between pb-3.5 border-b border-border/80">
     <button
       type="button"
       (click)="onLobbyClick()"
-      class="inline-flex items-center gap-1.5 text-zinc-300 hover:text-white transition-colors text-xs font-bold tracking-tight active:scale-95 bg-zinc-900/80 px-2.5 py-1 rounded-xl border border-zinc-700/60">
+      class="inline-flex items-center gap-1.5 text-foreground hover:text-primary transition-colors text-xs font-bold tracking-tight active:scale-95 bg-muted px-2.5 py-1 rounded-xl border border-border shadow-sm">
       <ng-icon name="lucideChevronLeft" class="text-sm" />
       <span>Lobby</span>
     </button>
 
     <div class="flex items-center gap-2">
       <!-- Mode & Time Badge -->
-      <span class="text-[10px] font-mono uppercase font-bold text-zinc-400 bg-zinc-900 px-2 py-0.5 rounded-md border border-zinc-800">
+      <span class="text-[10px] font-mono uppercase font-bold text-muted-foreground bg-muted px-2 py-0.5 rounded-md border border-border">
         {{ state.actionEconomy() }} &bull; {{ state.timeLimitMinutes() > 0 ? state.timeLimitMinutes() + 'm' : 'Casual' }}
       </span>
 
@@ -20,7 +20,7 @@
         type="button"
         (click)="onToggleSound()"
         [title]="sound.isMuted() ? 'Unmute Sound' : 'Mute Sound'"
-        class="h-7 w-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors">
+        class="h-7 w-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
         <ng-icon [name]="sound.isMuted() ? 'lucideVolumeX' : 'lucideVolume2'" class="text-sm" />
       </button>
 
@@ -30,36 +30,36 @@
           type="button"
           (click)="onToggleMenu()"
           title="Game Settings & Modes"
-          class="h-7 w-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors">
+          class="h-7 w-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
           <ng-icon name="lucideMoreHorizontal" class="text-sm" />
         </button>
 
         @if (isMenuOpen()) {
-          <div class="absolute right-0 top-9 w-48 rounded-xl bg-zinc-900 border border-zinc-700 p-2 shadow-2xl z-50 flex flex-col space-y-1">
-            <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider px-2 py-1">Quick Switch</span>
+          <div class="absolute right-0 top-9 w-48 rounded-xl bg-popover text-popover-foreground border border-border p-2 shadow-2xl z-50 flex flex-col space-y-1">
+            <span class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-2 py-1">Quick Switch</span>
             <button
               type="button"
               (click)="onSelectMode('vs_computer', 'intro')"
-              class="w-full text-left px-2 py-1.5 rounded-lg text-xs font-medium text-zinc-200 hover:bg-zinc-800 flex items-center justify-between">
+              class="w-full text-left px-2 py-1.5 rounded-lg text-xs font-medium text-foreground hover:bg-muted flex items-center justify-between">
               <span>vs AI (Intro)</span>
               @if (state.gameMode() === 'vs_computer' && state.aiDifficulty() === 'intro') {
-                <ng-icon name="lucideCheck" class="text-emerald-400" />
+                <ng-icon name="lucideCheck" class="text-emerald-500" />
               }
             </button>
             <button
               type="button"
               (click)="onSelectMode('two_players')"
-              class="w-full text-left px-2 py-1.5 rounded-lg text-xs font-medium text-zinc-200 hover:bg-zinc-800 flex items-center justify-between">
+              class="w-full text-left px-2 py-1.5 rounded-lg text-xs font-medium text-foreground hover:bg-muted flex items-center justify-between">
               <span>Pass &amp; Play (2P)</span>
               @if (state.gameMode() === 'two_players') {
-                <ng-icon name="lucideCheck" class="text-emerald-400" />
+                <ng-icon name="lucideCheck" class="text-emerald-500" />
               }
             </button>
-            <div class="h-px bg-zinc-800 my-1"></div>
+            <div class="h-px bg-border my-1"></div>
             <button
               type="button"
               (click)="onLobbyClick()"
-              class="w-full text-left px-2 py-1.5 rounded-lg text-xs font-bold text-red-400 hover:bg-zinc-800 flex items-center gap-1.5">
+              class="w-full text-left px-2 py-1.5 rounded-lg text-xs font-bold text-destructive hover:bg-muted flex items-center gap-1.5">
               <ng-icon name="lucideRotateCcw" class="text-xs" />
               <span>Configure in Lobby</span>
             </button>
@@ -73,10 +73,10 @@
   <div class="w-full flex flex-col space-y-2.5 my-auto py-2">
     @for (player of state.players(); track player.id; let idx = $index) {
       <div
-        class="w-full p-3 rounded-2xl bg-zinc-900/60 border transition-all duration-300 relative overflow-hidden"
-        [class.border-emerald-500]="idx === state.currentPlayerIndex() && !state.isGameOver() && !player.isEliminated"
-        [class.shadow-[0_0_14px_rgba(16,185,129,0.2)]]="idx === state.currentPlayerIndex() && !state.isGameOver() && !player.isEliminated"
-        [class.border-zinc-800\/80]="idx !== state.currentPlayerIndex() || state.isGameOver() || player.isEliminated"
+        class="w-full p-3 rounded-2xl bg-muted/40 border transition-all duration-300 relative overflow-hidden"
+        [style.border-color]="idx === state.currentPlayerIndex() && !state.isGameOver() && !player.isEliminated ? getColorHex(player.color) : ''"
+        [class.border-border]="idx !== state.currentPlayerIndex() || state.isGameOver() || player.isEliminated"
+        [class.shadow-md]="idx === state.currentPlayerIndex() && !state.isGameOver() && !player.isEliminated"
         [class.opacity-40]="player.isEliminated">
 
         <!-- Top Row: Avatar + Name + Clock Badge -->
@@ -91,15 +91,17 @@
 
             <!-- Name -->
             <div class="flex items-baseline gap-1.5">
-              <span class="font-bold text-white text-xs md:text-sm tracking-tight truncate max-w-[130px]">
+              <span class="font-bold text-foreground text-xs md:text-sm tracking-tight truncate max-w-[130px]">
                 {{ player.name }}
               </span>
               @if (player.isEliminated) {
-                <span class="text-[9px] font-bold text-red-400 uppercase tracking-wider bg-red-500/10 px-1.5 py-0.2 rounded">
+                <span class="text-[9px] font-bold text-destructive uppercase tracking-wider bg-destructive/10 px-1.5 py-0.2 rounded">
                   Eliminated
                 </span>
               } @else if (idx === state.currentPlayerIndex() && !state.isGameOver()) {
-                <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">
+                <span
+                  class="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded"
+                  [style.color]="getColorHex(player.color)">
                   Turn
                 </span>
               }
@@ -110,15 +112,17 @@
           <div
             class="flex items-center gap-1 font-mono text-xs font-bold px-2 py-0.5 rounded-lg border transition-all"
             [class.bg-red-500\/20]="isCriticalTime(player.timeRemainingMs)"
-            [class.text-red-400]="isCriticalTime(player.timeRemainingMs)"
+            [class.text-red-600]="isCriticalTime(player.timeRemainingMs)"
+            [class.dark:text-red-400]="isCriticalTime(player.timeRemainingMs)"
             [class.border-red-500\/40]="isCriticalTime(player.timeRemainingMs)"
             [class.animate-pulse]="isCriticalTime(player.timeRemainingMs)"
             [class.bg-amber-500\/10]="isLowTime(player.timeRemainingMs) && !isCriticalTime(player.timeRemainingMs)"
-            [class.text-amber-400]="isLowTime(player.timeRemainingMs) && !isCriticalTime(player.timeRemainingMs)"
+            [class.text-amber-600]="isLowTime(player.timeRemainingMs) && !isCriticalTime(player.timeRemainingMs)"
+            [class.dark:text-amber-400]="isLowTime(player.timeRemainingMs) && !isCriticalTime(player.timeRemainingMs)"
             [class.border-amber-500\/30]="isLowTime(player.timeRemainingMs) && !isCriticalTime(player.timeRemainingMs)"
-            [class.bg-zinc-950]="!isLowTime(player.timeRemainingMs)"
-            [class.text-zinc-300]="!isLowTime(player.timeRemainingMs)"
-            [class.border-zinc-800]="!isLowTime(player.timeRemainingMs)">
+            [class.bg-background]="!isLowTime(player.timeRemainingMs)"
+            [class.text-foreground]="!isLowTime(player.timeRemainingMs)"
+            [class.border-border]="!isLowTime(player.timeRemainingMs)">
             <ng-icon name="lucideClock" class="text-[11px]" />
             <span>{{ formatClock(player.timeRemainingMs) }}</span>
           </div>
@@ -131,16 +135,16 @@
               @for (slot of wallSlots(); track slot) {
                 <span
                   class="w-2 h-3.5 rounded-sm transition-colors duration-200"
-                  [style.background-color]="slot < player.wallsRemaining ? getColorHex(player.color) : 'rgba(63, 63, 70, 0.4)'">
+                  [style.background-color]="slot < player.wallsRemaining ? getColorHex(player.color) : 'rgba(160, 160, 160, 0.2)'">
                 </span>
               }
             </div>
-            <span class="text-[10px] font-mono text-zinc-400">
+            <span class="text-[10px] font-mono text-muted-foreground">
               {{ player.wallsRemaining }}/{{ maxWallsPerPlayer() }} walls
             </span>
           </div>
         } @else {
-          <div class="text-[10px] text-zinc-500 italic">No barricades (Sprint mode)</div>
+          <div class="text-[10px] text-muted-foreground italic">No barricades (Sprint mode)</div>
         }
       </div>
     }
@@ -148,10 +152,10 @@
 
   <!-- 3. Turn Action Bar (When multi-action options active) -->
   @if (!state.isGameOver()) {
-    <div class="w-full p-2.5 mb-2 rounded-xl bg-zinc-950 border border-zinc-800/80 flex items-center justify-between text-xs">
+    <div class="w-full p-2.5 mb-2 rounded-xl bg-muted/60 border border-border flex items-center justify-between text-xs">
       <div class="flex items-center gap-2">
-        <span class="text-[11px] text-zinc-400">Turn Actions:</span>
-        <span class="font-mono text-white text-[11px] font-bold">
+        <span class="text-[11px] text-muted-foreground">Turn Actions:</span>
+        <span class="font-mono text-foreground text-[11px] font-bold">
           {{ state.stepsRemainingThisTurn() }} steps, {{ state.wallsRemainingThisTurn() }} walls left
         </span>
       </div>
@@ -168,21 +172,21 @@
   }
 
   <!-- 4. Bottom Action Buttons: Undo & Resign -->
-  <div class="w-full pt-3 border-t border-zinc-800/60">
+  <div class="w-full pt-3 border-t border-border/80">
     @if (showResignConfirm()) {
-      <div class="w-full p-3 rounded-2xl bg-zinc-900 border border-red-500/30 flex flex-col space-y-2">
-        <p class="text-xs text-zinc-300 font-medium text-center">Are you sure you want to resign?</p>
+      <div class="w-full p-3 rounded-2xl bg-card border border-destructive/40 flex flex-col space-y-2 shadow-lg">
+        <p class="text-xs text-foreground font-medium text-center">Are you sure you want to resign?</p>
         <div class="flex items-center gap-2">
           <button
             type="button"
             (click)="onConfirmResign()"
-            class="flex-1 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs transition-colors">
+            class="flex-1 py-2 rounded-xl bg-destructive hover:bg-destructive/90 text-destructive-foreground font-bold text-xs transition-colors shadow-sm">
             Yes, Resign
           </button>
           <button
             type="button"
             (click)="onCancelResign()"
-            class="flex-1 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-xs transition-colors">
+            class="flex-1 py-2 rounded-xl bg-muted hover:bg-muted/80 text-foreground font-bold text-xs transition-colors border border-border">
             Cancel
           </button>
         </div>
@@ -193,7 +197,7 @@
           type="button"
           (click)="onUndo()"
           [disabled]="!state.canUndo()"
-          class="flex-1 py-2.5 px-4 rounded-2xl bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 hover:text-white font-bold text-xs transition-all shadow-sm active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed">
+          class="flex-1 py-2.5 px-4 rounded-2xl bg-muted hover:bg-muted/80 text-foreground font-bold text-xs transition-all shadow-sm active:scale-95 border border-border disabled:opacity-40 disabled:cursor-not-allowed">
           Undo
         </button>
 
@@ -201,7 +205,7 @@
           type="button"
           (click)="onResignClick()"
           [disabled]="state.isGameOver()"
-          class="flex-1 py-2.5 px-4 rounded-2xl bg-zinc-800/90 hover:bg-zinc-700 hover:text-red-400 text-zinc-200 font-bold text-xs transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed">
+          class="flex-1 py-2.5 px-4 rounded-2xl bg-muted hover:bg-muted/80 hover:text-destructive text-foreground font-bold text-xs transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1.5 border border-border disabled:opacity-40 disabled:cursor-not-allowed">
           <ng-icon name="lucideFlag" class="text-sm" />
           <span>Resign</span>
         </button>

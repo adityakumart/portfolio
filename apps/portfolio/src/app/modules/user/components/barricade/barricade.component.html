@@ -1,26 +1,26 @@
-<div class="barricade-container w-full min-h-[calc(100vh-4rem)] p-3 md:p-6 lg:p-8 flex flex-col items-center justify-start space-y-6 max-w-6xl mx-auto">
+<div class="barricade-container w-full min-h-[calc(100vh-4rem)] p-3 md:p-6 lg:p-8 flex flex-col items-center justify-start space-y-6 max-w-6xl mx-auto text-foreground">
   @if (stateService.status() === 'lobby') {
     <!-- Initial Home & Setup Lobby View -->
     <app-barricade-home />
   } @else {
     <!-- Minimal Header & Quick Preset Button -->
-    <header class="w-full flex flex-col sm:flex-row items-center justify-between gap-3 pb-2 border-b border-zinc-800/60">
+    <header class="w-full flex flex-col sm:flex-row items-center justify-between gap-3 pb-3 border-b border-border/80">
       <div class="flex items-center gap-3">
         <button
           type="button"
           (click)="stateService.goToLobby()"
-          class="h-10 w-10 rounded-2xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/80 flex items-center justify-center text-red-500 shadow-md transition-all active:scale-95"
+          class="h-10 w-10 rounded-2xl bg-card hover:bg-muted border border-border flex items-center justify-center text-red-500 shadow-sm transition-all active:scale-95"
           title="Return to Home Lobby">
           <ng-icon name="lucideShieldAlert" class="text-xl" />
         </button>
         <div>
-          <h1 class="text-xl md:text-2xl font-black tracking-tight text-white flex items-center gap-2">
+          <h1 class="text-xl md:text-2xl font-black tracking-tight text-foreground flex items-center gap-2">
             Barricade
-            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 border border-zinc-700 font-mono">
+            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-muted text-muted-foreground border border-border font-mono">
               {{ stateService.isFourPlayer() ? '4-Player Center Sanctum' : 'Quoridor 9x9 Duel' }}
             </span>
           </h1>
-          <p class="text-xs text-zinc-400">
+          <p class="text-xs text-muted-foreground">
             {{ stateService.isFourPlayer() ? 'First pawn to reach center e5 wins. Obstruct opponents with barricades.' : 'Navigate your pawn to the opposite row or place barricades to obstruct your opponent.' }}
           </p>
         </div>
@@ -31,7 +31,7 @@
         <button
           type="button"
           (click)="stateService.goToLobby()"
-          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-700 text-xs font-semibold transition-all shadow-sm active:scale-95">
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-card hover:bg-muted text-foreground border border-border text-xs font-semibold transition-all shadow-sm active:scale-95">
           <ng-icon name="lucideRotateCcw" class="text-xs" />
           <span>Home / Lobby</span>
         </button>
@@ -40,9 +40,9 @@
           <button
             type="button"
             (click)="loadReferencePreset()"
-            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-700 text-xs font-semibold transition-all shadow-sm active:scale-95"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-card hover:bg-muted text-foreground border border-border text-xs font-semibold transition-all shadow-sm active:scale-95"
             title="Load reference match layout (Player at e4, Computer at c7)">
-            <ng-icon name="lucideSparkles" class="text-amber-400 text-sm" />
+            <ng-icon name="lucideSparkles" class="text-amber-500 dark:text-amber-400 text-sm" />
             <span>Preset</span>
           </button>
         }
@@ -66,51 +66,51 @@
     <app-barricade-win-dialog />
 
     <!-- Rules & Tactical Guide Cards -->
-    <section class="w-full space-y-3 pt-6 border-t border-zinc-800/60">
+    <section class="w-full space-y-3 pt-6 border-t border-border/80">
       <div class="flex items-center gap-2">
         <ng-icon name="lucideCompass" class="text-primary text-base" />
-        <h3 class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Tactical Rules &amp; Mechanics</h3>
+        <h3 class="text-xs font-bold text-muted-foreground uppercase tracking-wider">Tactical Rules &amp; Mechanics</h3>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        <div hlmCard class="p-4 rounded-2xl border border-zinc-800/80 bg-zinc-900/60 space-y-1.5">
+        <div hlmCard class="p-4 rounded-2xl border border-border/80 bg-card space-y-1.5 shadow-sm">
           <div class="h-7 w-7 rounded-lg bg-red-500/10 text-red-500 flex items-center justify-center font-bold text-xs">
             <ng-icon name="lucideAward" class="text-sm" />
           </div>
-          <h4 class="font-bold text-xs text-zinc-200">
+          <h4 class="font-bold text-xs text-foreground">
             {{ stateService.isFourPlayer() ? 'Center Sanctum Goal' : 'Goal Row' }}
           </h4>
-          <p class="text-[11px] text-zinc-400 leading-relaxed">
+          <p class="text-[11px] text-muted-foreground leading-relaxed">
             {{ stateService.isFourPlayer() ? 'The exact center tile (e5) is the goal for all 4 players. First to land on e5 wins!' : 'Player 1 wins on row 9. Player 2 / Computer wins on row 1.' }}
           </p>
         </div>
 
-        <div hlmCard class="p-4 rounded-2xl border border-zinc-800/80 bg-zinc-900/60 space-y-1.5">
+        <div hlmCard class="p-4 rounded-2xl border border-border/80 bg-card space-y-1.5 shadow-sm">
           <div class="h-7 w-7 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center font-bold text-xs">
             <ng-icon name="lucideShieldAlert" class="text-sm" />
           </div>
-          <h4 class="font-bold text-xs text-zinc-200">Barricades Inventory</h4>
-          <p class="text-[11px] text-zinc-400 leading-relaxed">
+          <h4 class="font-bold text-xs text-foreground">Barricades Inventory</h4>
+          <p class="text-[11px] text-muted-foreground leading-relaxed">
             {{ stateService.isFourPlayer() ? 'Each player has 5 barricades. Place walls horizontally or vertically across 2 cells.' : 'Each player has 10 barricades. Place walls horizontally or vertically across 2 cells.' }}
           </p>
         </div>
 
-        <div hlmCard class="p-4 rounded-2xl border border-zinc-800/80 bg-zinc-900/60 space-y-1.5">
+        <div hlmCard class="p-4 rounded-2xl border border-border/80 bg-card space-y-1.5 shadow-sm">
           <div class="h-7 w-7 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center font-bold text-xs">
             <ng-icon name="lucideLayers" class="text-sm" />
           </div>
-          <h4 class="font-bold text-xs text-zinc-200">No Trap Rule</h4>
-          <p class="text-[11px] text-zinc-400 leading-relaxed">
+          <h4 class="font-bold text-xs text-foreground">No Trap Rule</h4>
+          <p class="text-[11px] text-muted-foreground leading-relaxed">
             Fair Play: A barricade can never completely seal off any player from reaching their goal.
           </p>
         </div>
 
-        <div hlmCard class="p-4 rounded-2xl border border-zinc-800/80 bg-zinc-900/60 space-y-1.5">
+        <div hlmCard class="p-4 rounded-2xl border border-border/80 bg-card space-y-1.5 shadow-sm">
           <div class="h-7 w-7 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center font-bold text-xs">
             <ng-icon name="lucideSparkles" class="text-sm" />
           </div>
-          <h4 class="font-bold text-xs text-zinc-200">Pawn Jumps</h4>
-          <p class="text-[11px] text-zinc-400 leading-relaxed">
+          <h4 class="font-bold text-xs text-foreground">Pawn Jumps</h4>
+          <p class="text-[11px] text-muted-foreground leading-relaxed">
             When facing an adjacent pawn, leap directly over them or jump diagonally if a wall is directly behind them.
           </p>
         </div>

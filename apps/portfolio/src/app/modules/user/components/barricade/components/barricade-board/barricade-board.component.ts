@@ -27,6 +27,7 @@ import {
   areCoordsEqual,
   coordToAlgebraic,
 } from '../../../../../../shared/barricade';
+import { ThemeService } from '../../../../../../theme.service';
 import { BarricadeStateService } from '../../services/barricade-state.service';
 import { BarricadeBfsEngineService } from '../../services/barricade-bfs-engine.service';
 
@@ -43,8 +44,10 @@ export interface RenderCell {
   col: number;
   algebraic: string;
   isCenterGoal: boolean; // row 5, col 5 in 4-player
-  isRedGoal: boolean; // row 9 in 2-player
-  isBlueGoal: boolean; // row 1 in 2-player
+  isP1Goal: boolean; // row 9 in 2-player
+  isP2Goal: boolean; // row 1 in 2-player
+  p1GoalColorHex?: string;
+  p2GoalColorHex?: string;
   pawn: RenderPawn | null;
   isPreviousMove: boolean;
   isLegalMove: boolean;
@@ -70,6 +73,7 @@ export interface RenderCell {
 })
 export class BarricadeBoardComponent {
   readonly state = inject(BarricadeStateService);
+  readonly theme = inject(ThemeService);
   private readonly bfsEngine = inject(BarricadeBfsEngineService);
 
   readonly colLetters = COL_LETTERS; // ['a'..'i']
@@ -88,6 +92,11 @@ export class BarricadeBoardComponent {
     return PLAYER_COLOR_PALETTE.find((c) => c.key === color)?.hex ?? '#ef4444';
   }
 
+  getPlayerPawnHex(playerId?: string): string {
+    const p = this.state.players().find((pl) => pl.playerId === playerId);
+    return p ? this.getColorHex(p.color) : '#ef4444';
+  }
+
   /**
    * Precomputed 9x9 grid cells for reactive rendering.
    */
@@ -97,6 +106,11 @@ export class BarricadeBoardComponent {
     const currentIdx = this.state.currentPlayerIndex();
     const prevTile = this.state.previousOpponentTile();
     const legalMoves = this.state.legalMoves();
+
+    const p1 = players[0];
+    const p2 = players[1];
+    const p1Hex = p1 ? this.getColorHex(p1.color) : '#ef4444';
+    const p2Hex = p2 ? this.getColorHex(p2.color) : '#3b82f6';
 
     return this.rowsDescending.map((r) =>
       this.colsAscending.map((c) => {
@@ -125,8 +139,10 @@ export class BarricadeBoardComponent {
           col: c,
           algebraic,
           isCenterGoal: is4P && r === 5 && c === 5,
-          isRedGoal: !is4P && r === 9,
-          isBlueGoal: !is4P && r === 1,
+          isP1Goal: !is4P && r === 9,
+          isP2Goal: !is4P && r === 1,
+          p1GoalColorHex: p1Hex,
+          p2GoalColorHex: p2Hex,
           pawn,
           isPreviousMove: areCoordsEqual(prevTile, coord),
           isLegalMove: isLegal,
@@ -134,6 +150,50 @@ export class BarricadeBoardComponent {
       })
     );
   });
+
+  getCellFill(cell: RenderCell): string {
+    const isDark = this.theme.darkMode();
+    if (cell.isPreviousMove) {
+      return isDark ? '#4e4321' : '#fef3c7';
+    }
+    if (cell.isCenterGoal) {
+      return isDark ? '#382810' : '#fef9c3';
+    }
+    if (cell.isP1Goal && cell.p1GoalColorHex) {
+      return isDark ? cell.p1GoalColorHex + '30' : cell.p1GoalColorHex + '20';
+    }
+    if (cell.isP2Goal && cell.p2GoalColorHex) {
+      return isDark ? cell.p2GoalColorHex + '30' : cell.p2GoalColorHex + '20';
+    }
+    if (cell.isLegalMove) {
+      return isDark ? '#1e3a2b' : '#dcfce7';
+    }
+    return isDark ? '#27272a' : '#e2e8f0';
+  }
+
+  getWallFill(): string {
+    return this.theme.darkMode() ? '#f4f4f5' : '#1e293b';
+  }
+
+  getWallPreviewFill(isLegal: boolean): string {
+    if (!isLegal) return 'rgba(239, 68, 68, 0.7)';
+    return this.theme.darkMode()
+      ? 'rgba(255, 255, 255, 0.75)'
+      : 'rgba(30, 41, 59, 0.75)';
+  }
+
+  getWallPreviewStroke(isLegal: boolean): string {
+    if (!isLegal) return '#ef4444';
+    return this.theme.darkMode() ? '#ffffff' : '#1e293b';
+  }
+
+  getLegalMoveStroke(): string {
+    return this.theme.darkMode() ? '#e4e4e7' : '#475569';
+  }
+
+  getCoordinateFill(): string {
+    return this.theme.darkMode() ? '#71717a' : '#64748b';
+  }
 
   onCellClick(cell: RenderCell): void {
     if (this.state.isGameOver() || this.state.isAiThinking()) return;
@@ -191,5 +251,42 @@ export class BarricadeBoardComponent {
     if (success) {
       this.hoveredSlot.set(null);
     }
+  }
+
+  /**
+   * Two-tap placement for mobile touchscreens:
+   * 1st tap previews wall & validity, 2nd tap on the same slot places the wall.
+   */
+  onWallSlotTap(row: number, col: number): void {
+    if (this.state.isGameOver() || this.state.isAiThinking()) return;
+    const cur = this.hoveredSlot();
+    const orientation = this.state.wallOrientation();
+
+    if (cur && cur.row === row && cur.col === col && cur.orientation === orientation) {
+      if (cur.isLegal) {
+        this.onWallSlotClick(row, col);
+      }
+    } else {
+      this.onWallSlotHover(row, col, orientation);
+    }
+  }
+
+  formatClock(ms: number | undefined): string {
+    if (this.state.timeLimitMinutes() === 0) return '∞';
+    if (ms === undefined || ms === null) return '00:00';
+    const totalSec = Math.max(0, Math.ceil(ms / 1000));
+    const mins = Math.floor(totalSec / 60);
+    const secs = totalSec % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  isLowTime(ms: number | undefined): boolean {
+    if (this.state.timeLimitMinutes() === 0) return false;
+    return (ms ?? 0) > 0 && (ms ?? 0) <= 60000;
+  }
+
+  isCriticalTime(ms: number | undefined): boolean {
+    if (this.state.timeLimitMinutes() === 0) return false;
+    return (ms ?? 0) > 0 && (ms ?? 0) <= 10000;
   }
 }

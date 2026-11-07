@@ -1,10 +1,37 @@
-<div class="board-wrapper w-full flex flex-col items-center justify-center space-y-3">
+<div class="board-wrapper w-full flex flex-col items-center justify-center space-y-2.5">
+  <!-- Mobile Compact Clocks HUD (Visible on screens < lg) -->
+  @if (state.timeLimitMinutes() > 0) {
+    <div class="lg:hidden w-full max-w-[560px] flex items-center justify-between gap-1.5 px-3 py-2 rounded-2xl bg-card border border-border shadow-sm text-xs">
+      @for (p of state.players(); track p.id; let idx = $index) {
+        <div
+          class="flex-1 flex items-center justify-center gap-1.5 py-1 px-2 rounded-xl border transition-all text-xs"
+          [style.border-color]="idx === state.currentPlayerIndex() && !state.isGameOver() && !p.isEliminated ? getColorHex(p.color) : ''"
+          [class.border-border]="idx !== state.currentPlayerIndex() || state.isGameOver() || p.isEliminated"
+          [class.bg-muted\/60]="idx === state.currentPlayerIndex() && !state.isGameOver()"
+          [class.opacity-40]="p.isEliminated">
+          <span
+            class="h-2.5 w-2.5 rounded-full shrink-0 shadow-sm"
+            [style.background-color]="getColorHex(p.color)"></span>
+          <span class="font-bold text-foreground text-[11px] truncate max-w-[65px]">{{ p.name }}</span>
+          <span
+            class="font-mono text-[11px] font-semibold"
+            [class.text-red-500]="isCriticalTime(p.timeRemainingMs)"
+            [class.animate-pulse]="isCriticalTime(p.timeRemainingMs)"
+            [class.text-amber-500]="isLowTime(p.timeRemainingMs) && !isCriticalTime(p.timeRemainingMs)"
+            [class.text-muted-foreground]="!isLowTime(p.timeRemainingMs)">
+            {{ formatClock(p.timeRemainingMs) }}
+          </span>
+        </div>
+      }
+    </div>
+  }
+
   <!-- Mode & Quick Wall Orientation Toolbar -->
-  <div class="w-full max-w-[560px] flex items-center justify-between px-3 py-2 rounded-2xl bg-card/70 border border-border/80 text-xs text-muted-foreground backdrop-blur-md shadow-lg">
-    <div class="flex items-center gap-2">
+  <div class="w-full max-w-[560px] flex flex-wrap items-center justify-between gap-2 px-3 py-2.5 rounded-2xl bg-card border border-border text-xs text-muted-foreground shadow-sm">
+    <div class="flex items-center gap-2 flex-wrap">
       <!-- Active Player Badge -->
       <span
-        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl font-bold text-xs shadow-sm border border-white/10"
+        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl font-bold text-xs shadow-sm border border-border"
         [style.background-color]="getColorHex(state.currentPlayer().color) + '22'"
         [style.color]="getColorHex(state.currentPlayer().color)">
         <span
@@ -14,24 +41,23 @@
       </span>
 
       <!-- Multi-Action Step & Wall Counts -->
-      <span class="text-zinc-600">|</span>
-      <span class="text-[11px] font-mono text-zinc-300">
-        Steps: <strong class="text-white">{{ state.stepsRemainingThisTurn() }}/{{ state.stepsAllowed() }}</strong>
+      <span class="hidden sm:inline text-border">|</span>
+      <span class="text-[11px] font-mono text-muted-foreground">
+        Steps: <strong class="text-foreground">{{ state.stepsRemainingThisTurn() }}/{{ state.stepsAllowed() }}</strong>
       </span>
-      <span class="text-zinc-600">|</span>
-      <span class="text-[11px] font-mono text-zinc-300">
-        Walls: <strong class="text-white">{{ state.wallsRemainingThisTurn() }}/{{ state.wallsAllowed() }}</strong>
+      <span class="text-border">|</span>
+      <span class="text-[11px] font-mono text-muted-foreground">
+        Walls: <strong class="text-foreground">{{ state.wallsRemainingThisTurn() }}/{{ state.wallsAllowed() }}</strong>
       </span>
     </div>
 
     <!-- Actions: End Turn & Wall Orientation Toggle -->
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2 ml-auto">
       @if (state.canEndTurnManually()) {
         <button
           type="button"
           (click)="state.endTurn()"
-          class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] shadow-sm transition-all active:scale-95"
-          title="Finish Turn Early">
+          class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] shadow-sm transition-all active:scale-95">
           <span>End Turn</span>
         </button>
       }
@@ -40,23 +66,24 @@
         <button
           type="button"
           (click)="toggleOrientation()"
-          class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition-all font-medium text-[11px] shadow-sm active:scale-95"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted hover:bg-muted/80 text-foreground border border-border transition-all font-medium text-[11px] shadow-sm active:scale-95"
           title="Toggle Wall Orientation (Space / Click)">
           <ng-icon name="lucideRotateCw" class="text-xs" />
-          <span>Wall: <strong class="text-white uppercase">{{ state.wallOrientation() }}</strong></span>
-          <span class="hidden md:inline text-[10px] text-zinc-400 font-mono">(Space)</span>
+          <span>Wall: <strong class="text-foreground uppercase">{{ state.wallOrientation() }}</strong></span>
+          <span class="hidden md:inline text-[10px] text-muted-foreground font-mono">(Space)</span>
         </button>
       }
     </div>
   </div>
 
   <!-- Main Game Arena with Coordinate Labels -->
-  <div class="relative w-full max-w-[560px] aspect-square rounded-3xl bg-[#141416] p-4 md:p-6 shadow-2xl border border-zinc-800/80 flex flex-col">
+  <div class="relative w-full max-w-[560px] aspect-square rounded-3xl bg-card text-card-foreground p-3 sm:p-5 shadow-xl border border-border flex flex-col">
     <!-- SVG Grid Board -->
     <div class="relative flex-1 w-full h-full">
       <svg
         viewBox="0 0 960 960"
         class="w-full h-full select-none"
+        style="touch-action: manipulation;"
         xmlns="http://www.w3.org/2000/svg">
 
         <!-- 1. Coordinate File Labels (a to i along bottom) -->
@@ -65,7 +92,8 @@
             [attr.x]="i * 102 + 42"
             y="945"
             text-anchor="middle"
-            class="fill-zinc-500 font-mono text-[26px] font-semibold">
+            [attr.fill]="getCoordinateFill()"
+            class="font-mono text-[26px] font-semibold">
             {{ letter }}
           </text>
         }
@@ -77,7 +105,8 @@
             [attr.y]="i * 102 + 52"
             text-anchor="middle"
             dominant-baseline="middle"
-            class="fill-zinc-500 font-mono text-[26px] font-semibold">
+            [attr.fill]="getCoordinateFill()"
+            class="font-mono text-[26px] font-semibold">
             {{ row }}
           </text>
         }
@@ -94,17 +123,7 @@
                 height="84"
                 rx="14"
                 ry="14"
-                [attr.fill]="
-                  cell.isPreviousMove
-                    ? '#4e4321'
-                    : cell.isCenterGoal
-                    ? '#382810'
-                    : cell.isRedGoal
-                    ? '#2f1c20'
-                    : cell.isBlueGoal
-                    ? '#162335'
-                    : '#27272a'
-                "
+                [attr.fill]="getCellFill(cell)"
                 [attr.stroke]="cell.isCenterGoal ? '#f59e0b' : 'none'"
                 [attr.stroke-width]="cell.isCenterGoal ? '2' : '0'"
                 [attr.stroke-dasharray]="cell.isCenterGoal ? '5 3' : 'none'"
@@ -152,9 +171,9 @@
                   rx="15"
                   ry="15"
                   fill="none"
-                  stroke="#e4e4e7"
+                  [attr.stroke]="getLegalMoveStroke()"
                   stroke-width="3"
-                  class="cursor-pointer hover:stroke-white hover:fill-white/10 transition-all filter drop-shadow-[0_0_6px_rgba(255,255,255,0.25)]"
+                  class="cursor-pointer hover:stroke-primary hover:fill-primary/10 transition-all filter drop-shadow-[0_0_6px_rgba(0,0,0,0.15)]"
                   (click)="onCellClick(cell)"
                 />
               }
@@ -162,14 +181,14 @@
               <!-- Dynamic Multi-Player Pawn Rendering -->
               @if (cell.pawn; as p) {
                 <g class="pointer-events-none">
-                  <!-- Outer Pulsing Active Ring if Current Turn -->
+                  <!-- Outer Pulsing Active Ring in Player Color if Current Turn -->
                   @if (p.isCurrentTurn) {
                     <circle
                       [attr.cx]="(cell.col - 1) * 102 + 42"
                       [attr.cy]="(9 - cell.row) * 102 + 42"
                       r="29"
                       fill="none"
-                      stroke="#ffffff"
+                      [attr.stroke]="p.colorHex"
                       stroke-width="2.5"
                       stroke-dasharray="4 2"
                       class="animate-spin origin-center"
@@ -185,7 +204,7 @@
                     [attr.fill]="p.colorHex"
                     stroke="rgba(255,255,255,0.4)"
                     stroke-width="1.5"
-                    class="filter drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)] transition-all duration-300"
+                    class="filter drop-shadow-[0_2px_10px_rgba(0,0,0,0.4)] transition-all duration-300"
                   />
 
                   <!-- Pawn Label (P1, P2, P3, P4) -->
@@ -202,33 +221,51 @@
           }
         </g>
 
-        <!-- 4. Placed Walls (2-cell wide white rounded bars) -->
+        <!-- 4. Placed Walls (2-cell wide rounded bars with ownership pip) -->
         <g id="placed-walls">
           @for (w of state.walls(); track w.id) {
             @if (w.orientation === 'horizontal') {
               <!-- Horizontal Wall: between row w.row and w.row+1, spanning cols w.col & w.col+1 -->
-              <rect
-                [attr.x]="(w.col - 1) * 102"
-                [attr.y]="(8 - w.row) * 102 + 86"
-                width="186"
-                height="14"
-                rx="6"
-                ry="6"
-                fill="#f4f4f5"
-                class="filter drop-shadow-[0_2px_5px_rgba(0,0,0,0.7)]"
-              />
+              <g>
+                <rect
+                  [attr.x]="(w.col - 1) * 102"
+                  [attr.y]="(8 - w.row) * 102 + 86"
+                  width="186"
+                  height="14"
+                  rx="6"
+                  ry="6"
+                  [attr.fill]="getWallFill()"
+                  class="filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]"
+                />
+                <!-- Player Ownership Indicator Pip -->
+                <circle
+                  [attr.cx]="(w.col - 1) * 102 + 93"
+                  [attr.cy]="(8 - w.row) * 102 + 93"
+                  r="3.5"
+                  [attr.fill]="getPlayerPawnHex(w.placedBy)"
+                />
+              </g>
             } @else {
               <!-- Vertical Wall: between col w.col and w.col+1, spanning rows w.row & w.row+1 -->
-              <rect
-                [attr.x]="(w.col - 1) * 102 + 86"
-                [attr.y]="(8 - w.row) * 102"
-                width="14"
-                height="186"
-                rx="6"
-                ry="6"
-                fill="#f4f4f5"
-                class="filter drop-shadow-[0_2px_5px_rgba(0,0,0,0.7)]"
-              />
+              <g>
+                <rect
+                  [attr.x]="(w.col - 1) * 102 + 86"
+                  [attr.y]="(8 - w.row) * 102"
+                  width="14"
+                  height="186"
+                  rx="6"
+                  ry="6"
+                  [attr.fill]="getWallFill()"
+                  class="filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]"
+                />
+                <!-- Player Ownership Indicator Pip -->
+                <circle
+                  [attr.cx]="(w.col - 1) * 102 + 93"
+                  [attr.cy]="(8 - w.row) * 102 + 93"
+                  r="3.5"
+                  [attr.fill]="getPlayerPawnHex(w.placedBy)"
+                />
+              </g>
             }
           }
         </g>
@@ -243,8 +280,8 @@
               height="14"
               rx="6"
               ry="6"
-              [attr.fill]="preview.isLegal ? 'rgba(255, 255, 255, 0.75)' : 'rgba(239, 68, 68, 0.7)'"
-              [attr.stroke]="preview.isLegal ? '#ffffff' : '#ef4444'"
+              [attr.fill]="getWallPreviewFill(preview.isLegal)"
+              [attr.stroke]="getWallPreviewStroke(preview.isLegal)"
               stroke-width="1.5"
               class="pointer-events-none transition-all duration-100"
             />
@@ -256,56 +293,56 @@
               height="186"
               rx="6"
               ry="6"
-              [attr.fill]="preview.isLegal ? 'rgba(255, 255, 255, 0.75)' : 'rgba(239, 68, 68, 0.7)'"
-              [attr.stroke]="preview.isLegal ? '#ffffff' : '#ef4444'"
+              [attr.fill]="getWallPreviewFill(preview.isLegal)"
+              [attr.stroke]="getWallPreviewStroke(preview.isLegal)"
               stroke-width="1.5"
               class="pointer-events-none transition-all duration-100"
             />
           }
         }
 
-        <!-- 6. Interactive Wall Groove Hitboxes (8x8 intersections) -->
+        <!-- 6. Interactive Wall Groove Hitboxes (8x8 intersections with touch support) -->
         @if (state.wallsAllowed() > 0) {
           <g id="wall-hitboxes">
             @for (r of [8, 7, 6, 5, 4, 3, 2, 1]; track r) {
               @for (c of [1, 2, 3, 4, 5, 6, 7, 8]; track c) {
-                <!-- Hitbox at groove junction (r, c) -->
+                <!-- Hitbox at groove junction (r, c) with 44px touch area for mobile thumbs -->
                 <rect
-                  [attr.x]="(c - 1) * 102 + 76"
-                  [attr.y]="(8 - r) * 102 + 76"
-                  width="34"
-                  height="34"
+                  [attr.x]="(c - 1) * 102 + 71"
+                  [attr.y]="(8 - r) * 102 + 71"
+                  width="44"
+                  height="44"
                   fill="transparent"
                   class="cursor-pointer"
                   (mouseenter)="onWallSlotHover(r, c, state.wallOrientation())"
                   (mouseleave)="onWallSlotLeave()"
-                  (click)="onWallSlotClick(r, c)"
+                  (click)="onWallSlotTap(r, c)"
                 />
 
                 <!-- Extended Horizontal Hitbox -->
                 <rect
                   [attr.x]="(c - 1) * 102 + 10"
-                  [attr.y]="(8 - r) * 102 + 82"
+                  [attr.y]="(8 - r) * 102 + 76"
                   width="84"
-                  height="22"
+                  height="34"
                   fill="transparent"
                   class="cursor-pointer"
                   (mouseenter)="onWallSlotHover(r, c, state.wallOrientation())"
                   (mouseleave)="onWallSlotLeave()"
-                  (click)="onWallSlotClick(r, c)"
+                  (click)="onWallSlotTap(r, c)"
                 />
 
                 <!-- Extended Vertical Hitbox -->
                 <rect
-                  [attr.x]="(c - 1) * 102 + 82"
+                  [attr.x]="(c - 1) * 102 + 76"
                   [attr.y]="(8 - r) * 102 + 10"
-                  width="22"
+                  width="34"
                   height="84"
                   fill="transparent"
                   class="cursor-pointer"
                   (mouseenter)="onWallSlotHover(r, c, state.wallOrientation())"
                   (mouseleave)="onWallSlotLeave()"
-                  (click)="onWallSlotClick(r, c)"
+                  (click)="onWallSlotTap(r, c)"
                 />
               }
             }
@@ -313,5 +350,21 @@
         }
       </svg>
     </div>
+
+    <!-- Mobile Touch Hint When Previewing Wall -->
+    @if (hoveredSlot(); as preview) {
+      <div
+        class="mt-2 text-center text-[11px] font-bold py-1 px-3 rounded-xl border animate-in fade-in transition-all"
+        [class.bg-emerald-500\/10]="preview.isLegal"
+        [class.text-emerald-600]="preview.isLegal"
+        [class.dark:text-emerald-400]="preview.isLegal"
+        [class.border-emerald-500\/30]="preview.isLegal"
+        [class.bg-red-500\/10]="!preview.isLegal"
+        [class.text-red-600]="!preview.isLegal"
+        [class.dark:text-red-400]="!preview.isLegal"
+        [class.border-red-500\/30]="!preview.isLegal">
+        {{ preview.isLegal ? 'Tap again on the groove to drop barricade' : 'Cannot place wall here (illegal / blocked)' }}
+      </div>
+    }
   </div>
 </div>
