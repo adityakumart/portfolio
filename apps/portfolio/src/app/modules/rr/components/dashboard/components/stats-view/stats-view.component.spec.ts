@@ -83,7 +83,7 @@ test.describe('RR Module - Dashboard Stats View Component', () => {
       await expect(page.getByText('Venkat Rao')).toBeVisible();
     });
 
-    test('should expand In Service category and display Available By date in listed vehicle cards', async ({ page }) => {
+    test('should expand In Service category and display Next Available by date in listed vehicle cards', async ({ page }) => {
       const maintenanceCard = page.locator('div[hlmCard]').filter({ hasText: 'In Service' });
       await maintenanceCard.click();
 
@@ -94,11 +94,11 @@ test.describe('RR Module - Dashboard Stats View Component', () => {
       const scorpioCard = page.locator('app-rr-vehicle-card', { hasText: 'Scorpio N' }).first();
       await expect(scorpioCard).toBeVisible();
       await expect(scorpioCard.getByText('IN SERVICE')).toBeVisible();
-      await expect(scorpioCard.getByText(/Available By/i)).toBeVisible();
+      await expect(scorpioCard.getByText(/Next Available by/i)).toBeVisible();
       await expect(scorpioCard.getByText('25-10-2026')).toBeVisible();
     });
 
-    test('should expand In-Contract category and display Available By date in listed vehicle cards', async ({ page }) => {
+    test('should expand In-Contract category and NOT display Next Available by date in listed vehicle cards', async ({ page }) => {
       const contractCard = page.locator('div[hlmCard]').filter({ hasText: 'In-Contract' });
       await contractCard.click();
 
@@ -109,8 +109,7 @@ test.describe('RR Module - Dashboard Stats View Component', () => {
       const cityCard = page.locator('app-rr-vehicle-card', { hasText: 'Honda City' }).first();
       await expect(cityCard).toBeVisible();
       await expect(cityCard.getByText('IN CONTRACT')).toBeVisible();
-      await expect(cityCard.getByText(/Available By/i)).toBeVisible();
-      await expect(cityCard.getByText('15-11-2026')).toBeVisible();
+      await expect(cityCard.getByText(/Available by/i)).not.toBeVisible();
     });
   });
 });
