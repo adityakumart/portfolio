@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BrnDialogRef, injectBrnDialogContext } from '@spartan-ng/brain/dialog';
@@ -25,6 +25,10 @@ import { RRApiService } from '../../../services/rr-api.service';
 import { RRInvoicePdfService } from '../../../services/rr-invoice-pdf.service';
 
 import { AadharVisiblePipe } from '../../utils/aadhar-mask.util';
+import {
+  getMinPickupDateTimeString,
+  backdateValidator,
+} from '../../utils/date-validation.util';
 
 export interface ModifyBookingDialogContext {
   booking: IBooking;
@@ -76,6 +80,16 @@ export class RRModifyBookingDialogComponent implements OnInit {
   showDeleteSection = signal(false);
   isDeleting = signal(false);
 
+  // Role & Backdated Booking Restriction State
+  currentUser = computed(() => this.rrApi.currentUser());
+  isBackdateAllowed = computed(() => {
+    const role = this.currentUser()?.role;
+    return role === 'admin' || role === 'manager';
+  });
+  minPickupDateTime = computed(() => {
+    return this.isBackdateAllowed() ? null : getMinPickupDateTimeString();
+  });
+
   readonly returnedAmountModes = [
     'Original method',
     'Cash',
@@ -101,7 +115,10 @@ export class RRModifyBookingDialogComponent implements OnInit {
   private initForm() {
     this.modifyBookingFormGroup = this.fb.group({
       id: [''],
-      pickupDateTime: ['', Validators.required],
+      pickupDateTime: [
+        '',
+        [Validators.required, backdateValidator(() => this.isBackdateAllowed())],
+      ],
       durationDays: ['0', Validators.required],
       durationHours: ['0', Validators.required],
       returnDateTime: ['', Validators.required],

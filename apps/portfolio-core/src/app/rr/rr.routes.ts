@@ -967,6 +967,19 @@ rrRouter.post('/bookings', authenticateRRToken, async (req: any, res: Response) 
 
     const isAdvanceReservation = bookingData.status === 'reserved';
 
+    // Backdated booking restriction: Employees cannot create backdated bookings (allowed for Manager & Admin only)
+    if (req.userRole === 'employee' && bookingData.pickupDateTime) {
+      const pickupTime = new Date(bookingData.pickupDateTime).getTime();
+      const nowBuffer = Date.now() - 5 * 60 * 1000; // 5-minute clock drift buffer
+      if (!isNaN(pickupTime) && pickupTime < nowBuffer) {
+        res.status(403).json({
+          error: 'Forbidden',
+          message: 'Backdated bookings are allowed for Manager and Admin roles only. Employees cannot select dates in the past.',
+        });
+        return;
+      }
+    }
+
     if (isAdvanceReservation) {
       if (!bookingData.pickupDateTime || !bookingData.returnDateTime) {
         res.status(400).json({ error: 'Bad Request', message: 'Pickup and return schedule are required for reservations.' });
@@ -1356,6 +1369,22 @@ rrRouter.put('/bookings/:id', authenticateRRToken, async (req: any, res: Respons
     delete updateData._id;
     delete updateData.id;
     delete updateData.createdAt;
+
+    // Backdated booking restriction: Employees cannot modify booking to a backdated pickup date
+    if (req.userRole === 'employee' && updateData.pickupDateTime) {
+      const newPickupTime = new Date(updateData.pickupDateTime).getTime();
+      const existingPickupTime = booking.pickupDateTime ? new Date(booking.pickupDateTime).getTime() : 0;
+      if (newPickupTime !== existingPickupTime) {
+        const nowBuffer = Date.now() - 5 * 60 * 1000;
+        if (!isNaN(newPickupTime) && newPickupTime < nowBuffer) {
+          res.status(403).json({
+            error: 'Forbidden',
+            message: 'Backdated bookings are allowed for Manager and Admin roles only. Employees cannot select dates in the past.',
+          });
+          return;
+        }
+      }
+    }
 
     // Check overlap with other advance reservations when transitioning to or updating active rentals
     if (updateData.status === 'active' || (booking.status === 'active' && (updateData.pickupDateTime || updateData.returnDateTime))) {

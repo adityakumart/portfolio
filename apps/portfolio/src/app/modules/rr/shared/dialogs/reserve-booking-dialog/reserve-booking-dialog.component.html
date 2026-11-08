@@ -64,9 +64,19 @@
           <!-- Pickup Date & Time -->
           <div>
             <label hlmLabel class="text-xs text-muted-foreground block mb-1">Scheduled Pickup Date & Time</label>
-            <input hlmInput type="datetime-local" formControlName="pickupDateTime" (change)="calculateReturnDate()" class="w-full text-sm" />
-            @if (reserveFormGroup.get('pickupDateTime')?.invalid && reserveFormGroup.get('pickupDateTime')?.touched) {
+            <input
+              hlmInput
+              type="datetime-local"
+              formControlName="pickupDateTime"
+              [min]="minPickupDateTime()"
+              (change)="calculateReturnDate()"
+              class="w-full text-sm"
+            />
+            @if (reserveFormGroup.get('pickupDateTime')?.hasError('required') && reserveFormGroup.get('pickupDateTime')?.touched) {
               <span class="text-xs text-destructive">Pickup schedule is required.</span>
+            }
+            @if (reserveFormGroup.get('pickupDateTime')?.hasError('backdatedNotAllowed')) {
+              <span class="text-xs text-destructive">Backdated bookings are allowed for Manager & Admin roles only.</span>
             }
           </div>
 
