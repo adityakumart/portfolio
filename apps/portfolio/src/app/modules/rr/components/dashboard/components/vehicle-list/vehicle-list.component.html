@@ -338,11 +338,11 @@
               <span class="text-muted-foreground block">Pollution Expiry</span>
               <span class="font-medium">{{ (selectedVehicleDetails()?.pollutionExpiry | indianDate) || 'N/A' }}</span>
             </div>
-            @if (selectedVehicleDetails()?.status === 'maintenance' || selectedVehicleDetails()?.status === 'contract' || selectedVehicleDetails()?.status === 'in_contract') {
+            @if (selectedVehicleDetails()?.status === 'maintenance') {
               <div class="col-span-2 p-2.5 rounded-lg bg-muted/40 border border-border/60 flex items-center justify-between">
                 <span class="text-xs text-muted-foreground font-semibold flex items-center gap-1.5">
-                  <ng-icon [name]="selectedVehicleDetails()?.status === 'maintenance' ? 'lucideWrench' : 'lucideFileText'" class="text-xs"></ng-icon>
-                  <span>Available By</span>
+                  <ng-icon name="lucideWrench" class="text-xs"></ng-icon>
+                  <span>Next Available by</span>
                 </span>
                 <span class="font-bold text-xs text-foreground font-mono">
                   {{ ((selectedVehicleDetails()?.availableBy || selectedVehicleDetails()?.nextAvailableDate) | indianDate) || 'Not Specified' }}
