@@ -560,17 +560,17 @@
             </select>
           </div>
 
-          @if (vehicleFormGroup.get('status')?.value === 'maintenance' || vehicleFormGroup.get('status')?.value === 'contract') {
+          @if (vehicleFormGroup.get('status')?.value === 'maintenance') {
             <div>
               <label hlmLabel class="text-xs text-muted-foreground block mb-1">
-                <span>Available By</span>
+                <span>Next Available by</span>
                 <span class="text-destructive ml-1">*</span>
               </label>
               <hlm-date-picker formControlName="availableBy">
                 <hlm-date-picker-input placeholder="DD-MM-YYYY" class="w-full text-sm" />
               </hlm-date-picker>
               @if (vehicleFormGroup.get('availableBy')?.invalid && (vehicleFormGroup.get('availableBy')?.touched || vehicleFormGroup.get('availableBy')?.dirty)) {
-                <span class="text-xs text-destructive">Available By date is required.</span>
+                <span class="text-xs text-destructive">Next Available by date is required.</span>
               }
             </div>
           }

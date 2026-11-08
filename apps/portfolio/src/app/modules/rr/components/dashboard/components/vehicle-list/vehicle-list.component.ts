@@ -211,7 +211,7 @@ export class RRVehicleListComponent implements OnInit {
   private updateAvailableByValidation(status: string) {
     const availCtrl = this.vehicleFormGroup.get('availableBy');
     if (!availCtrl) return;
-    if (status === 'maintenance' || status === 'contract') {
+    if (status === 'maintenance') {
       availCtrl.setValidators([Validators.required]);
     } else {
       availCtrl.clearValidators();
@@ -344,8 +344,8 @@ export class RRVehicleListComponent implements OnInit {
     }
 
     const formVal = this.vehicleFormGroup.value;
-    const isServiceOrContract = formVal.status === 'maintenance' || formVal.status === 'contract';
-    const availableByIso = isServiceOrContract && formVal.availableBy
+    const isMaintenance = formVal.status === 'maintenance';
+    const availableByIso = isMaintenance && formVal.availableBy
       ? toISODateString(formVal.availableBy as IndianDateInput)
       : null;
 

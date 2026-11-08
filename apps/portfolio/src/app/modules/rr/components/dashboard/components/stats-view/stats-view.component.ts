@@ -564,6 +564,9 @@ export class RRStatsViewComponent implements OnInit, OnDestroy {
     if (!this.isManagerOrAdmin()) {
       return;
     }
+    if (vehicle?.status !== 'maintenance') {
+      return;
+    }
     const ref = this.dialog.open(RRUpdateVehicleAvailabilityDialogComponent, {
       context: {
         vehicle,
