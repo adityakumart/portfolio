@@ -1,4 +1,4 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import * as path from 'path';
 import { R2Service } from '../../services/r2.service';
 
@@ -7,7 +7,7 @@ import { R2Service } from '../../services/r2.service';
  * Saves the file to Cloudflare R2 (or mock local storage) and returns the asset details.
  */
 export async function handleVehicleImageUpload(
-  req: any,
+  req: Request,
   res: Response,
 ): Promise<void> {
   try {
@@ -68,11 +68,12 @@ export async function handleVehicleImageUpload(
       key: uploadedAssets[0]?.key,
       url: uploadedAssets[0]?.url,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Upload error';
     console.error('Error uploading vehicle image(s):', error);
     res
       .status(500)
-      .json({ error: 'Internal Server Error', message: error.message });
+      .json({ error: 'Internal Server Error', message });
   }
 }
 
@@ -81,7 +82,7 @@ export async function handleVehicleImageUpload(
  * Saves the file to Cloudflare R2 (or mock local storage) and returns the asset details.
  */
 export async function handleFeedbackScreenshotUpload(
-  req: any,
+  req: Request,
   res: Response,
 ): Promise<void> {
   try {
@@ -91,9 +92,10 @@ export async function handleFeedbackScreenshotUpload(
     } else if (Array.isArray(req.files) && req.files.length > 0) {
       rawFile = req.files[0];
     } else if (req.files && typeof req.files === 'object') {
-      const firstKey = Object.keys(req.files)[0];
-      if (firstKey && Array.isArray(req.files[firstKey]) && req.files[firstKey].length > 0) {
-        rawFile = req.files[firstKey][0];
+      const filesMap = req.files as { [fieldname: string]: Express.Multer.File[] };
+      const firstKey = Object.keys(filesMap)[0];
+      if (firstKey && Array.isArray(filesMap[firstKey]) && filesMap[firstKey].length > 0) {
+        rawFile = filesMap[firstKey][0];
       }
     }
 
@@ -127,11 +129,12 @@ export async function handleFeedbackScreenshotUpload(
       url,
       originalName: rawFile.originalname,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Upload error';
     console.error('Error uploading feedback screenshot:', error);
     res
       .status(500)
-      .json({ error: 'Internal Server Error', message: error.message });
+      .json({ error: 'Internal Server Error', message });
   }
 }
 

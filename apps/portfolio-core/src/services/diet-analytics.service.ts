@@ -51,7 +51,11 @@ export class DietAnalyticsService {
     });
 
     // 2. Aggregation pipeline for junk food & clean day habits
-    const [junkFoodFacetResult]: any = await JunkFoodLog.aggregate([
+    interface IJunkFoodFacetResult {
+      records?: IDailyJunkFoodStat[];
+      cravings?: Array<{ _id: string; count: number }>;
+    }
+    const [junkFoodFacetResult]: IJunkFoodFacetResult[] = await JunkFoodLog.aggregate([
       {
         $match: {
           userId: userObjId,

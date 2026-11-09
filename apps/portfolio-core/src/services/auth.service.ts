@@ -62,7 +62,7 @@ export class AuthService {
         id: result.insertedId.toString(),
         ...newUser,
       };
-      delete (safeUser as any).password;
+      delete (safeUser as unknown as Record<string, unknown>)['password'];
       return safeUser;
     } catch (err) {
       console.error('Signup Error:', err);
@@ -128,7 +128,7 @@ export class AuthService {
         },
       } as unknown as User & { password?: string; _id?: unknown };
       delete safeUser.password;
-      delete (safeUser as any)._id;
+      delete (safeUser as unknown as Record<string, unknown>)['_id'];
 
       return safeUser;
     } catch (_) {
@@ -202,7 +202,7 @@ export class AuthService {
         },
       } as unknown as User & { password?: string; _id?: unknown };
       delete safeUser.password;
-      delete (safeUser as any)._id;
+      delete (safeUser as unknown as Record<string, unknown>)['_id'];
 
       return {
         access_token: newAccessToken,
@@ -298,7 +298,7 @@ export class AuthService {
         },
       } as unknown as User & { password?: string; _id?: unknown };
       delete safeUser.password;
-      delete (safeUser as any)._id;
+      delete (safeUser as unknown as Record<string, unknown>)['_id'];
 
       return safeUser;
     } catch (err) {
@@ -341,7 +341,7 @@ export class AuthService {
         },
       } as unknown as User & { password?: string; _id?: unknown };
       delete safeUser.password;
-      delete (safeUser as any)._id;
+      delete (safeUser as unknown as Record<string, unknown>)['_id'];
 
       return safeUser;
     } catch (err) {

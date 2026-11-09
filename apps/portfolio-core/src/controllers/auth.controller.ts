@@ -106,7 +106,7 @@ export async function refresh(req: Request, res: Response) {
       }
     }
 
-    const refresh_token = cookieRefreshToken || (req as any).cookies?.['refresh_token'] || req.body?.refresh_token;
+    const refresh_token = cookieRefreshToken || (req as Request & { cookies?: Record<string, string> }).cookies?.['refresh_token'] || req.body?.refresh_token;
     if (!refresh_token) {
       res.status(400).json({ error: 'Refresh token is required' });
       return;

@@ -71,7 +71,7 @@ export class RRNotificationSchedulerService {
           .find({
             status: 'active',
             isDeleted: { $ne: true },
-            'notifications.returnReminder4hSentAt': { $in: [null, undefined] } as any,
+            'notifications.returnReminder4hSentAt': { $in: [null] },
           })
           .toArray();
 
@@ -157,7 +157,7 @@ export class RRNotificationSchedulerService {
           .find({
             status: 'active',
             isDeleted: { $ne: true },
-            pendingAmount: { $nin: ['0', '', '0.00'] } as any,
+            pendingAmount: { $nin: ['0', '', '0.00'] },
           })
           .toArray();
 

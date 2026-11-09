@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { AuthenticatedRequest } from '../types/express';
 import { AdminService } from '../services/admin.service';
+import { AdminUsersQuery } from '@portfolio/shared-types';
 
 export async function handleGetUsers(
   req: AuthenticatedRequest,
@@ -10,8 +11,8 @@ export async function handleGetUsers(
     const page = req.query['page'] ? Number(req.query['page']) : 1;
     const limit = req.query['limit'] ? Number(req.query['limit']) : 20;
     const search = typeof req.query['search'] === 'string' ? req.query['search'] : undefined;
-    const role = typeof req.query['role'] === 'string' ? (req.query['role'] as any) : 'all';
-    const status = typeof req.query['status'] === 'string' ? (req.query['status'] as any) : 'all';
+    const role = typeof req.query['role'] === 'string' ? (req.query['role'] as AdminUsersQuery['role']) : 'all';
+    const status = typeof req.query['status'] === 'string' ? (req.query['status'] as AdminUsersQuery['status']) : 'all';
 
     const result = await AdminService.getUsers({ page, limit, search, role, status });
     res.status(200).json(result);

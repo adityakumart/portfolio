@@ -51,7 +51,7 @@ export class FileModel {
       createdAt: now,
       updatedAt: now,
     };
-    const result = await col.insertOne(doc as any);
+    const result = await col.insertOne(doc);
     return { ...doc, _id: result.insertedId };
   }
 

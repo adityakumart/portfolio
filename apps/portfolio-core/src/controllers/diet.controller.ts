@@ -17,9 +17,9 @@ export async function handleGetDayDashboard(
     const date = (req.query['date'] as string) || new Date().toISOString().slice(0, 10);
     const dashboard = await DietService.getDayDashboard(userId, date);
     res.json(dashboard);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[DietController] Error fetching dashboard:', err);
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (err as Error).message });
   }
 }
 
@@ -43,9 +43,9 @@ export async function handleCreateMeal(
     }
     const meal = await DietService.createMeal(userId, dto);
     res.status(201).json(meal);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[DietController] Error creating meal:', err);
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (err as Error).message });
   }
 }
 
@@ -69,9 +69,9 @@ export async function handleUpdateMeal(
       return;
     }
     res.json(meal);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[DietController] Error updating meal:', err);
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (err as Error).message });
   }
 }
 
@@ -94,9 +94,9 @@ export async function handleDeleteMeal(
       return;
     }
     res.json({ success: true, message: 'Meal deleted successfully' });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[DietController] Error deleting meal:', err);
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (err as Error).message });
   }
 }
 
@@ -120,9 +120,9 @@ export async function handleLogJunkFood(
     }
     const result = await DietService.logJunkFood(userId, dto);
     res.json(result);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[DietController] Error logging junk food:', err);
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (err as Error).message });
   }
 }
 
@@ -152,8 +152,8 @@ export async function handleGetUploadUrl(
       hostUrl,
     );
     res.json(result);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[DietController] Error generating upload URL:', err);
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (err as Error).message });
   }
 }

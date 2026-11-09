@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { Types } from 'mongoose';
 import { AuthenticatedRequest } from '../types/express';
 import { getNoteModel, INoteDocument } from '../models/note.model';
-import { getTodoModel, ITodoDocument } from '../models/todo.model';
+import { getTodoModel, ITodoDocument, ISubtaskDoc, ITodoReminderDoc } from '../models/todo.model';
 import { getPlannerProjectModel } from '../models/planner-project.model';
 import { resolveProjectPermissions } from '../services/planner-project.service';
 import {
@@ -13,6 +13,8 @@ import {
   ICreateTodoDto,
   IUpdateTodoDto,
   IPlannerDashboardResponse,
+  TodoStatus,
+  TodoPriority,
 } from '@portfolio/shared-types';
 
 function getParamId(req: AuthenticatedRequest, key: string = 'id'): string {
@@ -35,13 +37,31 @@ function mapNoteDoc(doc: INoteDocument): INote {
   };
 }
 
-function mapTodoDoc(doc: any): ITodoItem {
+function mapTodoDoc(doc: {
+  _id: Types.ObjectId | { toString(): string };
+  userId: Types.ObjectId | { toString(): string };
+  projectId?: Types.ObjectId | { toString(): string } | null;
+  stageId?: string;
+  assigneeIds?: Array<Types.ObjectId | { toString(): string }>;
+  title: string;
+  description?: string;
+  status: TodoStatus;
+  priority: TodoPriority;
+  dueDate?: string;
+  dueTime?: string;
+  tags?: string[];
+  subtasks?: ISubtaskDoc[];
+  reminder?: ITodoReminderDoc;
+  completedAt?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
+}): ITodoItem {
   return {
     id: doc._id.toString(),
     userId: doc.userId.toString(),
     projectId: doc.projectId?.toString(),
     stageId: doc.stageId,
-    assigneeIds: (doc.assigneeIds || []).map((id: any) => id.toString()),
+    assigneeIds: (doc.assigneeIds || []).map((id) => id.toString()),
     title: doc.title,
     description: doc.description,
     status: doc.status,
@@ -90,8 +110,8 @@ export async function handleGetDashboard(
         .find({
           userId: userObjectId,
           $or: [{ projectId: null }, { projectId: { $exists: false } }],
-          status: { $ne: 'archived' },
-        } as any)
+          status: { $ne: 'archived' as TodoStatus },
+        })
         .sort({ dueDate: 1, priority: -1 }),
     ]);
 
@@ -126,9 +146,9 @@ export async function handleGetDashboard(
     };
 
     res.json(response);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching planner dashboard:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -144,14 +164,12 @@ export async function handleGetNotes(
     const { search, tag } = req.query;
 
     const noteModel = await getNoteModel();
-    const query: any = { userId: new Types.ObjectId(userId) };
-
+    const query: Record<string, unknown> = { userId: new Types.ObjectId(userId) };
     if (tag && typeof tag === 'string') {
-      query.tags = tag;
+      query['tags'] = tag;
     }
-
     if (search && typeof search === 'string' && search.trim()) {
-      query.$text = { $search: search.trim() };
+      query['$text'] = { $search: search.trim() };
     }
 
     const docs = await noteModel
@@ -160,9 +178,9 @@ export async function handleGetNotes(
       .limit(100);
 
     res.json(docs.map(mapNoteDoc));
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching notes:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -191,9 +209,9 @@ export async function handleCreateNote(
     });
 
     res.status(201).json(mapNoteDoc(newNote));
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating note:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -224,9 +242,9 @@ export async function handleUpdateNote(
     }
 
     res.json(mapNoteDoc(updated));
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating note:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -255,9 +273,9 @@ export async function handleDeleteNote(
     }
 
     res.json({ success: true, message: 'Note deleted successfully' });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error deleting note:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -273,7 +291,7 @@ export async function handleGetTodos(
     const { status, priority, dueDate, projectId } = req.query;
 
     const todoModel = await getTodoModel();
-    const query: any = {};
+    const query: Record<string, unknown> = {};
 
     if (projectId && typeof projectId === 'string') {
       const projectModel = await getPlannerProjectModel();
@@ -290,27 +308,27 @@ export async function handleGetTodos(
         });
         return;
       }
-      query.projectId = new Types.ObjectId(projectId);
+      query['projectId'] = new Types.ObjectId(projectId);
     } else {
-      query.userId = new Types.ObjectId(userId);
-      query.$or = [{ projectId: null }, { projectId: { $exists: false } }];
+      query['userId'] = new Types.ObjectId(userId);
+      query['$or'] = [{ projectId: null }, { projectId: { $exists: false } }];
     }
 
     if (status && typeof status === 'string') {
-      query.status = status;
+      query['status'] = status;
     }
     if (priority && typeof priority === 'string') {
-      query.priority = priority;
+      query['priority'] = priority;
     }
     if (dueDate && typeof dueDate === 'string') {
-      query.dueDate = dueDate;
+      query['dueDate'] = dueDate;
     }
 
     const docs = await todoModel.find(query).sort({ dueDate: 1, priority: -1 });
     res.json(docs.map(mapTodoDoc));
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching todos:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -364,9 +382,9 @@ export async function handleCreateTodo(
     });
 
     res.status(201).json(mapTodoDoc(newTodo));
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating todo:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -412,14 +430,14 @@ export async function handleUpdateTodo(
       return;
     }
 
-    const updateData: any = { ...body };
+    const updateData: Record<string, unknown> = { ...body };
     if (body.assigneeIds) {
-      updateData.assigneeIds = body.assigneeIds.map((aid) => new Types.ObjectId(aid));
+      updateData['assigneeIds'] = body.assigneeIds.map((aid) => new Types.ObjectId(aid));
     }
     if (body.status === 'completed') {
-      updateData.completedAt = new Date();
+      updateData['completedAt'] = new Date();
     } else if (body.status) {
-      updateData.completedAt = null;
+      updateData['completedAt'] = null;
     }
 
     const updated = await todoModel.findByIdAndUpdate(
@@ -429,9 +447,9 @@ export async function handleUpdateTodo(
     );
 
     res.json(mapTodoDoc(updated!));
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating todo:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -479,9 +497,9 @@ export async function handleToggleTodoStatus(
     await existing.save();
 
     res.json(mapTodoDoc(existing));
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error toggling todo status:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -525,9 +543,9 @@ export async function handleDeleteTodo(
 
     await todoModel.findByIdAndDelete(id);
     res.json({ success: true, message: 'Task deleted successfully' });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error deleting todo:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -552,9 +570,9 @@ export async function handleGetActiveReminders(
       .sort({ 'reminder.reminderTime': 1 });
 
     res.json(active.map(mapTodoDoc));
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching active reminders:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -593,8 +611,8 @@ export async function handleSnoozeReminder(
     }
 
     res.json(mapTodoDoc(updated));
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error snoozing reminder:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }

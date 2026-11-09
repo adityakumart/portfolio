@@ -1,9 +1,10 @@
 import { Response } from 'express';
 import { Types } from 'mongoose';
 import { AuthenticatedRequest } from '../types/express';
-import { getPlannerProjectModel } from '../models/planner-project.model';
+import { getPlannerProjectModel, IProjectMemberDoc } from '../models/planner-project.model';
 import { getTodoModel } from '../models/todo.model';
-import { getPlannerNotificationModel } from '../models/planner-notification.model';
+import { getPlannerNotificationModel, IPlannerNotificationDocument } from '../models/planner-notification.model';
+import { ITodoDocument } from '../models/todo.model';
 import {
   FIXED_ROLE_PERMISSIONS,
   getDefaultStages,
@@ -25,6 +26,7 @@ import {
   IReorderStagesDto,
   IProjectsListResponse,
   ITodoItem,
+  IPlannerProject,
 } from '@portfolio/shared-types';
 
 function getParamId(req: AuthenticatedRequest, key = 'id'): string {
@@ -32,7 +34,7 @@ function getParamId(req: AuthenticatedRequest, key = 'id'): string {
   return Array.isArray(val) ? val[0] : val || '';
 }
 
-function mapNotification(doc: any) {
+function mapNotification(doc: IPlannerNotificationDocument) {
   return {
     id: doc._id.toString(),
     userId: doc.userId.toString(),
@@ -50,13 +52,13 @@ function mapNotification(doc: any) {
   };
 }
 
-function mapTodoDoc(doc: any): ITodoItem {
+function mapTodoDoc(doc: ITodoDocument): ITodoItem {
   return {
     id: doc._id.toString(),
     userId: doc.userId.toString(),
     projectId: doc.projectId?.toString(),
     stageId: doc.stageId,
-    assigneeIds: (doc.assigneeIds || []).map((id: any) => id.toString()),
+    assigneeIds: (doc.assigneeIds || []).map((id) => id.toString()),
     title: doc.title,
     description: doc.description,
     status: doc.status,
@@ -108,8 +110,8 @@ export async function handleGetProjects(
     ]);
 
     const myProjects = ownedDocs.map(mapProjectDoc);
-    const collaborativeProjects: any[] = [];
-    const pendingInvitations: any[] = [];
+    const collaborativeProjects: IPlannerProject[] = [];
+    const pendingInvitations: IPlannerProject[] = [];
 
     for (const doc of memberDocs) {
       const member = doc.members.find((m) => m.userId.toString() === userId);
@@ -127,9 +129,9 @@ export async function handleGetProjects(
     };
 
     res.json(response);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching projects:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -174,9 +176,9 @@ export async function handleCreateProject(
     });
 
     res.status(201).json(mapProjectDoc(newProject));
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating project:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -225,9 +227,9 @@ export async function handleGetProject(
       role: auth.role,
       isOwner: auth.isOwner,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching project:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -267,9 +269,9 @@ export async function handleUpdateProject(
     plannerSse.sendToUsers(memberIds, 'project_updated', mapped);
 
     res.json(mapped);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating project:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -300,9 +302,9 @@ export async function handleDeleteProject(
     plannerSse.sendToUsers(memberIds, 'project_deleted', { projectId });
 
     res.json({ success: true, message: 'Project archived successfully.' });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error deleting project:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -392,7 +394,7 @@ export async function handleInviteMember(
         status: 'pending',
         invitedBy: new Types.ObjectId(userId),
         createdAt: new Date(),
-      } as any);
+      } as IProjectMemberDoc);
     }
 
     await project.save();
@@ -432,9 +434,9 @@ export async function handleInviteMember(
       message: `Invitation sent to ${email}`,
       project: mapProjectDoc(project),
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error inviting member:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -497,9 +499,9 @@ export async function handleAcceptInvitation(
       message: 'Invitation accepted successfully.',
       project: mapped,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error accepting invitation:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -535,9 +537,9 @@ export async function handleDeclineInvitation(
     );
 
     res.json({ success: true, message: 'Invitation declined.' });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error declining invitation:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -588,9 +590,9 @@ export async function handleUpdateMemberRole(
     plannerSse.sendToUsers(memberIds, 'project_updated', mapped);
 
     res.json(mapped);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating member role:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -633,9 +635,9 @@ export async function handleRemoveMember(
     plannerSse.sendToUsers(memberIds, 'project_updated', mapped);
 
     res.json({ success: true, message: 'Member removed successfully.', project: mapped });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error removing member:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -686,9 +688,9 @@ export async function handleAddStage(
     plannerSse.sendToUsers(memberIds, 'stage_changed', { projectId, stages: mapped.stages });
 
     res.status(201).json(mapped);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error adding stage:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -738,9 +740,9 @@ export async function handleUpdateStage(
     plannerSse.sendToUsers(memberIds, 'stage_changed', { projectId, stages: mapped.stages });
 
     res.json(mapped);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating stage:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -773,7 +775,7 @@ export async function handleReorderStages(
 
     // Reorder stages array according to stageIds
     const stageMap = new Map(project.stages.map((s) => [s.id, s]));
-    const newStages: any[] = [];
+    const newStages: typeof project.stages = [];
     body.stageIds.forEach((id, index) => {
       const stage = stageMap.get(id);
       if (stage) {
@@ -797,9 +799,9 @@ export async function handleReorderStages(
     plannerSse.sendToUsers(memberIds, 'stage_changed', { projectId, stages: mapped.stages });
 
     res.json(mapped);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error reordering stages:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -856,9 +858,9 @@ export async function handleDeleteStage(
     plannerSse.sendToUsers(memberIds, 'stage_changed', { projectId, stages: mapped.stages });
 
     res.json(mapped);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error deleting stage:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -915,9 +917,9 @@ export async function handleCreateCustomRole(
 
     const mapped = mapProjectDoc(project);
     res.status(201).json(mapped);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating custom role:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -965,9 +967,9 @@ export async function handleUpdateCustomRole(
 
     await project.save();
     res.json(mapProjectDoc(project));
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error updating custom role:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -1007,9 +1009,9 @@ export async function handleDeleteCustomRole(
     await project.save();
 
     res.json(mapProjectDoc(project));
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error deleting custom role:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -1046,9 +1048,9 @@ export async function handleGetProjectTodos(
       .sort({ updatedAt: -1 });
 
     res.json(docs.map(mapTodoDoc));
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching project todos:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -1152,9 +1154,9 @@ export async function handleTransitionTodoStage(
       await todo.save();
       res.json(mapTodoDoc(todo));
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error transitioning card stage:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -1174,9 +1176,9 @@ export async function handleGetNotifications(
       .limit(50);
 
     res.json(docs.map(mapNotification));
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching notifications:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -1195,9 +1197,9 @@ export async function handleMarkNotificationRead(
     );
 
     res.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error marking notification read:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -1214,9 +1216,9 @@ export async function handleMarkAllNotificationsRead(
     );
 
     res.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error marking all notifications read:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 

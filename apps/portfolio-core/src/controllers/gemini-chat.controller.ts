@@ -99,7 +99,7 @@ export async function handleChatStream(
       .toArray();
 
     // 3. Format history array for @google/genai
-    const contents: any[] = previousMessages.map((msg) => ({
+    const contents: Array<{ role: string; parts: Array<{ text: string }> }> = previousMessages.map((msg) => ({
       role: msg.role === 'model' ? 'model' : 'user',
       parts: [{ text: msg.text }],
     }));
@@ -136,9 +136,20 @@ export async function handleChatStream(
       );
     }
 
-    const sdk = await (Function(
+    interface IGoogleGenAISdk {
+      GoogleGenAI: new (options: { apiKey: string }) => {
+        models: {
+          generateContentStream: (params: {
+            model: string;
+            contents: Array<{ role: string; parts: Array<{ text: string }> }>;
+          }) => Promise<AsyncIterable<{ text?: string }>>;
+        };
+      };
+    }
+
+    const sdk = (await (Function(
       'return import("@google/genai")',
-    )() as Promise<any>);
+    )() as Promise<unknown>)) as IGoogleGenAISdk;
     const ai = new sdk.GoogleGenAI({ apiKey });
     const model = process.env['GEMINI_MODEL'] || 'gemini-flash-latest';
     const responseStream = await ai.models.generateContentStream({
@@ -174,7 +185,7 @@ export async function handleChatStream(
     const err = error as Error;
 
     // Parse the error on the backend to provide clean, structured data
-    let parsedError: any = err.message || 'Failed to initialize streaming response.';
+    let parsedError: string = err.message || 'Failed to initialize streaming response.';
     try {
       if (typeof parsedError === 'string' && (parsedError.startsWith('{') || parsedError.startsWith('['))) {
         const parsed = JSON.parse(parsedError);

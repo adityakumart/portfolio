@@ -47,7 +47,7 @@ class PlannerSseService {
     }
   }
 
-  sendToUser(userId: string, event: string, data: any): void {
+  sendToUser(userId: string, event: string, data: unknown): void {
     const responses = this.clients.get(userId);
     if (!responses || responses.size === 0) return;
 
@@ -64,7 +64,7 @@ class PlannerSseService {
     }
   }
 
-  sendToUsers(userIds: string[], event: string, data: any, excludeUserId?: string): void {
+  sendToUsers(userIds: string[], event: string, data: unknown, excludeUserId?: string): void {
     for (const userId of userIds) {
       if (excludeUserId && userId === excludeUserId) continue;
       this.sendToUser(userId, event, data);

@@ -1,4 +1,4 @@
-import { Collection, Db } from 'mongodb';
+import { Collection, Db, Document } from 'mongodb';
 import { connectToRRDatabase } from '../../utils/DB/mongodb';
 import * as bcrypt from 'bcrypt';
 import {
@@ -11,6 +11,11 @@ import {
   IRRScrollingTicker,
   IRRFeedback,
 } from '@portfolio/shared-types';
+
+export interface IRRSettingRecord extends Document {
+  key?: string;
+  [key: string]: unknown;
+}
 
 export {
   IEmployee,
@@ -58,9 +63,9 @@ export class RRService {
     return db.collection<IRRFeedback>('feedback');
   }
 
-  static async getSettingsCol(): Promise<Collection<any>> {
+  static async getSettingsCol(): Promise<Collection<IRRSettingRecord>> {
     const db = await this.getDb();
-    return db.collection<any>('settings');
+    return db.collection<IRRSettingRecord>('settings');
   }
 
   // --- SEEDING LOGIC ---
@@ -250,7 +255,7 @@ export class RRService {
           const staffName = isKiran ? 'Kiran Kumar' : 'Ram Kumar';
           const staffRole = isKiran ? 'employee' : 'admin';
 
-          const updateFields: any = {
+          const updateFields: Partial<IBooking> = {
             bookedBy: staffId,
             bookedByName: staffName,
             bookedByRole: staffRole,
@@ -351,17 +356,19 @@ export class RRService {
   // --- LOGGING ---
   static async logActivity(
     action: string,
-    performedBy: string,
-    role: string,
+    performedBy?: string,
+    role?: string,
     details?: string,
   ): Promise<ILog | null> {
     try {
       const logsCol = await this.getLogsCol();
+      const safeUser = performedBy || 'system';
+      const safeRole = role || 'admin';
       const newLog: ILog = {
         action,
-        performedBy,
-        role,
-        user: performedBy,
+        performedBy: safeUser,
+        role: safeRole,
+        user: safeUser,
         time: new Date().toLocaleString(),
         timestamp: new Date(),
         details,

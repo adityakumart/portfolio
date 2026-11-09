@@ -3,9 +3,19 @@ import * as jwt from 'jsonwebtoken';
 import { getJwtSecret } from '../../config/security';
 import { RRService } from './rr.service';
 
+export interface IRRRequestUser {
+  id: string;
+  empId?: string;
+  name?: string;
+  role?: string;
+  email?: string;
+  [key: string]: unknown;
+}
+
 export interface IRRRequest extends Request {
   userId?: string;
   userRole?: string;
+  user?: IRRRequestUser;
 }
 
 export async function authenticateRRToken(
@@ -59,6 +69,13 @@ export async function authenticateRRToken(
     req.userId = emp.id;
     // Always use the real-time role from database to prevent stale token privilege escalation
     req.userRole = emp.role;
+    req.user = {
+      id: emp.id,
+      empId: emp.id,
+      name: `${emp.firstName || ''} ${emp.lastName || ''}`.trim() || emp.id,
+      role: emp.role,
+      email: emp.email,
+    };
     next();
   } catch (error: unknown) {
     const err = error as Error;

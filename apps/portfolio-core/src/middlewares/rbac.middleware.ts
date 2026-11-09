@@ -113,8 +113,8 @@ export async function enforceFileRBAC(
     }
 
     next();
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('RBAC file middleware error:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }

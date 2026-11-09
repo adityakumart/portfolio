@@ -1,11 +1,11 @@
 import rateLimit, { Options } from 'express-rate-limit';
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 
 /**
  * Reusable JSON response handler for rate limit violations (HTTP 429).
  */
 const createRateLimitHandler = (defaultMessage: string) => {
-  return (req: Request, res: Response, _next: any, options: Options) => {
+  return (req: Request, res: Response, _next: NextFunction, options: Options) => {
     const retryAfter = Math.ceil(options.windowMs / 1000);
     const resetTime = new Date(Date.now() + options.windowMs).toISOString();
     const message =
