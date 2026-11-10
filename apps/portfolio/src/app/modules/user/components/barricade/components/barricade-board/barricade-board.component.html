@@ -40,15 +40,35 @@
         {{ state.currentPlayer().name }}'s Turn
       </span>
 
-      <!-- Multi-Action Step & Wall Counts -->
-      <span class="hidden sm:inline text-border">|</span>
-      <span class="text-[11px] font-mono text-muted-foreground">
-        Steps: <strong class="text-foreground">{{ state.stepsRemainingThisTurn() }}/{{ state.stepsAllowed() }}</strong>
-      </span>
-      <span class="text-border">|</span>
-      <span class="text-[11px] font-mono text-muted-foreground">
-        Walls: <strong class="text-foreground">{{ state.wallsRemainingThisTurn() }}/{{ state.wallsAllowed() }}</strong>
-      </span>
+      <!-- Action Mode Switch: Move vs Wall -->
+      <div class="flex items-center p-0.5 rounded-xl bg-muted border border-border">
+        <button
+          type="button"
+          (click)="setInteractionMode('move')"
+          [class.bg-card]="interactionMode() === 'move'"
+          [class.text-foreground]="interactionMode() === 'move'"
+          [class.shadow-sm]="interactionMode() === 'move'"
+          [class.text-muted-foreground]="interactionMode() !== 'move'"
+          class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all active:scale-95">
+          <ng-icon name="lucideMove" class="text-xs" />
+          <span>Move ({{ state.stepsRemainingThisTurn() }})</span>
+        </button>
+
+        @if (state.wallsAllowed() > 0) {
+          <button
+            type="button"
+            (click)="setInteractionMode('wall')"
+            [disabled]="state.currentPlayer().wallsRemaining <= 0 || state.wallsRemainingThisTurn() <= 0"
+            [class.bg-card]="interactionMode() === 'wall'"
+            [class.text-foreground]="interactionMode() === 'wall'"
+            [class.shadow-sm]="interactionMode() === 'wall'"
+            [class.text-muted-foreground]="interactionMode() !== 'wall'"
+            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed">
+            <ng-icon name="lucideLayers" class="text-xs" />
+            <span>Wall ({{ state.wallsRemainingThisTurn() }})</span>
+          </button>
+        }
+      </div>
     </div>
 
     <!-- Actions: End Turn & Wall Orientation Toggle -->
@@ -76,10 +96,10 @@
     </div>
   </div>
 
-  <!-- Main Game Arena with Coordinate Labels -->
-  <div class="relative w-full max-w-[560px] aspect-square rounded-3xl bg-card text-card-foreground p-3 sm:p-5 shadow-xl border border-border flex flex-col">
-    <!-- SVG Grid Board -->
-    <div class="relative flex-1 w-full h-full">
+  <!-- Main Game Arena with Fixed Aspect Square SVG -->
+  <div class="relative w-full max-w-[560px] rounded-3xl bg-card text-card-foreground p-3 sm:p-5 shadow-xl border border-border flex flex-col space-y-3">
+    <!-- SVG Grid Board (Strict Aspect Square Container to Prevent Layout Shift) -->
+    <div class="relative w-full aspect-square">
       <svg
         viewBox="0 0 960 960"
         class="w-full h-full select-none"
@@ -127,6 +147,8 @@
                 [attr.stroke]="cell.isCenterGoal ? '#f59e0b' : 'none'"
                 [attr.stroke-width]="cell.isCenterGoal ? '2' : '0'"
                 [attr.stroke-dasharray]="cell.isCenterGoal ? '5 3' : 'none'"
+                [class.cursor-pointer]="cell.isLegalMove"
+                (click)="cell.isLegalMove ? onCellClick(cell) : null"
                 class="transition-colors duration-150"
               />
 
@@ -161,19 +183,20 @@
                 />
               }
 
-              <!-- Legal Move Target Highlight (Hollow rounded square outline) -->
+              <!-- Legal Move Target Highlight (Full Interactive Tile Hit Area) -->
               @if (cell.isLegalMove) {
                 <rect
-                  [attr.x]="(cell.col - 1) * 102 + 5"
-                  [attr.y]="(9 - cell.row) * 102 + 5"
-                  width="74"
-                  height="74"
-                  rx="15"
-                  ry="15"
-                  fill="none"
+                  [attr.x]="(cell.col - 1) * 102 + 4"
+                  [attr.y]="(9 - cell.row) * 102 + 4"
+                  width="76"
+                  height="76"
+                  rx="14"
+                  ry="14"
+                  fill="transparent"
+                  pointer-events="all"
                   [attr.stroke]="getLegalMoveStroke()"
-                  stroke-width="3"
-                  class="cursor-pointer hover:stroke-primary hover:fill-primary/10 transition-all filter drop-shadow-[0_0_6px_rgba(0,0,0,0.15)]"
+                  stroke-width="3.5"
+                  class="cursor-pointer hover:stroke-primary hover:fill-primary/20 transition-all"
                   (click)="onCellClick(cell)"
                 />
               }
@@ -196,15 +219,22 @@
                     />
                   }
 
+                  <!-- Pawn Hardware-Accelerated Vector Drop Shadow -->
+                  <circle
+                    [attr.cx]="(cell.col - 1) * 102 + 42"
+                    [attr.cy]="(9 - cell.row) * 102 + 43"
+                    r="23"
+                    fill="rgba(0,0,0,0.3)"
+                  />
+
                   <!-- Pawn Body -->
                   <circle
                     [attr.cx]="(cell.col - 1) * 102 + 42"
                     [attr.cy]="(9 - cell.row) * 102 + 42"
-                    r="23"
+                    r="22"
                     [attr.fill]="p.colorHex"
-                    stroke="rgba(255,255,255,0.4)"
+                    stroke="rgba(255,255,255,0.6)"
                     stroke-width="1.5"
-                    class="filter drop-shadow-[0_2px_10px_rgba(0,0,0,0.4)] transition-all duration-300"
                   />
 
                   <!-- Pawn Label (P1, P2, P3, P4) -->
@@ -227,6 +257,16 @@
             @if (w.orientation === 'horizontal') {
               <!-- Horizontal Wall: between row w.row and w.row+1, spanning cols w.col & w.col+1 -->
               <g>
+                <!-- Vector Shadow -->
+                <rect
+                  [attr.x]="(w.col - 1) * 102"
+                  [attr.y]="(8 - w.row) * 102 + 87"
+                  width="186"
+                  height="14"
+                  rx="6"
+                  ry="6"
+                  fill="rgba(0,0,0,0.25)"
+                />
                 <rect
                   [attr.x]="(w.col - 1) * 102"
                   [attr.y]="(8 - w.row) * 102 + 86"
@@ -235,7 +275,6 @@
                   rx="6"
                   ry="6"
                   [attr.fill]="getWallFill()"
-                  class="filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]"
                 />
                 <!-- Player Ownership Indicator Pip -->
                 <circle
@@ -248,6 +287,16 @@
             } @else {
               <!-- Vertical Wall: between col w.col and w.col+1, spanning rows w.row & w.row+1 -->
               <g>
+                <!-- Vector Shadow -->
+                <rect
+                  [attr.x]="(w.col - 1) * 102 + 86"
+                  [attr.y]="(8 - w.row) * 102 + 1"
+                  width="14"
+                  height="186"
+                  rx="6"
+                  ry="6"
+                  fill="rgba(0,0,0,0.25)"
+                />
                 <rect
                   [attr.x]="(w.col - 1) * 102 + 86"
                   [attr.y]="(8 - w.row) * 102"
@@ -256,7 +305,6 @@
                   rx="6"
                   ry="6"
                   [attr.fill]="getWallFill()"
-                  class="filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]"
                 />
                 <!-- Player Ownership Indicator Pip -->
                 <circle
@@ -270,7 +318,7 @@
           }
         </g>
 
-        <!-- 5. Hover Preview Wall -->
+        <!-- 5. Hover / Selection Preview Wall -->
         @if (hoveredSlot(); as preview) {
           @if (preview.orientation === 'horizontal') {
             <rect
@@ -301,12 +349,30 @@
           }
         }
 
-        <!-- 6. Interactive Wall Groove Hitboxes (8x8 intersections with touch support) -->
+        <!-- 6. Wall Groove Touch Guides & Hitboxes -->
         @if (state.wallsAllowed() > 0) {
-          <g id="wall-hitboxes">
+          <!-- Visible Junction Dots in Wall Placement Mode -->
+          @if (interactionMode() === 'wall') {
+            <g id="wall-groove-guides" class="pointer-events-none">
+              @for (r of [8, 7, 6, 5, 4, 3, 2, 1]; track r) {
+                @for (c of [1, 2, 3, 4, 5, 6, 7, 8]; track c) {
+                  <circle
+                    [attr.cx]="(c - 1) * 102 + 93"
+                    [attr.cy]="(8 - r) * 102 + 93"
+                    r="4"
+                    fill="currentColor"
+                    opacity="0.35"
+                  />
+                }
+              }
+            </g>
+          }
+
+          <!-- Interactive Groove Hitboxes (Inactive during Move mode to prevent mis-clicks) -->
+          <g id="wall-hitboxes" [style.pointer-events]="interactionMode() === 'wall' ? 'auto' : 'none'">
             @for (r of [8, 7, 6, 5, 4, 3, 2, 1]; track r) {
               @for (c of [1, 2, 3, 4, 5, 6, 7, 8]; track c) {
-                <!-- Hitbox at groove junction (r, c) with 44px touch area for mobile thumbs -->
+                <!-- Hitbox at groove junction (r, c) with generous 44px touch area for mobile fingers -->
                 <rect
                   [attr.x]="(c - 1) * 102 + 71"
                   [attr.y]="(8 - r) * 102 + 71"
@@ -351,20 +417,81 @@
       </svg>
     </div>
 
-    <!-- Mobile Touch Hint When Previewing Wall -->
-    @if (hoveredSlot(); as preview) {
-      <div
-        class="mt-2 text-center text-[11px] font-bold py-1 px-3 rounded-xl border animate-in fade-in transition-all"
-        [class.bg-emerald-500\/10]="preview.isLegal"
-        [class.text-emerald-600]="preview.isLegal"
-        [class.dark:text-emerald-400]="preview.isLegal"
-        [class.border-emerald-500\/30]="preview.isLegal"
-        [class.bg-red-500\/10]="!preview.isLegal"
-        [class.text-red-600]="!preview.isLegal"
-        [class.dark:text-red-400]="!preview.isLegal"
-        [class.border-red-500\/30]="!preview.isLegal">
-        {{ preview.isLegal ? 'Tap again on the groove to drop barricade' : 'Cannot place wall here (illegal / blocked)' }}
-      </div>
-    }
+    <!-- Dedicated Touch Action & Wall Preview Confirmation Bar (Outside SVG to prevent layout shift) -->
+    <div class="w-full min-h-[46px] flex items-center justify-between gap-2 px-3 py-2 rounded-2xl bg-muted/40 border border-border text-xs">
+      @if (hoveredSlot(); as preview) {
+        <div class="flex items-center gap-1.5 flex-1 min-w-0">
+          <span
+            class="h-2 w-2 rounded-full shrink-0"
+            [class.bg-emerald-500]="preview.isLegal"
+            [class.bg-red-500]="!preview.isLegal"></span>
+          <span
+            class="font-semibold text-[11px] truncate"
+            [class.text-emerald-600]="preview.isLegal"
+            [class.dark:text-emerald-400]="preview.isLegal"
+            [class.text-red-600]="!preview.isLegal"
+            [class.dark:text-red-400]="!preview.isLegal">
+            {{ preview.isLegal ? 'Wall selected (' + preview.orientation + ')' : 'Cannot place wall here (illegal/blocked)' }}
+          </span>
+        </div>
+
+        <div class="flex items-center gap-1.5 shrink-0 ml-auto">
+          <button
+            type="button"
+            (click)="toggleOrientation()"
+            class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-card hover:bg-muted text-foreground border border-border text-[11px] font-semibold transition-all active:scale-95"
+            title="Rotate Wall">
+            <ng-icon name="lucideRotateCw" class="text-xs" />
+            <span>Rotate</span>
+          </button>
+
+          @if (preview.isLegal) {
+            <button
+              type="button"
+              (click)="confirmWallPlacement()"
+              class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] shadow-sm transition-all active:scale-95 animate-in fade-in">
+              <ng-icon name="lucideCheck" class="text-xs" />
+              <span>Place Wall</span>
+            </button>
+          }
+
+          <button
+            type="button"
+            (click)="cancelWallPlacement()"
+            class="inline-flex items-center gap-1 px-2 py-1.5 rounded-xl bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border text-[11px] font-semibold transition-all active:scale-95"
+            title="Cancel Selection">
+            <ng-icon name="lucideX" class="text-xs" />
+          </button>
+        </div>
+      } @else if (interactionMode() === 'wall') {
+        <div class="flex items-center justify-between w-full text-muted-foreground text-[11px]">
+          <span class="flex items-center gap-1.5">
+            <ng-icon name="lucideInfo" class="text-xs text-primary" />
+            <span>Tap any highlighted groove junction to place a barricade.</span>
+          </span>
+          <button
+            type="button"
+            (click)="setInteractionMode('move')"
+            class="text-[11px] font-semibold text-primary hover:underline ml-2">
+            Back to Move
+          </button>
+        </div>
+      } @else {
+        <div class="flex items-center justify-between w-full text-muted-foreground text-[11px]">
+          <span class="flex items-center gap-1.5">
+            <ng-icon name="lucideInfo" class="text-xs text-primary" />
+            <span>Tap any green-bordered tile to move your pawn.</span>
+          </span>
+          @if (state.wallsRemainingThisTurn() > 0 && state.currentPlayer().wallsRemaining > 0) {
+            <button
+              type="button"
+              (click)="setInteractionMode('wall')"
+              class="text-[11px] font-semibold text-primary hover:underline ml-2">
+              Switch to Wall
+            </button>
+          }
+        </div>
+      }
+    </div>
   </div>
 </div>

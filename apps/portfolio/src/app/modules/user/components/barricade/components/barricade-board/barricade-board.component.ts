@@ -15,6 +15,10 @@ import {
   lucideInfo,
   lucideTarget,
   lucideCrown,
+  lucideCheck,
+  lucideX,
+  lucideMove,
+  lucideLayers,
 } from '@ng-icons/lucide';
 import {
   CellCoord,
@@ -65,6 +69,10 @@ export interface RenderCell {
       lucideInfo,
       lucideTarget,
       lucideCrown,
+      lucideCheck,
+      lucideX,
+      lucideMove,
+      lucideLayers,
     }),
   ],
   templateUrl: './barricade-board.component.html',
@@ -80,7 +88,7 @@ export class BarricadeBoardComponent {
   readonly rowsDescending = [9, 8, 7, 6, 5, 4, 3, 2, 1]; // Ranks from top (9) to bottom (1)
   readonly colsAscending = [1, 2, 3, 4, 5, 6, 7, 8, 9]; // Files from left (1) to right (9)
 
-  readonly isWallPlacementMode = signal<boolean>(false);
+  readonly interactionMode = signal<'move' | 'wall'>('move');
   readonly hoveredSlot = signal<{
     row: number;
     col: number;
@@ -195,10 +203,30 @@ export class BarricadeBoardComponent {
     return this.theme.darkMode() ? '#71717a' : '#64748b';
   }
 
+  setInteractionMode(mode: 'move' | 'wall'): void {
+    if (this.state.isGameOver() || this.state.isAiThinking()) return;
+    this.interactionMode.set(mode);
+    if (mode === 'move') {
+      this.hoveredSlot.set(null);
+    }
+  }
+
   onCellClick(cell: RenderCell): void {
     if (this.state.isGameOver() || this.state.isAiThinking()) return;
     if (cell.isLegalMove) {
-      this.state.movePawn({ row: cell.row, col: cell.col });
+      const success = this.state.movePawn({ row: cell.row, col: cell.col });
+      if (success) {
+        this.hoveredSlot.set(null);
+        if (
+          this.state.stepsRemainingThisTurn() <= 0 &&
+          this.state.wallsRemainingThisTurn() > 0 &&
+          this.state.currentPlayer().wallsRemaining > 0
+        ) {
+          this.interactionMode.set('wall');
+        } else {
+          this.interactionMode.set('move');
+        }
+      }
     }
   }
 
@@ -208,6 +236,26 @@ export class BarricadeBoardComponent {
     if (cur) {
       this.onWallSlotHover(cur.row, cur.col, this.state.wallOrientation());
     }
+  }
+
+  confirmWallPlacement(): void {
+    const cur = this.hoveredSlot();
+    if (!cur || !cur.isLegal || this.state.isGameOver() || this.state.isAiThinking()) return;
+    const success = this.state.placeWall({
+      row: cur.row,
+      col: cur.col,
+      orientation: cur.orientation,
+    });
+    if (success) {
+      this.hoveredSlot.set(null);
+      if (this.state.stepsRemainingThisTurn() > 0) {
+        this.interactionMode.set('move');
+      }
+    }
+  }
+
+  cancelWallPlacement(): void {
+    this.hoveredSlot.set(null);
   }
 
   @HostListener('window:keydown', ['$event'])
@@ -241,6 +289,9 @@ export class BarricadeBoardComponent {
   }
 
   onWallSlotLeave(): void {
+    if (this.interactionMode() === 'wall' && this.hoveredSlot()?.isLegal) {
+      return;
+    }
     this.hoveredSlot.set(null);
   }
 
@@ -250,6 +301,9 @@ export class BarricadeBoardComponent {
     const success = this.state.placeWall({ row, col, orientation });
     if (success) {
       this.hoveredSlot.set(null);
+      if (this.state.stepsRemainingThisTurn() > 0) {
+        this.interactionMode.set('move');
+      }
     }
   }
 
@@ -259,12 +313,13 @@ export class BarricadeBoardComponent {
    */
   onWallSlotTap(row: number, col: number): void {
     if (this.state.isGameOver() || this.state.isAiThinking()) return;
+    this.interactionMode.set('wall');
     const cur = this.hoveredSlot();
     const orientation = this.state.wallOrientation();
 
     if (cur && cur.row === row && cur.col === col && cur.orientation === orientation) {
       if (cur.isLegal) {
-        this.onWallSlotClick(row, col);
+        this.confirmWallPlacement();
       }
     } else {
       this.onWallSlotHover(row, col, orientation);
