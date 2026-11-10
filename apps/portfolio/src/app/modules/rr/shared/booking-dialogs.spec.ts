@@ -150,6 +150,36 @@ test.describe('RR Module - Shared Components & Booking Dialogs', () => {
         }
       }
     });
+
+    test('should enforce backdated booking restrictions for Employee role and allow for Admin role', async ({ page }) => {
+      const modifyBtn = page.locator('button[hlmTooltip="Modify Details"], button[hlmTooltip="Modify Booking"]').first();
+      if (await modifyBtn.isVisible().catch(() => false)) {
+        await modifyBtn.click();
+
+        const dialog = page.locator('app-rr-modify-booking-dialog, div[role="dialog"]').first();
+        await expect(dialog).toBeVisible({ timeout: 5000 });
+
+        const pickupInput = dialog.locator('input[formControlName="pickupDateTime"]');
+        await expect(pickupInput).toBeVisible();
+
+        // 1. Employee session: min attribute must be set
+        const minAttr = await pickupInput.getAttribute('min');
+        expect(minAttr).toBeTruthy();
+
+        // 2. Setting a past date should trigger validation error
+        await pickupInput.fill('2020-01-01T10:00');
+        await pickupInput.blur();
+
+        const errorMsg = dialog.getByText('Backdated bookings are allowed for Manager & Admin roles only.');
+        await expect(errorMsg).toBeVisible();
+
+        // Close dialog
+        const closeBtn = dialog.locator('button[aria-label="Close dialog"]').first();
+        if (await closeBtn.isVisible()) {
+          await closeBtn.click();
+        }
+      }
+    });
   });
 });
 

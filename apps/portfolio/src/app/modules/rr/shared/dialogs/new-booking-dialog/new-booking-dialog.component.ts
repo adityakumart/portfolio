@@ -61,6 +61,10 @@ import {
   AgreementUploadItem,
   AgreementUploadDialogResult,
 } from '../agreement-upload-dialog/agreement-upload-dialog.component';
+import {
+  getMinPickupDateTimeString,
+  backdateValidator,
+} from '../../utils/date-validation.util';
 
 import { ScheduleConflict } from '../reserve-booking-dialog/reserve-booking-dialog.component';
 
@@ -205,8 +209,15 @@ export class RRNewBookingDialogComponent implements OnInit {
     return list;
   });
 
-
-
+  // Role & Backdated Booking Restriction State
+  currentUser = computed(() => this.rrApi.currentUser());
+  isBackdateAllowed = computed(() => {
+    const role = this.currentUser()?.role;
+    return role === 'admin' || role === 'manager';
+  });
+  minPickupDateTime = computed(() => {
+    return this.isBackdateAllowed() ? null : getMinPickupDateTimeString();
+  });
 
   // Real-time schedule conflict status against advance reservations
   scheduleConflict = signal<ScheduleConflict>({ hasConflict: false });
@@ -303,7 +314,10 @@ export class RRNewBookingDialogComponent implements OnInit {
       guarAddress: ['', Validators.required],
 
       // Travel
-      pickupDateTime: ['', Validators.required],
+      pickupDateTime: [
+        '',
+        [Validators.required, backdateValidator(() => this.isBackdateAllowed())],
+      ],
       durationDays: ['0', Validators.required],
       durationHours: ['0', Validators.required],
       returnDateTime: ['', Validators.required],
