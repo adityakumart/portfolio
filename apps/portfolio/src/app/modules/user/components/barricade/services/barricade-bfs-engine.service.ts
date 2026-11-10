@@ -5,9 +5,8 @@ import {
   Wall,
   WallCoord,
   areCoordsEqual,
-  coordToAlgebraic,
 } from '../../../../../shared/barricade';
-import { BarricadeBoardGraphService } from './barricade-board-graph.service';
+import { BarricadeBoardGraphService, WallGrid } from './barricade-board-graph.service';
 
 export interface BfsPathResult {
   hasPath: boolean;
@@ -22,24 +21,24 @@ export class BarricadeBfsEngineService {
   private readonly graphService = inject(BarricadeBoardGraphService);
 
   /**
-   * Calculates the shortest path and minimum distance from a starting cell
-   * to any cell on the designated goal row using Breadth-First Search.
+   * Ultra-fast boolean reachability check to goal row with zero allocations.
    */
-  findShortestPathToGoal(
+  hasPathToGoalFast(
     start: CellCoord,
     goalRow: number,
-    walls: Wall[]
-  ): BfsPathResult {
-    // If already on goal row
-    if (start.row === goalRow) {
-      return { hasPath: true, distance: 0, path: [start] };
-    }
+    grid: WallGrid
+  ): boolean {
+    if (start.row === goalRow) return true;
 
-    const queue: { coord: CellCoord; path: CellCoord[] }[] = [
-      { coord: start, path: [start] },
-    ];
-    const visited = new Set<string>();
-    visited.add(coordToAlgebraic(start));
+    const queue = new Int32Array(81);
+    const visited = new Uint8Array(81);
+
+    let head = 0;
+    let tail = 0;
+
+    const startIdx = (start.row - 1) * 9 + (start.col - 1);
+    queue[tail++] = startIdx;
+    visited[startIdx] = 1;
 
     const directions = [
       { dRow: 1, dCol: 0 },
@@ -48,49 +47,196 @@ export class BarricadeBfsEngineService {
       { dRow: 0, dCol: 1 },
     ];
 
-    while (queue.length > 0) {
-      const current = queue.shift()!;
+    while (head < tail) {
+      const currIdx = queue[head++];
+      const currRow = Math.floor(currIdx / 9) + 1;
+      const currCol = (currIdx % 9) + 1;
 
       for (const dir of directions) {
-        const neighbor: CellCoord = {
-          row: current.coord.row + dir.dRow,
-          col: current.coord.col + dir.dCol,
-        };
+        const nextRow = currRow + dir.dRow;
+        const nextCol = currCol + dir.dCol;
 
-        if (!this.graphService.isWithinBounds(neighbor.row, neighbor.col)) {
+        if (nextRow < 1 || nextRow > 9 || nextCol < 1 || nextCol > 9) {
           continue;
         }
 
-        const key = coordToAlgebraic(neighbor);
-        if (visited.has(key)) {
+        const nextIdx = (nextRow - 1) * 9 + (nextCol - 1);
+        if (visited[nextIdx] === 1) {
           continue;
         }
 
-        // Check wall collision
-        if (this.graphService.isMoveBlockedByWall(current.coord, neighbor, walls)) {
+        if (this.graphService.isMoveBlockedByGrid(currRow, currCol, nextRow, nextCol, grid)) {
           continue;
         }
 
-        const newPath = [...current.path, neighbor];
-
-        // Win condition reached!
-        if (neighbor.row === goalRow) {
-          return {
-            hasPath: true,
-            distance: newPath.length - 1,
-            path: newPath,
-          };
+        if (nextRow === goalRow) {
+          return true;
         }
 
-        visited.add(key);
-        queue.push({ coord: neighbor, path: newPath });
+        visited[nextIdx] = 1;
+        queue[tail++] = nextIdx;
       }
     }
 
+    return false;
+  }
+
+  /**
+   * Ultra-fast boolean reachability check to center (e5) with zero allocations.
+   */
+  hasPathToCenterFast(
+    start: CellCoord,
+    center: CellCoord,
+    grid: WallGrid
+  ): boolean {
+    if (start.row === center.row && start.col === center.col) return true;
+
+    const queue = new Int32Array(81);
+    const visited = new Uint8Array(81);
+
+    let head = 0;
+    let tail = 0;
+
+    const startIdx = (start.row - 1) * 9 + (start.col - 1);
+    queue[tail++] = startIdx;
+    visited[startIdx] = 1;
+
+    const directions = [
+      { dRow: 1, dCol: 0 },
+      { dRow: -1, dCol: 0 },
+      { dRow: 0, dCol: -1 },
+      { dRow: 0, dCol: 1 },
+    ];
+
+    while (head < tail) {
+      const currIdx = queue[head++];
+      const currRow = Math.floor(currIdx / 9) + 1;
+      const currCol = (currIdx % 9) + 1;
+
+      for (const dir of directions) {
+        const nextRow = currRow + dir.dRow;
+        const nextCol = currCol + dir.dCol;
+
+        if (nextRow < 1 || nextRow > 9 || nextCol < 1 || nextCol > 9) {
+          continue;
+        }
+
+        const nextIdx = (nextRow - 1) * 9 + (nextCol - 1);
+        if (visited[nextIdx] === 1) {
+          continue;
+        }
+
+        if (this.graphService.isMoveBlockedByGrid(currRow, currCol, nextRow, nextCol, grid)) {
+          continue;
+        }
+
+        if (nextRow === center.row && nextCol === center.col) {
+          return true;
+        }
+
+        visited[nextIdx] = 1;
+        queue[tail++] = nextIdx;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Calculates the shortest path and minimum distance from a starting cell
+   * to any cell on the designated goal row using Breadth-First Search with parent pointer backtracking.
+   */
+  findShortestPathToGoal(
+    start: CellCoord,
+    goalRow: number,
+    walls: Wall[]
+  ): BfsPathResult {
+    if (start.row === goalRow) {
+      return { hasPath: true, distance: 0, path: [start] };
+    }
+
+    const grid = this.graphService.createWallGrid(walls);
+    const queue = new Int32Array(81);
+    const parent = new Int32Array(81).fill(-1);
+    const visited = new Uint8Array(81);
+
+    let head = 0;
+    let tail = 0;
+
+    const startIdx = (start.row - 1) * 9 + (start.col - 1);
+    queue[tail++] = startIdx;
+    visited[startIdx] = 1;
+
+    const directions = [
+      { dRow: 1, dCol: 0 },
+      { dRow: -1, dCol: 0 },
+      { dRow: 0, dCol: -1 },
+      { dRow: 0, dCol: 1 },
+    ];
+
+    let goalIdx = -1;
+
+    while (head < tail) {
+      const currIdx = queue[head++];
+      const currRow = Math.floor(currIdx / 9) + 1;
+      const currCol = (currIdx % 9) + 1;
+
+      for (const dir of directions) {
+        const nextRow = currRow + dir.dRow;
+        const nextCol = currCol + dir.dCol;
+
+        if (nextRow < 1 || nextRow > 9 || nextCol < 1 || nextCol > 9) {
+          continue;
+        }
+
+        const nextIdx = (nextRow - 1) * 9 + (nextCol - 1);
+        if (visited[nextIdx] === 1) {
+          continue;
+        }
+
+        if (this.graphService.isMoveBlockedByGrid(currRow, currCol, nextRow, nextCol, grid)) {
+          continue;
+        }
+
+        visited[nextIdx] = 1;
+        parent[nextIdx] = currIdx;
+
+        if (nextRow === goalRow) {
+          goalIdx = nextIdx;
+          break;
+        }
+
+        queue[tail++] = nextIdx;
+      }
+
+      if (goalIdx !== -1) break;
+    }
+
+    if (goalIdx === -1) {
+      return {
+        hasPath: false,
+        distance: Infinity,
+        path: [],
+      };
+    }
+
+    // Backtrack path
+    const path: CellCoord[] = [];
+    let curr = goalIdx;
+    while (curr !== -1) {
+      path.push({
+        row: Math.floor(curr / 9) + 1,
+        col: (curr % 9) + 1,
+      });
+      if (curr === startIdx) break;
+      curr = parent[curr];
+    }
+    path.reverse();
+
     return {
-      hasPath: false,
-      distance: Infinity,
-      path: [],
+      hasPath: true,
+      distance: path.length - 1,
+      path,
     };
   }
 
@@ -107,11 +253,19 @@ export class BarricadeBfsEngineService {
       return { hasPath: true, distance: 0, path: [start] };
     }
 
-    const queue: { coord: CellCoord; path: CellCoord[] }[] = [
-      { coord: start, path: [start] },
-    ];
-    const visited = new Set<string>();
-    visited.add(coordToAlgebraic(start));
+    const grid = this.graphService.createWallGrid(walls);
+    const queue = new Int32Array(81);
+    const parent = new Int32Array(81).fill(-1);
+    const visited = new Uint8Array(81);
+
+    let head = 0;
+    let tail = 0;
+
+    const startIdx = (start.row - 1) * 9 + (start.col - 1);
+    const targetIdx = (center.row - 1) * 9 + (center.col - 1);
+
+    queue[tail++] = startIdx;
+    visited[startIdx] = 1;
 
     const directions = [
       { dRow: 1, dCol: 0 },
@@ -120,47 +274,68 @@ export class BarricadeBfsEngineService {
       { dRow: 0, dCol: 1 },
     ];
 
-    while (queue.length > 0) {
-      const current = queue.shift()!;
+    let goalIdx = -1;
+
+    while (head < tail) {
+      const currIdx = queue[head++];
+      const currRow = Math.floor(currIdx / 9) + 1;
+      const currCol = (currIdx % 9) + 1;
 
       for (const dir of directions) {
-        const neighbor: CellCoord = {
-          row: current.coord.row + dir.dRow,
-          col: current.coord.col + dir.dCol,
-        };
+        const nextRow = currRow + dir.dRow;
+        const nextCol = currCol + dir.dCol;
 
-        if (!this.graphService.isWithinBounds(neighbor.row, neighbor.col)) {
+        if (nextRow < 1 || nextRow > 9 || nextCol < 1 || nextCol > 9) {
           continue;
         }
 
-        const key = coordToAlgebraic(neighbor);
-        if (visited.has(key)) {
+        const nextIdx = (nextRow - 1) * 9 + (nextCol - 1);
+        if (visited[nextIdx] === 1) {
           continue;
         }
 
-        if (this.graphService.isMoveBlockedByWall(current.coord, neighbor, walls)) {
+        if (this.graphService.isMoveBlockedByGrid(currRow, currCol, nextRow, nextCol, grid)) {
           continue;
         }
 
-        const newPath = [...current.path, neighbor];
+        visited[nextIdx] = 1;
+        parent[nextIdx] = currIdx;
 
-        if (areCoordsEqual(neighbor, center)) {
-          return {
-            hasPath: true,
-            distance: newPath.length - 1,
-            path: newPath,
-          };
+        if (nextIdx === targetIdx) {
+          goalIdx = nextIdx;
+          break;
         }
 
-        visited.add(key);
-        queue.push({ coord: neighbor, path: newPath });
+        queue[tail++] = nextIdx;
       }
+
+      if (goalIdx !== -1) break;
     }
 
+    if (goalIdx === -1) {
+      return {
+        hasPath: false,
+        distance: Infinity,
+        path: [],
+      };
+    }
+
+    const path: CellCoord[] = [];
+    let curr = goalIdx;
+    while (curr !== -1) {
+      path.push({
+        row: Math.floor(curr / 9) + 1,
+        col: (curr % 9) + 1,
+      });
+      if (curr === startIdx) break;
+      curr = parent[curr];
+    }
+    path.reverse();
+
     return {
-      hasPath: false,
-      distance: Infinity,
-      path: [],
+      hasPath: true,
+      distance: path.length - 1,
+      path,
     };
   }
 
@@ -179,19 +354,15 @@ export class BarricadeBfsEngineService {
       return false;
     }
 
-    // 2. Simulate wall placement
-    const simulatedWalls: Wall[] = [
-      ...existingWalls,
-      {
-        id: 'simulation_test',
-        row: candidate.row,
-        col: candidate.col,
-        orientation: candidate.orientation,
-        placedBy: 'player1',
-      },
-    ];
+    // 2. Build fast WallGrid with the simulated wall
+    const grid = this.graphService.createWallGrid(existingWalls);
+    if (candidate.orientation === 'horizontal') {
+      grid.hasH[candidate.row][candidate.col] = true;
+    } else {
+      grid.hasV[candidate.row][candidate.col] = true;
+    }
 
-    // 3. Verify that EVERY active, non-eliminated player has a valid open path
+    // 3. Fast reachability check for all active players
     for (const player of players) {
       if (player.isEliminated) {
         continue;
@@ -199,14 +370,12 @@ export class BarricadeBfsEngineService {
 
       if (player.goalTargetType === 'center') {
         const centerTarget = player.goalCoord ?? { row: 5, col: 5 };
-        const result = this.findShortestPathToCenter(player.position, centerTarget, simulatedWalls);
-        if (!result.hasPath) {
+        if (!this.hasPathToCenterFast(player.position, centerTarget, grid)) {
           return false;
         }
       } else {
         const targetRow = player.goalRow ?? (player.playerId === 'player1' ? 9 : 1);
-        const result = this.findShortestPathToGoal(player.position, targetRow, simulatedWalls);
-        if (!result.hasPath) {
+        if (!this.hasPathToGoalFast(player.position, targetRow, grid)) {
           return false;
         }
       }

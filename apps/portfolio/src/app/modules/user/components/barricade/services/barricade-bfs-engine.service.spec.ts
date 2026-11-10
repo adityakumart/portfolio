@@ -1,13 +1,26 @@
+// @vitest-environment jsdom
 import { describe, it, expect, beforeEach } from 'vitest';
-import { TestBed } from '@angular/core/testing';
+import { TestBed, getTestBed } from '@angular/core/testing';
+import {
+  BrowserDynamicTestingModule,
+  platformBrowserDynamicTesting,
+} from '@angular/platform-browser-dynamic/testing';
 import { BarricadeBfsEngineService } from './barricade-bfs-engine.service';
 import { BarricadeBoardGraphService } from './barricade-board-graph.service';
 import { Pawn, Wall } from '../../../../../shared/barricade';
+
+try {
+  getTestBed().initTestEnvironment(
+    BrowserDynamicTestingModule,
+    platformBrowserDynamicTesting()
+  );
+} catch {}
 
 describe('BarricadeBfsEngineService', () => {
   let service: BarricadeBfsEngineService;
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [BarricadeBoardGraphService, BarricadeBfsEngineService],
     });
