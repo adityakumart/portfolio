@@ -3,14 +3,9 @@
   <div class="px-6 py-4 border-b border-border bg-muted/20 flex items-center justify-between">
     <div class="flex items-center gap-2.5">
       <div
-        class="w-9 h-9 rounded-xl flex items-center justify-center border shadow-xs"
-        [ngClass]="{
-          'bg-rose-500/10 border-rose-500/20 text-rose-500': isService,
-          'bg-cyan-500/10 border-cyan-500/20 text-cyan-500': isContract,
-          'bg-primary/10 border-primary/20 text-primary': !isService && !isContract
-        }"
+        class="w-9 h-9 rounded-xl flex items-center justify-center border shadow-xs bg-rose-500/10 border-rose-500/20 text-rose-500"
       >
-        <ng-icon [name]="isService ? 'lucideWrench' : (isContract ? 'lucideFileText' : 'lucideCalendar')" class="text-lg"></ng-icon>
+        <ng-icon name="lucideWrench" class="text-lg"></ng-icon>
       </div>
       <div>
         <h3 class="text-base font-bold text-foreground leading-tight">Update Vehicle Availability</h3>
@@ -50,13 +45,9 @@
             <span
               hlmBadge
               variant="outline"
-              class="font-bold text-[10px] uppercase"
-              [ngClass]="{
-                'text-rose-600 dark:text-rose-400 bg-rose-500/10 border-rose-500/30': isService,
-                'text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 border-cyan-500/30': isContract
-              }"
+              class="font-bold text-[10px] uppercase text-rose-600 dark:text-rose-400 bg-rose-500/10 border-rose-500/30"
             >
-              {{ isService ? 'In Service' : (isContract ? 'In Contract' : v.status) }}
+              {{ v.status === 'maintenance' ? 'In Service' : v.status }}
             </span>
           </div>
 
@@ -78,7 +69,7 @@
         </hlm-date-picker>
 
         <p class="text-[11px] text-muted-foreground">
-          Estimated date when this vehicle is scheduled to complete {{ isService ? 'servicing/maintenance' : 'corporate contract' }} and return to available fleet.
+          Estimated date when this vehicle is scheduled to complete servicing/maintenance and return to available fleet.
         </p>
 
         @if (availForm.get('availableBy')?.invalid && (availForm.get('availableBy')?.touched || availForm.get('availableBy')?.dirty)) {
