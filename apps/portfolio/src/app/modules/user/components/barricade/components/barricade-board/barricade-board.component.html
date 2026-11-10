@@ -15,11 +15,11 @@
           <span class="font-bold text-foreground text-[11px] truncate max-w-[65px]">{{ p.name }}</span>
           <span
             class="font-mono text-[11px] font-semibold"
-            [class.text-red-500]="isCriticalTime(p.timeRemainingMs)"
-            [class.animate-pulse]="isCriticalTime(p.timeRemainingMs)"
-            [class.text-amber-500]="isLowTime(p.timeRemainingMs) && !isCriticalTime(p.timeRemainingMs)"
-            [class.text-muted-foreground]="!isLowTime(p.timeRemainingMs)">
-            {{ formatClock(p.timeRemainingMs) }}
+            [class.text-red-500]="isCriticalTime(state.getPlayerTime(idx))"
+            [class.animate-pulse]="isCriticalTime(state.getPlayerTime(idx))"
+            [class.text-amber-500]="isLowTime(state.getPlayerTime(idx)) && !isCriticalTime(state.getPlayerTime(idx))"
+            [class.text-muted-foreground]="!isLowTime(state.getPlayerTime(idx))">
+            {{ formatClock(state.getPlayerTime(idx)) }}
           </span>
         </div>
       }
