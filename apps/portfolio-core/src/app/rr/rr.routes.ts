@@ -219,15 +219,17 @@ rrRouter.post('/auth/login', authRateLimiter, async (req: Request, res: Response
       if (emp.passwordHash) {
         const isMatch = await bcrypt.compare(password, emp.passwordHash);
         if (!isMatch) {
-          if (emp.role !== 'admin' && emp.dob === password) {
-            // Permitted fallback for employee DOB match
+          // Allow DOB match if role is not admin OR during first-login / forced password reset
+          const isInitialLogin = emp.isFirstLogin === true || emp.mustChangePassword === true;
+          if ((emp.role !== 'admin' || isInitialLogin) && emp.dob && emp.dob === password) {
+            // Permitted fallback for DOB match on initial login
           } else {
             await handleFailedLogin(emp, 'Invalid password');
             return;
           }
         }
       } else {
-        // If they are an employee without passwordHash, verify against DOB
+        // If user has no passwordHash, verify against DOB
         if (emp.dob !== password) {
           await handleFailedLogin(emp, 'Invalid password');
           return;
@@ -1671,7 +1673,7 @@ rrRouter.post('/employees', authenticateRRToken, requireAdmin, async (req: any, 
     let passwordHash = undefined;
     const rawPassword = data.password && typeof data.password === 'string' && data.password.trim()
       ? data.password.trim()
-      : (data.role === 'admin' ? 'AdminPD' : (data.dob || 'RoadReady@123'));
+      : (data.dob || (data.role === 'admin' ? 'AdminPD' : 'RoadReady@123'));
 
     if (rawPassword) {
       const saltRounds = 10;

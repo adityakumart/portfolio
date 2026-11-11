@@ -299,6 +299,7 @@
                       ></ng-icon>
                     </button>
                   </div>
+                  <p class="text-[11px] text-muted-foreground mt-1">First login? Enter your Date of Birth or temporary password.</p>
                   @if (
                     employeeFormGroup.get('password')?.touched &&
                     employeeFormGroup.get('password')?.invalid
@@ -397,6 +398,7 @@
                       ></ng-icon>
                     </button>
                   </div>
+                  <p class="text-[11px] text-muted-foreground mt-1">First login? Enter your Date of Birth or temporary password assigned by Administrator.</p>
                   @if (
                     adminFormGroup.get('adminPassword')?.touched &&
                     adminFormGroup.get('adminPassword')?.invalid
