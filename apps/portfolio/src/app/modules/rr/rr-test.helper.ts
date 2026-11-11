@@ -834,13 +834,18 @@ export async function setupRRRouteMocks(
 
   // Employee reset password
   await page.route('**/api/rr/employees/*/reset-password', async (route) => {
+    let tempPass = 'TempPassword123';
+    try {
+      const data = route.request().postDataJSON();
+      if (data?.temporaryPassword) tempPass = data.temporaryPassword;
+    } catch {}
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({
         success: true,
         message: 'Password reset successfully. User must create new password on next login.',
-        temporaryPassword: 'TempPassword123'
+        temporaryPassword: tempPass
       }),
     });
   });

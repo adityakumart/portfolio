@@ -11,6 +11,7 @@ import { HlmTooltipImports } from '@spartan-ng/hel/tooltip';
 import { HlmTableImports } from '@spartan-ng/hel/table';
 import { HlmBadgeImports } from '@spartan-ng/hel/badge';
 import { HlmDatePickerImports } from '@spartan-ng/hel/date-picker';
+import { HlmSpinnerImports } from '@spartan-ng/hel/spinner';
 import { toast } from '@spartan-ng/hel/sonner';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { IndianDatePipe, toISODateString, IndianDateInput } from '../../../../../../shared/pipes/indian-date.pipe';
@@ -24,6 +25,13 @@ import {
   lucideTrash2,
   lucideUserCheck,
   lucideKeyRound,
+  lucideCopy,
+  lucideEye,
+  lucideEyeOff,
+  lucideRefreshCw,
+  lucideX,
+  lucideShieldCheck,
+  lucideAlertCircle,
 } from '@ng-icons/lucide';
 
 @Component({
@@ -39,6 +47,7 @@ import {
     HlmTableImports,
     HlmBadgeImports,
     HlmDatePickerImports,
+    HlmSpinnerImports,
     IndianDatePipe,
     NgIconComponent,
     RRAadharInputComponent,
@@ -54,6 +63,13 @@ import {
       lucideTrash2,
       lucideUserCheck,
       lucideKeyRound,
+      lucideCopy,
+      lucideEye,
+      lucideEyeOff,
+      lucideRefreshCw,
+      lucideX,
+      lucideShieldCheck,
+      lucideAlertCircle,
     }),
   ],
   templateUrl: './employee-list.component.html',
@@ -65,6 +81,7 @@ export class RREmployeeListComponent implements OnInit {
   private dialog = inject(HlmDialogService);
 
   @ViewChild('employeeFormDialog') employeeFormDialog!: TemplateRef<any>;
+  @ViewChild('resetPasswordDialog') resetPasswordDialog!: TemplateRef<any>;
 
   // Collections data
   employees = signal<IEmployee[]>([]);
@@ -84,12 +101,71 @@ export class RREmployeeListComponent implements OnInit {
   editingEmployeeMode = signal<boolean>(false);
   selectedEmployeeForEdit = signal<IEmployee | null>(null);
 
+  // Initial credential selection for new staff registration (Task 1)
+  credentialType = signal<'dob' | 'temp_password'>('dob');
+  generatedTempPassword = signal<string>('');
+  showTempPassword = signal<boolean>(false);
+
+  // Interactive reset password dialog signals (Task 2)
+  targetEmployeeForReset = signal<IEmployee | null>(null);
+  resetType = signal<'dob' | 'temp_password'>('dob');
+  resetTempPassword = signal<string>('');
+  showResetTempPassword = signal<boolean>(false);
+  resetSuccessResult = signal<{ temporaryPassword: string; message: string } | null>(null);
+  isResetSubmitting = signal<boolean>(false);
+
   // Forms
   employeeFormGroup!: FormGroup;
 
   ngOnInit() {
     this.initForms();
     this.loadEmployees();
+  }
+
+  generateRandomPassword(): string {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+    let pass = '';
+    for (let i = 0; i < 7; i++) {
+      pass += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    const num = Math.floor(10 + Math.random() * 90);
+    return `RR@${pass}#${num}`;
+  }
+
+  async copyToClipboard(text: string, label = 'Temporary password') {
+    if (!text) return;
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard) {
+        await navigator.clipboard.writeText(text);
+        toast.success(`${label} copied to clipboard.`);
+        return;
+      }
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      toast.success(`${label} copied to clipboard.`);
+    } catch {
+      toast.error('Failed to copy to clipboard.');
+    }
+  }
+
+  setCredentialType(type: 'dob' | 'temp_password') {
+    this.credentialType.set(type);
+    if (type === 'temp_password' && !this.generatedTempPassword()) {
+      this.generatedTempPassword.set(this.generateRandomPassword());
+    }
+  }
+
+  generateNewRegistrationPassword() {
+    this.generatedTempPassword.set(this.generateRandomPassword());
+  }
+
+  onTempPasswordInput(e: Event) {
+    const val = (e.target as HTMLInputElement).value;
+    this.generatedTempPassword.set(val);
   }
 
   private initForms() {
@@ -108,17 +184,6 @@ export class RREmployeeListComponent implements OnInit {
       address: ['', Validators.required],
       password: ['']
     });
-
-    this.employeeFormGroup.get('role')?.valueChanges.subscribe((role) => {
-      if (!this.editingEmployeeMode()) {
-        const currentPass = this.employeeFormGroup.get('password')?.value;
-        if (!currentPass || currentPass === 'AdminPD' || currentPass === 'RoadReady@123') {
-          this.employeeFormGroup.patchValue({
-            password: role === 'admin' ? 'AdminPD' : 'RoadReady@123'
-          }, { emitEvent: false });
-        }
-      }
-    });
   }
 
   // --- RETRIEVALS ---
@@ -135,11 +200,14 @@ export class RREmployeeListComponent implements OnInit {
   openAddEmployeeModal() {
     this.editingEmployeeMode.set(false);
     this.selectedEmployeeForEdit.set(null);
+    this.credentialType.set('dob');
+    this.generatedTempPassword.set('');
+    this.showTempPassword.set(false);
     this.employeeFormGroup.reset({
       id: '',
       role: 'employee',
       allowLogin: false,
-      password: 'RoadReady@123'
+      password: ''
     });
     this.dialog.open(this.employeeFormDialog, {
       contentClass: 'max-w-3xl w-full p-6 max-h-[85vh] flex flex-col overflow-hidden',
@@ -187,25 +255,81 @@ export class RREmployeeListComponent implements OnInit {
     }
   }
 
-  async resetPassword(e: IEmployee) {
-    if (!confirm(`Are you sure you want to reset password for ${e.firstName} ${e.lastName} (${e.id})? User will be prompted to create a new password upon first login.`)) {
-      return;
-    }
+  private resetDialogRef: any = null;
 
+  // --- INTERACTIVE RESET PASSWORD MODAL (Task 2) ---
+  openResetPasswordModal(e: IEmployee) {
+    this.targetEmployeeForReset.set(e);
+    this.resetType.set('dob');
+    this.resetTempPassword.set(this.generateRandomPassword());
+    this.showResetTempPassword.set(false);
+    this.resetSuccessResult.set(null);
+    this.resetDialogRef = this.dialog.open(this.resetPasswordDialog, {
+      contentClass: 'max-w-md w-full p-6 max-h-[85vh] flex flex-col overflow-hidden',
+    });
+  }
+
+  setResetType(type: 'dob' | 'temp_password') {
+    this.resetType.set(type);
+    if (type === 'temp_password' && !this.resetTempPassword()) {
+      this.resetTempPassword.set(this.generateRandomPassword());
+    }
+  }
+
+  generateNewResetPassword() {
+    this.resetTempPassword.set(this.generateRandomPassword());
+  }
+
+  onResetTempPasswordInput(e: Event) {
+    const val = (e.target as HTMLInputElement).value;
+    this.resetTempPassword.set(val);
+  }
+
+  async confirmResetPassword() {
+    const emp = this.targetEmployeeForReset();
+    if (!emp) return;
+
+    const tempPass = this.resetType() === 'temp_password'
+      ? (this.resetTempPassword().trim() || this.generateRandomPassword())
+      : (emp.dob || 'RoadReady@123');
+
+    this.isResetSubmitting.set(true);
     try {
-      const res = await this.rrApi.resetEmployeePassword(e.id);
-      toast.success(res.message || `Password reset for ${e.id}. User must create new password on first login.`);
+      const res = await this.rrApi.resetEmployeePassword(emp.id, tempPass);
+      this.resetSuccessResult.set({
+        temporaryPassword: res.temporaryPassword || tempPass,
+        message: res.message || `Password reset successfully for ${emp.firstName} ${emp.lastName}.`
+      });
+      toast.success(`Password reset for ${emp.id}. User must create new password on next login.`);
       await this.loadEmployees();
     } catch (err: any) {
       toast.error(err.error?.message || err.message || 'Failed to reset password.');
+    } finally {
+      this.isResetSubmitting.set(false);
     }
+  }
+
+  closeResetModal() {
+    if (this.resetDialogRef) {
+      this.resetDialogRef.close();
+      this.resetDialogRef = null;
+    } else {
+      this.dialog.closeAll();
+    }
+    this.targetEmployeeForReset.set(null);
+    this.resetSuccessResult.set(null);
+    this.isResetSubmitting.set(false);
+  }
+
+  resetPassword(e: IEmployee) {
+    this.openResetPasswordModal(e);
   }
 
   resetPasswordFromModal(event: Event) {
     event.preventDefault();
     const emp = this.selectedEmployeeForEdit();
     if (emp) {
-      this.resetPassword(emp);
+      this.openResetPasswordModal(emp);
     }
   }
 
@@ -214,13 +338,23 @@ export class RREmployeeListComponent implements OnInit {
     if (this.employeeFormGroup.invalid) return;
 
     const formVal = this.employeeFormGroup.value;
-    const payload = {
+    const isoDob = toISODateString(formVal.dob as IndianDateInput);
+    const payload: any = {
       ...formVal,
-      dob: toISODateString(formVal.dob as IndianDateInput),
+      dob: isoDob,
     };
 
-    if (!payload.password) {
-      delete payload.password;
+    if (!this.editingEmployeeMode()) {
+      if (this.credentialType() === 'dob') {
+        payload.password = isoDob;
+      } else {
+        const tempPass = this.generatedTempPassword().trim();
+        payload.password = tempPass || this.generateRandomPassword();
+      }
+    } else {
+      if (!payload.password) {
+        delete payload.password;
+      }
     }
 
     try {
