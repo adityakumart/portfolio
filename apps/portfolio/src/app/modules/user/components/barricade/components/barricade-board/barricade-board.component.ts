@@ -262,6 +262,7 @@ export class BarricadeBoardComponent {
   handleKeyboardEvent(event: KeyboardEvent): void {
     if (event.code === 'Space' && !this.state.isGameOver()) {
       event.preventDefault();
+      this.interactionMode.set('wall');
       this.toggleOrientation();
     }
   }

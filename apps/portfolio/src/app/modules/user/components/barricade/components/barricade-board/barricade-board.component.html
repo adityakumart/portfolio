@@ -350,26 +350,24 @@
         }
 
         <!-- 6. Wall Groove Touch Guides & Hitboxes -->
-        @if (state.wallsAllowed() > 0) {
+        @if (state.wallsAllowed() > 0 && interactionMode() === 'wall') {
           <!-- Visible Junction Dots in Wall Placement Mode -->
-          @if (interactionMode() === 'wall') {
-            <g id="wall-groove-guides" class="pointer-events-none">
-              @for (r of [8, 7, 6, 5, 4, 3, 2, 1]; track r) {
-                @for (c of [1, 2, 3, 4, 5, 6, 7, 8]; track c) {
-                  <circle
-                    [attr.cx]="(c - 1) * 102 + 93"
-                    [attr.cy]="(8 - r) * 102 + 93"
-                    r="4"
-                    fill="currentColor"
-                    opacity="0.35"
-                  />
-                }
+          <g id="wall-groove-guides" class="pointer-events-none">
+            @for (r of [8, 7, 6, 5, 4, 3, 2, 1]; track r) {
+              @for (c of [1, 2, 3, 4, 5, 6, 7, 8]; track c) {
+                <circle
+                  [attr.cx]="(c - 1) * 102 + 93"
+                  [attr.cy]="(8 - r) * 102 + 93"
+                  r="4"
+                  fill="currentColor"
+                  opacity="0.35"
+                />
               }
-            </g>
-          }
+            }
+          </g>
 
-          <!-- Interactive Groove Hitboxes (Inactive during Move mode to prevent mis-clicks) -->
-          <g id="wall-hitboxes" [style.pointer-events]="interactionMode() === 'wall' ? 'auto' : 'none'">
+          <!-- Interactive Groove Hitboxes (Only present during Wall mode to guarantee zero move interception) -->
+          <g id="wall-hitboxes">
             @for (r of [8, 7, 6, 5, 4, 3, 2, 1]; track r) {
               @for (c of [1, 2, 3, 4, 5, 6, 7, 8]; track c) {
                 <!-- Hitbox at groove junction (r, c) with generous 44px touch area for mobile fingers -->
