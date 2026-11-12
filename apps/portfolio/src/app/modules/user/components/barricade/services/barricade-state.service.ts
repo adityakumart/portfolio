@@ -56,6 +56,7 @@ export class BarricadeStateService implements OnDestroy {
   readonly turnCount = signal<number>(1);
   readonly turnActionUsage = signal<TurnActionUsage>({ stepsTaken: 0, wallsPlaced: 0 });
   readonly winReason = signal<'goal_reached' | 'timeout' | 'resignation' | null>(null);
+  readonly playerClocks = signal<number[]>([600000, 600000]);
 
   readonly players = signal<Pawn[]>([
     {
@@ -161,6 +162,7 @@ export class BarricadeStateService implements OnDestroy {
                 timeRemainingMs: durationMs,
               }))
             );
+            this.playerClocks.set(parsed.players.map(() => durationMs));
           }
         }
       } catch {}
@@ -187,6 +189,10 @@ export class BarricadeStateService implements OnDestroy {
       this.walls()
     );
   });
+
+  getPlayerTime(idx: number): number {
+    return this.playerClocks()[idx] ?? this.players()[idx]?.timeRemainingMs ?? 0;
+  }
 
   ngOnDestroy(): void {
     this.stopClockTimer();
@@ -259,6 +265,7 @@ export class BarricadeStateService implements OnDestroy {
     });
 
     this.players.set(newPlayers);
+    this.playerClocks.set(newPlayers.map((p) => p.timeRemainingMs ?? matchDurationMs));
     this.lastConfig.set(config);
     if (isPlatformBrowser(this.platformId)) {
       try {
@@ -326,6 +333,7 @@ export class BarricadeStateService implements OnDestroy {
       { ...p[0], position: p1Pos, wallsRemaining: p1Walls },
       { ...p[1], position: p2Pos, wallsRemaining: p2Walls },
     ]);
+    this.playerClocks.set([p[0]?.timeRemainingMs ?? 600000, p[1]?.timeRemainingMs ?? 600000]);
   }
 
   /**
@@ -620,28 +628,28 @@ export class BarricadeStateService implements OnDestroy {
       const currentPawn = this.players()[currentIdx];
       if (!currentPawn || currentPawn.isEliminated) return;
 
-      const newTime = Math.max(0, (currentPawn.timeRemainingMs ?? 0) - delta);
+      const oldTime = this.playerClocks()[currentIdx] ?? (currentPawn.timeRemainingMs ?? 0);
+      const newTime = Math.max(0, oldTime - delta);
 
       // Warning tick if under 10 seconds
       if (
         newTime > 0 &&
         newTime <= 10000 &&
-        Math.floor(newTime / 1000) !==
-          Math.floor((currentPawn.timeRemainingMs ?? 0) / 1000)
+        Math.floor(newTime / 1000) !== Math.floor(oldTime / 1000)
       ) {
         this.soundService.playLowTimeTick();
       }
 
-      this.players.update((plist) => {
-        const copy = [...plist];
-        copy[currentIdx] = { ...copy[currentIdx], timeRemainingMs: newTime };
+      this.playerClocks.update((clocks) => {
+        const copy = [...clocks];
+        copy[currentIdx] = newTime;
         return copy;
       });
 
       if (newTime <= 0) {
         this.handleTimeout(currentPawn);
       }
-    }, 100);
+    }, 500);
   }
 
   private stopClockTimer(): void {
@@ -675,6 +683,15 @@ export class BarricadeStateService implements OnDestroy {
       `${timedOutPawn.name} ran out of time and has been eliminated!`,
       { description: 'Player Eliminated' }
     );
+
+    const timedOutIdx = this.players().findIndex((p) => p.id === timedOutPawn.id);
+    if (timedOutIdx !== -1) {
+      this.playerClocks.update((clocks) => {
+        const copy = [...clocks];
+        copy[timedOutIdx] = 0;
+        return copy;
+      });
+    }
 
     this.players.update((plist) =>
       plist.map((p) =>
@@ -728,6 +745,9 @@ export class BarricadeStateService implements OnDestroy {
 
     // If we have player snapshots, restore all players accurately
     if (targetEntry.playersSnapshot && targetEntry.playersSnapshot.length > 0) {
+      this.playerClocks.set(
+        targetEntry.playersSnapshot.map((s) => s.timeRemainingMs ?? 0)
+      );
       this.players.update((plist) =>
         plist.map((p) => {
           const snap = targetEntry.playersSnapshot?.find(

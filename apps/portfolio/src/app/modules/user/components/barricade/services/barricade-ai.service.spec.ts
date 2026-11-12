@@ -1,17 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { BarricadeAiService } from './barricade-ai.service';
-import { BarricadeStateService } from './barricade-state.service';
-import { BarricadeBoardGraphService } from './barricade-board-graph.service';
-import { BarricadeBfsEngineService } from './barricade-bfs-engine.service';
-import { BarricadeSoundService } from './barricade-sound.service';
-import { ToastrService } from '../../../../../shared/services/toaster.service';
-
-describe('BarricadeAiService', () => {
-  let aiService: BarricadeAiService;
-  let stateService: BarricadeStateService;
-
-  beforeEach(() => {
     const toastrMock = {
       success: () => {},
       error: () => {},

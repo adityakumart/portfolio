@@ -1,4 +1,4 @@
-<div class="sidebar-panel w-full max-w-[380px] flex flex-col justify-between bg-card text-card-foreground p-4 md:p-5 rounded-3xl border border-border shadow-xl min-h-[480px]">
+<div class="sidebar-panel w-full max-w-[380px] flex flex-col justify-between bg-card text-card-foreground p-4 md:p-5 rounded-3xl border border-border shadow-xl min-h-0 md:min-h-[480px]">
   <!-- 1. Top Header Bar: < Lobby, Clock/Mode Badge, Volume, Menu -->
   <div class="w-full flex items-center justify-between pb-3.5 border-b border-border/80">
     <button
@@ -111,20 +111,20 @@
           <!-- Countdown Timer Badge -->
           <div
             class="flex items-center gap-1 font-mono text-xs font-bold px-2 py-0.5 rounded-lg border transition-all"
-            [class.bg-red-500\/20]="isCriticalTime(player.timeRemainingMs)"
-            [class.text-red-600]="isCriticalTime(player.timeRemainingMs)"
-            [class.dark:text-red-400]="isCriticalTime(player.timeRemainingMs)"
-            [class.border-red-500\/40]="isCriticalTime(player.timeRemainingMs)"
-            [class.animate-pulse]="isCriticalTime(player.timeRemainingMs)"
-            [class.bg-amber-500\/10]="isLowTime(player.timeRemainingMs) && !isCriticalTime(player.timeRemainingMs)"
-            [class.text-amber-600]="isLowTime(player.timeRemainingMs) && !isCriticalTime(player.timeRemainingMs)"
-            [class.dark:text-amber-400]="isLowTime(player.timeRemainingMs) && !isCriticalTime(player.timeRemainingMs)"
-            [class.border-amber-500\/30]="isLowTime(player.timeRemainingMs) && !isCriticalTime(player.timeRemainingMs)"
-            [class.bg-background]="!isLowTime(player.timeRemainingMs)"
-            [class.text-foreground]="!isLowTime(player.timeRemainingMs)"
-            [class.border-border]="!isLowTime(player.timeRemainingMs)">
+            [class.bg-red-500\/20]="isCriticalTime(state.getPlayerTime(idx))"
+            [class.text-red-600]="isCriticalTime(state.getPlayerTime(idx))"
+            [class.dark:text-red-400]="isCriticalTime(state.getPlayerTime(idx))"
+            [class.border-red-500\/40]="isCriticalTime(state.getPlayerTime(idx))"
+            [class.animate-pulse]="isCriticalTime(state.getPlayerTime(idx))"
+            [class.bg-amber-500\/10]="isLowTime(state.getPlayerTime(idx)) && !isCriticalTime(state.getPlayerTime(idx))"
+            [class.text-amber-600]="isLowTime(state.getPlayerTime(idx)) && !isCriticalTime(state.getPlayerTime(idx))"
+            [class.dark:text-amber-400]="isLowTime(state.getPlayerTime(idx)) && !isCriticalTime(state.getPlayerTime(idx))"
+            [class.border-amber-500\/30]="isLowTime(state.getPlayerTime(idx)) && !isCriticalTime(state.getPlayerTime(idx))"
+            [class.bg-background]="!isLowTime(state.getPlayerTime(idx))"
+            [class.text-foreground]="!isLowTime(state.getPlayerTime(idx))"
+            [class.border-border]="!isLowTime(state.getPlayerTime(idx))">
             <ng-icon name="lucideClock" class="text-[11px]" />
-            <span>{{ formatClock(player.timeRemainingMs) }}</span>
+            <span>{{ formatClock(state.getPlayerTime(idx)) }}</span>
           </div>
         </div>
 

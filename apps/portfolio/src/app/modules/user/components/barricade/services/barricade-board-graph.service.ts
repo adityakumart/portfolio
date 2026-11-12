@@ -13,6 +13,13 @@ export interface AdjacencyEdge {
   to: CellCoord;
 }
 
+export interface WallGrid {
+  // horizontal walls: hasH[row][col] is true if a horizontal wall starts at groove (row, col)
+  hasH: boolean[][];
+  // vertical walls: hasV[row][col] is true if a vertical wall starts at groove (row, col)
+  hasV: boolean[][];
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -63,6 +70,61 @@ export class BarricadeBoardGraphService {
           w.orientation === 'vertical' &&
           w.col === leftCol &&
           (w.row === row || w.row === row - 1)
+      );
+    }
+
+    return false;
+  }
+
+  /**
+   * Fast O(1) bitmask/grid representation for wall collision lookups.
+   */
+  createWallGrid(walls: Wall[]): WallGrid {
+    const hasH: boolean[][] = Array.from({ length: 10 }, () => Array(10).fill(false));
+    const hasV: boolean[][] = Array.from({ length: 10 }, () => Array(10).fill(false));
+
+    for (let i = 0; i < walls.length; i++) {
+      const w = walls[i];
+      if (w.orientation === 'horizontal') {
+        hasH[w.row][w.col] = true;
+      } else {
+        hasV[w.row][w.col] = true;
+      }
+    }
+
+    return { hasH, hasV };
+  }
+
+  /**
+   * Fast O(1) check whether step from (fromRow, fromCol) to (toRow, toCol) is blocked by a wall in WallGrid.
+   */
+  isMoveBlockedByGrid(
+    fromRow: number,
+    fromCol: number,
+    toRow: number,
+    toCol: number,
+    grid: WallGrid
+  ): boolean {
+    const dRow = toRow - fromRow;
+    const dCol = toCol - fromCol;
+
+    if (Math.abs(dRow) + Math.abs(dCol) !== 1) {
+      return true;
+    }
+
+    if (dRow !== 0) {
+      const lowerRow = Math.min(fromRow, toRow);
+      return (
+        grid.hasH[lowerRow][fromCol] ||
+        (fromCol > 1 && grid.hasH[lowerRow][fromCol - 1])
+      );
+    }
+
+    if (dCol !== 0) {
+      const leftCol = Math.min(fromCol, toCol);
+      return (
+        grid.hasV[fromRow][leftCol] ||
+        (fromRow > 1 && grid.hasV[fromRow - 1][leftCol])
       );
     }
 

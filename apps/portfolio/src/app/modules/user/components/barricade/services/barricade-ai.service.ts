@@ -103,7 +103,14 @@ export class BarricadeAiService implements BarricadeAiHandler {
     const isPlayerAhead = playerPath.length <= aiPath.length;
 
     if (isPlayerAhead && aiPawn.wallsRemaining > 0) {
-      const bestWall = this.findBestWall(playerPawn.position, aiPawn.position, walls, playerPath.length, aiPath.length);
+      const bestWall = this.findBestWall(
+        playerPawn.position,
+        aiPawn.position,
+        walls,
+        playerPath.length,
+        aiPath.length,
+        playerPath
+      );
       if (bestWall) {
         const success = this.state.placeWall(bestWall);
         if (success) return;
@@ -187,43 +194,72 @@ export class BarricadeAiService implements BarricadeAiHandler {
     aiPos: CellCoord,
     walls: any[],
     initialPlayerDist: number,
-    initialAiDist: number
+    initialAiDist: number,
+    playerPath: CellCoord[] = []
   ): WallCoord | null {
     let bestScore = -Infinity;
     let bestSlot: WallCoord | null = null;
 
-    // Search around player's neighborhood (within 2 cells)
+    // Pruned candidate collection focused around the opponent's anticipated path
+    const candidateSet = new Map<string, WallCoord>();
+
+    // 1. Primary candidates: walls directly blocking upcoming steps along playerPath
+    for (let i = 0; i < Math.min(3, playerPath.length - 1); i++) {
+      const from = playerPath[i];
+      const to = playerPath[i + 1];
+      const dRow = to.row - from.row;
+      const dCol = to.col - from.col;
+
+      if (dRow !== 0) {
+        const lowerRow = Math.min(from.row, to.row);
+        for (const c of [from.col, from.col - 1]) {
+          if (lowerRow >= 1 && lowerRow <= 8 && c >= 1 && c <= 8) {
+            candidateSet.set(`h_${lowerRow}_${c}`, { row: lowerRow, col: c, orientation: 'horizontal' });
+          }
+        }
+      } else if (dCol !== 0) {
+        const leftCol = Math.min(from.col, to.col);
+        for (const r of [from.row, from.row - 1]) {
+          if (r >= 1 && r <= 8 && leftCol >= 1 && leftCol <= 8) {
+            candidateSet.set(`v_${r}_${leftCol}`, { row: r, col: leftCol, orientation: 'vertical' });
+          }
+        }
+      }
+    }
+
+    // 2. Secondary candidates: immediate flanking neighborhood around player
     const minR = Math.max(1, playerPos.row - 1);
-    const maxR = Math.min(8, playerPos.row + 2);
-    const minC = Math.max(1, playerPos.col - 2);
-    const maxC = Math.min(8, playerPos.col + 2);
+    const maxR = Math.min(8, playerPos.row + 1);
+    const minC = Math.max(1, playerPos.col - 1);
+    const maxC = Math.min(8, playerPos.col + 1);
 
     for (let r = minR; r <= maxR; r++) {
       for (let c = minC; c <= maxC; c++) {
-        for (const orientation of ['horizontal', 'vertical'] as WallOrientation[]) {
-          const candidate: WallCoord = { row: r, col: c, orientation };
+        candidateSet.set(`h_${r}_${c}`, { row: r, col: c, orientation: 'horizontal' });
+        candidateSet.set(`v_${r}_${c}`, { row: r, col: c, orientation: 'vertical' });
+      }
+    }
 
-          if (!this.bfs.canPlaceWall(candidate, walls, playerPos, aiPos)) {
-            continue;
-          }
+    for (const candidate of candidateSet.values()) {
+      if (!this.bfs.canPlaceWall(candidate, walls, playerPos, aiPos)) {
+        continue;
+      }
 
-          const simWalls = [
-            ...walls,
-            { id: 'sim', row: r, col: c, orientation, placedBy: 'player2' },
-          ];
+      const simWalls = [
+        ...walls,
+        { id: 'sim', row: candidate.row, col: candidate.col, orientation: candidate.orientation, placedBy: 'player2' },
+      ];
 
-          const pBfs = this.bfs.findShortestPathToGoal(playerPos, 9, simWalls);
-          const aBfs = this.bfs.findShortestPathToGoal(aiPos, 1, simWalls);
+      const pBfs = this.bfs.findShortestPathToGoal(playerPos, 9, simWalls);
+      const aBfs = this.bfs.findShortestPathToGoal(aiPos, 1, simWalls);
 
-          const playerDelay = pBfs.distance - initialPlayerDist;
-          const aiDelay = aBfs.distance - initialAiDist;
-          const score = playerDelay * 2 - aiDelay;
+      const playerDelay = pBfs.distance - initialPlayerDist;
+      const aiDelay = aBfs.distance - initialAiDist;
+      const score = playerDelay * 2 - aiDelay;
 
-          if (playerDelay > 0 && score > bestScore) {
-            bestScore = score;
-            bestSlot = candidate;
-          }
-        }
+      if (playerDelay > 0 && score > bestScore) {
+        bestScore = score;
+        bestSlot = candidate;
       }
     }
 
