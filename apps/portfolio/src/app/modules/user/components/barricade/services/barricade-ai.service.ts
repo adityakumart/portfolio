@@ -4,6 +4,7 @@ import {
   WallCoord,
   WallOrientation,
   areCoordsEqual,
+  Wall,
 } from '../../../../../shared/barricade';
 import { BarricadeStateService, BarricadeAiHandler } from './barricade-state.service';
 import { BarricadeBoardGraphService } from './barricade-board-graph.service';
@@ -192,7 +193,7 @@ export class BarricadeAiService implements BarricadeAiHandler {
   private findBestWall(
     playerPos: CellCoord,
     aiPos: CellCoord,
-    walls: any[],
+    walls: Wall[],
     initialPlayerDist: number,
     initialAiDist: number,
     playerPath: CellCoord[] = []

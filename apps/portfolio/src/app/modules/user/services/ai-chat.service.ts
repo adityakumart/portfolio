@@ -120,7 +120,7 @@ export class AiChatService {
       });
 
       if (!response.ok) {
-        let rawError: any = `HTTP error! status: ${response.status}`;
+        let rawError: unknown = `HTTP error! status: ${response.status}`;
         try {
           const errObj = await response.json();
           if (errObj && errObj.error) {
@@ -130,7 +130,7 @@ export class AiChatService {
           // ignore
         }
         const customErr = new Error('An Error occurred');
-        (customErr as any).rawError = rawError;
+        (customErr as Error & { rawError?: unknown }).rawError = rawError;
         throw customErr;
       }
 
@@ -183,7 +183,7 @@ export class AiChatService {
               });
             } else if (dataObj.type === 'error') {
               const customErr = new Error('An Error occurred');
-              (customErr as any).rawError = dataObj.error || dataObj.message;
+              (customErr as Error & { rawError?: unknown }).rawError = dataObj.error || dataObj.message;
               throw customErr;
             }
           } catch (e) {
@@ -200,8 +200,8 @@ export class AiChatService {
         }
         return updated;
       });
-    } catch (error: any) {
-      console.error('Error streaming chat:', error.rawError || error);
+    } catch (error: unknown) {
+      console.error('Error streaming chat:', (error as { rawError?: unknown })?.rawError || error);
 
       this.messages.update((prev) => {
         const updated = [...prev];

@@ -8,6 +8,7 @@ import {
   IUpdateTodoDto,
   ISubtask,
   TodoStatus,
+  TodoPriority,
   IPlannerProject,
   IProjectPermissions,
   ICreateProjectDto,
@@ -59,7 +60,7 @@ export class PlannerStateService {
       try {
         const stored = localStorage.getItem('portfolio_planner_active_tab');
         if (stored === 'notes' || stored === 'todos' || stored === 'projects') {
-          return stored as any;
+          return stored as unknown as ReturnType<typeof JSON.parse>;
         }
       } catch {}
     }
@@ -602,8 +603,8 @@ export class PlannerStateService {
         `Imported ${newNotes.length} notes and ${newTodos.length} tasks successfully`,
       );
       return { importedNotes: newNotes.length, importedTodos: newTodos.length };
-    } catch (err: any) {
-      toast.error('Failed to import backup: ' + (err.message || 'Invalid JSON'));
+    } catch (err: unknown) {
+      toast.error('Failed to import backup: ' + ((err as Error)?.message || 'Invalid JSON'));
       throw err;
     }
   }
@@ -930,7 +931,7 @@ export class PlannerStateService {
     });
   }
 
-  createProjectCard(stageId: string, title: string, priority: any = 'medium', description = ''): void {
+  createProjectCard(stageId: string, title: string, priority: TodoPriority = 'medium', description = ''): void {
     const proj = this.selectedProject();
     if (!proj) return;
 

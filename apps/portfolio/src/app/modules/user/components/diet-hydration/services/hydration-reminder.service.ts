@@ -11,7 +11,7 @@ export class HydrationReminderService {
   private ngZone = inject(NgZone);
   private platformId = inject(PLATFORM_ID);
 
-  private intervalId: any = null;
+  private intervalId: ReturnType<typeof setInterval> | null = null;
 
   init(): void {
     if (!isPlatformBrowser(this.platformId)) return;

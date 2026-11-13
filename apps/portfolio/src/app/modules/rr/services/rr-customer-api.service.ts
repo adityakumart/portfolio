@@ -66,7 +66,7 @@ export class RRCustomerApiService {
 
     try {
       const response = await firstValueFrom(
-        this.http.get<any>(this.baseUrl, {
+        this.http.get<ICustomerListResponse | IRegularCustomerMasked[]>(this.baseUrl, {
           headers: this.getHeaders(),
           params: httpParams,
         })

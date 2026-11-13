@@ -144,12 +144,13 @@ export class ExperienceComponent implements OnInit {
       context: { records: this.expService.experiences() },
     });
 
-    dialogRef.closed$.subscribe((result: any) => {
-      if (result) {
-        if (result.action === 'edit') {
-          this.editRecord(result.record);
-        } else if (result.action === 'delete') {
-          this.deleteRecord(result.record.id);
+    dialogRef.closed$.subscribe((result: unknown) => {
+      const res = result as { action?: string; record?: UserExperienceRecord };
+      if (res) {
+        if (res.action === 'edit' && res.record) {
+          this.editRecord(res.record);
+        } else if (res.action === 'delete' && res.record) {
+          this.deleteRecord(res.record.id);
         }
       }
     });

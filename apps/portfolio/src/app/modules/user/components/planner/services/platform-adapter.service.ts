@@ -12,6 +12,81 @@ export interface ShortcutHandlers {
   onEscape?: () => void;
 }
 
+
+
+interface WindowWithPlatform extends Window {
+  Capacitor?: {
+    isNativePlatform?: () => boolean;
+    Plugins?: {
+      Badge?: {
+        set?: (options: { count: number }) => Promise<void>;
+        clear?: () => Promise<void>;
+      };
+      LocalNotifications?: {
+        schedule?: (options: { notifications: Array<Record<string, unknown>> }) => Promise<void>;
+        cancel?: (options: { notifications: Array<{ id: number }> }) => Promise<void>;
+        requestPermissions?: () => Promise<{ display: string }>;
+        checkPermissions?: () => Promise<{ display: string }>;
+      };
+      Share?: {
+        share?: (options: { title?: string; text?: string; url?: string; dialogTitle?: string }) => Promise<void>;
+      };
+      App?: {
+        exitApp?: () => Promise<void>;
+        addListener?: (eventName: string, handler: (state: { isActive: boolean }) => void) => Promise<{ remove: () => void }>;
+      };
+      Haptics?: {
+        selectionStart?: () => Promise<void>;
+        impact?: (options: { style: string }) => Promise<void>;
+        notification?: (options: { type: string }) => Promise<void>;
+      };
+      Keyboard?: {
+        hide?: () => Promise<void>;
+      };
+    };
+  };
+  chrome?: {
+    runtime?: {
+      id?: string;
+      sendMessage?: (msg: unknown) => void;
+      openOptionsPage?: () => void;
+    };
+    storage?: {
+      local?: {
+        get: (keys: string[], cb: (res: Record<string, unknown>) => void) => void;
+        set: (items: Record<string, unknown>, cb?: () => void) => void;
+        remove: (keys: string[], cb?: () => void) => void;
+      };
+    };
+    action?: {
+      setBadgeText: (details: { text: string }) => void;
+      setBadgeBackgroundColor: (details: { color: string }) => void;
+    };
+    alarms?: {
+      create: (name: string, info: unknown) => void;
+      clear: (name: string) => void;
+    };
+    notifications?: {
+      create: (id: string, options: Record<string, unknown>, cb?: (createdId: string) => void) => void;
+    };
+    tabs?: {
+      create: (options: { url: string }) => void;
+    };
+  };
+  __TAURI__?: {
+    core?: {
+      invoke?: (cmd: string, args?: Record<string, unknown>) => Promise<unknown>;
+    };
+    notification?: {
+      sendNotification?: (options: { title: string; body?: string }) => void;
+      isPermissionGranted?: () => Promise<boolean>;
+      requestPermission?: () => Promise<string>;
+    };
+  };
+  __TAURI_INTERNALS__?: unknown;
+}
+
+
 @Injectable({
   providedIn: 'root',
 })
@@ -35,13 +110,13 @@ export class PlatformAdapterService {
 
   get isChromeExtension(): boolean {
     if (!this.isBrowser) return false;
-    const w = window as any;
+    const w = window as unknown as WindowWithPlatform;
     return typeof w.chrome !== 'undefined' && Boolean(w.chrome?.runtime?.id);
   }
 
   get isCapacitor(): boolean {
     if (!this.isBrowser) return false;
-    const w = window as any;
+    const w = window as unknown as WindowWithPlatform;
     return (
       typeof w.Capacitor !== 'undefined' &&
       typeof w.Capacitor.isNativePlatform === 'function' &&
@@ -51,7 +126,7 @@ export class PlatformAdapterService {
 
   get isTauri(): boolean {
     if (!this.isBrowser) return false;
-    const w = window as any;
+    const w = window as unknown as WindowWithPlatform;
     return typeof w.__TAURI__ !== 'undefined' || typeof w.__TAURI_INTERNALS__ !== 'undefined';
   }
 
@@ -64,7 +139,7 @@ export class PlatformAdapterService {
     if (!this.isBrowser) return;
 
     // 1. Capacitor Haptics
-    const w = window as any;
+    const w = window as unknown as WindowWithPlatform;
     if (this.isCapacitor && w.Capacitor?.Plugins?.Haptics) {
       const haptics = w.Capacitor.Plugins.Haptics;
       try {
@@ -163,10 +238,10 @@ export class PlatformAdapterService {
 
     // Chrome Extension Storage
     if (this.isChromeExtension) {
-      const w = window as any;
+      const w = window as unknown as WindowWithPlatform;
       if (w.chrome?.storage?.local) {
         return new Promise((resolve) => {
-          w.chrome.storage.local.get([key], (res: any) => {
+          w.chrome?.storage?.local?.get([key], (res: Record<string, unknown>) => {
             resolve(res && res[key] ? (res[key] as T) : null);
           });
         });
@@ -186,10 +261,10 @@ export class PlatformAdapterService {
     if (!this.isBrowser) return;
 
     if (this.isChromeExtension) {
-      const w = window as any;
+      const w = window as unknown as WindowWithPlatform;
       if (w.chrome?.storage?.local) {
         return new Promise((resolve) => {
-          w.chrome.storage.local.set({ [key]: value }, () => resolve());
+          w.chrome?.storage?.local?.set({ [key]: value }, () => resolve());
         });
       }
     }
@@ -205,10 +280,10 @@ export class PlatformAdapterService {
     if (!this.isBrowser) return;
 
     if (this.isChromeExtension) {
-      const w = window as any;
+      const w = window as unknown as WindowWithPlatform;
       if (w.chrome?.storage?.local) {
         return new Promise((resolve) => {
-          w.chrome.storage.local.remove([key], () => resolve());
+          w.chrome?.storage?.local?.remove([key], () => resolve());
         });
       }
     }
@@ -231,7 +306,7 @@ export class PlatformAdapterService {
 
     // Capacitor Native Android
     if (this.isCapacitor) {
-      const w = window as any;
+      const w = window as unknown as WindowWithPlatform;
       if (w.Capacitor?.Plugins?.LocalNotifications?.requestPermissions) {
         try {
           const result = await w.Capacitor.Plugins.LocalNotifications.requestPermissions();
@@ -264,7 +339,7 @@ export class PlatformAdapterService {
 
     // 1. Chrome Extension API
     if (this.isChromeExtension) {
-      const w = window as any;
+      const w = window as unknown as WindowWithPlatform;
       if (w.chrome?.notifications?.create) {
         w.chrome.notifications.create(options?.tag || `planner_${Date.now()}`, {
           type: 'basic',
@@ -279,7 +354,7 @@ export class PlatformAdapterService {
 
     // 2. Capacitor Android
     if (this.isCapacitor) {
-      const w = window as any;
+      const w = window as unknown as WindowWithPlatform;
       if (w.Capacitor?.Plugins?.LocalNotifications?.schedule) {
         try {
           await w.Capacitor.Plugins.LocalNotifications.schedule({
@@ -301,7 +376,7 @@ export class PlatformAdapterService {
 
     // 3. Tauri Desktop Notification Bridge
     if (this.isTauri) {
-      const w = window as any;
+      const w = window as unknown as WindowWithPlatform;
       try {
         if (w.__TAURI__?.core?.invoke) {
           await w.__TAURI__.core.invoke('plugin:notification|notify', {
@@ -339,7 +414,7 @@ export class PlatformAdapterService {
     if (!this.isBrowser) return false;
 
     // 1. Capacitor Share Plugin (Mobile native sheet)
-    const w = window as any;
+    const w = window as unknown as WindowWithPlatform;
     if (this.isCapacitor && w.Capacitor?.Plugins?.Share?.share) {
       try {
         await w.Capacitor.Plugins.Share.share({
@@ -393,7 +468,7 @@ export class PlatformAdapterService {
 
     // 1. Capacitor Native Android (Local Notifications Plugin)
     if (this.isCapacitor) {
-      const w = window as any;
+      const w = window as unknown as WindowWithPlatform;
       if (w.Capacitor?.Plugins?.LocalNotifications?.schedule) {
         try {
           await w.Capacitor.Plugins.LocalNotifications.schedule({
@@ -415,7 +490,7 @@ export class PlatformAdapterService {
 
     // 2. Chrome Extension Alarms
     if (this.isChromeExtension) {
-      const w = window as any;
+      const w = window as unknown as WindowWithPlatform;
       if (w.chrome?.alarms?.create) {
         const delayInMinutes = Math.max(0.5, (options.at.getTime() - Date.now()) / (1000 * 60));
         w.chrome.alarms.create(`alarm_${options.id}`, { delayInMinutes });
@@ -428,7 +503,7 @@ export class PlatformAdapterService {
     if (!this.isBrowser) return;
 
     if (this.isCapacitor) {
-      const w = window as any;
+      const w = window as unknown as WindowWithPlatform;
       if (w.Capacitor?.Plugins?.LocalNotifications?.cancel) {
         try {
           await w.Capacitor.Plugins.LocalNotifications.cancel({
@@ -441,7 +516,7 @@ export class PlatformAdapterService {
     }
 
     if (this.isChromeExtension) {
-      const w = window as any;
+      const w = window as unknown as WindowWithPlatform;
       if (w.chrome?.alarms?.clear) {
         w.chrome.alarms.clear(`alarm_${id}`);
       }
@@ -481,7 +556,7 @@ export class PlatformAdapterService {
 
     // Chrome Extension Action Badge
     if (this.isChromeExtension) {
-      const w = window as any;
+      const w = window as unknown as WindowWithPlatform;
       if (w.chrome?.action?.setBadgeText) {
         w.chrome.action.setBadgeText({
           text: count > 0 ? String(count) : '',
@@ -493,13 +568,13 @@ export class PlatformAdapterService {
     }
 
     // Browser App Badging API (PWA / Supported browsers)
-    const nav = navigator as any;
+    const nav = navigator as unknown as { setAppBadge?: (cnt?: number) => Promise<void>; clearAppBadge?: () => Promise<void> };
     if ('setAppBadge' in nav) {
       try {
         if (count > 0) {
-          nav.setAppBadge(count);
+          nav.setAppBadge?.(count);
         } else {
-          nav.clearAppBadge();
+          nav.clearAppBadge?.();
         }
       } catch (e) {
         // App badge not supported or denied

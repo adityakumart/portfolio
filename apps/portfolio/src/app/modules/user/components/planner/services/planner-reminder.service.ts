@@ -3,6 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { PlannerStateService } from './planner-state.service';
 import { PlatformAdapterService } from './platform-adapter.service';
 import { toast } from '@spartan-ng/brain/sonner';
+import { ITodoItem } from '@portfolio/shared-types';
 
 @Injectable({
   providedIn: 'root',
@@ -13,7 +14,7 @@ export class PlannerReminderService {
   private ngZone = inject(NgZone);
   private platformId = inject(PLATFORM_ID);
 
-  private intervalId: any = null;
+  private intervalId: ReturnType<typeof setInterval> | null = null;
   private triggeredReminderIds = new Set<string>();
 
   init(): void {
@@ -67,7 +68,7 @@ export class PlannerReminderService {
     }
   }
 
-  private fireNotification(todo: any): void {
+  private fireNotification(todo: ITodoItem): void {
     // 1. Dispatch through Platform Adapter (Web Notification API, Capacitor, or Chrome Extension)
     this.platform.dispatchNotification(`Reminder: ${todo.title}`, {
       body: todo.description ? todo.description.slice(0, 100) : 'Due now!',

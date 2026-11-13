@@ -130,7 +130,7 @@ describe('GameEngineService', () => {
     });
 
     // Simulate timer expiring
-    (service as any).handleTurnTimeUp();
+    (service as unknown as { handleTurnTimeUp: () => void }).handleTurnTimeUp();
 
     expect(service.turnState()).toBe('turn_handover');
     expect(service.completedPlayerIds()).toEqual(['player_1']);
@@ -148,7 +148,7 @@ describe('GameEngineService', () => {
     });
 
     // Alice's turn ends
-    (service as any).handleTurnTimeUp();
+    (service as unknown as { handleTurnTimeUp: () => void }).handleTurnTimeUp();
     expect(service.turnState()).toBe('turn_handover');
 
     // Bob starts their turn
@@ -167,14 +167,14 @@ describe('GameEngineService', () => {
     });
 
     // Alice finishes
-    (service as any).handleTurnTimeUp();
+    (service as unknown as { handleTurnTimeUp: () => void }).handleTurnTimeUp();
     expect(service.turnState()).toBe('turn_handover');
 
     // Bob starts turn
     service.startNextPlayerTurn();
 
     // Bob finishes
-    (service as any).handleTurnTimeUp();
+    (service as unknown as { handleTurnTimeUp: () => void }).handleTurnTimeUp();
 
     expect(service.status()).toBe('completed');
     expect(service.completedPlayerIds()).toEqual(['player_1', 'player_2']);
