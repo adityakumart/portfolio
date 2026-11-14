@@ -103,4 +103,74 @@ test.describe('RR Module - Staff Registry Employee List Component', () => {
     const cancelBtn = dialog.getByRole('button', { name: 'Cancel' });
     await cancelBtn.click();
   });
+
+  test('should display initial credential choice (DOB vs Temporary Password) and allow generating temporary password', async ({ page }) => {
+    const registerBtn = page.getByRole('button', { name: 'Register New Employee' });
+    await registerBtn.click();
+
+    const dialog = page.locator('div[role="dialog"], .fixed.inset-0.z-50').first();
+    await expect(dialog).toBeVisible({ timeout: 5000 });
+
+    // Initial Credential selection card must be visible
+    await expect(dialog.getByText('Initial Credential for First Login')).toBeVisible();
+    await expect(dialog.getByLabel('Date of Birth (DOB)')).toBeVisible();
+    await expect(dialog.getByLabel('Temporary Password')).toBeVisible();
+
+    // Select Temporary Password option
+    await dialog.getByLabel('Temporary Password').click();
+
+    // Temporary password input and action buttons become visible
+    const tempPassInput = dialog.locator('input[placeholder="Temporary password"]');
+    await expect(tempPassInput).toBeVisible();
+    await expect(dialog.locator('button[hlmTooltip="Generate Random Password"]')).toBeVisible();
+    await expect(dialog.locator('button[hlmTooltip="Copy to Clipboard"]')).toBeVisible();
+
+    // Password must be auto-generated
+    const initialVal = await tempPassInput.inputValue();
+    expect(initialVal.length).toBeGreaterThan(6);
+
+    // Clicking generate updates the password
+    await dialog.locator('button[hlmTooltip="Generate Random Password"]').click();
+    const updatedVal = await tempPassInput.inputValue();
+    expect(updatedVal.length).toBeGreaterThan(6);
+
+    // Close modal
+    const closeBtn = dialog.locator('button[aria-label="Close dialog"], button:has-text("Cancel")').first();
+    await closeBtn.click();
+  });
+
+  test('should open interactive Reset Password dialog from modify modal, support DOB and temp password, and show credential on reset', async ({ page }) => {
+    const table = page.locator('table[hlmTable]');
+    const editBtn = table.locator('button[hlmTooltip="Modify Staff Record"]').first();
+    await editBtn.click();
+
+    const editDialog = page.locator('div[role="dialog"], .fixed.inset-0.z-50').first();
+    await expect(editDialog).toBeVisible({ timeout: 5000 });
+
+    const resetBtn = editDialog.getByRole('button', { name: /Reset Password/i });
+    await expect(resetBtn).toBeVisible();
+    await resetBtn.click();
+
+    // Interactive Reset Password modal must open
+    const resetDialog = page.locator('div[role="dialog"], .fixed.inset-0.z-50').last();
+    await expect(resetDialog.getByRole('heading', { name: 'Reset User Password' })).toBeVisible();
+    await expect(resetDialog.getByText("Reset to User's Date of Birth (DOB)")).toBeVisible();
+    await expect(resetDialog.getByText("Generate New Temporary Password")).toBeVisible();
+
+    // Select temporary password option
+    await resetDialog.getByLabel("Generate New Temporary Password").click();
+    const tempPassInput = resetDialog.locator('input[placeholder="Temporary password"]');
+    await expect(tempPassInput).toBeVisible();
+
+    // Click confirm reset
+    const confirmBtn = resetDialog.getByRole('button', { name: /Confirm & Reset Password/i });
+    await confirmBtn.click();
+
+    // Success view with temporary password and copy button appears
+    await expect(resetDialog.getByText('Password Reset Completed')).toBeVisible();
+    await expect(resetDialog.getByRole('button', { name: 'Done' })).toBeVisible();
+
+    // Close reset dialog
+    await resetDialog.getByRole('button', { name: 'Done' }).click();
+  });
 });
