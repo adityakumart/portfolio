@@ -185,7 +185,7 @@ export class CustomerController {
     try {
       await connectMongoose();
       const page = Math.max(1, Number(req.query['page']) || 1);
-      const limit = Math.min(50, Math.max(1, Number(req.query['limit']) || 10));
+      const limit = Math.min(100, Math.max(1, Number(req.query['limit']) || 10));
       const search = typeof req.query['search'] === 'string' ? req.query['search'].trim() : '';
 
       const filter: Record<string, unknown> = { isDeleted: { $ne: true } };

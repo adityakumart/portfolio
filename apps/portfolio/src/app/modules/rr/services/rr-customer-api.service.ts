@@ -2,6 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { RRApiService } from './rr-api.service';
 import {
   IRegularCustomerMasked,
   ICreateCustomerDTO,
@@ -20,6 +21,7 @@ import {
 })
 export class RRCustomerApiService {
   private http = inject(HttpClient);
+  private rrApi = inject(RRApiService);
   private readonly baseUrl = `${environment.APIURL}/rr/customers`;
 
   // Reactive state signals
@@ -30,14 +32,20 @@ export class RRCustomerApiService {
 
   /**
    * Constructs authorization headers from active RR session.
+   * Leverages RRApiService to retrieve the encrypted session token with fallback
+   * to session/local storage for compatibility across testing and legacy environments.
    */
   private getHeaders(): HttpHeaders {
     let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    if (typeof window !== 'undefined' && window.sessionStorage) {
-      const token = sessionStorage.getItem('rr_token');
-      if (token) {
-        headers = headers.set('Authorization', `Bearer ${token}`);
-      }
+    const token =
+      this.rrApi.getToken() ||
+      (typeof window !== 'undefined'
+        ? window.sessionStorage?.getItem('rr_token') ||
+          window.localStorage?.getItem('rr_token')
+        : null);
+
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
     }
     return headers;
   }

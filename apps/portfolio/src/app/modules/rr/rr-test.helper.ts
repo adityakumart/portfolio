@@ -556,6 +556,16 @@ export async function injectRRSession(
 
   await page.addInitScript(
     ({ u, t, locked, appSess, injectApp }) => {
+      // Clear any prior encrypted session envelopes to avoid stale/expired TTL purge
+      localStorage.removeItem('_app_ctx_sig_v1');
+      sessionStorage.removeItem('_app_ctx_sig_v1');
+      localStorage.removeItem('_rr_state_u');
+      localStorage.removeItem('_rr_sec_tk');
+      localStorage.removeItem('_rr_pref_meta');
+      sessionStorage.removeItem('_rr_state_u');
+      sessionStorage.removeItem('_rr_sec_tk');
+      sessionStorage.removeItem('_rr_pref_meta');
+
       if (injectApp) {
         localStorage.setItem('portfolio_auth_session', JSON.stringify(appSess));
       }
@@ -588,6 +598,14 @@ export async function injectRRSession(
  */
 export async function clearRRSession(page: Page) {
   await page.addInitScript(() => {
+    localStorage.removeItem('_app_ctx_sig_v1');
+    sessionStorage.removeItem('_app_ctx_sig_v1');
+    localStorage.removeItem('_rr_state_u');
+    localStorage.removeItem('_rr_sec_tk');
+    localStorage.removeItem('_rr_pref_meta');
+    sessionStorage.removeItem('_rr_state_u');
+    sessionStorage.removeItem('_rr_sec_tk');
+    sessionStorage.removeItem('_rr_pref_meta');
     sessionStorage.removeItem('rr_user');
     sessionStorage.removeItem('rr_token');
     sessionStorage.removeItem('loggedInUser');

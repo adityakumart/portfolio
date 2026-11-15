@@ -54,6 +54,8 @@ import {
   lucideCalendar,
   lucideClock,
   lucideAlertCircle,
+  lucideLoader2,
+  lucideRefreshCw,
 } from '@ng-icons/lucide';
 
 export type FormMode = 'create' | 'edit' | 'view';
@@ -94,6 +96,8 @@ export type FormMode = 'create' | 'edit' | 'view';
       lucideCalendar,
       lucideClock,
       lucideAlertCircle,
+      lucideLoader2,
+      lucideRefreshCw,
     }),
   ],
   templateUrl: './customer-list.component.html',
@@ -115,6 +119,7 @@ export class RRCustomerListComponent implements OnInit {
   currentPage = signal<number>(0);
   pageSize = signal<number>(10);
   isSubmitting = signal<boolean>(false);
+  hasLoadError = signal<boolean>(false);
   activeMode = signal<FormMode>('create');
   selectedCustomer = signal<IRegularCustomerMasked | null>(null);
 
@@ -297,10 +302,17 @@ export class RRCustomerListComponent implements OnInit {
     return null;
   }
 
+  onSearchChange(query: string): void {
+    this.searchQuery.set(query);
+    this.currentPage.set(0);
+  }
+
   async loadCustomers(): Promise<void> {
+    this.hasLoadError.set(false);
     try {
       await this.customerApi.getCustomers({ limit: 100 });
     } catch (err: unknown) {
+      this.hasLoadError.set(true);
       toast.error('Failed to load customer memberships');
     }
   }

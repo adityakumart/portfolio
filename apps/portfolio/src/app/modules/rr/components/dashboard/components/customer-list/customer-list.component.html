@@ -14,13 +14,13 @@
         type="text"
         placeholder="Search by name, phone, ID..."
         [ngModel]="searchQuery()"
-        (ngModelChange)="searchQuery.set($event)"
+        (ngModelChange)="onSearchChange($event)"
         class="w-full pl-9 text-xs h-9"
       />
       @if (searchQuery()) {
         <button
           type="button"
-          (click)="searchQuery.set('')"
+          (click)="onSearchChange('')"
           class="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
         >
           <ng-icon name="lucideX" class="size-3.5"></ng-icon>
@@ -52,7 +52,28 @@
         </tr>
       </thead>
       <tbody hlmTBody>
-        @for (c of pagedCustomers(); track c.membershipId) {
+        @if (customerApi.isLoading()) {
+          <tr hlmTr>
+            <td hlmTd colspan="9" class="text-center text-muted-foreground py-14">
+              <ng-icon name="lucideLoader2" class="size-8 animate-spin mx-auto block mb-2 text-primary"></ng-icon>
+              <div class="font-semibold text-sm text-foreground">Loading regular customer directory...</div>
+              <div class="text-xs text-muted-foreground mt-1">Fetching verified KYC records and loyalty tiers</div>
+            </td>
+          </tr>
+        } @else if (hasLoadError()) {
+          <tr hlmTr>
+            <td hlmTd colspan="9" class="text-center py-12">
+              <ng-icon name="lucideAlertCircle" class="size-8 mx-auto block mb-2 text-destructive"></ng-icon>
+              <div class="font-semibold text-sm text-destructive">Failed to load customer directory</div>
+              <div class="text-xs text-muted-foreground mt-1 mb-4">Please verify your connection and permissions.</div>
+              <button hlmBtn variant="outline" size="sm" (click)="loadCustomers()" class="gap-1.5 h-8">
+                <ng-icon name="lucideRefreshCw" class="size-3.5"></ng-icon>
+                <span>Retry</span>
+              </button>
+            </td>
+          </tr>
+        } @else {
+          @for (c of pagedCustomers(); track c.membershipId) {
           <tr hlmTr class="hover:bg-muted/40 transition-colors">
             <td hlmTd>
               <span class="font-bold font-mono text-primary text-[11px] bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
@@ -222,6 +243,7 @@
             </td>
           </tr>
         }
+      }
       </tbody>
     </table>
   </div>
