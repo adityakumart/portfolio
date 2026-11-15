@@ -74,11 +74,6 @@ export class RRUpdateVehicleAvailabilityDialogComponent implements OnInit {
     return this.vehicle()?.status === 'maintenance';
   }
 
-  get isContract(): boolean {
-    const st = this.vehicle()?.status;
-    return st === 'contract' || st === 'in_contract';
-  }
-
   ngOnInit() {
     if (this.data?.vehicle) {
       this.vehicle.set(this.data.vehicle);

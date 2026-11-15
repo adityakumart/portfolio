@@ -101,8 +101,7 @@ export class RRVehicleCardComponent implements OnInit, OnDestroy {
 
   get showUpdateAvailability(): boolean {
     if (!this.canUpdateAvailability) return false;
-    const st = this.vehicle?.status;
-    return st === 'maintenance' || st === 'contract' || st === 'in_contract';
+    return this.vehicle?.status === 'maintenance';
   }
 
   get statusBadgeVariant(): 'secondary' | 'destructive' | 'outline' {

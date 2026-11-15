@@ -1,276 +1,495 @@
-<div class="board-wrapper relative w-full flex items-center justify-center select-none overflow-hidden rounded-3xl p-2 md:p-6 bg-card/60 backdrop-blur-md border border-border shadow-2xl">
-  <svg
-    viewBox="0 0 900 1000"
-    class="w-full h-auto max-h-[85vh] drop-shadow-md"
-    preserveAspectRatio="xMidYMid meet"
-  >
-    <defs>
-      <!-- Castle Golden Glow Filter -->
-      <filter id="castleGlow" x="-50%" y="-50%" width="200%" height="200%">
-        <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
-        <feMerge>
-          <feMergeNode in="blur" />
-          <feMergeNode in="SourceGraphic" />
-        </feMerge>
-      </filter>
-
-      <!-- Token Drop Shadow -->
-      <filter id="tokenShadow" x="-30%" y="-30%" width="160%" height="160%">
-        <feDropShadow dx="0" dy="4" stdDeviation="3" flood-opacity="0.35" />
-      </filter>
-
-      <!-- Player 1 (Blue) Gradient -->
-      <linearGradient id="p1Grad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#60a5fa" />
-        <stop offset="50%" stop-color="#3b82f6" />
-        <stop offset="100%" stop-color="#1d4ed8" />
-      </linearGradient>
-
-      <!-- Player 2 (Red) Gradient -->
-      <linearGradient id="p2Grad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#f87171" />
-        <stop offset="50%" stop-color="#ef4444" />
-        <stop offset="100%" stop-color="#b91c1c" />
-      </linearGradient>
-
-      <!-- Barricade Hazard Gradient -->
-      <linearGradient id="barricadeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#ffffff" />
-        <stop offset="30%" stop-color="#fca5a5" />
-        <stop offset="70%" stop-color="#ef4444" />
-        <stop offset="100%" stop-color="#991b1b" />
-      </linearGradient>
-
-      <!-- Castle Summit Gradient -->
-      <linearGradient id="castleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#fef08a" />
-        <stop offset="50%" stop-color="#eab308" />
-        <stop offset="100%" stop-color="#ca8a04" />
-      </linearGradient>
-
-      <!-- Track Node Gradient -->
-      <radialGradient id="nodeGrad" cx="30%" cy="30%" r="70%">
-        <stop offset="0%" stop-color="var(--card-bg, #334155)" />
-        <stop offset="100%" stop-color="var(--card-border, #1e293b)" />
-      </radialGradient>
-    </defs>
-
-    <!-- LAYER 1: Connecting Corridor Tracks -->
-    <g class="board-corridors">
-      @for (edge of boardEdges(); track edge.fromId + edge.toId) {
-        <line
-          [attr.x1]="edge.x1"
-          [attr.y1]="edge.y1"
-          [attr.x2]="edge.x2"
-          [attr.y2]="edge.y2"
-          class="stroke-muted-foreground/30 hover:stroke-primary/50 transition-colors"
-          stroke-width="5"
-          stroke-linecap="round"
-        />
+<div class="board-wrapper w-full flex flex-col items-center justify-center space-y-2.5">
+  <!-- Mobile Compact Clocks HUD (Visible on screens < lg) -->
+  @if (state.timeLimitMinutes() > 0) {
+    <div class="lg:hidden w-full max-w-[560px] flex items-center justify-between gap-1.5 px-3 py-2 rounded-2xl bg-card border border-border shadow-sm text-xs">
+      @for (p of state.players(); track p.id; let idx = $index) {
+        <div
+          class="flex-1 flex items-center justify-center gap-1.5 py-1 px-2 rounded-xl border transition-all text-xs"
+          [style.border-color]="idx === state.currentPlayerIndex() && !state.isGameOver() && !p.isEliminated ? getColorHex(p.color) : ''"
+          [class.border-border]="idx !== state.currentPlayerIndex() || state.isGameOver() || p.isEliminated"
+          [class.bg-muted\/60]="idx === state.currentPlayerIndex() && !state.isGameOver()"
+          [class.opacity-40]="p.isEliminated">
+          <span
+            class="h-2.5 w-2.5 rounded-full shrink-0 shadow-sm"
+            [style.background-color]="getColorHex(p.color)"></span>
+          <span class="font-bold text-foreground text-[11px] truncate max-w-[65px]">{{ p.name }}</span>
+          <span
+            class="font-mono text-[11px] font-semibold"
+            [class.text-red-500]="isCriticalTime(state.getPlayerTime(idx))"
+            [class.animate-pulse]="isCriticalTime(state.getPlayerTime(idx))"
+            [class.text-amber-500]="isLowTime(state.getPlayerTime(idx)) && !isCriticalTime(state.getPlayerTime(idx))"
+            [class.text-muted-foreground]="!isLowTime(state.getPlayerTime(idx))">
+            {{ formatClock(state.getPlayerTime(idx)) }}
+          </span>
+        </div>
       }
-    </g>
+    </div>
+  }
 
-    <!-- LAYER 2: Board Node Markers -->
-    <g class="board-nodes">
-      @for (node of allNodes(); track node.id) {
-        <g
-          [attr.transform]="'translate(' + node.x + ',' + node.y + ')'"
-          (click)="onNodeClick(node.id)"
-          class="cursor-pointer group/node"
-        >
-          @switch (node.type) {
-            @case ('castle') {
-              <!-- Castle Summit Emblem -->
-              <circle
-                r="30"
-                fill="url(#castleGrad)"
-                stroke="#fef08a"
-                stroke-width="3"
-                filter="url(#castleGlow)"
-              />
-              <path
-                d="M -12 -5 L -8 10 L 8 10 L 12 -5 L 5 0 L 0 -12 L -5 0 Z"
-                fill="#854d0e"
-              />
-            }
-            @case ('start') {
-              <!-- Base and Start Entry Nodes -->
-              <circle
-                [attr.r]="node.id.startsWith('start_') ? 18 : 14"
-                class="fill-muted stroke-border/80"
-                stroke-width="2.5"
-              />
-              @if (node.id.startsWith('start_p1') || node.id.startsWith('base_p1')) {
-                <circle
-                  [attr.r]="node.id.startsWith('start_') ? 10 : 7"
-                  class="fill-blue-500/20 stroke-blue-500/60"
-                  stroke-width="1.5"
-                />
-              } @else {
-                <circle
-                  [attr.r]="node.id.startsWith('start_') ? 10 : 7"
-                  class="fill-red-500/20 stroke-red-500/60"
-                  stroke-width="1.5"
-                />
-              }
-            }
-            @default {
-              <!-- Normal Track Node -->
-              <circle
-                [attr.r]="node.type === 'barricade' ? 16 : 13"
-                class="fill-card stroke-border/90 group-hover/node:stroke-primary/80 transition-colors"
-                stroke-width="2.5"
-              />
-              @if (node.type === 'barricade') {
-                <circle r="6" class="fill-muted-foreground/30" />
-              }
-            }
-          }
-        </g>
+  <!-- Mode & Quick Wall Orientation Toolbar -->
+  <div class="w-full max-w-[560px] flex flex-wrap items-center justify-between gap-2 px-3 py-2.5 rounded-2xl bg-card border border-border text-xs text-muted-foreground shadow-sm">
+    <div class="flex items-center gap-2 flex-wrap">
+      <!-- Active Player Badge -->
+      <span
+        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl font-bold text-xs shadow-sm border border-border"
+        [style.background-color]="getColorHex(state.currentPlayer().color) + '22'"
+        [style.color]="getColorHex(state.currentPlayer().color)">
+        <span
+          class="h-2.5 w-2.5 rounded-full shadow-sm"
+          [style.background-color]="getColorHex(state.currentPlayer().color)"></span>
+        {{ state.currentPlayer().name }}'s Turn
+      </span>
+
+      <!-- Action Mode Switch: Move vs Wall -->
+      <div class="flex items-center p-0.5 rounded-xl bg-muted border border-border">
+        <button
+          type="button"
+          (click)="setInteractionMode('move')"
+          [class.bg-card]="interactionMode() === 'move'"
+          [class.text-foreground]="interactionMode() === 'move'"
+          [class.shadow-sm]="interactionMode() === 'move'"
+          [class.text-muted-foreground]="interactionMode() !== 'move'"
+          class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all active:scale-95">
+          <ng-icon name="lucideMove" class="text-xs" />
+          <span>Move ({{ state.stepsRemainingThisTurn() }})</span>
+        </button>
+
+        @if (state.wallsAllowed() > 0) {
+          <button
+            type="button"
+            (click)="setInteractionMode('wall')"
+            [disabled]="state.currentPlayer().wallsRemaining <= 0 || state.wallsRemainingThisTurn() <= 0"
+            [class.bg-card]="interactionMode() === 'wall'"
+            [class.text-foreground]="interactionMode() === 'wall'"
+            [class.shadow-sm]="interactionMode() === 'wall'"
+            [class.text-muted-foreground]="interactionMode() !== 'wall'"
+            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed">
+            <ng-icon name="lucideLayers" class="text-xs" />
+            <span>Wall ({{ state.wallsRemainingThisTurn() }})</span>
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Actions: End Turn & Wall Orientation Toggle -->
+    <div class="flex items-center gap-2 ml-auto">
+      @if (state.canEndTurnManually()) {
+        <button
+          type="button"
+          (click)="state.endTurn()"
+          class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] shadow-sm transition-all active:scale-95">
+          <span>End Turn</span>
+        </button>
       }
-    </g>
 
-    <!-- LAYER 3: Barricades -->
-    <g class="board-barricades">
-      @for (b of renderBarricades(); track b.id) {
-        <g
-          [attr.transform]="'translate(' + b.x + ',' + b.y + ')'"
-          (click)="onBarricadeClick(b.nodeId, $event)"
-          class="barricade-piece cursor-pointer"
-          filter="url(#tokenShadow)"
-        >
-          <!-- Hexagonal Warning Shield -->
-          <polygon
-            points="0,-17 15,-8 15,9 0,18 -15,9 -15,-8"
-            fill="url(#barricadeGrad)"
-            stroke="#ffffff"
-            stroke-width="2"
-          />
-          <!-- Cross / Barricade Warning Strip -->
-          <rect x="-8" y="-2" width="16" height="4" fill="#ffffff" rx="1" />
-        </g>
+      @if (state.wallsAllowed() > 0) {
+        <button
+          type="button"
+          (click)="toggleOrientation()"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted hover:bg-muted/80 text-foreground border border-border transition-all font-medium text-[11px] shadow-sm active:scale-95"
+          title="Toggle Wall Orientation (Space / Click)">
+          <ng-icon name="lucideRotateCw" class="text-xs" />
+          <span>Wall: <strong class="text-foreground uppercase">{{ state.wallOrientation() }}</strong></span>
+          <span class="hidden md:inline text-[10px] text-muted-foreground font-mono">(Space)</span>
+        </button>
       }
-    </g>
+    </div>
+  </div>
 
-    <!-- LAYER 4: Player Tokens -->
-    <g class="board-tokens">
-      @for (rt of renderTokens(); track rt.token.id) {
-        <g
-          [attr.transform]="'translate(' + rt.x + ',' + rt.y + ')'"
-          (click)="onTokenClick(rt, $event)"
-          class="token-piece cursor-pointer transition-transform duration-200"
-          [class.can-move]="rt.canMove"
-          [class.selected]="rt.isSelected"
-          filter="url(#tokenShadow)"
-        >
-          <!-- Movable Pulsing Ring -->
-          @if (rt.canMove && !rt.isSelected) {
-            <circle
-              r="22"
-              fill="none"
-              class="stroke-primary animate-pulse"
-              stroke-width="2.5"
-              stroke-dasharray="4 2"
-            />
-          }
+  <!-- Main Game Arena with Fixed Aspect Square SVG -->
+  <div class="relative w-full max-w-[560px] rounded-3xl bg-card text-card-foreground p-3 sm:p-5 shadow-xl border border-border flex flex-col space-y-3">
+    <!-- SVG Grid Board (Strict Aspect Square Container to Prevent Layout Shift) -->
+    <div class="relative w-full aspect-square">
+      <svg
+        viewBox="0 0 960 960"
+        class="w-full h-full select-none"
+        style="touch-action: manipulation;"
+        xmlns="http://www.w3.org/2000/svg">
 
-          <!-- Selected Halo -->
-          @if (rt.isSelected) {
-            <circle
-              r="23"
-              fill="none"
-              stroke="#fbbf24"
-              stroke-width="3"
-              class="animate-spin-slow"
-              stroke-dasharray="6 3"
-            />
-          }
-
-          <!-- Token Disc -->
-          <circle
-            r="16"
-            [attr.fill]="rt.player.color === 'blue' ? 'url(#p1Grad)' : 'url(#p2Grad)'"
-            stroke="#ffffff"
-            stroke-width="2.5"
-          />
-
-          <!-- Token Owner Initial / ID -->
+        <!-- 1. Coordinate File Labels (a to i along bottom) -->
+        @for (letter of colLetters; track letter; let i = $index) {
           <text
-            x="0"
-            y="4.5"
+            [attr.x]="i * 102 + 42"
+            y="945"
             text-anchor="middle"
-            fill="#ffffff"
-            font-size="11"
-            font-weight="bold"
-            font-family="sans-serif"
-          >
-            {{ rt.player.color === 'blue' ? '1' : '2' }}
+            [attr.fill]="getCoordinateFill()"
+            class="font-mono text-[26px] font-semibold">
+            {{ letter }}
           </text>
-        </g>
-      }
-    </g>
+        }
 
-    <!-- LAYER 5: Valid Move Destination Highlights -->
-    <g class="valid-move-highlights">
-      @for (entry of validMovesMap().entries(); track entry[0]) {
-        <g
-          [attr.transform]="'translate(' + graphService.getNode(entry[0])!.x + ',' + graphService.getNode(entry[0])!.y + ')'"
-          (click)="onNodeClick(entry[0])"
-          class="move-destination-target cursor-pointer"
-        >
-          <!-- Pulsing Target Ring -->
-          <circle
-            r="20"
-            fill="none"
-            [attr.stroke]="entry[1].capturesBarricade ? '#ef4444' : entry[1].capturesOpponentTokenId ? '#8b5cf6' : '#22c55e'"
-            stroke-width="3"
-            class="animate-ping opacity-60"
-          />
-          <circle
-            r="19"
-            [attr.fill]="entry[1].capturesBarricade ? 'rgba(239, 68, 68, 0.2)' : entry[1].capturesOpponentTokenId ? 'rgba(139, 92, 246, 0.2)' : 'rgba(34, 197, 94, 0.2)'"
-            [attr.stroke]="entry[1].capturesBarricade ? '#ef4444' : entry[1].capturesOpponentTokenId ? '#8b5cf6' : '#22c55e'"
-            stroke-width="2.5"
-          />
+        <!-- 2. Coordinate Rank Labels (1 to 9 along right) -->
+        @for (row of rowsDescending; track row; let i = $index) {
+          <text
+            x="942"
+            [attr.y]="i * 102 + 52"
+            text-anchor="middle"
+            dominant-baseline="middle"
+            [attr.fill]="getCoordinateFill()"
+            class="font-mono text-[26px] font-semibold">
+            {{ row }}
+          </text>
+        }
 
-          <!-- Capture Indicator Badges -->
-          @if (entry[1].capturesBarricade) {
-            <text x="0" y="3.5" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="extrabold">✕</text>
-          } @else if (entry[1].capturesOpponentTokenId) {
-            <text x="0" y="3.5" text-anchor="middle" fill="#8b5cf6" font-size="9" font-weight="extrabold">⚔</text>
-          } @else if (entry[0] === 'castle_1') {
-            <text x="0" y="3.5" text-anchor="middle" fill="#eab308" font-size="10" font-weight="extrabold">★</text>
-          } @else {
-            <circle r="4" fill="#22c55e" />
+        <!-- 3. Base Board Grid (9x9 Tiles) -->
+        <g id="grid-cells">
+          @for (rowCells of gridCells(); track $index) {
+            @for (cell of rowCells; track cell.algebraic) {
+              <!-- Base Tile -->
+              <rect
+                [attr.x]="(cell.col - 1) * 102"
+                [attr.y]="(9 - cell.row) * 102"
+                width="84"
+                height="84"
+                rx="14"
+                ry="14"
+                [attr.fill]="getCellFill(cell)"
+                [attr.stroke]="cell.isCenterGoal ? '#f59e0b' : 'none'"
+                [attr.stroke-width]="cell.isCenterGoal ? '2' : '0'"
+                [attr.stroke-dasharray]="cell.isCenterGoal ? '5 3' : 'none'"
+                [class.cursor-pointer]="cell.isLegalMove"
+                (click)="cell.isLegalMove ? onCellClick(cell) : null"
+                class="transition-colors duration-150"
+              />
+
+              <!-- Center Sanctum Target Ring for 4-Player Mode -->
+              @if (cell.isCenterGoal) {
+                <circle
+                  [attr.cx]="(cell.col - 1) * 102 + 42"
+                  [attr.cy]="(9 - cell.row) * 102 + 42"
+                  r="30"
+                  fill="none"
+                  stroke="#f59e0b"
+                  stroke-width="1.5"
+                  opacity="0.6"
+                  class="pointer-events-none animate-pulse"
+                />
+                <circle
+                  [attr.cx]="(cell.col - 1) * 102 + 42"
+                  [attr.cy]="(9 - cell.row) * 102 + 42"
+                  r="14"
+                  fill="none"
+                  stroke="#fbbf24"
+                  stroke-width="1.5"
+                  opacity="0.8"
+                  class="pointer-events-none"
+                />
+                <circle
+                  [attr.cx]="(cell.col - 1) * 102 + 42"
+                  [attr.cy]="(9 - cell.row) * 102 + 42"
+                  r="3"
+                  fill="#fbbf24"
+                  class="pointer-events-none"
+                />
+              }
+
+              <!-- Legal Move Target Highlight (Full Interactive Tile Hit Area) -->
+              @if (cell.isLegalMove) {
+                <rect
+                  [attr.x]="(cell.col - 1) * 102 + 4"
+                  [attr.y]="(9 - cell.row) * 102 + 4"
+                  width="76"
+                  height="76"
+                  rx="14"
+                  ry="14"
+                  fill="transparent"
+                  pointer-events="all"
+                  [attr.stroke]="getLegalMoveStroke()"
+                  stroke-width="3.5"
+                  class="cursor-pointer hover:stroke-primary hover:fill-primary/20 transition-all"
+                  (click)="onCellClick(cell)"
+                />
+              }
+
+              <!-- Dynamic Multi-Player Pawn Rendering -->
+              @if (cell.pawn; as p) {
+                <g class="pointer-events-none">
+                  <!-- Outer Pulsing Active Ring in Player Color if Current Turn -->
+                  @if (p.isCurrentTurn) {
+                    <circle
+                      [attr.cx]="(cell.col - 1) * 102 + 42"
+                      [attr.cy]="(9 - cell.row) * 102 + 42"
+                      r="29"
+                      fill="none"
+                      [attr.stroke]="p.colorHex"
+                      stroke-width="2.5"
+                      stroke-dasharray="4 2"
+                      class="animate-spin origin-center"
+                      style="transform-origin: {{ (cell.col - 1) * 102 + 42 }}px {{ (9 - cell.row) * 102 + 42 }}px;"
+                    />
+                  }
+
+                  <!-- Pawn Hardware-Accelerated Vector Drop Shadow -->
+                  <circle
+                    [attr.cx]="(cell.col - 1) * 102 + 42"
+                    [attr.cy]="(9 - cell.row) * 102 + 43"
+                    r="23"
+                    fill="rgba(0,0,0,0.3)"
+                  />
+
+                  <!-- Pawn Body -->
+                  <circle
+                    [attr.cx]="(cell.col - 1) * 102 + 42"
+                    [attr.cy]="(9 - cell.row) * 102 + 42"
+                    r="22"
+                    [attr.fill]="p.colorHex"
+                    stroke="rgba(255,255,255,0.6)"
+                    stroke-width="1.5"
+                  />
+
+                  <!-- Pawn Label (P1, P2, P3, P4) -->
+                  <text
+                    [attr.x]="(cell.col - 1) * 102 + 42"
+                    [attr.y]="(9 - cell.row) * 102 + 47"
+                    text-anchor="middle"
+                    class="fill-white font-black text-[13px] font-mono select-none drop-shadow">
+                    {{ p.label }}
+                  </text>
+                </g>
+              }
+            }
           }
-
-          <!-- Transparent large hit area -->
-          <circle r="26" fill="transparent" />
         </g>
-      }
-    </g>
 
-    <!-- LAYER 6: Relocation Placement Highlights (when PLACING_BARRICADE) -->
-    @if (stateService.phase() === 'PLACING_BARRICADE') {
-      <g class="relocation-highlights">
-        @for (nodeId of eligiblePlacementNodeIds(); track nodeId) {
-          <g
-            [attr.transform]="'translate(' + graphService.getNode(nodeId)!.x + ',' + graphService.getNode(nodeId)!.y + ')'"
-            (click)="onNodeClick(nodeId)"
-            class="relocation-target cursor-pointer group/reloc"
-          >
-            <circle
-              r="18"
-              fill="rgba(239, 68, 68, 0.15)"
-              stroke="#ef4444"
-              stroke-width="2"
-              stroke-dasharray="3 3"
-              class="group-hover/reloc:fill-red-500/30 transition-colors"
+        <!-- 4. Placed Walls (2-cell wide rounded bars with ownership pip) -->
+        <g id="placed-walls">
+          @for (w of state.walls(); track w.id) {
+            @if (w.orientation === 'horizontal') {
+              <!-- Horizontal Wall: between row w.row and w.row+1, spanning cols w.col & w.col+1 -->
+              <g>
+                <!-- Vector Shadow -->
+                <rect
+                  [attr.x]="(w.col - 1) * 102"
+                  [attr.y]="(8 - w.row) * 102 + 87"
+                  width="186"
+                  height="14"
+                  rx="6"
+                  ry="6"
+                  fill="rgba(0,0,0,0.25)"
+                />
+                <rect
+                  [attr.x]="(w.col - 1) * 102"
+                  [attr.y]="(8 - w.row) * 102 + 86"
+                  width="186"
+                  height="14"
+                  rx="6"
+                  ry="6"
+                  [attr.fill]="getWallFill()"
+                />
+                <!-- Player Ownership Indicator Pip -->
+                <circle
+                  [attr.cx]="(w.col - 1) * 102 + 93"
+                  [attr.cy]="(8 - w.row) * 102 + 93"
+                  r="3.5"
+                  [attr.fill]="getPlayerPawnHex(w.placedBy)"
+                />
+              </g>
+            } @else {
+              <!-- Vertical Wall: between col w.col and w.col+1, spanning rows w.row & w.row+1 -->
+              <g>
+                <!-- Vector Shadow -->
+                <rect
+                  [attr.x]="(w.col - 1) * 102 + 86"
+                  [attr.y]="(8 - w.row) * 102 + 1"
+                  width="14"
+                  height="186"
+                  rx="6"
+                  ry="6"
+                  fill="rgba(0,0,0,0.25)"
+                />
+                <rect
+                  [attr.x]="(w.col - 1) * 102 + 86"
+                  [attr.y]="(8 - w.row) * 102"
+                  width="14"
+                  height="186"
+                  rx="6"
+                  ry="6"
+                  [attr.fill]="getWallFill()"
+                />
+                <!-- Player Ownership Indicator Pip -->
+                <circle
+                  [attr.cx]="(w.col - 1) * 102 + 93"
+                  [attr.cy]="(8 - w.row) * 102 + 93"
+                  r="3.5"
+                  [attr.fill]="getPlayerPawnHex(w.placedBy)"
+                />
+              </g>
+            }
+          }
+        </g>
+
+        <!-- 5. Hover / Selection Preview Wall -->
+        @if (hoveredSlot(); as preview) {
+          @if (preview.orientation === 'horizontal') {
+            <rect
+              [attr.x]="(preview.col - 1) * 102"
+              [attr.y]="(8 - preview.row) * 102 + 86"
+              width="186"
+              height="14"
+              rx="6"
+              ry="6"
+              [attr.fill]="getWallPreviewFill(preview.isLegal)"
+              [attr.stroke]="getWallPreviewStroke(preview.isLegal)"
+              stroke-width="1.5"
+              class="pointer-events-none transition-all duration-100"
             />
-            <circle r="24" fill="transparent" />
+          } @else {
+            <rect
+              [attr.x]="(preview.col - 1) * 102 + 86"
+              [attr.y]="(8 - preview.row) * 102"
+              width="14"
+              height="186"
+              rx="6"
+              ry="6"
+              [attr.fill]="getWallPreviewFill(preview.isLegal)"
+              [attr.stroke]="getWallPreviewStroke(preview.isLegal)"
+              stroke-width="1.5"
+              class="pointer-events-none transition-all duration-100"
+            />
+          }
+        }
+
+        <!-- 6. Wall Groove Touch Guides & Hitboxes -->
+        @if (state.wallsAllowed() > 0 && interactionMode() === 'wall') {
+          <!-- Visible Junction Dots in Wall Placement Mode -->
+          <g id="wall-groove-guides" class="pointer-events-none">
+            @for (r of [8, 7, 6, 5, 4, 3, 2, 1]; track r) {
+              @for (c of [1, 2, 3, 4, 5, 6, 7, 8]; track c) {
+                <circle
+                  [attr.cx]="(c - 1) * 102 + 93"
+                  [attr.cy]="(8 - r) * 102 + 93"
+                  r="4"
+                  fill="currentColor"
+                  opacity="0.35"
+                />
+              }
+            }
+          </g>
+
+          <!-- Interactive Groove Hitboxes (Only present during Wall mode to guarantee zero move interception) -->
+          <g id="wall-hitboxes">
+            @for (r of [8, 7, 6, 5, 4, 3, 2, 1]; track r) {
+              @for (c of [1, 2, 3, 4, 5, 6, 7, 8]; track c) {
+                <!-- Hitbox at groove junction (r, c) with generous 44px touch area for mobile fingers -->
+                <rect
+                  [attr.x]="(c - 1) * 102 + 71"
+                  [attr.y]="(8 - r) * 102 + 71"
+                  width="44"
+                  height="44"
+                  fill="transparent"
+                  class="cursor-pointer"
+                  (mouseenter)="onWallSlotHover(r, c, state.wallOrientation())"
+                  (mouseleave)="onWallSlotLeave()"
+                  (click)="onWallSlotTap(r, c)"
+                />
+
+                <!-- Extended Horizontal Hitbox -->
+                <rect
+                  [attr.x]="(c - 1) * 102 + 10"
+                  [attr.y]="(8 - r) * 102 + 76"
+                  width="84"
+                  height="34"
+                  fill="transparent"
+                  class="cursor-pointer"
+                  (mouseenter)="onWallSlotHover(r, c, state.wallOrientation())"
+                  (mouseleave)="onWallSlotLeave()"
+                  (click)="onWallSlotTap(r, c)"
+                />
+
+                <!-- Extended Vertical Hitbox -->
+                <rect
+                  [attr.x]="(c - 1) * 102 + 76"
+                  [attr.y]="(8 - r) * 102 + 10"
+                  width="34"
+                  height="84"
+                  fill="transparent"
+                  class="cursor-pointer"
+                  (mouseenter)="onWallSlotHover(r, c, state.wallOrientation())"
+                  (mouseleave)="onWallSlotLeave()"
+                  (click)="onWallSlotTap(r, c)"
+                />
+              }
+            }
           </g>
         }
-      </g>
-    }
-  </svg>
+      </svg>
+    </div>
+
+    <!-- Dedicated Touch Action & Wall Preview Confirmation Bar (Outside SVG to prevent layout shift) -->
+    <div class="w-full min-h-[46px] flex items-center justify-between gap-2 px-3 py-2 rounded-2xl bg-muted/40 border border-border text-xs">
+      @if (hoveredSlot(); as preview) {
+        <div class="flex items-center gap-1.5 flex-1 min-w-0">
+          <span
+            class="h-2 w-2 rounded-full shrink-0"
+            [class.bg-emerald-500]="preview.isLegal"
+            [class.bg-red-500]="!preview.isLegal"></span>
+          <span
+            class="font-semibold text-[11px] truncate"
+            [class.text-emerald-600]="preview.isLegal"
+            [class.dark:text-emerald-400]="preview.isLegal"
+            [class.text-red-600]="!preview.isLegal"
+            [class.dark:text-red-400]="!preview.isLegal">
+            {{ preview.isLegal ? 'Wall selected (' + preview.orientation + ')' : 'Cannot place wall here (illegal/blocked)' }}
+          </span>
+        </div>
+
+        <div class="flex items-center gap-1.5 shrink-0 ml-auto">
+          <button
+            type="button"
+            (click)="toggleOrientation()"
+            class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-card hover:bg-muted text-foreground border border-border text-[11px] font-semibold transition-all active:scale-95"
+            title="Rotate Wall">
+            <ng-icon name="lucideRotateCw" class="text-xs" />
+            <span>Rotate</span>
+          </button>
+
+          @if (preview.isLegal) {
+            <button
+              type="button"
+              (click)="confirmWallPlacement()"
+              class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] shadow-sm transition-all active:scale-95 animate-in fade-in">
+              <ng-icon name="lucideCheck" class="text-xs" />
+              <span>Place Wall</span>
+            </button>
+          }
+
+          <button
+            type="button"
+            (click)="cancelWallPlacement()"
+            class="inline-flex items-center gap-1 px-2 py-1.5 rounded-xl bg-card hover:bg-muted text-muted-foreground hover:text-foreground border border-border text-[11px] font-semibold transition-all active:scale-95"
+            title="Cancel Selection">
+            <ng-icon name="lucideX" class="text-xs" />
+          </button>
+        </div>
+      } @else if (interactionMode() === 'wall') {
+        <div class="flex items-center justify-between w-full text-muted-foreground text-[11px]">
+          <span class="flex items-center gap-1.5">
+            <ng-icon name="lucideInfo" class="text-xs text-primary" />
+            <span>Tap any highlighted groove junction to place a barricade.</span>
+          </span>
+          <button
+            type="button"
+            (click)="setInteractionMode('move')"
+            class="text-[11px] font-semibold text-primary hover:underline ml-2">
+            Back to Move
+          </button>
+        </div>
+      } @else {
+        <div class="flex items-center justify-between w-full text-muted-foreground text-[11px]">
+          <span class="flex items-center gap-1.5">
+            <ng-icon name="lucideInfo" class="text-xs text-primary" />
+            <span>Tap any green-bordered tile to move your pawn.</span>
+          </span>
+          @if (state.wallsRemainingThisTurn() > 0 && state.currentPlayer().wallsRemaining > 0) {
+            <button
+              type="button"
+              (click)="setInteractionMode('wall')"
+              class="text-[11px] font-semibold text-primary hover:underline ml-2">
+              Switch to Wall
+            </button>
+          }
+        </div>
+      }
+    </div>
+  </div>
 </div>

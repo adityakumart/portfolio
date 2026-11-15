@@ -3,6 +3,7 @@ export * from './components/vehicle-image-carousel/vehicle-image-carousel.compon
 export * from './components/car-loader/car-loader.component';
 export * from './components/aadhar-input/aadhar-input.component';
 export * from './utils/aadhar-mask.util';
+export * from './utils/date-validation.util';
 export * from './dialogs';
 export * from './rr-shared.module';
 

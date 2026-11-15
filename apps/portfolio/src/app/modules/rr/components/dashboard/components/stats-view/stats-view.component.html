@@ -335,7 +335,7 @@
                       (updateAvailabilityClick)="openUpdateAvailabilityModal($event)"
                       (cardClick)="activeCategory() === 'fleet' ? null : (v.status === 'available' ? bookVehicle($event) : null)"
                     />
-                    @if ((activeCategory() === 'maintenance' || activeCategory() === 'contract') && isManagerOrAdmin()) {
+                    @if (activeCategory() === 'maintenance' && isManagerOrAdmin()) {
                       <div class="mt-2 px-1">
                         <button
                           hlmBtn
@@ -388,7 +388,7 @@
                       (updateAvailabilityClick)="openUpdateAvailabilityModal($event)"
                       (cardClick)="activeCategory() === 'fleet' ? null : (v.status === 'available' ? bookVehicle($event) : null)"
                     />
-                    @if ((activeCategory() === 'maintenance' || activeCategory() === 'contract') && isManagerOrAdmin()) {
+                    @if (activeCategory() === 'maintenance' && isManagerOrAdmin()) {
                       <div class="mt-2 px-1">
                         <button
                           hlmBtn
@@ -427,7 +427,7 @@
                     (updateAvailabilityClick)="openUpdateAvailabilityModal($event)"
                     (cardClick)="activeCategory() === 'fleet' ? null : (v.status === 'available' ? bookVehicle($event) : null)"
                   />
-                  @if ((activeCategory() === 'maintenance' || activeCategory() === 'contract') && isManagerOrAdmin()) {
+                  @if (activeCategory() === 'maintenance' && isManagerOrAdmin()) {
                     <div class="mt-2 px-1">
                       <button
                         hlmBtn
@@ -471,7 +471,7 @@
                     (updateAvailabilityClick)="openUpdateAvailabilityModal($event)"
                     (cardClick)="activeCategory() === 'fleet' ? null : (v.status === 'available' ? bookVehicle($event) : null)"
                   />
-                  @if ((activeCategory() === 'maintenance' || activeCategory() === 'contract') && isManagerOrAdmin()) {
+                  @if (activeCategory() === 'maintenance' && isManagerOrAdmin()) {
                     <div class="mt-2 px-1">
                       <button
                         hlmBtn

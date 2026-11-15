@@ -115,7 +115,7 @@ test.describe('RR Module - Vehicle Inventory Fleet Registry Component', () => {
       }
     });
 
-    test('should display and require Available By date in Modify Fleet Vehicle Metadata popup when status is Service or Contract', async ({ page }) => {
+    test('should display and require Next Available by date in Modify Fleet Vehicle Metadata popup only when status is Service', async ({ page }) => {
       // Find Dzire vehicle card and click its edit button (on desktop hover or action menu)
       const dzireCard = page.locator('app-rr-vehicle-card', { hasText: 'Swift Dzire' }).first();
       await expect(dzireCard).toBeVisible();
@@ -149,14 +149,14 @@ test.describe('RR Module - Vehicle Inventory Fleet Registry Component', () => {
       await statusSelect.selectOption('maintenance');
       const availableByMaintenance = dialog.locator('hlm-date-picker[formcontrolname="availableBy"]');
       await expect(availableByMaintenance).toBeVisible();
-      await expect(dialog.getByText('Available By')).toBeVisible();
+      await expect(dialog.getByText('Next Available by')).toBeVisible();
 
-      // 2. Change status to Corporate Contract ('contract')
+      // 2. Change status to Corporate Contract ('contract') - Next Available by input should NOT be visible
       await statusSelect.selectOption('contract');
       const availableByContract = dialog.locator('hlm-date-picker[formcontrolname="availableBy"]');
-      await expect(availableByContract).toBeVisible();
+      await expect(availableByContract).not.toBeVisible();
 
-      // 3. Switch back to Available for Rental ('available') - Available By input should disappear
+      // 3. Switch back to Available for Rental ('available') - Next Available by input should remain hidden
       await statusSelect.selectOption('available');
       await expect(dialog.locator('hlm-date-picker[formcontrolname="availableBy"]')).not.toBeVisible();
 

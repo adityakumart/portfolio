@@ -1,10 +1,25 @@
-import { TestBed } from '@angular/core/testing';
+// @vitest-environment jsdom
+import { describe, it, expect, beforeEach } from 'vitest';
+import { TestBed, getTestBed } from '@angular/core/testing';
+import {
+  BrowserDynamicTestingModule,
+  platformBrowserDynamicTesting,
+} from '@angular/platform-browser-dynamic/testing';
 import { BarricadeBoardGraphService } from './barricade-board-graph.service';
+import { Wall } from '../../../../../shared/barricade';
+
+try {
+  getTestBed().initTestEnvironment(
+    BrowserDynamicTestingModule,
+    platformBrowserDynamicTesting()
+  );
+} catch {}
 
 describe('BarricadeBoardGraphService', () => {
   let service: BarricadeBoardGraphService;
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [BarricadeBoardGraphService],
     });
@@ -15,90 +30,134 @@ describe('BarricadeBoardGraphService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should initialize the complete classic pyramid board graph with 66 nodes', () => {
-    const graph = service.getGraph();
-    const allNodes = service.getAllNodes();
-    expect(allNodes.length).toBe(66);
-    expect(Object.keys(graph).length).toBe(66);
+  describe('Board Boundaries', () => {
+    it('should validate 1..9 coordinates', () => {
+      expect(service.isWithinBounds(1, 1)).toBe(true);
+      expect(service.isWithinBounds(9, 9)).toBe(true);
+      expect(service.isWithinBounds(0, 5)).toBe(false);
+      expect(service.isWithinBounds(5, 10)).toBe(false);
+    });
   });
 
-  it('should configure the summit castle node correctly at row 0', () => {
-    const castle = service.getNode('castle_1');
-    expect(castle).toBeDefined();
-    expect(castle?.id).toBe('castle_1');
-    expect(castle?.type).toBe('castle');
-    expect(castle?.row).toBe(0);
-    expect(castle?.col).toBe(8);
-    expect(castle?.allowedForBarricade).toBe(false);
-    expect(castle?.neighbors).toContain('r1_c8');
+  describe('Wall Collision Detection', () => {
+    it('should detect vertical movement blocked by horizontal wall', () => {
+      const walls: Wall[] = [
+        { id: 'w1', row: 6, col: 3, orientation: 'horizontal', placedBy: 'player1' },
+      ];
+
+      expect(
+        service.isMoveBlockedByWall({ row: 6, col: 3 }, { row: 7, col: 3 }, walls)
+      ).toBe(true);
+
+      expect(
+        service.isMoveBlockedByWall({ row: 6, col: 4 }, { row: 7, col: 4 }, walls)
+      ).toBe(true);
+
+      expect(
+        service.isMoveBlockedByWall({ row: 6, col: 5 }, { row: 7, col: 5 }, walls)
+      ).toBe(false);
+    });
+
+    it('should detect horizontal movement blocked by vertical wall', () => {
+      const walls: Wall[] = [
+        { id: 'w2', row: 4, col: 2, orientation: 'vertical', placedBy: 'player1' },
+      ];
+
+      expect(
+        service.isMoveBlockedByWall({ row: 4, col: 2 }, { row: 4, col: 3 }, walls)
+      ).toBe(true);
+
+      expect(
+        service.isMoveBlockedByWall({ row: 5, col: 2 }, { row: 5, col: 3 }, walls)
+      ).toBe(true);
+
+      expect(
+        service.isMoveBlockedByWall({ row: 3, col: 2 }, { row: 3, col: 3 }, walls)
+      ).toBe(false);
+    });
+
+    it('should detect overlapping and crossing wall placement', () => {
+      const existing: Wall[] = [
+        { id: 'w1', row: 4, col: 4, orientation: 'horizontal', placedBy: 'player1' },
+      ];
+
+      expect(
+        service.doesWallCollide({ row: 4, col: 4, orientation: 'horizontal' }, existing)
+      ).toBe(true);
+
+      expect(
+        service.doesWallCollide({ row: 4, col: 4, orientation: 'vertical' }, existing)
+      ).toBe(true);
+
+      expect(
+        service.doesWallCollide({ row: 4, col: 3, orientation: 'horizontal' }, existing)
+      ).toBe(true);
+      expect(
+        service.doesWallCollide({ row: 4, col: 5, orientation: 'horizontal' }, existing)
+      ).toBe(true);
+
+      expect(
+        service.doesWallCollide({ row: 4, col: 6, orientation: 'horizontal' }, existing)
+      ).toBe(false);
+    });
   });
 
-  it('should configure exactly 11 default barricade positions across bottlenecks', () => {
-    const barricades = service.getDefaultBarricadePositions();
-    expect(barricades.length).toBe(11);
-    expect(barricades).toEqual([
-      'r1_c8',
-      'r3_c6',
-      'r3_c10',
-      'r5_c4',
-      'r5_c8',
-      'r5_c12',
-      'r7_c2',
-      'r7_c5',
-      'r7_c8',
-      'r7_c11',
-      'r7_c14',
-    ]);
+  describe('Pawn Moves & Jumps', () => {
+    it('should return 4 orthogonal moves in center of empty board', () => {
+      const moves = service.getLegalPawnMoves(
+        { row: 5, col: 5 },
+        { row: 9, col: 5 },
+        []
+      );
+      expect(moves.length).toBe(4);
+      expect(moves.every((m) => !m.isJump)).toBe(true);
+    });
 
-    for (const bId of barricades) {
-      const node = service.getNode(bId);
-      expect(node).toBeDefined();
-      expect(node?.allowedForBarricade).toBe(true);
-    }
-  });
+    it('should perform straight jump over opponent when no wall behind', () => {
+      const moves = service.getLegalPawnMoves(
+        { row: 4, col: 5 },
+        { row: 5, col: 5 },
+        []
+      );
 
-  it('should ensure undirected adjacency symmetry across all connected nodes', () => {
-    const allNodes = service.getAllNodes();
-    for (const node of allNodes) {
-      for (const neighborId of node.neighbors) {
-        const neighbor = service.getNode(neighborId);
-        expect(neighbor).toBeDefined();
-        expect(neighbor?.neighbors).toContain(node.id);
-      }
-    }
-  });
+      const jumpMove = moves.find(
+        (m) => m.target.row === 6 && m.target.col === 5
+      );
+      expect(jumpMove).toBeDefined();
+      expect(jumpMove?.isJump).toBe(true);
+    });
 
-  it('should configure starting positions and 5 base slots for Player 1 and Player 2', () => {
-    const p1 = service.getPlayerStartPositions('blue');
-    expect(p1.startNodeId).toBe('start_p1');
-    expect(p1.baseSlots.length).toBe(5);
-    expect(p1.baseSlots).toContain('base_p1_1');
+    it('should perform diagonal jumps when wall is behind opponent', () => {
+      const walls: Wall[] = [
+        { id: 'w1', row: 5, col: 5, orientation: 'horizontal', placedBy: 'player2' },
+      ];
 
-    const p2 = service.getPlayerStartPositions('red');
-    expect(p2.startNodeId).toBe('start_p2');
-    expect(p2.baseSlots.length).toBe(5);
-    expect(p2.baseSlots).toContain('base_p2_1');
-  });
+      const moves = service.getLegalPawnMoves(
+        { row: 4, col: 5 },
+        { row: 5, col: 5 },
+        walls
+      );
 
-  it('should disallow placing barricades in base camps, starting rows, and the summit castle', () => {
-    const castle = service.getNode('castle_1');
-    expect(castle?.allowedForBarricade).toBe(false);
+      expect(moves.some((m) => m.target.row === 6 && m.target.col === 5)).toBe(false);
+      expect(moves.some((m) => m.target.row === 5 && m.target.col === 4 && m.isJump)).toBe(true);
+      expect(moves.some((m) => m.target.row === 5 && m.target.col === 6 && m.isJump)).toBe(true);
+    });
 
-    const baseline = service.getNode('r8_c4');
-    expect(baseline?.allowedForBarricade).toBe(false);
+    it('should prohibit chain jumping over 2 adjacent opponents in 4-player mode', () => {
+      // Current player at (4, 5). Opponent 1 at (5, 5). Opponent 2 at (6, 5) directly behind Opponent 1!
+      const current = { row: 4, col: 5 };
+      const opponents = [
+        { row: 5, col: 5 },
+        { row: 6, col: 5 },
+      ];
 
-    const startP1 = service.getNode('start_p1');
-    expect(startP1?.allowedForBarricade).toBe(false);
+      const moves = service.getLegalPawnMovesMulti(current, opponents, []);
 
-    const baseSlot = service.getNode('base_p1_1');
-    expect(baseSlot?.allowedForBarricade).toBe(false);
-
-    const allowedNodeIds = service.getAllowedBarricadeNodeIds();
-    expect(allowedNodeIds).not.toContain('castle_1');
-    expect(allowedNodeIds).not.toContain('r8_c4');
-    expect(allowedNodeIds).not.toContain('start_p1');
-    expect(allowedNodeIds).not.toContain('base_p1_1');
-    expect(allowedNodeIds).toContain('r1_c8');
-    expect(allowedNodeIds).toContain('r4_c8');
+      // Straight jump to (6, 5) is NOT allowed because it is occupied by Opponent 2!
+      expect(moves.some((m) => m.target.row === 6 && m.target.col === 5)).toBe(false);
+      // Diagonals around Opponent 1 to (5, 4) and (5, 6) should be available instead
+      expect(moves.some((m) => m.target.row === 5 && m.target.col === 4 && m.isJump)).toBe(true);
+      expect(moves.some((m) => m.target.row === 5 && m.target.col === 6 && m.isJump)).toBe(true);
+    });
   });
 });

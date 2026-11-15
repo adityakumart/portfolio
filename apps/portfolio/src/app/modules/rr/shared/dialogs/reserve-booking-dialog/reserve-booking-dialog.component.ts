@@ -40,6 +40,10 @@ import {
 import { RRApiService } from '../../../services/rr-api.service';
 import { RRCustomerApiService } from '../../../services/rr-customer-api.service';
 import { RRAadharInputComponent } from '../../components/aadhar-input/aadhar-input.component';
+import {
+  getMinPickupDateTimeString,
+  backdateValidator,
+} from '../../utils/date-validation.util';
 
 export interface ReserveBookingDialogContext {
   vehicleRegNo?: string;
@@ -113,6 +117,16 @@ export class RRReserveBookingDialogComponent implements OnInit {
   scheduleConflict = signal<ScheduleConflict>({ hasConflict: false });
   isCheckingSchedule = signal(false);
 
+  // Role & Backdated Booking Restriction State
+  currentUser = computed(() => this.rrApi.currentUser());
+  isBackdateAllowed = computed(() => {
+    const role = this.currentUser()?.role;
+    return role === 'admin' || role === 'manager';
+  });
+  minPickupDateTime = computed(() => {
+    return this.isBackdateAllowed() ? null : getMinPickupDateTimeString();
+  });
+
   // Membership & Autocomplete State
   membershipDiscount = signal<ICustomerMembershipDiscount | null>(null);
   isRegularMemberMode = signal<boolean>(false);
@@ -152,7 +166,10 @@ export class RRReserveBookingDialogComponent implements OnInit {
       extraHourPrice: [''],
 
       // Step 1: Travel Details
-      pickupDateTime: ['', Validators.required],
+      pickupDateTime: [
+        '',
+        [Validators.required, backdateValidator(() => this.isBackdateAllowed())],
+      ],
       durationDays: ['1', Validators.required],
       durationHours: ['0', Validators.required],
       returnDateTime: ['', Validators.required],

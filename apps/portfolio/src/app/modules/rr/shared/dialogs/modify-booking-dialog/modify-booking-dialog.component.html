@@ -30,7 +30,20 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         <div>
           <label hlmLabel class="text-xs text-muted-foreground block mb-1">Pickup Date & Time</label>
-          <input hlmInput type="datetime-local" formControlName="pickupDateTime" (change)="calculateModifyReturnDate()" class="w-full text-sm" />
+          <input
+            hlmInput
+            type="datetime-local"
+            formControlName="pickupDateTime"
+            [min]="minPickupDateTime()"
+            (change)="calculateModifyReturnDate()"
+            class="w-full text-sm"
+          />
+          @if (modifyBookingFormGroup.get('pickupDateTime')?.hasError('required') && modifyBookingFormGroup.get('pickupDateTime')?.touched) {
+            <span class="text-xs text-destructive">Required.</span>
+          }
+          @if (modifyBookingFormGroup.get('pickupDateTime')?.hasError('backdatedNotAllowed')) {
+            <span class="text-xs text-destructive">Backdated bookings are allowed for Manager & Admin roles only.</span>
+          }
         </div>
 
         <div>

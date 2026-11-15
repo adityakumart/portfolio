@@ -1,83 +1,120 @@
-<div class="barricade-container w-full min-h-[calc(100vh-4rem)] p-3 md:p-6 lg:p-8 flex flex-col items-center justify-start space-y-6 max-w-5xl mx-auto">
-  <!-- Header -->
-  <header class="w-full text-center space-y-2">
-    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-semibold tracking-wide uppercase">
-      <ng-icon name="lucideShieldAlert" class="text-sm" />
-      Tactical Board Game
-    </div>
-
-    <h1 class="text-2xl md:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-red-500 via-amber-500 to-yellow-500 bg-clip-text text-transparent">
-      Barricade (Malefiz)
-    </h1>
-
-    <p class="text-xs md:text-sm text-muted-foreground max-w-xl mx-auto">
-      Scale the pyramid, bypass bottlenecks, capture barricades, and knock opponents back to base camp to claim the summit castle!
-    </p>
-  </header>
-
-  <!-- Game Controls Bar -->
-  <section class="w-full">
-    <app-barricade-controls />
-  </section>
-
-  <!-- SVG Game Board -->
-  <section class="w-full flex items-center justify-center">
-    <app-barricade-board />
-  </section>
-
-  <!-- Relocation Toast / Banner -->
-  <app-barricade-relocation-dialog />
-
-  <!-- Win Celebration Modal -->
-  <app-barricade-win-dialog />
-
-  <!-- Rules & Highlights Grid -->
-  <section class="w-full space-y-3 pt-4 border-t border-border/40">
-    <div class="flex items-center gap-2">
-      <ng-icon name="lucideCompass" class="text-primary text-base" />
-      <h3 class="text-xs font-bold text-muted-foreground uppercase tracking-wider">Gameplay Rules &amp; Mechanics</h3>
-    </div>
-
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-      <div hlmCard class="p-3.5 rounded-xl border border-border/80 bg-card/60 backdrop-blur-sm space-y-1.5">
-        <div class="h-7 w-7 rounded-lg bg-yellow-500/10 text-yellow-500 flex items-center justify-center font-bold text-xs">
-          <ng-icon name="lucideCrown" class="text-sm" />
+<div class="barricade-container w-full min-h-[calc(100vh-4rem)] p-3 md:p-6 lg:p-8 flex flex-col items-center justify-start space-y-6 max-w-6xl mx-auto text-foreground">
+  @if (stateService.status() === 'lobby') {
+    <!-- Initial Home & Setup Lobby View -->
+    <app-barricade-home />
+  } @else {
+    <!-- Minimal Header & Quick Preset Button -->
+    <header class="w-full flex flex-col sm:flex-row items-center justify-between gap-3 pb-3 border-b border-border/80">
+      <div class="flex items-center gap-3">
+        <button
+          type="button"
+          (click)="stateService.goToLobby()"
+          class="h-10 w-10 rounded-2xl bg-card hover:bg-muted border border-border flex items-center justify-center text-red-500 shadow-sm transition-all active:scale-95"
+          title="Return to Home Lobby">
+          <ng-icon name="lucideShieldAlert" class="text-xl" />
+        </button>
+        <div>
+          <h1 class="text-xl md:text-2xl font-black tracking-tight text-foreground flex items-center gap-2">
+            Barricade
+            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-muted text-muted-foreground border border-border font-mono">
+              {{ stateService.isFourPlayer() ? '4-Player Center Sanctum' : 'Quoridor 9x9 Duel' }}
+            </span>
+          </h1>
+          <p class="text-xs text-muted-foreground">
+            {{ stateService.isFourPlayer() ? 'First pawn to reach center e5 wins. Obstruct opponents with barricades.' : 'Navigate your pawn to the opposite row or place barricades to obstruct your opponent.' }}
+          </p>
         </div>
-        <h4 class="font-bold text-xs text-foreground">Summit Castle</h4>
-        <p class="text-[11px] text-muted-foreground leading-relaxed">
-          The first player to land a token exactly on the summit castle node wins the game!
-        </p>
       </div>
 
-      <div hlmCard class="p-3.5 rounded-xl border border-border/80 bg-card/60 backdrop-blur-sm space-y-1.5">
-        <div class="h-7 w-7 rounded-lg bg-red-500/10 text-red-500 flex items-center justify-center font-bold text-xs">
-          <ng-icon name="lucideShieldAlert" class="text-sm" />
-        </div>
-        <h4 class="font-bold text-xs text-foreground">11 Barricades</h4>
-        <p class="text-[11px] text-muted-foreground leading-relaxed">
-          Barricades block paths. You cannot leap through them, but landing on one captures and relocates it!
-        </p>
+      <!-- Header Action Buttons -->
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          (click)="stateService.goToLobby()"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-card hover:bg-muted text-foreground border border-border text-xs font-semibold transition-all shadow-sm active:scale-95">
+          <ng-icon name="lucideRotateCcw" class="text-xs" />
+          <span>Home / Lobby</span>
+        </button>
+
+        @if (!stateService.isFourPlayer()) {
+          <button
+            type="button"
+            (click)="loadReferencePreset()"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-card hover:bg-muted text-foreground border border-border text-xs font-semibold transition-all shadow-sm active:scale-95"
+            title="Load reference match layout (Player at e4, Computer at c7)">
+            <ng-icon name="lucideSparkles" class="text-amber-500 dark:text-amber-400 text-sm" />
+            <span>Preset</span>
+          </button>
+        }
+      </div>
+    </header>
+
+    <!-- Split Screen Arena: Left 9x9 Board | Right Sidebar Panel -->
+    <main class="w-full flex flex-col lg:flex-row items-center lg:items-start justify-center gap-6 lg:gap-8">
+      <!-- Board (Left / Center) -->
+      <section class="flex-1 w-full flex items-center justify-center">
+        <app-barricade-board />
+      </section>
+
+      <!-- Sidebar Controls (Right) -->
+      <aside class="w-full lg:w-[380px] flex items-center justify-center shrink-0">
+        <app-barricade-controls />
+      </aside>
+    </main>
+
+    <!-- Win Modal Dialog -->
+    <app-barricade-win-dialog />
+
+    <!-- Rules & Tactical Guide Cards -->
+    <section class="w-full space-y-3 pt-6 border-t border-border/80">
+      <div class="flex items-center gap-2">
+        <ng-icon name="lucideCompass" class="text-primary text-base" />
+        <h3 class="text-xs font-bold text-muted-foreground uppercase tracking-wider">Tactical Rules &amp; Mechanics</h3>
       </div>
 
-      <div hlmCard class="p-3.5 rounded-xl border border-border/80 bg-card/60 backdrop-blur-sm space-y-1.5">
-        <div class="h-7 w-7 rounded-lg bg-indigo-500/10 text-indigo-500 flex items-center justify-center font-bold text-xs">
-          <ng-icon name="lucideFlame" class="text-sm" />
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div hlmCard class="p-4 rounded-2xl border border-border/80 bg-card space-y-1.5 shadow-sm">
+          <div class="h-7 w-7 rounded-lg bg-red-500/10 text-red-500 flex items-center justify-center font-bold text-xs">
+            <ng-icon name="lucideAward" class="text-sm" />
+          </div>
+          <h4 class="font-bold text-xs text-foreground">
+            {{ stateService.isFourPlayer() ? 'Center Sanctum Goal' : 'Goal Row' }}
+          </h4>
+          <p class="text-[11px] text-muted-foreground leading-relaxed">
+            {{ stateService.isFourPlayer() ? 'The exact center tile (e5) is the goal for all 4 players. First to land on e5 wins!' : 'Player 1 wins on row 9. Player 2 / Computer wins on row 1.' }}
+          </p>
         </div>
-        <h4 class="font-bold text-xs text-foreground">Opponent Capture</h4>
-        <p class="text-[11px] text-muted-foreground leading-relaxed">
-          Landing directly on an opponent piece sends their token back to their home starting base camp.
-        </p>
-      </div>
 
-      <div hlmCard class="p-3.5 rounded-xl border border-border/80 bg-card/60 backdrop-blur-sm space-y-1.5">
-        <div class="h-7 w-7 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center font-bold text-xs">
-          <ng-icon name="lucideDices" class="text-sm" />
+        <div hlmCard class="p-4 rounded-2xl border border-border/80 bg-card space-y-1.5 shadow-sm">
+          <div class="h-7 w-7 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center font-bold text-xs">
+            <ng-icon name="lucideShieldAlert" class="text-sm" />
+          </div>
+          <h4 class="font-bold text-xs text-foreground">Barricades Inventory</h4>
+          <p class="text-[11px] text-muted-foreground leading-relaxed">
+            {{ stateService.isFourPlayer() ? 'Each player has 5 barricades. Place walls horizontally or vertically across 2 cells.' : 'Each player has 10 barricades. Place walls horizontally or vertically across 2 cells.' }}
+          </p>
         </div>
-        <h4 class="font-bold text-xs text-foreground">Exact Dice Movement</h4>
-        <p class="text-[11px] text-muted-foreground leading-relaxed">
-          Tokens move the exact value rolled on the die (1–6). Breadth-First pathfinding prevents backtracking.
-        </p>
+
+        <div hlmCard class="p-4 rounded-2xl border border-border/80 bg-card space-y-1.5 shadow-sm">
+          <div class="h-7 w-7 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center font-bold text-xs">
+            <ng-icon name="lucideLayers" class="text-sm" />
+          </div>
+          <h4 class="font-bold text-xs text-foreground">No Trap Rule</h4>
+          <p class="text-[11px] text-muted-foreground leading-relaxed">
+            Fair Play: A barricade can never completely seal off any player from reaching their goal.
+          </p>
+        </div>
+
+        <div hlmCard class="p-4 rounded-2xl border border-border/80 bg-card space-y-1.5 shadow-sm">
+          <div class="h-7 w-7 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center font-bold text-xs">
+            <ng-icon name="lucideSparkles" class="text-sm" />
+          </div>
+          <h4 class="font-bold text-xs text-foreground">Pawn Jumps</h4>
+          <p class="text-[11px] text-muted-foreground leading-relaxed">
+            When facing an adjacent pawn, leap directly over them or jump diagonally if a wall is directly behind them.
+          </p>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
+  }
 </div>
