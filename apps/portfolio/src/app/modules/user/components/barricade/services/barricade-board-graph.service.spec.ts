@@ -63,10 +63,7 @@ describe('BarricadeBoardGraphService', () => {
       for (const neighborId of node.neighbors) {
         const neighbor = service.getNode(neighborId);
         expect(neighbor).toBeDefined();
-        expect(neighbor?.neighbors).toContain(
-          node.id,
-          `Edge between ${node.id} and ${neighborId} must be bidirectional`,
-        );
+        expect(neighbor?.neighbors).toContain(node.id);
       }
     }
   });
