@@ -123,7 +123,7 @@ export class KycVerificationComponent implements OnInit, OnDestroy {
         this.serviceStatus.set({
           isConfigured: false,
           mode: 'sandbox',
-          baseUrl: 'https://kyc-api.surepass.io',
+          baseUrl: '',
         }),
     });
   }

@@ -149,7 +149,7 @@ export const RR_ROUTES: Routes = [
         data: {
           seo: {
             title: 'Customer KYC & License Verification | Royal Rentals',
-            description: 'Validate customer Aadhaar and Driving License credentials with Surepass.',
+            description: 'Validate customer Aadhaar and Driving License credentials.',
             robots: 'noindex, nofollow',
           },
         },
