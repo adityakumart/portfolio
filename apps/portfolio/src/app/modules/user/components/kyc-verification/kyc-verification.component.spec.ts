@@ -11,7 +11,7 @@ test.describe('KYC Verification Component (<app-kyc-verification>)', () => {
         body: JSON.stringify({
           isConfigured: true,
           mode: 'sandbox',
-          baseUrl: 'https://kyc-api.surepass.io',
+          baseUrl: 'https://api.verification-gateway.local',
         }),
       });
     });
@@ -94,7 +94,7 @@ test.describe('KYC Verification Component (<app-kyc-verification>)', () => {
     await expect(
       page.getByRole('heading', { name: 'KYC Identity Verification' }),
     ).toBeVisible({ timeout: 10000 });
-    await expect(page.getByText('Surepass Sandbox Mode')).toBeVisible();
+    await expect(page.getByText('Sandbox Verification Mode')).toBeVisible();
     await expect(
       page.getByRole('button', { name: /Aadhaar Verification/i }),
     ).toBeVisible();
@@ -112,7 +112,7 @@ test.describe('KYC Verification Component (<app-kyc-verification>)', () => {
 
     // Click Send OTP
     const sendOtpBtn = page.getByRole('button', {
-      name: /Send OTP via Surepass/i,
+      name: /Send Verification OTP/i,
     });
     await expect(sendOtpBtn).toBeEnabled();
     await sendOtpBtn.click();
