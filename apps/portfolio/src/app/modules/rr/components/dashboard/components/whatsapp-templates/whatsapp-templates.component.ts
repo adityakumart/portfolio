@@ -144,8 +144,8 @@ export class RRWhatsAppTemplatesComponent implements OnInit {
       if (data) {
         this.config = data;
       }
-    } catch (err: any) {
-      toast.error('Could not load WhatsApp settings: ' + (err.error?.message || err.message));
+    } catch (err: unknown) {
+      toast.error('Could not load WhatsApp settings: ' + ((err as { error?: { message?: string }; message?: string })?.error?.message || ((err as { message?: string })?.message || String(err))));
     } finally {
       this.isLoading.set(false);
     }
@@ -178,8 +178,8 @@ export class RRWhatsAppTemplatesComponent implements OnInit {
           this.config = res.config;
         }
       }
-    } catch (err: any) {
-      toast.error('Failed to save settings: ' + (err.error?.message || err.message));
+    } catch (err: unknown) {
+      toast.error('Failed to save settings: ' + ((err as { error?: { message?: string }; message?: string })?.error?.message || ((err as { message?: string })?.message || String(err))));
     } finally {
       this.isSaving.set(false);
     }
@@ -198,8 +198,8 @@ export class RRWhatsAppTemplatesComponent implements OnInit {
       } else {
         toast.error(`Test message failed: ${res.message}`);
       }
-    } catch (err: any) {
-      toast.error('Error dispatching test message: ' + (err.error?.message || err.message));
+    } catch (err: unknown) {
+      toast.error('Error dispatching test message: ' + ((err as { error?: { message?: string }; message?: string })?.error?.message || ((err as { message?: string })?.message || String(err))));
     } finally {
       this.isTesting.set(false);
     }
@@ -215,8 +215,8 @@ export class RRWhatsAppTemplatesComponent implements OnInit {
           `Scheduler sweep complete: Sent ${activeRemindersSent} return reminders, ${reserve12hSent + reserve4hSent} pickup intimations, ${pendingRemindersSent} pending reminders.`
         );
       }
-    } catch (err: any) {
-      toast.error('Error running scheduler sweep: ' + (err.error?.message || err.message));
+    } catch (err: unknown) {
+      toast.error('Error running scheduler sweep: ' + ((err as { error?: { message?: string }; message?: string })?.error?.message || ((err as { message?: string })?.message || String(err))));
     } finally {
       this.isSweeping.set(false);
     }

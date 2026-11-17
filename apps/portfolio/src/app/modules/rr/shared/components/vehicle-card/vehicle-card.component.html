@@ -177,7 +177,7 @@
     } @else {
       <div class="text-[10px] font-extrabold text-cyan-500 tracking-wider uppercase mb-1">{{ vehicle.type }}</div>
       <div class="font-extrabold text-base text-foreground leading-tight mb-1 truncate">{{ vehicle.manufacturer }} {{ vehicle.name }}</div>
-      <div class="font-mono text-xs text-muted-foreground bg-muted/40 px-2 py-0.5 rounded w-fit mb-2">{{ vehicle.regNo }}</div>
+      <div class="font-mono text-xs text-muted-foreground bg-muted/40 px-2 py-0.5 rounded w-fit mb-2">{{ vehicleRegNo }}</div>
 
       <!-- Available By Badge / Banner for In Service -->
       @if (vehicle.status === 'maintenance') {
@@ -240,7 +240,7 @@
           </span>
           <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-md" hlmTooltip="Odometer">
             <ng-icon name="lucideGauge" class="text-xs"></ng-icon>
-            <span>{{ vehicle.odometer }} KM</span>
+            <span>{{ vehicleOdometer }} KM</span>
           </span>
         </div>
 

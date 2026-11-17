@@ -80,8 +80,8 @@ export class RRAnnouncementsComponent implements OnInit {
   private fb = inject(FormBuilder);
   private dialog = inject(HlmDialogService);
 
-  @ViewChild('announcementFormDialog') announcementFormDialog!: TemplateRef<any>;
-  @ViewChild('deleteConfirmDialog') deleteConfirmDialog!: TemplateRef<any>;
+  @ViewChild('announcementFormDialog') announcementFormDialog!: TemplateRef<unknown>;
+  @ViewChild('deleteConfirmDialog') deleteConfirmDialog!: TemplateRef<unknown>;
 
   // State
   isLoading = signal<boolean>(false);
@@ -199,7 +199,7 @@ export class RRAnnouncementsComponent implements OnInit {
         });
       }
       this.items.set(res.items || []);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load announcements data:', err);
       toast.error('Failed to load announcements');
     } finally {
@@ -221,9 +221,9 @@ export class RRAnnouncementsComponent implements OnInit {
       const res = await this.rrApi.updateTicker(formVal);
       this.ticker.set(res.ticker);
       toast.success('Homepage scrolling ticker updated successfully');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error saving ticker:', err);
-      toast.error(err?.error?.message || 'Failed to update ticker');
+      toast.error((err as { error?: { message?: string } })?.error?.message || 'Failed to update ticker');
     } finally {
       this.isSavingTicker.set(false);
     }
@@ -274,7 +274,7 @@ export class RRAnnouncementsComponent implements OnInit {
   }
 
   // Save Item (Create or Update)
-  async onSaveItem(dialogRef: any) {
+  async onSaveItem(dialogRef: { close: () => void }) {
     if (this.itemForm.invalid) {
       this.itemForm.markAllAsTouched();
       toast.error('Please fill in all required fields');
@@ -295,9 +295,9 @@ export class RRAnnouncementsComponent implements OnInit {
       }
       dialogRef.close();
       await this.loadData();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error saving announcement:', err);
-      toast.error(err?.error?.message || 'Failed to save announcement');
+      toast.error((err as { error?: { message?: string } })?.error?.message || 'Failed to save announcement');
     } finally {
       this.isSubmitting.set(false);
     }
@@ -337,7 +337,7 @@ export class RRAnnouncementsComponent implements OnInit {
   }
 
   // Delete Action
-  async onDeleteItem(dialogRef: any) {
+  async onDeleteItem(dialogRef: { close: () => void }) {
     const item = this.itemToDelete();
     if (!item || !item._id) return;
 
@@ -348,9 +348,9 @@ export class RRAnnouncementsComponent implements OnInit {
       dialogRef.close();
       this.itemToDelete.set(null);
       await this.loadData();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error deleting announcement:', err);
-      toast.error(err?.error?.message || 'Failed to delete announcement');
+      toast.error((err as { error?: { message?: string } })?.error?.message || 'Failed to delete announcement');
     } finally {
       this.isSubmitting.set(false);
     }

@@ -80,8 +80,8 @@ export class RREmployeeListComponent implements OnInit {
   private fb = inject(FormBuilder);
   private dialog = inject(HlmDialogService);
 
-  @ViewChild('employeeFormDialog') employeeFormDialog!: TemplateRef<any>;
-  @ViewChild('resetPasswordDialog') resetPasswordDialog!: TemplateRef<any>;
+  @ViewChild('employeeFormDialog') employeeFormDialog!: TemplateRef<unknown>;
+  @ViewChild('resetPasswordDialog') resetPasswordDialog!: TemplateRef<unknown>;
 
   // Collections data
   employees = signal<IEmployee[]>([]);
@@ -250,12 +250,12 @@ export class RREmployeeListComponent implements OnInit {
         this.selectedEmployeeForEdit.update(emp => emp ? ({ ...emp, status: 'active', allowLogin: true }) : null);
         this.employeeFormGroup.patchValue({ allowLogin: true });
       }
-    } catch (err: any) {
-      toast.error(err.error?.message || err.message || 'Failed to activate staff member.');
+    } catch (err: unknown) {
+      toast.error((err as { error?: { message?: string }; message?: string })?.error?.message || ((err as { message?: string })?.message || String(err)) || 'Failed to activate staff member.');
     }
   }
 
-  private resetDialogRef: any = null;
+  private resetDialogRef: { close: () => void } | null = null;
 
   // --- INTERACTIVE RESET PASSWORD MODAL (Task 2) ---
   openResetPasswordModal(e: IEmployee) {
@@ -302,8 +302,8 @@ export class RREmployeeListComponent implements OnInit {
       });
       toast.success(`Password reset for ${emp.id}. User must create new password on next login.`);
       await this.loadEmployees();
-    } catch (err: any) {
-      toast.error(err.error?.message || err.message || 'Failed to reset password.');
+    } catch (err: unknown) {
+      toast.error((err as { error?: { message?: string }; message?: string })?.error?.message || ((err as { message?: string })?.message || String(err)) || 'Failed to reset password.');
     } finally {
       this.isResetSubmitting.set(false);
     }
@@ -339,7 +339,7 @@ export class RREmployeeListComponent implements OnInit {
 
     const formVal = this.employeeFormGroup.value;
     const isoDob = toISODateString(formVal.dob as IndianDateInput);
-    const payload: any = {
+    const payload: Partial<IEmployee> = {
       ...formVal,
       dob: isoDob,
     };
@@ -359,6 +359,7 @@ export class RREmployeeListComponent implements OnInit {
 
     try {
       if (this.editingEmployeeMode()) {
+        if (!payload.id) return;
         await this.rrApi.updateEmployee(payload.id, payload);
         toast.success('Employee details updated.');
       } else {
@@ -367,8 +368,8 @@ export class RREmployeeListComponent implements OnInit {
       }
       this.closeEmployeeFormModal();
       this.loadEmployees();
-    } catch (err: any) {
-      toast.error(err.message || 'Operation failed.');
+    } catch (err: unknown) {
+      toast.error(((err as { message?: string })?.message || String(err)) || 'Operation failed.');
     }
   }
 
@@ -387,9 +388,9 @@ export class RREmployeeListComponent implements OnInit {
       await this.rrApi.deleteEmployee(e.id);
       toast.success(`Employee ${e.id} removed from system.`);
       this.loadEmployees();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to delete employee:', err);
-      toast.error(err.error?.message || err.message || 'Failed to delete employee.');
+      toast.error((err as { error?: { message?: string }; message?: string })?.error?.message || ((err as { message?: string })?.message || String(err)) || 'Failed to delete employee.');
     }
   }
 

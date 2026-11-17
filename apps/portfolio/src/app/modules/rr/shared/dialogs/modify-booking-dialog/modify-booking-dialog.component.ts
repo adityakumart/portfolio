@@ -389,9 +389,10 @@ export class RRModifyBookingDialogComponent implements OnInit {
       await this.rrApi.updateBooking(id, updated);
       toast.success('Booking updated successfully.');
       this.dialogRef?.close(true);
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
-      toast.error(e.error?.message || 'Error updating booking.');
+      const errMsg = (e as { error?: { message?: string }; message?: string })?.error?.message || (e as { message?: string })?.message || 'Error updating booking.';
+      toast.error(errMsg);
     } finally {
       this.isSubmitting.set(false);
     }
@@ -471,9 +472,10 @@ export class RRModifyBookingDialogComponent implements OnInit {
         `Booking #${booking.id} deleted successfully and recorded in Historical Logs.`
       );
       this.dialogRef?.close(true);
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error('Failed to delete booking:', e);
-      toast.error(e?.error?.message || 'Failed to delete booking.');
+      const errMsg = (e as { error?: { message?: string }; message?: string })?.error?.message || (e as { message?: string })?.message || 'Failed to delete booking.';
+      toast.error(errMsg);
     } finally {
       this.isDeleting.set(false);
     }

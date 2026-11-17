@@ -461,9 +461,9 @@ export class RRAgreementUploadDialogComponent implements OnInit, OnDestroy {
       } else {
         toast.error('Failed to obtain uploaded agreement URL.');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err.message || 'Error uploading signed agreement.');
+      toast.error(((err as { message?: string })?.message || String(err)) || 'Error uploading signed agreement.');
     } finally {
       this.isUploadingSigned.set(false);
       target.value = '';
@@ -492,9 +492,9 @@ export class RRAgreementUploadDialogComponent implements OnInit, OnDestroy {
         this.attachments.update((curr) => [...curr, ...newItems]);
         toast.success(`${newItems.length} attachment(s) uploaded successfully.`);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err.message || 'Error uploading attachments.');
+      toast.error(((err as { message?: string })?.message || String(err)) || 'Error uploading attachments.');
     } finally {
       this.isUploadingAttachments.set(false);
       target.value = '';

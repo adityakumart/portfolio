@@ -28,7 +28,7 @@ import { HydrationTrackerComponent } from './components/hydration-tracker/hydrat
 import { FoodLogDialogComponent } from './components/food-log-dialog/food-log-dialog.component';
 import { JunkFoodPromptModalComponent } from './components/junk-food-prompt-modal/junk-food-prompt-modal.component';
 import { StatsChartsComponent } from './components/stats-charts/stats-charts.component';
-import { IUpdateDietConfigDto } from '@portfolio/shared-types';
+import { IUpdateDietConfigDto, IUserDietConfig } from '@portfolio/shared-types';
 
 @Component({
   selector: 'app-diet-hydration',
@@ -100,7 +100,7 @@ export class DietHydrationComponent implements OnInit, OnDestroy {
     }
   }
 
-  private populateSettings(config: any): void {
+  private populateSettings(config: IUserDietConfig): void {
     this.targetMl = config.hydration.dailyTargetMl || 2500;
     this.cupPreset = config.hydration.cupPresetMl || 250;
     this.remindersEnabled = config.hydration.remindersEnabled || false;

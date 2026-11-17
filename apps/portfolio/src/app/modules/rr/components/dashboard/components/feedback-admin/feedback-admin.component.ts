@@ -191,10 +191,10 @@ export class RRFeedbackAdminComponent implements OnInit {
       ]);
       this.feedbacks.set(feedbacksRes.data);
       this.stats.set(statsRes);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load feedback admin data:', err);
       toast.error('Load Failed', {
-        description: err?.error?.message || 'Unable to fetch feedback data.',
+        description: (err as { error?: { message?: string } })?.error?.message || 'Unable to fetch feedback data.',
       });
     } finally {
       this.isLoading.set(false);
@@ -253,10 +253,10 @@ export class RRFeedbackAdminComponent implements OnInit {
       this.stats.set(stats);
 
       this.closeNotesModal();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to update status:', err);
       toast.error('Update Failed', {
-        description: err?.error?.message || 'Could not update feedback status.',
+        description: (err as { error?: { message?: string } })?.error?.message || 'Could not update feedback status.',
       });
     } finally {
       this.isUpdating.set(false);
@@ -284,10 +284,10 @@ export class RRFeedbackAdminComponent implements OnInit {
 
       const stats = await this.rrApi.getFeedbackStats();
       this.stats.set(stats);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Quick status update failed:', err);
       toast.error('Update Failed', {
-        description: err?.error?.message || 'Failed to update status.',
+        description: (err as { error?: { message?: string } })?.error?.message || 'Failed to update status.',
       });
     } finally {
       this.isUpdating.set(false);
@@ -309,10 +309,10 @@ export class RRFeedbackAdminComponent implements OnInit {
       this.feedbacks.set(this.feedbacks().filter((f) => f.id !== ticket.id));
       const stats = await this.rrApi.getFeedbackStats();
       this.stats.set(stats);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Delete feedback failed:', err);
       toast.error('Delete Failed', {
-        description: err?.error?.message || 'Could not delete feedback.',
+        description: (err as { error?: { message?: string } })?.error?.message || 'Could not delete feedback.',
       });
     } finally {
       this.isUpdating.set(false);

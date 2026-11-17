@@ -164,7 +164,7 @@ export class RRFeedbackSubmissionComponent implements OnInit {
     try {
       const list = await this.rrApi.getMyFeedbacks();
       this.myFeedbacks.set(list);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load submitted feedbacks:', err);
     } finally {
       this.isLoadingHistory.set(false);
@@ -259,7 +259,7 @@ export class RRFeedbackSubmissionComponent implements OnInit {
           finalImageUrl = uploadRes.url;
           finalImageKey = uploadRes.key;
           finalImageName = uploadRes.originalName;
-        } catch (uploadErr: any) {
+        } catch (uploadErr: unknown) {
           console.error('Screenshot upload error:', uploadErr);
           toast.error('Upload Failed', {
             description: 'Could not upload screenshot. Submitting without screenshot.',
@@ -296,9 +296,9 @@ export class RRFeedbackSubmissionComponent implements OnInit {
       // Refresh history & switch tab to history to show submission
       await this.loadMyFeedbacks();
       this.activeTab.set('history');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error submitting feedback:', err);
-      const msg = err?.error?.message || err?.message || 'Failed to submit feedback.';
+      const msg = (err as { error?: { message?: string } })?.error?.message || (err as { message?: string })?.message || 'Failed to submit feedback.';
       toast.error('Submission Failed', { description: msg });
     } finally {
       this.isSubmitting.set(false);

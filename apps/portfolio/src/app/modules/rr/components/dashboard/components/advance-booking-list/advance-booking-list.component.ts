@@ -279,9 +279,10 @@ export class RRAdvanceBookingListComponent implements OnInit {
       toast.success(`Advance reservation #${reservation.id} deleted successfully.`);
       this.loadBookings();
       this.loadVehicles();
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
-      toast.error(e.error?.message || 'Failed to delete reservation.');
+      const errMsg = (e as { error?: { message?: string }; message?: string })?.error?.message || (e as { message?: string })?.message || 'Failed to delete reservation.';
+      toast.error(errMsg);
     }
   }
 

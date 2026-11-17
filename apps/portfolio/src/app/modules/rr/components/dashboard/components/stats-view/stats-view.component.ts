@@ -44,7 +44,7 @@ import {
 } from '@ng-icons/lucide';
 import { Router, RouterLink } from '@angular/router';
 import { HlmDialogService } from '@spartan-ng/hel/dialog';
-import { IVehicle, IBooking, IRRDashboardStats, ILog, IRRWhatsAppTemplateId } from '@portfolio/shared-types';
+import { IVehicle, IBooking, IRRDashboardStats, ILog, IRRWhatsAppTemplateId, IVehiclePricing } from '@portfolio/shared-types';
 import { RRInvoicePdfService } from '../../../../services/rr-invoice-pdf.service';
 import {
   RRVehicleCardComponent,
@@ -132,7 +132,7 @@ export class RRStatsViewComponent implements OnInit, OnDestroy {
   isManagerOrAdmin = computed(() => this.rrApi.isManagerOrAdmin());
 
   currentTime = signal<Date>(new Date());
-  private timeTickerInterval: any = null;
+  private timeTickerInterval: ReturnType<typeof setInterval> | null = null;
 
   stats = signal<IRRDashboardStats>({
     totalFleet: 0,
@@ -477,7 +477,7 @@ export class RRStatsViewComponent implements OnInit, OnDestroy {
         type: 'Sedan',
         fuelType: 'Petrol',
         odometer: resv.vehicleOdometerStart || '0',
-        pricing: {} as any,
+        pricing: {} as IVehiclePricing,
         extraKmPrice: resv.extraKmPrice,
         extraHourPrice: resv.extraHourPrice,
         allowBooking: true,
@@ -534,7 +534,7 @@ export class RRStatsViewComponent implements OnInit, OnDestroy {
   private dialog = inject(HlmDialogService);
   private invoicePdf = inject(RRInvoicePdfService);
 
-  reserveVehicle(vehicle: IVehicle, event?: any) {
+  reserveVehicle(vehicle: IVehicle, event?: Event) {
     if (event && typeof event.stopPropagation === 'function') {
       event.stopPropagation();
     }
@@ -557,7 +557,7 @@ export class RRStatsViewComponent implements OnInit, OnDestroy {
     });
   }
 
-  openUpdateAvailabilityModal(vehicle: IVehicle, event?: any) {
+  openUpdateAvailabilityModal(vehicle: IVehicle, event?: Event) {
     if (event && typeof event.stopPropagation === 'function') {
       event.stopPropagation();
     }
@@ -583,7 +583,7 @@ export class RRStatsViewComponent implements OnInit, OnDestroy {
     });
   }
 
-  bookVehicleFromReservation(resv: IBooking, event?: any) {
+  bookVehicleFromReservation(resv: IBooking, event?: Event) {
     if (event && typeof event.stopPropagation === 'function') {
       event.stopPropagation();
     }
@@ -609,7 +609,7 @@ export class RRStatsViewComponent implements OnInit, OnDestroy {
   openWhatsAppModal(
     booking: IBooking,
     templateType: IRRWhatsAppTemplateId = 'active_reminder',
-    event?: any
+    event?: Event
   ) {
     if (event && typeof event.stopPropagation === 'function') {
       event.stopPropagation();
@@ -630,7 +630,7 @@ export class RRStatsViewComponent implements OnInit, OnDestroy {
     });
   }
 
-  modifyReservation(resv: IBooking, event?: any) {
+  modifyReservation(resv: IBooking, event?: Event) {
     if (event && typeof event.stopPropagation === 'function') {
       event.stopPropagation();
     }
@@ -653,7 +653,7 @@ export class RRStatsViewComponent implements OnInit, OnDestroy {
     });
   }
 
-  bookVehicle(vehicle: IVehicle, event?: any) {
+  bookVehicle(vehicle: IVehicle, event?: Event) {
     if (event && typeof event.stopPropagation === 'function') {
       event.stopPropagation();
     }

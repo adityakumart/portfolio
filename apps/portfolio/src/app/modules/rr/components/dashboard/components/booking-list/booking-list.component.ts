@@ -99,7 +99,7 @@ export class RRBookingListComponent implements OnInit, OnDestroy {
   vehicles = signal<IVehicle[]>([]);
 
   currentTime = signal<Date>(new Date());
-  private timeTickerInterval: any = null;
+  private timeTickerInterval: ReturnType<typeof setInterval> | null = null;
 
   // Pagination state
   currentPage = signal(0);
@@ -294,7 +294,7 @@ export class RRBookingListComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
 
   // Intimation modal state
-  @ViewChild('intimationDialog') intimationDialogTemplate!: TemplateRef<any>;
+  @ViewChild('intimationDialog') intimationDialogTemplate!: TemplateRef<unknown>;
   selectedIntimationBooking = signal<IBooking | null>(null);
   isSubmittingIntimation = signal<boolean>(false);
   intimationFormGroup: FormGroup = this.fb.group({
@@ -366,9 +366,10 @@ export class RRBookingListComponent implements OnInit, OnDestroy {
       toast.success(`Customer intimation logged for booking #${booking.id}`);
       this.closeIntimationModal();
       await this.loadBookings();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error logging customer intimation:', err);
-      toast.error(err.error?.message || 'Failed to record customer intimation.');
+      const errMsg = (err as { error?: { message?: string }; message?: string })?.error?.message || (err as { message?: string })?.message || 'Failed to record customer intimation.';
+      toast.error(errMsg);
     } finally {
       this.isSubmittingIntimation.set(false);
     }

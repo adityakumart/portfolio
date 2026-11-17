@@ -115,7 +115,7 @@ export class RRHomeContentAdminComponent implements OnInit {
   private fb = inject(FormBuilder);
   private dialog = inject(HlmDialogService);
 
-  @ViewChild('resetConfirmDialog') resetConfirmDialog!: TemplateRef<any>;
+  @ViewChild('resetConfirmDialog') resetConfirmDialog!: TemplateRef<unknown>;
 
   // State Signals
   activeTab = signal<CmsTab>('hero');
@@ -388,7 +388,7 @@ export class RRHomeContentAdminComponent implements OnInit {
       this.isCustomized.set(data.isCustomized ?? false);
       this.lastUpdatedAt.set(data.updatedAt || null);
       this.initForm(data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load homepage CMS content:', err);
       toast.error('Could not load homepage content from server. Showing defaults.');
       this.initForm(DEFAULT_RR_HOMEPAGE_CONTENT);
@@ -410,7 +410,7 @@ export class RRHomeContentAdminComponent implements OnInit {
 
       // Map contact items to parse multi-line valuesText back into values array
       const mappedContactItems: IRRHomeContactItem[] = (formVal.contact.items || []).map(
-        (item: any, idx: number) => ({
+        (item: { id?: string; type: 'phone' | 'email' | 'address' | 'hours'; title: string; icon?: string; order?: number; valuesText?: string }, idx: number) => ({
           id: item.id || `contact-${idx + 1}`,
           type: item.type,
           title: item.title,
@@ -440,9 +440,9 @@ export class RRHomeContentAdminComponent implements OnInit {
       this.isCustomized.set(true);
       this.lastUpdatedAt.set(res.content?.updatedAt || new Date().toISOString());
       toast.success('RoadReady homepage content published successfully!');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to save homepage content:', err);
-      toast.error(err?.error?.message || 'Failed to save homepage content.');
+      toast.error((err as { error?: { message?: string } })?.error?.message || 'Failed to save homepage content.');
     } finally {
       this.isSaving.set(false);
     }
@@ -464,16 +464,16 @@ export class RRHomeContentAdminComponent implements OnInit {
       this.lastUpdatedAt.set(res.content?.updatedAt || null);
       this.initForm(DEFAULT_RR_HOMEPAGE_CONTENT);
       toast.success('Homepage restored to factory defaults!');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to reset content:', err);
-      toast.error(err?.error?.message || 'Failed to reset homepage content.');
+      toast.error((err as { error?: { message?: string } })?.error?.message || 'Failed to reset homepage content.');
     } finally {
       this.isResetting.set(false);
     }
   }
 
   // --- Live Preview Helpers ---
-  getActivePreviewBanner(): any {
+  getActivePreviewBanner(): IRRHomeBanner | null {
     const banners = this.heroBannersArray.controls;
     const index = this.activePreviewBannerIndex();
     if (banners.length > index && banners[index]) {

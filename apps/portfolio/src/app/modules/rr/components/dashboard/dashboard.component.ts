@@ -106,11 +106,11 @@ export class RRDashboardComponent implements OnInit {
   inactivityService = inject(RRInactivityService);
   private router = inject(Router);
   private dialog = inject(HlmDialogService);
-  private activeDialogRef: any = null;
-  private policyDialogRef: any = null;
+  private activeDialogRef: { close: () => void } | null = null;
+  private policyDialogRef: { close: () => void } | null = null;
 
-  @ViewChild('profileInfoDialog') profileInfoDialog!: TemplateRef<any>;
-  @ViewChild('passwordPolicyDialog') passwordPolicyDialog!: TemplateRef<any>;
+  @ViewChild('profileInfoDialog') profileInfoDialog!: TemplateRef<unknown>;
+  @ViewChild('passwordPolicyDialog') passwordPolicyDialog!: TemplateRef<unknown>;
 
   // User details & checks
   currentUser = computed(() => this.rrApi.currentUser());
@@ -304,8 +304,8 @@ export class RRDashboardComponent implements OnInit {
       this.showProfileChangePassword.set(false);
       this.profilePasswordForm.reset();
       this.rrApi.passwordPolicyState.set(null);
-    } catch (err: any) {
-      toast.error(err.error?.message || err.message || 'Failed to update password.');
+    } catch (err: unknown) {
+      toast.error((err as { error?: { message?: string }; message?: string })?.error?.message || ((err as { message?: string })?.message || String(err)) || 'Failed to update password.');
     } finally {
       this.changePasswordSubmitting.set(false);
     }
@@ -332,8 +332,8 @@ export class RRDashboardComponent implements OnInit {
       this.policyDialogRef?.close();
       this.policyDialogRef = null;
       this.policyForm.reset();
-    } catch (err: any) {
-      toast.error(err.error?.message || err.message || 'Failed to set password.');
+    } catch (err: unknown) {
+      toast.error((err as { error?: { message?: string }; message?: string })?.error?.message || ((err as { message?: string })?.message || String(err)) || 'Failed to set password.');
     } finally {
       this.changePasswordSubmitting.set(false);
     }

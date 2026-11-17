@@ -94,7 +94,7 @@ export class RRAadharInputComponent implements ControlValueAccessor, OnInit {
     // noop
   };
 
-  writeValue(val: any): void {
+  writeValue(val: string | null): void {
     if (val === null || val === undefined) {
       this.rawValue = '';
     } else {
@@ -103,11 +103,11 @@ export class RRAadharInputComponent implements ControlValueAccessor, OnInit {
     this.updateDisplayValue();
   }
 
-  registerOnChange(fn: any): void {
+  registerOnChange(fn: (val: string) => void): void {
     this.onChange = fn;
   }
 
-  registerOnTouched(fn: any): void {
+  registerOnTouched(fn: () => void): void {
     this.onTouched = fn;
   }
 

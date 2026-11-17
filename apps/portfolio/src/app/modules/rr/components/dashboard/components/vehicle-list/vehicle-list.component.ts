@@ -123,8 +123,8 @@ export class RRVehicleListComponent implements OnInit {
   private fb = inject(FormBuilder);
   private dialog = inject(HlmDialogService);
 
-  @ViewChild('vehicleDetailsDialog') vehicleDetailsDialog!: TemplateRef<any>;
-  @ViewChild('vehicleFormDialog') vehicleFormDialog!: TemplateRef<any>;
+  @ViewChild('vehicleDetailsDialog') vehicleDetailsDialog!: TemplateRef<unknown>;
+  @ViewChild('vehicleFormDialog') vehicleFormDialog!: TemplateRef<unknown>;
 
   // Collections data
   vehicles = signal<IVehicle[]>([]);
@@ -224,9 +224,10 @@ export class RRVehicleListComponent implements OnInit {
     try {
       const data = await this.rrApi.getVehicles();
       this.vehicles.set(data || []);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err.error?.message || 'Error loading vehicles.');
+      const errMsg = (err as { error?: { message?: string }; message?: string })?.error?.message || (err as { message?: string })?.message || 'Error loading vehicles.';
+      toast.error(errMsg);
     }
   }
 
@@ -238,7 +239,7 @@ export class RRVehicleListComponent implements OnInit {
   }
 
   // --- VIEW DETAILS MODAL ---
-  viewVehicleDetails(v: any) {
+  viewVehicleDetails(v: IVehicle) {
     this.selectedVehicleDetails.set(v);
     this.dialog.open(this.vehicleDetailsDialog, {
       contentClass: 'max-w-xl w-full p-6 max-h-[90vh] flex flex-col overflow-hidden',
@@ -371,9 +372,10 @@ export class RRVehicleListComponent implements OnInit {
       }
       this.closeVehicleFormModal();
       this.loadVehicles();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err.error?.message || 'Error saving vehicle.');
+      const errMsg = (err as { error?: { message?: string }; message?: string })?.error?.message || (err as { message?: string })?.message || 'Error saving vehicle.';
+      toast.error(errMsg);
     }
   }
 
@@ -385,9 +387,10 @@ export class RRVehicleListComponent implements OnInit {
       toast.success('Vehicle deleted successfully.');
       this.closeVehicleFormModal();
       this.loadVehicles();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err.error?.message || 'Error deleting vehicle.');
+      const errMsg = (err as { error?: { message?: string }; message?: string })?.error?.message || (err as { message?: string })?.message || 'Error deleting vehicle.';
+      toast.error(errMsg);
     }
   }
 
@@ -517,9 +520,10 @@ export class RRVehicleListComponent implements OnInit {
       });
 
       toast.success(`${validFiles.length} ${validFiles.length === 1 ? 'image' : 'images'} uploaded successfully.`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      this.uploadError.set(err.error?.message || 'Failed to upload images. Please try again.');
+      const errMsg = (err as { error?: { message?: string }; message?: string })?.error?.message || (err as { message?: string })?.message || 'Failed to upload images. Please try again.';
+      this.uploadError.set(errMsg);
       // Remove temporary items that failed
       this.uploadedImages.update((current) => current.filter((item) => !item.isUploading));
       toast.error('Failed to upload image(s).');
