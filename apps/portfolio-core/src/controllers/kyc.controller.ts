@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { SurepassService } from '../services/surepass.service';
+import { KycVerificationService } from '../services/kyc-verification.service';
 import {
   IAadhaarOtpRequest,
   IAadhaarSubmitOtpRequest,
@@ -9,11 +9,11 @@ import {
 export class KycController {
   /**
    * GET /api/kyc/config
-   * Returns KYC service status and configuration mode without exposing tokens.
+   * Returns KYC service status and configuration mode without exposing secrets.
    */
   public static async getConfig(_req: Request, res: Response): Promise<void> {
     try {
-      const status = SurepassService.getServiceStatus();
+      const status = KycVerificationService.getServiceStatus();
       res.json(status);
     } catch (err: unknown) {
       res.status(500).json({
@@ -25,7 +25,7 @@ export class KycController {
 
   /**
    * POST /api/kyc/aadhaar/generate-otp
-   * Generates Aadhaar OTP via Surepass
+   * Generates Aadhaar OTP via identity gateway.
    */
   public static async generateAadhaarOtp(
     req: Request,
@@ -41,7 +41,7 @@ export class KycController {
         return;
       }
 
-      const result = await SurepassService.generateAadhaarOtp(
+      const result = await KycVerificationService.generateAadhaarOtp(
         body.aadhaarNumber,
       );
       res.json(result);
@@ -56,7 +56,7 @@ export class KycController {
 
   /**
    * POST /api/kyc/aadhaar/submit-otp
-   * Verifies Aadhaar OTP via Surepass and returns sanitized identity profile.
+   * Verifies Aadhaar OTP via identity gateway and returns sanitized identity profile.
    */
   public static async submitAadhaarOtp(
     req: Request,
@@ -72,7 +72,7 @@ export class KycController {
         return;
       }
 
-      const verifiedData = await SurepassService.submitAadhaarOtp(
+      const verifiedData = await KycVerificationService.submitAadhaarOtp(
         body.clientId,
         body.otp,
       );
@@ -88,7 +88,7 @@ export class KycController {
 
   /**
    * POST /api/kyc/driving-license/verify
-   * Verifies Driving License credentials via Surepass.
+   * Verifies Driving License credentials via national registry gateway.
    */
   public static async verifyDrivingLicense(
     req: Request,
@@ -104,7 +104,7 @@ export class KycController {
         return;
       }
 
-      const verifiedData = await SurepassService.verifyDrivingLicense(
+      const verifiedData = await KycVerificationService.verifyDrivingLicense(
         body.dlNumber,
         body.dob,
       );
@@ -119,4 +119,3 @@ export class KycController {
     }
   }
 }
-

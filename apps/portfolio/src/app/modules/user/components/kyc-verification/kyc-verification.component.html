@@ -10,7 +10,7 @@
         KYC Identity Verification
       </h1>
       <p class="text-sm text-muted-foreground mt-1 mb-0">
-        Verify official Indian identity credentials with Surepass. All authentication and cryptographic secrets remain safely secured on the backend.
+        Verify official Indian identity credentials securely. All authentication and cryptographic secrets remain safely secured on the backend.
       </p>
     </div>
 
@@ -19,12 +19,12 @@
       @if (serviceStatus()?.mode === 'sandbox') {
         <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30">
           <span class="size-2 rounded-full bg-amber-500 animate-pulse"></span>
-          <span>Surepass Sandbox Mode</span>
+          <span>Sandbox Verification Mode</span>
         </span>
       } @else {
         <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
           <span class="size-2 rounded-full bg-emerald-500"></span>
-          <span>Surepass Production Gateway</span>
+          <span>Live Verification Gateway</span>
         </span>
       }
     </div>
@@ -141,7 +141,7 @@
                   <ng-icon name="lucideRefreshCw" class="size-4 animate-spin"></ng-icon>
                   <span>Sending OTP...</span>
                 } @else {
-                  <span>Send OTP via Surepass</span>
+                  <span>Send Verification OTP</span>
                   <ng-icon name="lucideArrowRight" class="size-4"></ng-icon>
                 }
               </button>
@@ -353,7 +353,7 @@
             </div>
             <div>
               <h3 class="text-base font-bold text-foreground m-0">Driving License Verification</h3>
-              <p class="text-xs text-muted-foreground m-0">Validate license validity, transport classes, and driver credentials with Surepass</p>
+              <p class="text-xs text-muted-foreground m-0">Validate license validity, transport classes, and driver credentials</p>
             </div>
           </div>
         </div>
@@ -544,7 +544,7 @@
             </button>
 
             <span class="text-[11px] text-muted-foreground font-mono">
-              Verified via Surepass Gateway
+              Verified via Secure Gateway
             </span>
           </div>
         </div>

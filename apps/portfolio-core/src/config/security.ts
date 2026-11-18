@@ -37,18 +37,85 @@ export function getKycSecret(): string {
   return process.env['KYC_ENCRYPTION_KEY'] || getJwtSecret();
 }
 
-export function getSurepassToken(): string {
-  return process.env['SUREPASS_API_TOKEN'] || '';
+/**
+ * Generic KYC provider client identification.
+ */
+export function getKycClientId(): string {
+  return (
+    process.env['KYC_CLIENT_ID'] ||
+    process.env['CASHFREE_CLIENT_ID'] ||
+    process.env['CASHFREE_APP_ID'] ||
+    ''
+  );
 }
 
-export function getSurepassBaseUrl(): string {
-  return (process.env['SUREPASS_BASE_URL'] || 'https://kyc-api.surepass.io').replace(/\/+$/, '');
+/**
+ * Generic KYC provider client authentication secret.
+ */
+export function getKycClientSecret(): string {
+  return (
+    process.env['KYC_CLIENT_SECRET'] ||
+    process.env['CASHFREE_CLIENT_SECRET'] ||
+    ''
+  );
 }
 
-export function isSurepassSandbox(): boolean {
-  if (process.env['SUREPASS_SANDBOX_MODE'] === 'true') {
+/**
+ * Generic KYC provider base gateway URL.
+ */
+export function getKycBaseUrl(): string {
+  if (process.env['KYC_BASE_URL']) {
+    return process.env['KYC_BASE_URL'].replace(/\/+$/, '');
+  }
+  if (process.env['CASHFREE_BASE_URL']) {
+    return process.env['CASHFREE_BASE_URL'].replace(/\/+$/, '');
+  }
+  return isKycSandbox()
+    ? 'https://sandbox.cashfree.com/verification'
+    : 'https://api.cashfree.com/verification';
+}
+
+/**
+ * Determines whether KYC operates in mock/sandbox mode.
+ */
+export function isKycSandbox(): boolean {
+  if (
+    process.env['KYC_SANDBOX_MODE'] === 'true' ||
+    process.env['CASHFREE_SANDBOX_MODE'] === 'true' ||
+    process.env['SUREPASS_SANDBOX_MODE'] === 'true'
+  ) {
     return true;
   }
-  const token = getSurepassToken();
-  return !token || token === 'sandbox' || token === 'mock';
+  const clientId = getKycClientId();
+  const clientSecret = getKycClientSecret();
+  if (!clientId || !clientSecret) {
+    return true;
+  }
+  return (
+    clientId === 'sandbox' ||
+    clientId === 'mock' ||
+    clientSecret === 'sandbox' ||
+    clientSecret === 'mock'
+  );
+}
+
+/**
+ * @deprecated Use generic `getKycClientId()` instead.
+ */
+export function getSurepassToken(): string {
+  return process.env['SUREPASS_API_TOKEN'] || getKycClientId();
+}
+
+/**
+ * @deprecated Use generic `getKycBaseUrl()` instead.
+ */
+export function getSurepassBaseUrl(): string {
+  return (process.env['SUREPASS_BASE_URL'] || getKycBaseUrl()).replace(/\/+$/, '');
+}
+
+/**
+ * @deprecated Use generic `isKycSandbox()` instead.
+ */
+export function isSurepassSandbox(): boolean {
+  return isKycSandbox();
 }

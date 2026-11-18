@@ -331,7 +331,7 @@ const routes: Routes = [
           seo: {
             title: 'KYC Identity Verification | Aadhaar & Driving License',
             description:
-              'Verify official Indian identity credentials (Aadhaar and Driving License) powered by Surepass API.',
+              'Verify official Indian identity credentials (Aadhaar and Driving License) via secure government registry verification.',
             robots: 'noindex, nofollow',
           },
         },
