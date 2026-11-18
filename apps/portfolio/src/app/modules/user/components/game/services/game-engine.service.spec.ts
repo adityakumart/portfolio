@@ -1,11 +1,23 @@
+// @vitest-environment jsdom
 import '@angular/compiler';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { TestBed } from '@angular/core/testing';
+import { TestBed, getTestBed } from '@angular/core/testing';
+import {
+  BrowserDynamicTestingModule,
+  platformBrowserDynamicTesting,
+} from '@angular/platform-browser-dynamic/testing';
 import { of } from 'rxjs';
 import { GameEngineService } from './game-engine.service';
 import { GameDataService } from './game-data.service';
 import { SpeechSynthesisService } from './speech-synthesis.service';
 import { IMovieWordDto } from '@portfolio/shared-types';
+
+try {
+  getTestBed().initTestEnvironment(
+    BrowserDynamicTestingModule,
+    platformBrowserDynamicTesting()
+  );
+} catch {}
 
 describe('GameEngineService', () => {
   let service: GameEngineService;
@@ -40,6 +52,7 @@ describe('GameEngineService', () => {
   ];
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     mockGameDataService = {
       fetchWordsBatch: vi.fn().mockReturnValue(
         of({
