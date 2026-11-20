@@ -96,7 +96,7 @@ export class KycVerificationComponent implements OnInit, OnDestroy {
   aadhaarError = signal<string | null>(null);
   aadhaarResult = signal<IAadhaarVerifiedData | null>(null);
   otpCountdown = signal(0);
-  private timerInterval: any = null;
+  private timerInterval: ReturnType<typeof setInterval> | null = null;
 
   // Driving License State
   dlNumber = signal('');
@@ -171,7 +171,7 @@ export class KycVerificationComponent implements OnInit, OnDestroy {
       );
     } catch (err: unknown) {
       const msg =
-        (err as any)?.error?.message ||
+        (err as { error?: { message?: string } })?.error?.message ||
         (err as Error).message ||
         'Failed to generate Aadhaar OTP.';
       this.aadhaarError.set(msg);
@@ -226,7 +226,7 @@ export class KycVerificationComponent implements OnInit, OnDestroy {
       );
     } catch (err: unknown) {
       const msg =
-        (err as any)?.error?.message ||
+        (err as { error?: { message?: string } })?.error?.message ||
         (err as Error).message ||
         'Failed to verify Aadhaar OTP.';
       this.aadhaarError.set(msg);
@@ -278,7 +278,7 @@ export class KycVerificationComponent implements OnInit, OnDestroy {
       );
     } catch (err: unknown) {
       const msg =
-        (err as any)?.error?.message ||
+        (err as { error?: { message?: string } })?.error?.message ||
         (err as Error).message ||
         'Failed to verify Driving License.';
       this.dlError.set(msg);

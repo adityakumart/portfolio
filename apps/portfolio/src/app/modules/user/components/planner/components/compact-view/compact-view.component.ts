@@ -53,7 +53,7 @@ export class CompactViewComponent {
 
   // Scratchpad quick note
   scratchpadText = signal<string>('');
-  private scratchpadSaveTimer: any = null;
+  private scratchpadSaveTimer: ReturnType<typeof setTimeout> | null = null;
 
   async submitQuickTask(): Promise<void> {
     const title = this.quickTaskInput().trim();

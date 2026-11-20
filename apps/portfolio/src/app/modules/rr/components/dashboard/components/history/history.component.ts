@@ -108,7 +108,7 @@ export class RRHistoryComponent implements OnInit {
   private dialog = inject(HlmDialogService);
   private destroyRef = inject(DestroyRef);
 
-  @ViewChild('breakdownDialog') breakdownDialog!: TemplateRef<any>;
+  @ViewChild('breakdownDialog') breakdownDialog!: TemplateRef<unknown>;
 
   // User role context
   isAdmin = this.rrApi.isAdmin;

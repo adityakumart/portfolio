@@ -323,9 +323,9 @@ export class AuthService {
     // 2. In-tab storage modification monkey-patch
     try {
       const storageProto = Storage.prototype;
-      (storageProto as any).__activeAuthService = this;
-      if (!(storageProto as any).__tamperListenerAttached) {
-        (storageProto as any).__tamperListenerAttached = true;
+      storageProto['__activeAuthService'] = this;
+      if (!storageProto['__tamperListenerAttached']) {
+        storageProto['__tamperListenerAttached'] = true;
         const originalSetItem = storageProto.setItem;
         const originalRemoveItem = storageProto.removeItem;
         const self = this;
@@ -333,7 +333,7 @@ export class AuthService {
         storageProto.setItem = function (key: string, value: string) {
           originalSetItem.apply(this, [key, value]);
           const activeService: AuthService =
-            AuthService.activeInstance || (storageProto as any).__activeAuthService || self;
+            AuthService.activeInstance || storageProto['__activeAuthService'] || self;
           if (
             (key === activeService.STORAGE_KEY || key === activeService.LEGACY_STORAGE_KEY) &&
             !activeService.isInternalStorageWrite
@@ -347,7 +347,7 @@ export class AuthService {
 
         storageProto.removeItem = function (key: string) {
           const activeService: AuthService =
-            AuthService.activeInstance || (storageProto as any).__activeAuthService || self;
+            AuthService.activeInstance || storageProto['__activeAuthService'] || self;
           const itemExisted = Boolean(this.getItem(key));
           originalRemoveItem.apply(this, [key]);
           if (

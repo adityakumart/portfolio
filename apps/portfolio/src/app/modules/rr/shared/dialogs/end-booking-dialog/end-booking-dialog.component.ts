@@ -230,7 +230,7 @@ export class RREndBookingDialogComponent implements OnInit {
       (d) =>
         !d.description ||
         d.description.trim() === '' ||
-        (d.amount as any) === '' ||
+        (d.amount as unknown as string) === '' ||
         d.amount === null ||
         d.amount === undefined ||
         isNaN(Number(d.amount)) ||
@@ -499,7 +499,7 @@ export class RREndBookingDialogComponent implements OnInit {
       id:
         'dmg_' + Date.now() + '_' + Math.random().toString(36).substring(2, 5),
       description: '',
-      amount: '' as any,
+      amount: 0,
       confirmed: true,
       imageUrl: '',
       isUploadingImage: false,
@@ -531,9 +531,9 @@ export class RREndBookingDialogComponent implements OnInit {
       } else {
         toast.error('Failed to obtain uploaded image URL.');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error('Error uploading damage photo: ' + (err?.message || 'unknown error'));
+      toast.error('Error uploading damage photo: ' + ((err as { message?: string })?.message || 'unknown error'));
     } finally {
       dmg.isUploadingImage = false;
       target.value = '';
@@ -783,7 +783,7 @@ export class RREndBookingDialogComponent implements OnInit {
       this.endBookingFields.recalculateSlabMode = true;
 
       const veh = this.vehicle();
-      const pricing = veh?.pricing || (b as any).vehiclePricing;
+      const pricing = veh?.pricing || (b as { vehiclePricing?: IVehiclePricing }).vehiclePricing;
       const { slabExtraRent, slabExtraKm } = this.calculateCase4Slabs(
         rawHoursExceeded,
         pricing,
@@ -974,9 +974,10 @@ export class RREndBookingDialogComponent implements OnInit {
 
       toast.success(`Booking ${b.id} ended, invoice printed & WhatsApp link dispatched (valid for 24h)!`);
       this.dialogRef?.close(true);
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
-      toast.error(e.error?.message || 'Error finalizing booking.');
+      const errMsg = (e as { error?: { message?: string }; message?: string })?.error?.message || (e as { message?: string })?.message || 'Error finalizing booking.';
+      toast.error(errMsg);
     } finally {
       this.isSubmitting.set(false);
     }

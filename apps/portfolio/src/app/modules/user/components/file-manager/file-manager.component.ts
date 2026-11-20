@@ -188,7 +188,7 @@ export class FileManagerComponent implements OnInit {
         },
         contentClass: 'w-[90vw] max-w-[800px] p-0 border-0 bg-transparent shadow-none',
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to open preview dialog:', err);
     }
   }
@@ -201,7 +201,7 @@ export class FileManagerComponent implements OnInit {
       const url = await this.fileService.getDownloadUrl(node.path);
       window.open(url, '_blank');
       toast.info(`Downloading ${node.name}...`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Download url retrieval failed:', err);
       toast.error('Download url retrieval failed.');
     }
@@ -259,8 +259,8 @@ export class FileManagerComponent implements OnInit {
       try {
         await this.fileService.uploadFile(file);
         toast.success(`File "${file.name}" uploaded successfully.`);
-      } catch (err: any) {
-        toast.error(err.message || 'File upload failed.');
+      } catch (err: unknown) {
+        toast.error(((err as { message?: string })?.message || String(err)) || 'File upload failed.');
       } finally {
         input.value = '';
       }
@@ -285,8 +285,8 @@ export class FileManagerComponent implements OnInit {
       toast.success(`Folder "${name}" created successfully.`);
       this.newFolderName.set('');
       this.showFolderInput.set(false);
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to create folder.');
+    } catch (err: unknown) {
+      toast.error(((err as { message?: string })?.message || String(err)) || 'Failed to create folder.');
     }
   }
 
@@ -315,8 +315,8 @@ export class FileManagerComponent implements OnInit {
       try {
         await this.fileService.uploadFile(file);
         toast.success(`File "${file.name}" uploaded successfully.`);
-      } catch (err: any) {
-        toast.error(err.message || 'File upload failed.');
+      } catch (err: unknown) {
+        toast.error(((err as { message?: string })?.message || String(err)) || 'File upload failed.');
       }
     }
   }

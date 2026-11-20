@@ -117,10 +117,10 @@ export class FoodLogDialogComponent {
       // 4. Save clean public file URL & storage key in form
       this.imageUrl.set(presigned.fileUrl);
       this.imageStorageKey.set(presigned.storageKey);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[FoodLogDialog] Upload failed:', err);
       this.uploadError.set(
-        err.message || 'Failed to upload photo. Please try again.',
+        ((err as { message?: string })?.message || String(err)) || 'Failed to upload photo. Please try again.',
       );
     } finally {
       this.isUploadingPhoto.set(false);

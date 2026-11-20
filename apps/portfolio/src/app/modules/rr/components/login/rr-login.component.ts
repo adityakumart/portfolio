@@ -142,9 +142,9 @@ export class RRLoginComponent implements OnInit {
       setTimeout(() => {
         this.router.navigate(['/user/rr/dashboard']);
       }, 1000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Employee login error:', err);
-      const msg = err.error?.message || 'Login failed. Please check your credentials.';
+      const msg = (err as { error?: { message?: string }; message?: string })?.error?.message || (err as { message?: string })?.message || 'Login failed. Please check your credentials.';
       this.error.set(msg);
       toast.error(msg);
     } finally {
@@ -170,9 +170,9 @@ export class RRLoginComponent implements OnInit {
       setTimeout(() => {
         this.router.navigate(['/user/rr/dashboard']);
       }, 1000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Admin login error:', err);
-      const msg = err.error?.message || 'Admin login failed. Please check your credentials.';
+      const msg = (err as { error?: { message?: string }; message?: string })?.error?.message || (err as { message?: string })?.message || 'Admin login failed. Please check your credentials.';
       this.error.set(msg);
       toast.error(msg);
     } finally {

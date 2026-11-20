@@ -158,9 +158,10 @@ export class RRCloseAdvanceBookingDialogComponent implements OnInit {
       const result = await this.rrApi.closeAdvanceBooking(this.booking.id, payload);
       toast.success(`Advance reservation #${this.booking.id} closed successfully.`);
       this.dialogRef?.close(result);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to close advance reservation:', err);
-      toast.error(err.error?.message || 'Failed to close advance reservation.');
+      const errMsg = (err as { error?: { message?: string }; message?: string })?.error?.message || (err as { message?: string })?.message || 'Failed to close advance reservation.';
+      toast.error(errMsg);
     } finally {
       this.isSubmitting.set(false);
     }

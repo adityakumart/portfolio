@@ -49,7 +49,7 @@ export class FileManagerService {
       );
       this.scope.set(scope);
       return scope;
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load file scope:', err);
       return null;
     }
@@ -75,9 +75,9 @@ export class FileManagerService {
       );
       this.files.set(response || []);
       this.currentPath.set(prefix);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load directory:', err);
-      this.error.set(err.error?.message || 'Failed to fetch directory contents.');
+      this.error.set((err as { error?: { message?: string } })?.error?.message || 'Failed to fetch directory contents.');
     } finally {
       this.loading.set(false);
     }
@@ -109,9 +109,9 @@ export class FileManagerService {
       );
       // Refresh current directory
       await this.loadDirectory(this.currentPath());
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to create folder:', err);
-      this.error.set(err.error?.message || 'Failed to create directory.');
+      this.error.set((err as { error?: { message?: string } })?.error?.message || 'Failed to create directory.');
       throw err;
     } finally {
       this.loading.set(false);
@@ -143,7 +143,7 @@ export class FileManagerService {
             observe: 'events',
           })
           .subscribe({
-            next: (event: HttpEvent<any>) => {
+            next: (event: HttpEvent<unknown>) => {
               if (event.type === HttpEventType.UploadProgress && event.total) {
                 const percentage = Math.round((100 * event.loaded) / event.total);
                 this.uploadProgress.set(percentage);
@@ -151,9 +151,9 @@ export class FileManagerService {
                 resolve();
               }
             },
-            error: (err: any) => {
+            error: (err: unknown) => {
               console.error('Backend file upload failed:', err);
-              reject(new Error(err.error?.message || 'File upload failed.'));
+              reject(new Error((err as { error?: { message?: string } })?.error?.message || 'File upload failed.'));
             },
           });
       });
@@ -162,9 +162,9 @@ export class FileManagerService {
       this.uploadingFileName.set(null);
       this.uploadProgress.set(null);
       await this.loadDirectory(this.currentPath());
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Upload flow error:', err);
-      this.error.set(err.message || 'An error occurred during file upload.');
+      this.error.set(((err as { message?: string })?.message || String(err)) || 'An error occurred during file upload.');
       this.uploadingFileName.set(null);
       this.uploadProgress.set(null);
       throw err;
@@ -189,9 +189,9 @@ export class FileManagerService {
       );
       this.aiResponse.set({ fileName: res.fileName, reply: res.reply });
       return res.reply;
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('AI analysis error:', err);
-      this.error.set(err.error?.message || 'Failed to analyze file with AI Assistant.');
+      this.error.set((err as { error?: { message?: string } })?.error?.message || 'Failed to analyze file with AI Assistant.');
       throw err;
     } finally {
       this.aiAnalyzing.set(false);

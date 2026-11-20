@@ -399,7 +399,7 @@ export class RRNewBookingDialogComponent implements OnInit {
         this.membershipDiscount.set(null);
       }
     } catch (err: unknown) {
-      console.warn('Membership discount check failed:', (err as Error).message);
+      console.warn('Membership discount check failed:', ((err as Error)?.message || String(err)));
     }
   }
 
@@ -1178,9 +1178,10 @@ export class RRNewBookingDialogComponent implements OnInit {
         toast.success('Booking created successfully.');
       }
       this.dialogRef?.close(result);
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
-      toast.error(e.error?.message || 'Error creating booking.');
+      const errMsg = (e as { error?: { message?: string }; message?: string })?.error?.message || (e as { message?: string })?.message || 'Error creating booking.';
+      toast.error(errMsg);
     } finally {
       this.isSubmitting.set(false);
     }
@@ -1270,9 +1271,9 @@ export class RRNewBookingDialogComponent implements OnInit {
           }
         }
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error opening agreement upload dialog:', err);
-      toast.error('Failed to open agreement dialog: ' + (err?.message || 'unknown error'));
+      toast.error('Failed to open agreement dialog: ' + ((err as { message?: string })?.message || 'unknown error'));
     }
   }
 
@@ -1307,9 +1308,9 @@ export class RRNewBookingDialogComponent implements OnInit {
 
       this.isAgreementPrinted.set(true);
       toast.success('Rental Agreement sent to print. Attachments section is now unlocked!');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error('Error generating agreement for printing: ' + (err?.message || 'unknown error'));
+      toast.error('Error generating agreement for printing: ' + ((err as { message?: string })?.message || 'unknown error'));
     }
   }
 
@@ -1327,9 +1328,9 @@ export class RRNewBookingDialogComponent implements OnInit {
       } else {
         toast.error('Failed to obtain uploaded agreement URL.');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err.message || 'Error uploading signed agreement.');
+      toast.error(((err as { message?: string })?.message || String(err)) || 'Error uploading signed agreement.');
     } finally {
       this.isUploadingSignedAgreement.set(false);
       target.value = '';
@@ -1352,9 +1353,9 @@ export class RRNewBookingDialogComponent implements OnInit {
         this.instrumentClusterImages.update((curr) => [...curr, ...urls]);
         toast.success(`${urls.length} instrument cluster photo(s) uploaded.`);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err.message || 'Error uploading instrument cluster photos.');
+      toast.error(((err as { message?: string })?.message || String(err)) || 'Error uploading instrument cluster photos.');
     } finally {
       this.isUploadingInstrumentCluster.set(false);
       target.value = '';
@@ -1389,9 +1390,9 @@ export class RRNewBookingDialogComponent implements OnInit {
         this.vehicleImages.update((curr) => [...curr, ...urls]);
         toast.success(`${urls.length} vehicle photo(s) uploaded.`);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err.message || 'Error uploading vehicle images.');
+      toast.error(((err as { message?: string })?.message || String(err)) || 'Error uploading vehicle images.');
     } finally {
       this.isUploadingVehicleImages.set(false);
       target.value = '';
@@ -1426,9 +1427,9 @@ export class RRNewBookingDialogComponent implements OnInit {
         this.customerIds.update((curr) => [...curr, ...urls]);
         toast.success(`${urls.length} customer ID(s) uploaded.`);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err.message || 'Error uploading customer IDs.');
+      toast.error(((err as { message?: string })?.message || String(err)) || 'Error uploading customer IDs.');
     } finally {
       this.isUploadingCustomerIds.set(false);
       target.value = '';
@@ -1463,9 +1464,9 @@ export class RRNewBookingDialogComponent implements OnInit {
         this.guaranteePersonIds.update((curr) => [...curr, ...urls]);
         toast.success(`${urls.length} guarantee ID(s) uploaded.`);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err.message || 'Error uploading guarantee person IDs.');
+      toast.error(((err as { message?: string })?.message || String(err)) || 'Error uploading guarantee person IDs.');
     } finally {
       this.isUploadingGuaranteeIds.set(false);
       target.value = '';
@@ -1500,9 +1501,9 @@ export class RRNewBookingDialogComponent implements OnInit {
         this.securityDepositImages.update((curr) => [...curr, ...urls]);
         toast.success(`${urls.length} security deposit image(s) uploaded.`);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err.message || 'Error uploading security deposit images.');
+      toast.error(((err as { message?: string })?.message || String(err)) || 'Error uploading security deposit images.');
     } finally {
       this.isUploadingDepositImages.set(false);
       target.value = '';

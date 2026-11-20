@@ -4,6 +4,7 @@ import { HlmDialogService } from '@spartan-ng/hel/dialog';
 import { maskAadhar } from '../shared/utils/aadhar-mask.util';
 import { formatToIndianDate } from '../../../shared/pipes/indian-date.pipe';
 import { RRPdfViewerDialogComponent } from '../shared/dialogs/pdf-viewer-dialog/rr-pdf-viewer-dialog.component';
+import { IBooking, IDamageItem } from '@portfolio/shared-types';
 export { formatToIndianDate };
 
 @Injectable({
@@ -12,7 +13,7 @@ export { formatToIndianDate };
 export class RRInvoicePdfService {
   private dialog = inject(HlmDialogService);
 
-  async generateAgreementPdfDoc(b: any): Promise<jsPDF | null> {
+  async generateAgreementPdfDoc(b: Partial<IBooking>): Promise<jsPDF | null> {
     if (!b) return null;
 
     // Normalize all fields to avoid "undefined" strings in printed PDF
@@ -337,14 +338,14 @@ export class RRInvoicePdfService {
     return doc;
   }
 
-  async downloadAgreementPdf(b: any): Promise<void> {
+  async downloadAgreementPdf(b: Partial<IBooking>): Promise<void> {
     const doc = await this.generateAgreementPdfDoc(b);
     if (!doc) return;
     const id = b.id || 'DRAFT';
     doc.save(`Agreement_${id}.pdf`);
   }
 
-  async viewAgreementPdf(b: any): Promise<void> {
+  async viewAgreementPdf(b: Partial<IBooking>): Promise<void> {
     const doc = await this.generateAgreementPdfDoc(b);
     if (!doc) return;
     const id = b.id || 'DRAFT';
@@ -360,11 +361,11 @@ export class RRInvoicePdfService {
     });
   }
 
-  async printAgreementPdf(b: any): Promise<void> {
+  async printAgreementPdf(b: Partial<IBooking>): Promise<void> {
     return this.viewAgreementPdf(b);
   }
 
-  async generateInvoicePdfDoc(b: any): Promise<jsPDF | null> {
+  async generateInvoicePdfDoc(b: Partial<IBooking>): Promise<jsPDF | null> {
     if (!b) return null;
 
     const id = b.id || 'N/A';
@@ -421,7 +422,7 @@ export class RRInvoicePdfService {
     const damages = Array.isArray(b.damages) ? b.damages : [];
     const damagesTotal =
       Number(b.damagesTotal) ||
-      damages.reduce((acc: number, d: any) => acc + (Number(d.amount) || 0), 0);
+      damages.reduce((acc: number, d: IDamageItem) => acc + (Number(d.amount) || 0), 0);
 
     const discount = Number(b.discount) || 0;
     const finalTotal = Number(b.finalRentalAmount) || 0;
@@ -728,7 +729,7 @@ export class RRInvoicePdfService {
     if (damagesTotal > 0) {
       const descList = damages
         .map(
-          (d: any) => `${d.description || d.desc || 'Repair'} (Rs.${d.amount})`,
+          (d: IDamageItem) => `${d.description || 'Repair'} (Rs.${d.amount})`,
         )
         .join(', ');
       lineItems.push({
@@ -998,14 +999,14 @@ export class RRInvoicePdfService {
     return doc;
   }
 
-  async downloadInvoicePdf(b: any): Promise<void> {
+  async downloadInvoicePdf(b: Partial<IBooking>): Promise<void> {
     const doc = await this.generateInvoicePdfDoc(b);
     if (!doc) return;
     const id = b.id || 'N/A';
     doc.save(`Invoice_${id}.pdf`);
   }
 
-  async viewInvoicePdf(b: any): Promise<void> {
+  async viewInvoicePdf(b: Partial<IBooking>): Promise<void> {
     const doc = await this.generateInvoicePdfDoc(b);
     if (!doc) return;
     const id = b.id || 'N/A';
@@ -1021,7 +1022,7 @@ export class RRInvoicePdfService {
     });
   }
 
-  async printInvoicePdf(b: any): Promise<void> {
+  async printInvoicePdf(b: Partial<IBooking>): Promise<void> {
     return this.viewInvoicePdf(b);
   }
 }

@@ -1428,7 +1428,18 @@ export class RRApiService {
       params = params.set('customText', customText);
     }
     return firstValueFrom(
-      this.http.get<any>(`${this.baseUrl}/bookings/${bookingId}/whatsapp/preview`, {
+      this.http.get<{
+        success: boolean;
+        bookingId: string;
+        templateType: IRRWhatsAppTemplateId;
+        template: IRRWhatsAppTemplate;
+        compiledText: string;
+        directWhatsAppUrl: string;
+        phone: string;
+        customerName: string;
+        invoiceLink?: string;
+        provider: string;
+      }>(`${this.baseUrl}/bookings/${bookingId}/whatsapp/preview`, {
         headers: this.getHeaders(),
         params,
       })
@@ -1483,7 +1494,12 @@ export class RRApiService {
     verifiedAt: string;
   }> {
     return firstValueFrom(
-      this.http.get<any>(`${this.baseUrl}/public/invoice/${token}`)
+      this.http.get<{
+        success: boolean;
+        booking: IBooking;
+        company: { name: string; supportPhone: string; depotAddress: string };
+        verifiedAt: string;
+      }>(`${this.baseUrl}/public/invoice/${token}`)
     );
   }
 }

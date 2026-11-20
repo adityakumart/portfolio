@@ -164,7 +164,7 @@ export class PlannerComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     const tabParam = this.route.snapshot.queryParamMap.get('tab');
     if (tabParam === 'notes' || tabParam === 'todos' || tabParam === 'projects') {
-      this.state.setActiveTab(tabParam as any);
+      this.state.setActiveTab(tabParam);
     }
 
     const projectParam = this.route.snapshot.queryParamMap.get('project');

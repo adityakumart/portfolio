@@ -124,8 +124,8 @@ export class RRWhatsAppPreviewDialogComponent implements OnInit {
         this.provider.set(res.provider);
         this.invoiceLink.set(res.invoiceLink);
       }
-    } catch (err: any) {
-      toast.error('Could not compile WhatsApp message preview: ' + (err.error?.message || err.message));
+    } catch (err: unknown) {
+      toast.error('Could not compile WhatsApp message preview: ' + ((err as { error?: { message?: string }; message?: string })?.error?.message || ((err as { message?: string })?.message || String(err))));
     } finally {
       this.isLoading.set(false);
     }
@@ -147,8 +147,8 @@ export class RRWhatsAppPreviewDialogComponent implements OnInit {
       } else {
         toast.error(`Message dispatch failed: ${res.error || res.message}`);
       }
-    } catch (err: any) {
-      toast.error('Error sending WhatsApp notification: ' + (err.error?.message || err.message));
+    } catch (err: unknown) {
+      toast.error('Error sending WhatsApp notification: ' + ((err as { error?: { message?: string }; message?: string })?.error?.message || ((err as { message?: string })?.message || String(err))));
     } finally {
       this.isSending.set(false);
     }

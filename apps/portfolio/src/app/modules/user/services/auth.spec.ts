@@ -7,6 +7,23 @@ import { of, throwError, Observable } from 'rxjs';
 import { AES } from 'crypto-js';
 import { maskToken } from '../../../shared/utils/security.utils';
 import { AuthService } from './auth';
+import { User } from '@portfolio/shared-types';
+
+interface AuthServiceTestAccess {
+  STORAGE_KEY: string;
+  LEGACY_STORAGE_KEY: string;
+  platformId: string;
+  lastPermissionsCheckTime: number;
+  setStorageItem(key: string, value: string): void;
+  getStorageItem(key: string): string | null;
+  getDeviceBoundKey(): string;
+  encryptData(plainText: string): string;
+  decryptData(cipherText: string): string | null;
+  setupStorageTamperListener(): void;
+  checkActivityPermissionsRefresh(): void;
+  createEnvelope<T>(payload: T, ttlMs: number): { checksum: string };
+}
+
 
 class MockStorage {
   private store: Record<string, string> = {};
@@ -39,13 +56,13 @@ describe('AuthService', () => {
   beforeEach(() => {
     mockStorage = new MockStorage();
 
-    (global as any).Storage = MockStorage;
-    (global as any).window = {
+    (globalThis as unknown as Record<string, unknown>)['Storage'] = MockStorage;
+    (globalThis as unknown as Record<string, unknown>)['window'] = {
       localStorage: mockStorage,
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
     };
-    (global as any).localStorage = mockStorage;
+    (globalThis as unknown as Record<string, unknown>)['localStorage'] = mockStorage;
 
     mockHttpClient = {
       post: () => of({}),
@@ -82,7 +99,7 @@ describe('AuthService', () => {
     mockStorage.clear();
     MockStorage.prototype.setItem = originalProtoSetItem;
     MockStorage.prototype.removeItem = originalProtoRemoveItem;
-    delete (MockStorage.prototype as any).__tamperListenerAttached;
+    delete (MockStorage.prototype as unknown as Record<string, unknown>)['__tamperListenerAttached'];
   });
 
   it('should be created', () => {
@@ -97,9 +114,9 @@ describe('AuthService', () => {
       user: { id: 'u1', email: 'u1@test.com', modules: { aiSpace: false } },
     };
 
-    const storageKey = (service as any).STORAGE_KEY;
+    const storageKey = (service as unknown as AuthServiceTestAccess).STORAGE_KEY;
     // Store session via internal service setStorageItem under obfuscated key
-    (service as any).setStorageItem(storageKey, JSON.stringify(session));
+    (service as unknown as AuthServiceTestAccess).setStorageItem(storageKey, JSON.stringify(session));
 
     // In raw localStorage, data must be encrypted AES ciphertext, not plaintext JSON
     const rawStored = mockStorage.getItem(storageKey)!;
@@ -107,7 +124,7 @@ describe('AuthService', () => {
     expect(rawStored.startsWith('{')).toBe(false);
 
     // Reading through getStorageItem decrypts it properly
-    const decryptedStr = (service as any).getStorageItem(storageKey);
+    const decryptedStr = (service as unknown as AuthServiceTestAccess).getStorageItem(storageKey);
     const decrypted = JSON.parse(decryptedStr!);
     expect(decrypted.access_token).toBe('valid-token');
     expect(decrypted.user.email).toBe('u1@test.com');
@@ -125,7 +142,7 @@ describe('AuthService', () => {
     mockStorage.setItem('portfolio_auth_session', JSON.stringify(session));
 
     // Reading through getStorageItem with obfuscated key finds and migrates it
-    const decrypted = (service as any).getStorageItem('_app_ctx_sig_v1');
+    const decrypted = (service as unknown as AuthServiceTestAccess).getStorageItem('_app_ctx_sig_v1');
     expect(decrypted).toBeTruthy();
     expect(JSON.parse(decrypted!).access_token).toBe('migrated-token');
 
@@ -135,8 +152,8 @@ describe('AuthService', () => {
   });
 
   it('should derive device-bound encryption key and reject ciphertext from another device/browser', () => {
-    (service as any).platformId = 'browser';
-    (global as any).window = {
+    (service as unknown as AuthServiceTestAccess).platformId = 'browser';
+    (globalThis as unknown as Record<string, unknown>)['window'] = {
       location: { origin: 'http://localhost:4200' },
       localStorage: mockStorage,
     };
@@ -151,18 +168,18 @@ describe('AuthService', () => {
       writable: true,
     });
 
-    const key = (service as any).getDeviceBoundKey();
+    const key = (service as unknown as AuthServiceTestAccess).getDeviceBoundKey();
     expect(key).toContain('portfolio_secure_session_v1');
     expect(key).toContain('http://localhost:4200');
     expect(key).toContain('1920x1080');
 
     // Encrypt on Device A
     const plainText = JSON.stringify({ token: 'device-bound-secret' });
-    const encrypted = (service as any).encryptData(plainText);
+    const encrypted = (service as unknown as AuthServiceTestAccess).encryptData(plainText);
     expect(encrypted).toBeTruthy();
 
     // Successfully decrypts on Device A
-    expect((service as any).decryptData(encrypted)).toBe(plainText);
+    expect((service as unknown as AuthServiceTestAccess).decryptData(encrypted)).toBe(plainText);
 
     // Simulate attacker copying ciphertext to Device B (different user-agent and screen)
     Object.defineProperty(globalThis, 'navigator', {
@@ -177,13 +194,13 @@ describe('AuthService', () => {
     });
 
     // Decryption must fail (returns null) on Device B
-    const compromisedDecrypted = (service as any).decryptData(encrypted);
+    const compromisedDecrypted = (service as unknown as AuthServiceTestAccess).decryptData(encrypted);
     expect(compromisedDecrypted).toBeNull();
   });
 
   it('should maintain backward compatibility and decrypt sessions created with static encryption key', () => {
-    (service as any).platformId = 'browser';
-    (global as any).window = {
+    (service as unknown as AuthServiceTestAccess).platformId = 'browser';
+    (globalThis as unknown as Record<string, unknown>)['window'] = {
       location: { origin: 'http://localhost:4200' },
       localStorage: mockStorage,
     };
@@ -203,7 +220,7 @@ describe('AuthService', () => {
     const legacyCipher = AES.encrypt(legacyPlain, 'portfolio_secure_session_v1').toString();
 
     // Must gracefully decrypt through fallback
-    const decrypted = (service as any).decryptData(legacyCipher);
+    const decrypted = (service as unknown as AuthServiceTestAccess).decryptData(legacyCipher);
     expect(decrypted).toBe(legacyPlain);
   });
 
@@ -235,7 +252,7 @@ describe('AuthService', () => {
     const rawStored = mockStorage.getItem('_app_ctx_sig_v1')!;
     expect(rawStored.startsWith('{')).toBe(false);
 
-    const decryptedStr = (service as any).getStorageItem('_app_ctx_sig_v1');
+    const decryptedStr = (service as unknown as AuthServiceTestAccess).getStorageItem('_app_ctx_sig_v1');
     const updatedStored = JSON.parse(decryptedStr!);
     expect(updatedStored.user.masterAdmin).toBe(true);
     expect(updatedStored.user.modules.aiSpace).toBe(true);
@@ -274,7 +291,7 @@ describe('AuthService', () => {
     // 2. Storage contains ONLY minimized authorization context without PII
     const rawCipher = mockStorage.getItem('_app_ctx_sig_v1')!;
     expect(rawCipher).toBeTruthy();
-    const decryptedStr = (service as any).getStorageItem('_app_ctx_sig_v1');
+    const decryptedStr = (service as unknown as AuthServiceTestAccess).getStorageItem('_app_ctx_sig_v1');
     const storedSession = JSON.parse(decryptedStr!);
 
     expect(storedSession.user.id).toBe('u-123');
@@ -288,7 +305,7 @@ describe('AuthService', () => {
 
   it('should support Remember Me architecture: sessionStorage when false, localStorage when true', async () => {
     const mockSession = new MockStorage();
-    (global as any).window.sessionStorage = mockSession;
+    ((globalThis as unknown as Record<string, Record<string, unknown>>)['window'])['sessionStorage'] = mockSession;
 
     const fullUser = {
       id: 'u-456',
@@ -317,11 +334,11 @@ describe('AuthService', () => {
   });
 
   it('should not trigger logout during login even when storage tamper listener is active', async () => {
-    (service as any).platformId = 'browser';
-    (service as any).setupStorageTamperListener();
+    (service as unknown as AuthServiceTestAccess).platformId = 'browser';
+    (service as unknown as AuthServiceTestAccess).setupStorageTamperListener();
 
     const mockSession = new MockStorage();
-    (global as any).window.sessionStorage = mockSession;
+    ((globalThis as unknown as Record<string, Record<string, unknown>>)['window'])['sessionStorage'] = mockSession;
 
     vi.spyOn(mockHttpClient, 'post').mockReturnValue(
       of({
@@ -383,11 +400,11 @@ describe('AuthService', () => {
 
     const refreshSpy = vi
       .spyOn(service, 'refreshPermissions')
-      .mockResolvedValue(session.user as any);
+      .mockResolvedValue(session.user as unknown as User);
 
     // Call setupStorageTamperListener explicitly on the mock Storage prototype
-    (service as any).platformId = 'browser';
-    (service as any).setupStorageTamperListener();
+    (service as unknown as AuthServiceTestAccess).platformId = 'browser';
+    (service as unknown as AuthServiceTestAccess).setupStorageTamperListener();
 
     // Directly modify storage as an external actor (simulating DevTools/script)
     mockStorage.setItem(
@@ -407,9 +424,9 @@ describe('AuthService', () => {
       .mockResolvedValue(null);
 
     // Set lastPermissionsCheckTime to 11 minutes ago
-    (service as any).lastPermissionsCheckTime = Date.now() - 11 * 60 * 1000;
+    (service as unknown as AuthServiceTestAccess).lastPermissionsCheckTime = Date.now() - 11 * 60 * 1000;
 
-    (service as any).checkActivityPermissionsRefresh();
+    (service as unknown as AuthServiceTestAccess).checkActivityPermissionsRefresh();
 
     expect(refreshSpy).toHaveBeenCalled();
   });
@@ -436,16 +453,16 @@ describe('AuthService', () => {
         payload,
         storedAt: Date.now() - 3 * 60 * 60 * 1000,
         ttlMs: 60 * 60 * 1000,
-        checksum: (service as any).createEnvelope(payload, 60 * 60 * 1000).checksum,
+        checksum: (service as unknown as AuthServiceTestAccess).createEnvelope(payload, 60 * 60 * 1000).checksum,
       };
 
-      const encrypted = (service as any).encryptData(JSON.stringify(expiredEnvelope));
-      mockStorage.setItem((service as any).STORAGE_KEY, encrypted);
+      const encrypted = (service as unknown as AuthServiceTestAccess).encryptData(JSON.stringify(expiredEnvelope));
+      mockStorage.setItem((service as unknown as AuthServiceTestAccess).STORAGE_KEY, encrypted);
 
-      const result = (service as any).getStorageItem((service as any).STORAGE_KEY);
+      const result = (service as unknown as AuthServiceTestAccess).getStorageItem((service as unknown as AuthServiceTestAccess).STORAGE_KEY);
       expect(result).toBeNull();
       // Should purge expired key from storage
-      expect(mockStorage.getItem((service as any).STORAGE_KEY)).toBeNull();
+      expect(mockStorage.getItem((service as unknown as AuthServiceTestAccess).STORAGE_KEY)).toBeNull();
     });
 
     it('should detect envelope checksum mismatch when payload is tampered with and purge storage', () => {
@@ -458,12 +475,12 @@ describe('AuthService', () => {
         payload: { ...payload, user: { ...payload.user, role: 'superadmin' } },
       };
 
-      const encrypted = (service as any).encryptData(JSON.stringify(tamperedEnvelope));
-      mockStorage.setItem((service as any).STORAGE_KEY, encrypted);
+      const encrypted = (service as unknown as AuthServiceTestAccess).encryptData(JSON.stringify(tamperedEnvelope));
+      mockStorage.setItem((service as unknown as AuthServiceTestAccess).STORAGE_KEY, encrypted);
 
-      const result = (service as any).getStorageItem((service as any).STORAGE_KEY);
+      const result = (service as unknown as AuthServiceTestAccess).getStorageItem((service as unknown as AuthServiceTestAccess).STORAGE_KEY);
       expect(result).toBeNull();
-      expect(mockStorage.getItem((service as any).STORAGE_KEY)).toBeNull();
+      expect(mockStorage.getItem((service as unknown as AuthServiceTestAccess).STORAGE_KEY)).toBeNull();
     });
   });
 });

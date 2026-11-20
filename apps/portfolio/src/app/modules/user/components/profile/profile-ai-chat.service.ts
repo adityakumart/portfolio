@@ -418,7 +418,7 @@ export async function handleChat(req: Request, res: Response) {
     });
     
     return res.json({ reply: response.text });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return res.status(500).json({ error: error.message });
   }
 }
@@ -438,7 +438,7 @@ private http = inject(HttpClient);
 async sendMessage(content: string) {
   // Add user message...
   
-  this.http.post<any>(\`\${environment.APIURL}/chat\`, { message: content })
+  this.http.post<{ reply: string }>(\`\${environment.APIURL}/chat\`, { message: content })
     .subscribe({
       next: (res) => {
         const parsedReply = this.formatMarkdown(res.reply);

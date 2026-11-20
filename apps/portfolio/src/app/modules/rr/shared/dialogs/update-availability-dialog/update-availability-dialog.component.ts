@@ -127,9 +127,9 @@ export class RRUpdateVehicleAvailabilityDialogComponent implements OnInit {
         `Next available date for ${v.manufacturer} ${v.name} (${v.regNo}) updated successfully!`
       );
       this.dialogRef?.close(true);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to update vehicle availability date:', err);
-      toast.error(err?.message || 'Failed to update vehicle availability date');
+      toast.error((err as { message?: string })?.message || 'Failed to update vehicle availability date');
     } finally {
       this.isSubmitting.set(false);
     }

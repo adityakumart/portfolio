@@ -25,7 +25,7 @@ export class NetworkStatusService implements OnDestroy {
 
   private onlineListener: (() => void) | null = null;
   private offlineListener: (() => void) | null = null;
-  private restoredTimeoutId: any = null;
+  private restoredTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
     if (isPlatformBrowser(this.platformId)) {

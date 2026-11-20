@@ -6,6 +6,32 @@ export const RR_INACTIVITY_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
 const STORAGE_KEY_LAST_ACTIVE = 'rr_session_last_active';
 const STORAGE_KEY_IS_LOCKED = 'rr_session_is_locked';
 
+
+interface ChromeStorageChange {
+  oldValue?: unknown;
+  newValue?: unknown;
+}
+
+interface WindowWithChrome extends Window {
+  chrome?: {
+    storage?: {
+      local?: {
+        get: (keys: string[], callback: (items: Record<string, unknown>) => void) => void;
+        set: (items: Record<string, unknown>, callback?: () => void) => void;
+        remove: (keys: string[], callback?: () => void) => void;
+      };
+      onChanged?: {
+        addListener: (callback: (changes: Record<string, ChromeStorageChange>, areaName: string) => void) => void;
+        removeListener: (callback: (changes: Record<string, ChromeStorageChange>, areaName: string) => void) => void;
+      };
+    };
+    action?: {
+      setBadgeText: (details: { text: string }) => void;
+      setBadgeBackgroundColor: (details: { color: string }) => void;
+    };
+  };
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -22,7 +48,7 @@ export class RRInactivityService implements OnDestroy {
   readonly errorMessage = signal<string | null>(null);
 
   private lastActiveTimestamp = Date.now();
-  private checkIntervalId: any = null;
+  private checkIntervalId: ReturnType<typeof setInterval> | null = null;
   private isTracking = false;
   private lastActivityThrottleMs = 1500;
   private lastRecordedTime = 0;
@@ -34,22 +60,26 @@ export class RRInactivityService implements OnDestroy {
   private boundResumeHandler = this.onAppResume.bind(this);
   private tauriUnlistenFocus: (() => void) | null = null;
 
-  private boundChromeStorageHandler = (changes: any, areaName: string) => {
+  private boundChromeStorageHandler = (changes: Record<string, ChromeStorageChange>, areaName: string) => {
     if (areaName !== 'local') return;
     if (changes[STORAGE_KEY_IS_LOCKED]) {
-      const val = changes[STORAGE_KEY_IS_LOCKED].newValue;
+      const val = changes[STORAGE_KEY_IS_LOCKED]?.newValue;
       this.isLocked.set(val === 'true' || val === true);
     }
     if (changes[STORAGE_KEY_LAST_ACTIVE] && changes[STORAGE_KEY_LAST_ACTIVE].newValue) {
-      const parsed = parseInt(changes[STORAGE_KEY_LAST_ACTIVE].newValue, 10);
+      const parsed = parseInt(String(changes[STORAGE_KEY_LAST_ACTIVE]?.newValue || ""), 10);
       if (!isNaN(parsed)) {
         this.lastActiveTimestamp = parsed;
       }
     }
   };
 
+  private get chromeWin(): WindowWithChrome | undefined {
+    return typeof window !== 'undefined' ? (window as unknown as WindowWithChrome) : undefined;
+  }
+
   private isChromeExtension(): boolean {
-    return typeof window !== 'undefined' && !!(window as any).chrome?.storage?.local;
+    return !!this.chromeWin?.chrome?.storage?.local;
   }
 
   private isTauriDesktop(): boolean {
@@ -107,13 +137,13 @@ export class RRInactivityService implements OnDestroy {
 
     // Chrome Extension storage bridge
     if (this.isChromeExtension()) {
-      (window as any).chrome.storage.local.get(
+      this.chromeWin?.chrome?.storage?.local?.get(
         [STORAGE_KEY_IS_LOCKED, STORAGE_KEY_LAST_ACTIVE],
-        (res: any) => {
+        (res: Record<string, unknown>) => {
           if (res && (res[STORAGE_KEY_IS_LOCKED] === 'true' || res[STORAGE_KEY_IS_LOCKED] === true)) {
             this.isLocked.set(true);
           } else if (res && res[STORAGE_KEY_LAST_ACTIVE]) {
-            const parsed = parseInt(res[STORAGE_KEY_LAST_ACTIVE], 10);
+            const parsed = parseInt(String(res[STORAGE_KEY_LAST_ACTIVE] || ''), 10);
             if (!isNaN(parsed) && Date.now() - parsed >= this.timeoutMs()) {
               this.lockSession();
             }
@@ -148,8 +178,8 @@ export class RRInactivityService implements OnDestroy {
     this.initDesktopListeners();
 
     // Chrome Extension storage change listener
-    if (this.isChromeExtension() && (window as any).chrome?.storage?.onChanged) {
-      (window as any).chrome.storage.onChanged.addListener(this.boundChromeStorageHandler);
+    if (this.isChromeExtension() && this.chromeWin?.chrome?.storage?.onChanged) {
+      this.chromeWin.chrome.storage.onChanged.addListener(this.boundChromeStorageHandler);
     }
 
     // Heartbeat ticker to evaluate time elapsed every second
@@ -182,8 +212,8 @@ export class RRInactivityService implements OnDestroy {
       this.tauriUnlistenFocus = null;
     }
 
-    if (this.isChromeExtension() && (window as any).chrome?.storage?.onChanged) {
-      (window as any).chrome.storage.onChanged.removeListener(this.boundChromeStorageHandler);
+    if (this.isChromeExtension() && this.chromeWin?.chrome?.storage?.onChanged) {
+      this.chromeWin.chrome.storage.onChanged.removeListener(this.boundChromeStorageHandler);
     }
 
     if (this.checkIntervalId) {
@@ -282,7 +312,7 @@ export class RRInactivityService implements OnDestroy {
       localStorage.setItem(STORAGE_KEY_LAST_ACTIVE, now.toString());
     }
     if (this.isChromeExtension()) {
-      (window as any).chrome.storage.local.set({ [STORAGE_KEY_LAST_ACTIVE]: now.toString() });
+      this.chromeWin?.chrome?.storage?.local?.set({ [STORAGE_KEY_LAST_ACTIVE]: now.toString() });
     }
   }
 
@@ -357,10 +387,10 @@ export class RRInactivityService implements OnDestroy {
     this.updateDesktopTitle(true);
 
     if (this.isChromeExtension()) {
-      (window as any).chrome.storage.local.set({ [STORAGE_KEY_IS_LOCKED]: 'true' });
-      if ((window as any).chrome.action) {
-        (window as any).chrome.action.setBadgeText({ text: 'LOCK' });
-        (window as any).chrome.action.setBadgeBackgroundColor({ color: '#f59e0b' });
+      this.chromeWin?.chrome?.storage?.local?.set({ [STORAGE_KEY_IS_LOCKED]: 'true' });
+      if (this.chromeWin?.chrome?.action) {
+        this.chromeWin.chrome.action.setBadgeText({ text: 'LOCK' });
+        this.chromeWin.chrome.action.setBadgeBackgroundColor({ color: '#f59e0b' });
       }
     }
   }
@@ -402,9 +432,10 @@ export class RRInactivityService implements OnDestroy {
       this.unlockSession();
       toast.success('Session unlocked successfully. Welcome back!');
       return true;
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Session unlock failed:', err);
-      const msg = err.error?.message || 'Invalid credentials. Please try again.';
+      const errObj = typeof err === 'object' && err !== null ? (err as { error?: { message?: string } }) : {};
+      const msg = errObj.error?.message || 'Invalid credentials. Please try again.';
       this.errorMessage.set(msg);
       toast.error(msg);
       return false;
@@ -429,9 +460,9 @@ export class RRInactivityService implements OnDestroy {
     this.updateDesktopTitle(false);
 
     if (this.isChromeExtension()) {
-      (window as any).chrome.storage.local.set({ [STORAGE_KEY_IS_LOCKED]: 'false' });
-      if ((window as any).chrome.action) {
-        (window as any).chrome.action.setBadgeText({ text: '' });
+      this.chromeWin?.chrome?.storage?.local?.set({ [STORAGE_KEY_IS_LOCKED]: 'false' });
+      if (this.chromeWin?.chrome?.action) {
+        this.chromeWin.chrome.action.setBadgeText({ text: '' });
       }
     }
   }
@@ -455,9 +486,9 @@ export class RRInactivityService implements OnDestroy {
     this.updateDesktopTitle(false);
 
     if (this.isChromeExtension()) {
-      (window as any).chrome.storage.local.remove([STORAGE_KEY_LAST_ACTIVE, STORAGE_KEY_IS_LOCKED]);
-      if ((window as any).chrome.action) {
-        (window as any).chrome.action.setBadgeText({ text: '' });
+      this.chromeWin?.chrome?.storage?.local?.remove([STORAGE_KEY_LAST_ACTIVE, STORAGE_KEY_IS_LOCKED]);
+      if (this.chromeWin?.chrome?.action) {
+        this.chromeWin.chrome.action.setBadgeText({ text: '' });
       }
     }
   }

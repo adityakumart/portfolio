@@ -74,26 +74,34 @@ export type VehicleCardVariant = 'fleet' | 'stats' | 'homepage';
   templateUrl: './vehicle-card.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RRVehicleCardComponent implements OnInit, OnDestroy {
-  @Input({ required: true }) vehicle!: IVehicle | IPublicVehicle | any;
+export class RRVehicleCardComponent<T extends IVehicle | IPublicVehicle = IVehicle> implements OnInit, OnDestroy {
+  @Input({ required: true }) vehicle!: T;
   @Input() variant: VehicleCardVariant = 'fleet';
   @Input() isAdmin = false;
   @Input() canUpdateAvailability = false;
   @Input() showReserveBtn = false;
   @Input() isCardClickable = true;
-  @Input() reservation?: IBooking | any;
+  @Input() reservation?: IBooking;
 
   readonly currentImageIndex = signal<number>(0);
-  private autoScrollInterval: any = null;
+  private autoScrollInterval: ReturnType<typeof setInterval> | null = null;
 
-  @Output() cardClick = new EventEmitter<any>();
-  @Output() bookNow = new EventEmitter<IVehicle>();
-  @Output() editClick = new EventEmitter<IVehicle>();
+  @Output() cardClick = new EventEmitter<T>();
+  @Output() bookNow = new EventEmitter<T>();
+  @Output() editClick = new EventEmitter<T>();
   @Output() deleteClick = new EventEmitter<string>();
-  @Output() reserveClick = new EventEmitter<any>();
-  @Output() whatsappClick = new EventEmitter<any>();
-  @Output() phoneClick = new EventEmitter<any>();
-  @Output() updateAvailabilityClick = new EventEmitter<IVehicle>();
+  @Output() reserveClick = new EventEmitter<T>();
+  @Output() whatsappClick = new EventEmitter<T>();
+  @Output() phoneClick = new EventEmitter<T>();
+  @Output() updateAvailabilityClick = new EventEmitter<T>();
+
+  get vehicleRegNo(): string {
+    return this.vehicle && 'regNo' in this.vehicle ? (this.vehicle as IVehicle).regNo : '';
+  }
+
+  get vehicleOdometer(): string {
+    return this.vehicle && 'odometer' in this.vehicle ? (this.vehicle as IVehicle).odometer : '';
+  }
 
   get showBookNowOverlay(): boolean {
     return this.variant === 'stats' && this.vehicle?.status === 'available';
@@ -109,7 +117,9 @@ export class RRVehicleCardComponent implements OnInit, OnDestroy {
   }
 
   get availableByDate(): string | null {
-    return this.vehicle?.availableBy || this.vehicle?.nextAvailableDate || null;
+    if (!this.vehicle) return null;
+    const v = this.vehicle as IVehicle;
+    return v.availableBy || v.nextAvailableDate || null;
   }
 
   get statusBadgeLabel(): string {
@@ -211,7 +221,7 @@ export class RRVehicleCardComponent implements OnInit, OnDestroy {
 
   onDeleteClick(event: Event) {
     event.stopPropagation();
-    this.deleteClick.emit(this.vehicle.regNo);
+    this.deleteClick.emit(this.vehicleRegNo);
   }
 
   onReserveClick(event: Event) {

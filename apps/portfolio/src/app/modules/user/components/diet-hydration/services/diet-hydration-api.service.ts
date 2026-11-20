@@ -77,7 +77,7 @@ export class DietHydrationApiService {
     uploadUrl: string,
     file: Blob,
     mimeType: string,
-  ): Observable<any> {
+  ): Observable<unknown> {
     return this.http.put(uploadUrl, file, {
       headers: new HttpHeaders({
         'Content-Type': mimeType,

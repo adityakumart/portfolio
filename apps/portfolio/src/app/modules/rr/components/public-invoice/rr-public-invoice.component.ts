@@ -87,15 +87,16 @@ export class RRPublicInvoiceComponent implements OnInit {
           this.company.set(res.company);
         }
       }
-    } catch (err: any) {
-      if (err.status === 410 || err.error?.expired) {
+    } catch (err: unknown) {
+      const httpErr = err as { status?: number; error?: { expired?: boolean; message?: string } };
+      if (httpErr.status === 410 || httpErr.error?.expired) {
         this.isExpired.set(true);
         this.errorMessage.set(
-          err.error?.message ||
+          httpErr.error?.message ||
             'This invoice link has expired. Digital invoice links are active for 24 hours only for security reasons. Please contact RoadReady support to request a fresh copy.'
         );
       } else {
-        this.errorMessage.set(err.error?.message || 'Unable to retrieve invoice. The link may be invalid.');
+        this.errorMessage.set(httpErr.error?.message || 'Unable to retrieve invoice. The link may be invalid.');
       }
     } finally {
       this.isLoading.set(false);

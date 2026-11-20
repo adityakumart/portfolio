@@ -26,7 +26,7 @@ export class PlannerNotificationService {
   );
 
   private eventSource: EventSource | null = null;
-  private reconnectTimer: any = null;
+  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
   private get baseUrl(): string {
     return `${environment.APIURL}/user/planner`;

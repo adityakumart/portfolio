@@ -736,9 +736,10 @@ export class RRReserveBookingDialogComponent implements OnInit {
       }
 
       this.dialogRef?.close(result);
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
-      toast.error(e.error?.message || 'Failed to save advance reservation.');
+      const errMsg = (e as { error?: { message?: string }; message?: string })?.error?.message || (e as { message?: string })?.message || 'Failed to save advance reservation.';
+      toast.error(errMsg);
     } finally {
       this.isSubmitting.set(false);
     }
