@@ -1,4 +1,4 @@
-import { AnyBulkWriteOperation } from 'mongoose';
+import { AnyBulkWriteOperation, Types } from 'mongoose';
 import { getMovieModel, IMovieDocument } from '../models/movie.model';
 import {
   IMovie,
@@ -217,7 +217,7 @@ export class MovieService {
       const bulkOps: AnyBulkWriteOperation<IMovieDocument>[] = toUpdate.map(
         (item) => ({
           updateOne: {
-            filter: { _id: item.id as any },
+            filter: { _id: new Types.ObjectId(String(item.id)) },
             update: { $set: item.fields },
           },
         }),

@@ -3,7 +3,7 @@ import { IBooking, IRRWhatsAppConfig, IRRWhatsAppTemplateId } from '@portfolio/s
 /**
  * Format date string to Indian readable date: DD-MM-YYYY
  */
-export function formatToIndianDateString(dateVal: any): string {
+export function formatToIndianDateString(dateVal: string | number | Date | null | undefined): string {
   if (!dateVal) return '';
   const d = new Date(dateVal);
   if (isNaN(d.getTime())) return String(dateVal);
@@ -16,7 +16,7 @@ export function formatToIndianDateString(dateVal: any): string {
 /**
  * Format time to 12-hour AM/PM format
  */
-export function formatToTimeString(dateVal: any): string {
+export function formatToTimeString(dateVal: string | number | Date | null | undefined): string {
   if (!dateVal) return '';
   const d = new Date(dateVal);
   if (isNaN(d.getTime())) return '';

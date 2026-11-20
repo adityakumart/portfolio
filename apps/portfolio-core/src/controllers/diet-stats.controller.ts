@@ -49,8 +49,8 @@ export async function handleGetStats(
       endDate,
     );
     res.json(stats);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[DietStatsController] Error fetching stats:', err);
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (err as Error).message });
   }
 }

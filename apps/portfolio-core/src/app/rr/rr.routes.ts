@@ -3,7 +3,8 @@ import { ObjectId } from 'mongodb';
 import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcrypt';
 import multer from 'multer';
-import { authenticateRRToken, requireAdmin } from './rr.middleware';
+import { authenticateRRToken, requireAdmin, IRRRequest } from './rr.middleware';
+import { Filter, Document, Collection, OptionalUnlessRequiredId } from 'mongodb';
 import {
   RRService,
   IEmployee,
@@ -12,6 +13,7 @@ import {
   ICustomerIntimation,
   IRRAnnouncementItem,
   IRRScrollingTicker,
+  ILog,
 } from './rr.service';
 import { handleVehicleImageUpload, handleFeedbackScreenshotUpload } from './r2-storage.controller';
 import { rrPublicRouter } from './rr-public.routes';
@@ -34,11 +36,18 @@ import {
   IRRUpdateFeedbackStatusPayload,
   RR_FEEDBACK_PAGES,
   RR_FEEDBACK_ISSUE_TYPES,
+  BookingStatus,
+  RRRole,
   IRRWhatsAppTemplateId,
 } from '@portfolio/shared-types';
 
 const rrRouter = Router();
 const JWT_SECRET = getJwtSecret();
+
+function getErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  return typeof err === 'string' ? err : 'Internal Server Error';
+}
 
 // Mount public routes for unauthenticated customer portal / homepage
 rrRouter.use('/public', rrPublicRouter);
@@ -56,7 +65,7 @@ RRNotificationSchedulerService.startScheduler();
 /* ============================================================
    AUTHENTICATION HELPERS & POLICIES
 ============================================================ */
-function checkInactivityAndStatus(emp: any): { error?: string; status?: number; isDeactivatedDueToInactivity?: boolean } {
+function checkInactivityAndStatus(emp: Partial<IEmployee>): { error?: string; status?: number; isDeactivatedDueToInactivity?: boolean } {
   if (emp.status === 'pending_activation') {
     return {
       error: 'Account pending activation by Administrator. Please contact an Administrator.',
@@ -87,7 +96,7 @@ function checkInactivityAndStatus(emp: any): { error?: string; status?: number; 
   return {};
 }
 
-function calculatePasswordPolicy(emp: any) {
+function calculatePasswordPolicy(emp: Partial<IEmployee>) {
   const mustChangePassword = emp.mustChangePassword === true || emp.isFirstLogin === true;
   let passwordAgeDays = 0;
   let isBufferPeriod = false;
@@ -118,7 +127,7 @@ function calculatePasswordPolicy(emp: any) {
   };
 }
 
-async function buildLoginSuccess(emp: any, empCol: any, res: Response, auditDescription: string) {
+async function buildLoginSuccess(emp: IEmployee, empCol: Collection<IEmployee>, res: Response, auditDescription: string) {
   await empCol.updateOne(
     { id: emp.id },
     {
@@ -164,17 +173,17 @@ rrRouter.post('/auth/login', authRateLimiter, async (req: Request, res: Response
 
     const empCol = await RRService.getEmployeesCol();
 
-    const handleFailedLogin = async (employee: any, failureReason: string) => {
+    const handleFailedLogin = async (employee: IEmployee, failureReason: string) => {
       const attempts = (employee.failedLoginAttempts || 0) + 1;
-      const updates: any = { failedLoginAttempts: attempts };
+      const updates: Record<string, unknown> = { failedLoginAttempts: attempts };
       if (attempts >= 5) {
-        updates.lockoutUntil = new Date(Date.now() + 15 * 60 * 1000); // 15-minute lock
+        updates['lockoutUntil'] = new Date(Date.now() + 15 * 60 * 1000); // 15-minute lock
       }
       await empCol.updateOne({ id: employee.id }, { $set: updates });
       res.status(401).json({ error: 'Unauthorized', message: failureReason });
     };
 
-    const resetFailedAttempts = async (employee: any) => {
+    const resetFailedAttempts = async (employee: IEmployee) => {
       if (employee.failedLoginAttempts || employee.lockoutUntil) {
         await empCol.updateOne({ id: employee.id }, { $set: { failedLoginAttempts: 0, lockoutUntil: null } });
       }
@@ -300,14 +309,14 @@ rrRouter.post('/auth/login', authRateLimiter, async (req: Request, res: Response
     }
 
     res.status(400).json({ error: 'Bad Request', message: 'Please provide credentials' });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Login router error:', err);
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
 // POST /auth/change-password (Authenticated)
-rrRouter.post('/auth/change-password', authenticateRRToken, async (req: any, res: Response) => {
+rrRouter.post('/auth/change-password', authenticateRRToken, async (req: IRRRequest, res: Response) => {
   try {
     const { currentPassword, newPassword } = req.body;
     if (!newPassword || typeof newPassword !== 'string' || newPassword.trim().length < 6) {
@@ -397,14 +406,14 @@ rrRouter.post('/auth/change-password', authenticateRRToken, async (req: any, res
       emp.role,
       `Password successfully configured for user ${emp.firstName} ${emp.lastName} (${emp.id})`
     ).catch(() => {});
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Change password error:', err);
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
 // POST logout (Authenticated)
-rrRouter.post('/auth/logout', authenticateRRToken, async (req: any, res: Response) => {
+rrRouter.post('/auth/logout', authenticateRRToken, async (req: IRRRequest, res: Response) => {
   try {
     const empCol = await RRService.getEmployeesCol();
     const emp = await empCol.findOne({ id: req.userId });
@@ -418,14 +427,14 @@ rrRouter.post('/auth/logout', authenticateRRToken, async (req: any, res: Respons
       req.userRole || 'employee',
       `User session ended (${empName}, Role: ${(req.userRole || 'employee').toUpperCase()})`
     ).catch((logErr) => console.error('[AuditLog] Failed to log logout:', logErr));
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Logout router error:', err);
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
 // GET /auth/permissions (Authenticated)
-rrRouter.get('/auth/permissions', authenticateRRToken, async (req: any, res: Response) => {
+rrRouter.get('/auth/permissions', authenticateRRToken, async (req: IRRRequest, res: Response) => {
   try {
     const empCol = await RRService.getEmployeesCol();
     const emp = await empCol.findOne({ id: req.userId, isDeleted: { $ne: true } });
@@ -453,9 +462,9 @@ rrRouter.get('/auth/permissions', authenticateRRToken, async (req: any, res: Res
       status: emp.status || 'active',
       ...policy
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('RR permissions router error:', err);
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
@@ -489,9 +498,9 @@ rrRouter.post(
     upload.fields([
       { name: 'images', maxCount: 15 },
       { name: 'image', maxCount: 1 },
-    ])(req, res, (err: any) => {
+    ])(req, res, (err: unknown) => {
       if (err) {
-        res.status(400).json({ error: 'Bad Request', message: err.message });
+        res.status(400).json({ error: 'Bad Request', message: (err as Error).message });
       } else {
         next();
       }
@@ -505,7 +514,7 @@ rrRouter.get('/vehicles', authenticateRRToken, async (req: Request, res: Respons
   try {
     const col = await RRService.getVehiclesCol();
     const { search, limit, autocomplete, fields, includeDeleted } = req.query;
-    const filter: any = {};
+    const filter: Filter<IVehicle> = {};
     if (includeDeleted !== 'true') {
       filter.isDeleted = { $ne: true };
     }
@@ -533,7 +542,7 @@ rrRouter.get('/vehicles', authenticateRRToken, async (req: Request, res: Respons
     const list = await cursor.toArray();
 
     if (isAutocomplete) {
-      const mapped = list.map((v: any) => ({
+      const mapped = list.map((v: IVehicle) => ({
         regNo: v.regNo,
         name: v.name,
         manufacturer: v.manufacturer,
@@ -546,8 +555,8 @@ rrRouter.get('/vehicles', authenticateRRToken, async (req: Request, res: Respons
     }
 
     res.json(list);
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
@@ -557,7 +566,7 @@ const handleBookingVehiclesAutocomplete = async (req: Request, res: Response) =>
     const col = await RRService.getBookingsCol();
     const { search, limit, status } = req.query;
 
-    const match: any = {
+    const match: Filter<IVehicle> = {
       vehicleRegNo: { $exists: true, $nin: [null, ''] },
       isDeleted: { $ne: true }
     };
@@ -572,7 +581,7 @@ const handleBookingVehiclesAutocomplete = async (req: Request, res: Response) =>
     }
 
     if (status && typeof status === 'string' && status.trim()) {
-      const statuses = status.split(',').map((s: string) => s.trim()).filter(Boolean);
+      const statuses = status.split(',').map((s: string) => s.trim()).filter(Boolean) as BookingStatus[];
       if (statuses.length === 1) {
         match.status = statuses[0];
       } else if (statuses.length > 1) {
@@ -580,7 +589,7 @@ const handleBookingVehiclesAutocomplete = async (req: Request, res: Response) =>
       }
     }
 
-    const pipeline: any[] = [
+    const pipeline: Document[] = [
       { $match: match },
       {
         $group: {
@@ -615,8 +624,8 @@ const handleBookingVehiclesAutocomplete = async (req: Request, res: Response) =>
 
     const list = await col.aggregate(pipeline).toArray();
     res.json(list);
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 };
 
@@ -626,7 +635,7 @@ rrRouter.get('/vehicles/autocomplete', authenticateRRToken, handleBookingVehicle
 
 
 // POST new vehicle (Admin only)
-rrRouter.post('/vehicles', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
+rrRouter.post('/vehicles', authenticateRRToken, requireAdmin, async (req: IRRRequest, res: Response) => {
   try {
     const data: Omit<IVehicle, 'createdAt'> = req.body;
     const col = await RRService.getVehiclesCol();
@@ -678,15 +687,15 @@ rrRouter.post('/vehicles', authenticateRRToken, requireAdmin, async (req: any, r
       req.userRole,
       `Vehicle added: ${newVehicle.manufacturer} ${newVehicle.name} (${newVehicle.model}, ${newVehicle.fuelType}, Odometer: ${newVehicle.odometer} km)`
     ).catch((logErr) => console.error('[AuditLog] Failed to log added vehicle:', logErr));
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
 // PUT update vehicle (Authenticated)
-rrRouter.put('/vehicles/:id', authenticateRRToken, async (req: any, res: Response) => {
+rrRouter.put('/vehicles/:id', authenticateRRToken, async (req: IRRRequest, res: Response) => {
   try {
-    const regNo = req.params.id;
+    const regNo = req.params['id'];
     const updateData = req.body;
     const col = await RRService.getVehiclesCol();
 
@@ -722,15 +731,15 @@ rrRouter.put('/vehicles/:id', authenticateRRToken, async (req: any, res: Respons
       req.userRole,
       `Vehicle ${vehicle.manufacturer} ${vehicle.name} updated: [${modifiedFields.join(', ') || 'details modified'}]`
     ).catch((logErr) => console.error('[AuditLog] Failed to log modified vehicle:', logErr));
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
 // DELETE vehicle (Admin only - Soft delete)
-rrRouter.delete('/vehicles/:id', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
+rrRouter.delete('/vehicles/:id', authenticateRRToken, requireAdmin, async (req: IRRRequest, res: Response) => {
   try {
-    const regNo = req.params.id;
+    const regNo = req.params['id'];
     const col = await RRService.getVehiclesCol();
 
     const vehicle = await col.findOne({ regNo });
@@ -769,8 +778,8 @@ rrRouter.delete('/vehicles/:id', authenticateRRToken, requireAdmin, async (req: 
       req.userRole,
       `Vehicle soft-deleted from fleet: ${vehicle.manufacturer} ${vehicle.name} (${vehicle.model})`
     ).catch((logErr) => console.error('[AuditLog] Failed to log soft-deleted vehicle:', logErr));
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
@@ -779,7 +788,7 @@ rrRouter.delete('/vehicles/:id', authenticateRRToken, requireAdmin, async (req: 
 ============================================================ */
 
 // POST trigger auto-close sweep for idle advance reservations
-rrRouter.post('/bookings/advance/auto-close', authenticateRRToken, async (req: any, res: Response) => {
+rrRouter.post('/bookings/advance/auto-close', authenticateRRToken, async (req: IRRRequest, res: Response) => {
   try {
     const result = await RRService.autoCloseIdleAdvanceBookings();
     res.json({
@@ -787,16 +796,16 @@ rrRouter.post('/bookings/advance/auto-close', authenticateRRToken, async (req: a
       message: `Auto-close sweep executed. Closed ${result.closedCount} idle advance booking(s).`,
       result,
     });
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
 // GET bookings (Authenticated; supports filtering & pagination from API side)
-rrRouter.get('/bookings', authenticateRRToken, async (req: any, res: Response) => {
+rrRouter.get('/bookings', authenticateRRToken, async (req: IRRRequest, res: Response) => {
   try {
     // Automatically sweep and close idle advance reservations (> 2 hours past pickup time)
-    const reqStatus = req.query.status;
+    const reqStatus = req.query['status'];
     if (!reqStatus || (typeof reqStatus === 'string' && (reqStatus.includes('reserved') || reqStatus.includes('cancelled')))) {
       await RRService.autoCloseIdleAdvanceBookings().catch((err) =>
         console.error('[AutoCloseSweep] Failed to auto-close idle advance bookings:', err)
@@ -817,17 +826,17 @@ rrRouter.get('/bookings', authenticateRRToken, async (req: any, res: Response) =
       all
     } = req.query;
 
-    const andConditions: any[] = [];
+    const andConditions: Filter<IBooking>[] = [];
 
     // Filter out soft-deleted bookings by default, unless explicitly requested or querying cancelled records (e.g. Historical Logs)
     const hasCancelledStatus = typeof status === 'string' && status.includes('cancelled');
-    if (req.query.includeDeleted !== 'true' && !hasCancelledStatus) {
+    if (req.query['includeDeleted'] !== 'true' && !hasCancelledStatus) {
       andConditions.push({ isDeleted: { $ne: true } });
     }
 
     // Status filter (single or comma-separated, e.g. "completed,cancelled")
     if (status && typeof status === 'string' && status.trim()) {
-      const statuses = status.split(',').map((s: string) => s.trim()).filter(Boolean);
+      const statuses = status.split(',').map((s: string) => s.trim()).filter(Boolean) as BookingStatus[];
       if (statuses.length === 1) {
         andConditions.push({ status: statuses[0] });
       } else if (statuses.length > 1) {
@@ -862,21 +871,21 @@ rrRouter.get('/bookings', authenticateRRToken, async (req: any, res: Response) =
 
     // Date range filter (from and/or to) on createdAt or pickupDateTime
     if (from || to) {
-      const dateOrClauses: any[] = [];
+      const dateOrClauses: Filter<IBooking>[] = [];
       const fromStr = typeof from === 'string' && from.trim() ? from.trim() : null;
       const toStr = typeof to === 'string' && to.trim() ? to.trim() : null;
 
       // Filter for createdAt
-      const createdCond: any = {};
-      if (fromStr) createdCond.$gte = `${fromStr}T00:00:00.000Z`;
-      if (toStr) createdCond.$lte = `${toStr}T23:59:59.999Z`;
-      dateOrClauses.push({ createdAt: createdCond });
+      const createdCond: Record<string, string> = {};
+      if (fromStr) createdCond['$gte'] = `${fromStr}T00:00:00.000Z`;
+      if (toStr) createdCond['$lte'] = `${toStr}T23:59:59.999Z`;
+      dateOrClauses.push({ createdAt: createdCond as unknown as string });
 
       // Filter for pickupDateTime
-      const pickupCond: any = {};
-      if (fromStr) pickupCond.$gte = fromStr;
-      if (toStr) pickupCond.$lte = `${toStr}T23:59:59.999Z`;
-      dateOrClauses.push({ pickupDateTime: pickupCond });
+      const pickupCond: Record<string, string> = {};
+      if (fromStr) pickupCond['$gte'] = fromStr;
+      if (toStr) pickupCond['$lte'] = `${toStr}T23:59:59.999Z`;
+      dateOrClauses.push({ pickupDateTime: pickupCond as unknown as string });
 
       andConditions.push({ $or: dateOrClauses });
     }
@@ -901,7 +910,8 @@ rrRouter.get('/bookings', authenticateRRToken, async (req: any, res: Response) =
     // Admin has full view of all rental history records.
     // Employees can only see history of bookings they personally booked or ended.
     if (req.userRole !== 'admin') {
-      const isHistoryFilter = (status && (status.includes('completed') || status.includes('cancelled'))) || req.query.history === 'true';
+      const statusStr = typeof status === 'string' ? status : '';
+      const isHistoryFilter = (statusStr && (statusStr.includes('completed') || statusStr.includes('cancelled'))) || req.query['history'] === 'true';
       if (isHistoryFilter) {
         andConditions.push({
           $or: [
@@ -948,13 +958,13 @@ rrRouter.get('/bookings', authenticateRRToken, async (req: any, res: Response) =
       limit: limitNum,
       totalPages: Math.ceil(total / limitNum) || 1
     });
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
 // POST create booking or advance reservation (Authenticated - records who booked)
-rrRouter.post('/bookings', authenticateRRToken, async (req: any, res: Response) => {
+rrRouter.post('/bookings', authenticateRRToken, async (req: IRRRequest, res: Response) => {
   try {
     const bookingData: Omit<IBooking, 'id' | 'createdAt'> = req.body;
     const bookingCol = await RRService.getBookingsCol();
@@ -1111,7 +1121,7 @@ rrRouter.post('/bookings', authenticateRRToken, async (req: any, res: Response) 
         {
           $set: {
             status: 'in_booking',
-            bookingId: bookingId,
+            bookingId: bookingId || null,
             updatedAt: new Date().toISOString()
           }
         }
@@ -1151,15 +1161,15 @@ rrRouter.post('/bookings', authenticateRRToken, async (req: any, res: Response) 
         ? `Advance booking created (${bookingId}) for ${newBooking.renterFirstName} ${newBooking.renterSecondName} (${newBooking.renterPhone}) | Vehicle: ${newBooking.vehicleRegNo} | Schedule: ${newBooking.pickupDateTime} to ${newBooking.returnDateTime} | Advance Paid: ₹${newBooking.amountPaid || '0'}`
         : `Booking started for customer ${newBooking.renterFirstName} ${newBooking.renterSecondName} (${newBooking.renterPhone}) | Vehicle: ${newBooking.vehicleRegNo} (${selectedVehicle.manufacturer} ${selectedVehicle.name}) | Pickup: ${newBooking.pickupDateTime} | Return: ${newBooking.returnDateTime} | Total: ₹${newBooking.finalRentalAmount}`
     ).catch((logErr) => console.error('[AuditLog] Failed to log booking start:', logErr));
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
 // DELETE booking (Admin only for active/completed, or any staff for reserved bookings - Soft delete)
-rrRouter.delete('/bookings/:id', authenticateRRToken, async (req: any, res: Response) => {
+rrRouter.delete('/bookings/:id', authenticateRRToken, async (req: IRRRequest, res: Response) => {
   try {
-    const bookingId = req.params.id;
+    const bookingId = String(req.params['id'] || '');
     const bookingCol = await RRService.getBookingsCol();
     const vehCol = await RRService.getVehiclesCol();
 
@@ -1170,9 +1180,9 @@ rrRouter.delete('/bookings/:id', authenticateRRToken, async (req: any, res: Resp
     }
 
     const body = req.body || {};
-    const deletionReason = body.deletionReason || body.reasonForDeletion || req.query.deletionReason || req.query.reasonForDeletion || null;
-    const returnAmount = body.returnAmount !== undefined ? String(body.returnAmount) : (req.query.returnAmount !== undefined ? String(req.query.returnAmount) : null);
-    const returnAmountMode = body.returnAmountMode || req.query.returnAmountMode || null;
+    const deletionReason = body.deletionReason || body.reasonForDeletion || req.query['deletionReason'] || req.query['reasonForDeletion'] || null;
+    const returnAmount = body.returnAmount !== undefined ? String(body.returnAmount) : (req.query['returnAmount'] !== undefined ? String(req.query['returnAmount']) : null);
+    const returnAmountMode = body.returnAmountMode || req.query['returnAmountMode'] || null;
 
     // Allow admin, or any staff when reason for deletion and refund details are provided, or any staff for reserved bookings
     const hasDeletionDetails = Boolean(deletionReason && returnAmountMode);
@@ -1244,15 +1254,15 @@ rrRouter.delete('/bookings/:id', authenticateRRToken, async (req: any, res: Resp
       deleterRole,
       auditDetail
     ).catch((logErr) => console.error('[AuditLog] Failed to log booking delete:', logErr));
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
 // POST close advance booking manually (with checkbook / refund tracking)
-rrRouter.post('/bookings/:id/close-advance', authenticateRRToken, async (req: any, res: Response) => {
+rrRouter.post('/bookings/:id/close-advance', authenticateRRToken, async (req: IRRRequest, res: Response) => {
   try {
-    const bookingId = req.params.id;
+    const bookingId = String(req.params['id'] || '');
     const bookingCol = await RRService.getBookingsCol();
     const vehCol = await RRService.getVehiclesCol();
     const empCol = await RRService.getEmployeesCol();
@@ -1348,15 +1358,15 @@ rrRouter.post('/bookings/:id/close-advance', authenticateRRToken, async (req: an
       closerRole,
       `Advance reservation ${bookingId} for vehicle ${booking.vehicleRegNo} closed by ${closerName}. Reason: "${closeReason}". ${returnSummary}. Customer: ${booking.renterFirstName} ${booking.renterSecondName} (${booking.renterPhone}).`
     ).catch((logErr) => console.error('[AuditLog] Failed to log advance booking closure:', logErr));
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
 // PUT update booking / end booking (Authenticated - records who ended)
-rrRouter.put('/bookings/:id', authenticateRRToken, async (req: any, res: Response) => {
+rrRouter.put('/bookings/:id', authenticateRRToken, async (req: IRRRequest, res: Response) => {
   try {
-    const bookingId = req.params.id;
+    const bookingId = String(req.params['id'] || '');
     const updateData = req.body;
     const bookingCol = await RRService.getBookingsCol();
     const vehCol = await RRService.getVehiclesCol();
@@ -1430,14 +1440,14 @@ rrRouter.put('/bookings/:id', authenticateRRToken, async (req: any, res: Respons
       enderRole = req.userRole || staff?.role || 'employee';
     }
 
-    const setDoc: any = {
+    const setDoc: Record<string, unknown> = {
       ...updateData,
     };
     if (isClosing) {
-      setDoc.endedAt = updateData.endedAt || new Date().toISOString();
-      setDoc.endedBy = req.userId || 'RRA001';
-      setDoc.endedByName = enderName;
-      setDoc.endedByRole = enderRole;
+      setDoc['endedAt'] = updateData.endedAt || new Date().toISOString();
+      setDoc['endedBy'] = req.userId || 'RRA001';
+      setDoc['endedByName'] = enderName;
+      setDoc['endedByRole'] = enderRole;
     }
 
     await bookingCol.updateOne(
@@ -1449,7 +1459,7 @@ rrRouter.put('/bookings/:id', authenticateRRToken, async (req: any, res: Respons
 
     // Synchronize vehicle table ONLY when booking is closed / completed
     if (updateData.status === 'completed') {
-      const vehicleUpdateDoc: any = {
+      const vehicleUpdateDoc: Partial<IVehicle> = {
         status: 'available',
         bookingId: null,
         updatedAt: new Date().toISOString()
@@ -1487,7 +1497,7 @@ rrRouter.put('/bookings/:id', authenticateRRToken, async (req: any, res: Respons
         {
           $set: {
             status: 'in_booking',
-            bookingId: bookingId,
+            bookingId: bookingId || null,
             updatedAt: new Date().toISOString()
           }
         }
@@ -1504,7 +1514,9 @@ rrRouter.put('/bookings/:id', authenticateRRToken, async (req: any, res: Respons
       const odoNote = updateData.vehicleOdometerEnd ? ` | Final Odo: ${updateData.vehicleOdometerEnd} km` : '';
 
       // Dispatch 24-hour time-limited tax invoice link via WhatsApp to customer mobile
-      const clientBaseUrl = (req.headers.origin as string) || (req.headers.referer as string) || undefined;
+      const originHeader = Array.isArray(req.headers.origin) ? req.headers.origin[0] : req.headers.origin;
+      const refererHeader = Array.isArray(req.headers.referer) ? req.headers.referer[0] : req.headers.referer;
+      const clientBaseUrl = originHeader || refererHeader || undefined;
       RRWhatsAppService.getConfig()
         .then((waConfig) => {
           if (waConfig.generalSettings.sendAutomaticEndBookingInvoice) {
@@ -1551,15 +1563,15 @@ rrRouter.put('/bookings/:id', authenticateRRToken, async (req: any, res: Respons
         `Booking modified for vehicle ${booking.vehicleRegNo}: [${modifiedFields || 'Details updated'}]`
       ).catch((logErr) => console.error('[AuditLog] Failed to log booking modification:', logErr));
     }
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
 // POST record customer intimation for a booking (Authenticated)
-rrRouter.post('/bookings/:id/customer-intimation', authenticateRRToken, async (req: any, res: Response) => {
+rrRouter.post('/bookings/:id/customer-intimation', authenticateRRToken, async (req: IRRRequest, res: Response) => {
   try {
-    const bookingId = req.params.id;
+    const bookingId = String(req.params['id'] || '');
     const { intimationType, notes, expectedReturnDateTime } = req.body;
 
     if (!intimationType || !notes) {
@@ -1584,13 +1596,13 @@ rrRouter.post('/bookings/:id/customer-intimation', authenticateRRToken, async (r
       intimationType,
       notes,
       expectedReturnDateTime: expectedReturnDateTime || undefined,
-      recordedBy: req.userId,
+      recordedBy: req.userId || 'STAFF',
       recordedByName: staffName,
       recordedByRole: req.userRole || 'employee',
       recordedAt: new Date().toISOString()
     };
 
-    const updateDoc: any = {
+    const updateDoc: Record<string, unknown> = {
       $push: { intimations: intimationRecord },
       $set: {
         lastIntimation: intimationRecord,
@@ -1599,7 +1611,7 @@ rrRouter.post('/bookings/:id/customer-intimation', authenticateRRToken, async (r
     };
 
     if (expectedReturnDateTime) {
-      updateDoc.$set.returnDateTime = expectedReturnDateTime;
+      (updateDoc['$set'] as Record<string, unknown>)['returnDateTime'] = expectedReturnDateTime;
     }
 
     await bookingCol.updateOne({ id: bookingId }, updateDoc);
@@ -1620,9 +1632,9 @@ rrRouter.post('/bookings/:id/customer-intimation', authenticateRRToken, async (r
       req.userRole,
       logDetails
     ).catch((logErr) => console.error('[AuditLog] Failed to log customer intimation:', logErr));
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Error recording customer intimation:', err);
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
@@ -1635,7 +1647,7 @@ rrRouter.post('/bookings/:id/customer-intimation', authenticateRRToken, async (r
 ============================================================ */
 
 // GET all employees (Admin only)
-rrRouter.get('/employees', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
+rrRouter.get('/employees', authenticateRRToken, requireAdmin, async (req: IRRRequest, res: Response) => {
   try {
     const col = await RRService.getEmployeesCol();
 
@@ -1652,8 +1664,8 @@ rrRouter.get('/employees', authenticateRRToken, requireAdmin, async (req: any, r
       }
     );
 
-    const filter: any = {};
-    if (req.query.includeDeleted !== 'true') {
+    const filter: Filter<IEmployee> = {};
+    if (req.query['includeDeleted'] !== 'true') {
       filter.isDeleted = { $ne: true };
     }
     const list = await col.find(filter).toArray();
@@ -1665,14 +1677,14 @@ rrRouter.get('/employees', authenticateRRToken, requireAdmin, async (req: any, r
     }));
 
     res.json(normalizedList);
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
 // POST create employee (Admin only)
 // New users are created with status: 'pending_activation' and require Admin activation before first login
-rrRouter.post('/employees', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
+rrRouter.post('/employees', authenticateRRToken, requireAdmin, async (req: IRRRequest, res: Response) => {
   try {
     const data: Omit<IEmployee, 'id' | 'createdAt'> = req.body;
     const col = await RRService.getEmployeesCol();
@@ -1734,16 +1746,16 @@ rrRouter.post('/employees', authenticateRRToken, requireAdmin, async (req: any, 
       req.userRole,
       `Employee registered (Pending Activation): ${newEmp.firstName} ${newEmp.lastName} (Role: ${newEmp.role.toUpperCase()}, Phone: ${newEmp.phone})`
     ).catch((logErr) => console.error('[AuditLog] Failed to log added employee:', logErr));
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
 // PUT activate employee (Admin only)
 // Activates a pending or deactivated user so they can login and configure password
-rrRouter.put('/employees/:id/activate', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
+rrRouter.put('/employees/:id/activate', authenticateRRToken, requireAdmin, async (req: IRRRequest, res: Response) => {
   try {
-    const empId = req.params.id;
+    const empId = req.params['id'];
     const col = await RRService.getEmployeesCol();
 
     const emp = await col.findOne({ id: empId, isDeleted: { $ne: true } });
@@ -1774,16 +1786,16 @@ rrRouter.put('/employees/:id/activate', authenticateRRToken, requireAdmin, async
       req.userRole,
       `Administrator activated user ${emp.firstName} ${emp.lastName} (${empId}). Account status changed to ACTIVE.`
     ).catch((logErr) => console.error('[AuditLog] Failed to log user activation:', logErr));
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
 // POST reset employee password (Admin only)
 // Resets user password to temporary password or DOB, and forces password change on next login
-rrRouter.post('/employees/:id/reset-password', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
+rrRouter.post('/employees/:id/reset-password', authenticateRRToken, requireAdmin, async (req: IRRRequest, res: Response) => {
   try {
-    const empId = req.params.id;
+    const empId = req.params['id'];
     const { temporaryPassword } = req.body;
     const col = await RRService.getEmployeesCol();
 
@@ -1826,15 +1838,15 @@ rrRouter.post('/employees/:id/reset-password', authenticateRRToken, requireAdmin
       req.userRole,
       `Administrator initiated password reset for ${emp.firstName} ${emp.lastName} (${empId}). Forced password update enabled on next login.`
     ).catch((logErr) => console.error('[AuditLog] Failed to log admin password reset:', logErr));
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
 // PUT update employee (Admin only)
-rrRouter.put('/employees/:id', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
+rrRouter.put('/employees/:id', authenticateRRToken, requireAdmin, async (req: IRRRequest, res: Response) => {
   try {
-    const empId = req.params.id;
+    const empId = req.params['id'];
     const updateData = req.body;
     const col = await RRService.getEmployeesCol();
 
@@ -1881,15 +1893,15 @@ rrRouter.put('/employees/:id', authenticateRRToken, requireAdmin, async (req: an
       req.userRole,
       `Updated staff ${emp.firstName} ${emp.lastName}: [${modDetails || 'profile modified'}]`
     ).catch((logErr) => console.error('[AuditLog] Failed to log modified employee:', logErr));
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
 // DELETE employee (Admin only - Soft delete)
-rrRouter.delete('/employees/:id', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
+rrRouter.delete('/employees/:id', authenticateRRToken, requireAdmin, async (req: IRRRequest, res: Response) => {
   try {
-    const empId = req.params.id;
+    const empId = req.params['id'];
     const col = await RRService.getEmployeesCol();
 
     if (req.userId === empId) {
@@ -1924,9 +1936,9 @@ rrRouter.delete('/employees/:id', authenticateRRToken, requireAdmin, async (req:
       req.userRole,
       `Employee soft-deleted: ${emp.firstName} ${emp.lastName} (Role: ${emp.role.toUpperCase()}, Phone: ${emp.phone})`
     ).catch((logErr) => console.error('[AuditLog] Failed to log soft-deleted employee:', logErr));
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Error deleting employee:', err);
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
@@ -1935,20 +1947,21 @@ rrRouter.delete('/employees/:id', authenticateRRToken, requireAdmin, async (req:
 ============================================================ */
 
 // GET logs (Admin only)
-rrRouter.get('/logs', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
+rrRouter.get('/logs', authenticateRRToken, requireAdmin, async (req: IRRRequest, res: Response) => {
   try {
     const col = await RRService.getLogsCol();
     const { from, to, page, limit, search, all } = req.query;
 
-    const query: any = {};
+    const query: Filter<ILog> = {};
     if (from || to) {
-      query.timestamp = {};
+      const timeCond: Record<string, Date> = {};
       if (from) {
-        query.timestamp.$gte = new Date(from as string + 'T00:00:00');
+        timeCond['$gte'] = new Date(from as string + 'T00:00:00');
       }
       if (to) {
-        query.timestamp.$lte = new Date(to as string + 'T23:59:59.999');
+        timeCond['$lte'] = new Date(to as string + 'T23:59:59.999');
       }
+      query['timestamp'] = timeCond as unknown as Date;
     }
 
     if (search && typeof search === 'string' && search.trim()) {
@@ -1984,8 +1997,8 @@ rrRouter.get('/logs', authenticateRRToken, requireAdmin, async (req: any, res: R
       limit: limitNum,
       totalPages: Math.ceil(total / limitNum) || 1
     });
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
@@ -1993,7 +2006,7 @@ rrRouter.get('/logs', authenticateRRToken, requireAdmin, async (req: any, res: R
    DASHBOARD STATS & AVAILABILITY ENHANCEMENTS
 ============================================================ */
 
-rrRouter.get('/dashboard/stats', authenticateRRToken, async (req: any, res: Response) => {
+rrRouter.get('/dashboard/stats', authenticateRRToken, async (req: IRRRequest, res: Response) => {
   try {
     const vehCol = await RRService.getVehiclesCol();
     const bookingCol = await RRService.getBookingsCol();
@@ -2004,7 +2017,7 @@ rrRouter.get('/dashboard/stats', authenticateRRToken, async (req: any, res: Resp
       vehCol.countDocuments({ status: 'available', isDeleted: { $ne: true } }),
       vehCol.countDocuments({ status: { $in: ['contract', 'in_contract'] }, isDeleted: { $ne: true } }),
       bookingCol.countDocuments({ status: 'active', isDeleted: { $ne: true } }),
-      bookingCol.countDocuments({ status: 'active', isDeleted: { $ne: true }, pendingAmount: { $nin: ['0', '', null] } } as any),
+      bookingCol.countDocuments({ status: 'active', isDeleted: { $ne: true }, pendingAmount: { $nin: ['0', '', null] } } as Filter<IBooking>),
       bookingCol.countDocuments({ status: 'reserved', isDeleted: { $ne: true } }),
     ]);
 
@@ -2017,14 +2030,14 @@ rrRouter.get('/dashboard/stats', authenticateRRToken, async (req: any, res: Resp
       pendingPayments,
       reserved,
     });
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
-rrRouter.get('/vehicles/:id/availability', authenticateRRToken, async (req: any, res: Response) => {
+rrRouter.get('/vehicles/:id/availability', authenticateRRToken, async (req: IRRRequest, res: Response) => {
   try {
-    const regNo = req.params.id;
+    const regNo = req.params['id'];
     const col = await RRService.getVehiclesCol();
     const vehicle = await col.findOne({ regNo, isDeleted: { $ne: true } });
     if (!vehicle) {
@@ -2033,8 +2046,8 @@ rrRouter.get('/vehicles/:id/availability', authenticateRRToken, async (req: any,
     }
     const isAvailable = vehicle.status === 'available';
     res.json({ regNo, isAvailable, status: vehicle.status });
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
@@ -2043,12 +2056,12 @@ rrRouter.get('/vehicles/:id/availability', authenticateRRToken, async (req: any,
 ============================================================ */
 
 // GET /api/rr/announcements - Get ticker config and all announcements (Admin)
-rrRouter.get('/announcements', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
+rrRouter.get('/announcements', authenticateRRToken, requireAdmin, async (req: IRRRequest, res: Response) => {
   try {
     const settingsCol = await RRService.getSettingsCol();
     const announcementsCol = await RRService.getAnnouncementsCol();
 
-    const tickerDoc = await settingsCol.findOne({ key: 'rr_ticker' });
+    const tickerDoc = await settingsCol.findOne<IRRScrollingTicker>({ key: 'rr_ticker' });
     const ticker: IRRScrollingTicker = tickerDoc
       ? {
           message: tickerDoc.message || '',
@@ -2073,13 +2086,13 @@ rrRouter.get('/announcements', authenticateRRToken, requireAdmin, async (req: an
       .toArray();
 
     res.json({ ticker, items });
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
 // PUT /api/rr/announcements/ticker - Update scrolling ticker settings (Admin)
-rrRouter.put('/announcements/ticker', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
+rrRouter.put('/announcements/ticker', authenticateRRToken, requireAdmin, async (req: IRRRequest, res: Response) => {
   try {
     const settingsCol = await RRService.getSettingsCol();
     const { message, badgeText, isActive, speed, linkText, linkUrl } = req.body;
@@ -2100,7 +2113,7 @@ rrRouter.put('/announcements/ticker', authenticateRRToken, requireAdmin, async (
 
     await settingsCol.updateOne(
       { key: 'rr_ticker' },
-      { $set: updateDoc },
+      { $set: updateDoc as unknown as Record<string, unknown> },
       { upsert: true }
     );
 
@@ -2112,13 +2125,13 @@ rrRouter.put('/announcements/ticker', authenticateRRToken, requireAdmin, async (
     );
 
     res.json({ success: true, message: 'Ticker settings updated successfully', ticker: updateDoc });
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
 // POST /api/rr/announcements - Create new announcement card (Admin)
-rrRouter.post('/announcements', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
+rrRouter.post('/announcements', authenticateRRToken, requireAdmin, async (req: IRRRequest, res: Response) => {
   try {
     const announcementsCol = await RRService.getAnnouncementsCol();
     const {
@@ -2177,15 +2190,15 @@ rrRouter.post('/announcements', authenticateRRToken, requireAdmin, async (req: a
     );
 
     res.status(201).json({ success: true, message: 'Announcement created successfully', item: newItem });
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
 // PUT /api/rr/announcements/:id - Update announcement card (Admin)
-rrRouter.put('/announcements/:id', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
+rrRouter.put('/announcements/:id', authenticateRRToken, requireAdmin, async (req: IRRRequest, res: Response) => {
   try {
-    const id = req.params.id;
+    const id = String(req.params['id'] || '');
     if (!ObjectId.isValid(id)) {
       res.status(400).json({ error: 'Bad Request', message: 'Invalid announcement ID' });
       return;
@@ -2231,7 +2244,7 @@ rrRouter.put('/announcements/:id', authenticateRRToken, requireAdmin, async (req
     if (validFrom !== undefined) updateFields.validFrom = validFrom;
     if (validUntil !== undefined) updateFields.validUntil = validUntil;
     if (ctaText !== undefined) updateFields.ctaText = ctaText.trim();
-    if (ctaAction !== undefined && ['call', 'whatsapp', 'link', 'none'].includes(ctaAction)) updateFields.ctaAction = ctaAction;
+    if (ctaAction !== undefined && ['call', 'whatsapp', 'link', 'none'].includes(ctaAction as 'call' | 'whatsapp' | 'link' | 'none')) updateFields.ctaAction = ctaAction;
     if (ctaLink !== undefined) updateFields.ctaLink = ctaLink.trim();
     if (icon !== undefined) updateFields.icon = icon.trim();
     if (priority !== undefined) updateFields.priority = Number(priority) || 0;
@@ -2247,15 +2260,15 @@ rrRouter.put('/announcements/:id', authenticateRRToken, requireAdmin, async (req
     );
 
     res.json({ success: true, message: 'Announcement updated successfully' });
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
 // PATCH /api/rr/announcements/:id/toggle - Toggle active status (Admin)
-rrRouter.patch('/announcements/:id/toggle', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
+rrRouter.patch('/announcements/:id/toggle', authenticateRRToken, requireAdmin, async (req: IRRRequest, res: Response) => {
   try {
-    const id = req.params.id;
+    const id = String(req.params['id'] || '');
     if (!ObjectId.isValid(id)) {
       res.status(400).json({ error: 'Bad Request', message: 'Invalid announcement ID' });
       return;
@@ -2284,15 +2297,15 @@ rrRouter.patch('/announcements/:id/toggle', authenticateRRToken, requireAdmin, a
     );
 
     res.json({ success: true, isActive: newActive, message: `Announcement ${newActive ? 'activated' : 'deactivated'}` });
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
 // DELETE /api/rr/announcements/:id - Soft-delete announcement (Admin)
-rrRouter.delete('/announcements/:id', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
+rrRouter.delete('/announcements/:id', authenticateRRToken, requireAdmin, async (req: IRRRequest, res: Response) => {
   try {
-    const id = req.params.id;
+    const id = String(req.params['id'] || '');
     if (!ObjectId.isValid(id)) {
       res.status(400).json({ error: 'Bad Request', message: 'Invalid announcement ID' });
       return;
@@ -2321,16 +2334,16 @@ rrRouter.delete('/announcements/:id', authenticateRRToken, requireAdmin, async (
     );
 
     res.json({ success: true, message: 'Announcement deleted successfully' });
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
 // GET /api/rr/home-content - Get current homepage CMS configuration (Admin)
-rrRouter.get('/home-content', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
+rrRouter.get('/home-content', authenticateRRToken, requireAdmin, async (req: IRRRequest, res: Response) => {
   try {
     const settingsCol = await RRService.getSettingsCol();
-    const doc = await settingsCol.findOne({ key: 'rr_home_content' });
+    const doc = await settingsCol.findOne<{ key: string; content?: IRRHomePageContent; updatedAt?: string; updatedBy?: string }>({ key: 'rr_home_content' });
 
     if (!doc || !doc.content) {
       res.json(DEFAULT_RR_HOMEPAGE_CONTENT);
@@ -2384,13 +2397,13 @@ rrRouter.get('/home-content', authenticateRRToken, requireAdmin, async (req: any
     };
 
     res.json(merged);
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
 // PUT /api/rr/home-content - Update dynamic homepage content (Admin)
-rrRouter.put('/home-content', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
+rrRouter.put('/home-content', authenticateRRToken, requireAdmin, async (req: IRRRequest, res: Response) => {
   try {
     const payload = req.body;
     if (!payload || typeof payload !== 'object') {
@@ -2468,13 +2481,13 @@ rrRouter.put('/home-content', authenticateRRToken, requireAdmin, async (req: any
     );
 
     res.json({ success: true, message: 'Homepage content saved successfully', content: contentToSave });
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
 // POST /api/rr/home-content/reset - Restore factory default homepage content (Admin)
-rrRouter.post('/home-content/reset', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
+rrRouter.post('/home-content/reset', authenticateRRToken, requireAdmin, async (req: IRRRequest, res: Response) => {
   try {
     const settingsCol = await RRService.getSettingsCol();
     const staffId = req.userId || req.user?.id || 'ADMIN';
@@ -2505,8 +2518,8 @@ rrRouter.post('/home-content/reset', authenticateRRToken, requireAdmin, async (r
       message: 'Homepage content reset to factory defaults successfully',
       content: DEFAULT_RR_HOMEPAGE_CONTENT,
     });
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
@@ -2524,9 +2537,9 @@ rrRouter.post(
       { name: 'screenshot', maxCount: 1 },
       { name: 'image', maxCount: 1 },
       { name: 'file', maxCount: 1 },
-    ])(req, res, (err: any) => {
+    ])(req, res, (err: unknown) => {
       if (err) {
-        res.status(400).json({ error: 'Bad Request', message: err.message });
+        res.status(400).json({ error: 'Bad Request', message: (err as Error).message });
       } else {
         next();
       }
@@ -2536,10 +2549,10 @@ rrRouter.post(
 );
 
 // POST submit new feedback (Authenticated)
-rrRouter.post('/feedback', authenticateRRToken, async (req: Request, res: Response) => {
+rrRouter.post('/feedback', authenticateRRToken, async (req: IRRRequest, res: Response) => {
   try {
     const { page, issueType, description, imageUrl, imageKey, imageOriginalName } = req.body;
-    const staffId = (req as any).userId;
+    const staffId = req.userId || 'STAFF';
 
     const validPages = RR_FEEDBACK_PAGES.map((p) => p.value);
     if (!page || !validPages.includes(page)) {
@@ -2570,9 +2583,9 @@ rrRouter.post('/feedback', authenticateRRToken, async (req: Request, res: Respon
 
     const empCol = await RRService.getEmployeesCol();
     const emp = await empCol.findOne({ id: staffId });
-    const userName = emp ? `${emp.firstName || ''} ${emp.lastName || ''}`.trim() || emp.id : staffId;
+    const userName = (emp ? `${emp.firstName || ''} ${emp.lastName || ''}`.trim() || emp.id : staffId) || 'Staff';
     const userEmail = emp?.email || '';
-    const userRole = (emp?.role as any) || (req as any).userRole || 'employee';
+    const userRole: RRRole = (emp?.role as RRRole) || (req.userRole === 'admin' ? 'admin' : 'employee');
 
     const feedbackId = `RRFB-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
     const now = new Date().toISOString();
@@ -2597,7 +2610,7 @@ rrRouter.post('/feedback', authenticateRRToken, async (req: Request, res: Respon
     };
 
     const feedbackCol = await RRService.getFeedbackCol();
-    await feedbackCol.insertOne(feedbackDoc as any);
+    await feedbackCol.insertOne(feedbackDoc as OptionalUnlessRequiredId<IRRFeedback>);
 
     await RRService.logActivity(
       'SUBMIT_FEEDBACK',
@@ -2611,15 +2624,15 @@ rrRouter.post('/feedback', authenticateRRToken, async (req: Request, res: Respon
       message: 'Feedback submitted successfully. Thank you for helping us improve!',
       data: feedbackDoc,
     });
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
 // GET current user's submitted feedbacks (Authenticated)
-rrRouter.get('/feedback/my', authenticateRRToken, async (req: Request, res: Response) => {
+rrRouter.get('/feedback/my', authenticateRRToken, async (req: IRRRequest, res: Response) => {
   try {
-    const staffId = (req as any).userId;
+    const staffId = req.userId;
     const feedbackCol = await RRService.getFeedbackCol();
     const feedbacks = await feedbackCol
       .find({ 'user.id': staffId })
@@ -2630,8 +2643,8 @@ rrRouter.get('/feedback/my', authenticateRRToken, async (req: Request, res: Resp
       success: true,
       data: feedbacks,
     });
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
@@ -2659,25 +2672,25 @@ rrRouter.get('/feedback/stats', authenticateRRToken, requireAdmin, async (_req: 
         closed,
       },
     });
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
 // GET all feedbacks with filtering and search (Admin only)
-rrRouter.get('/feedback', authenticateRRToken, requireAdmin, async (req: Request, res: Response) => {
+rrRouter.get('/feedback', authenticateRRToken, requireAdmin, async (req: IRRRequest, res: Response) => {
   try {
     const { status, page, issueType, search, limit, skip } = req.query;
-    const filter: any = {};
+    const filter: Filter<IRRFeedback> = {};
 
     if (status && typeof status === 'string' && status !== 'all') {
-      filter.status = status;
+      filter.status = status as RRFeedbackStatus;
     }
     if (page && typeof page === 'string' && page !== 'all') {
-      filter.page = page;
+      filter.page = page as RRFeedbackPage;
     }
     if (issueType && typeof issueType === 'string' && issueType !== 'all') {
-      filter.issueType = issueType;
+      filter.issueType = issueType as RRFeedbackIssueType;
     }
     if (search && typeof search === 'string' && search.trim()) {
       const searchRegex = safeRegex(search.trim(), 'i');
@@ -2709,17 +2722,17 @@ rrRouter.get('/feedback', authenticateRRToken, requireAdmin, async (req: Request
       total,
       data: feedbacks,
     });
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
 // PATCH update feedback status and admin notes (Admin only)
-rrRouter.patch('/feedback/:id/status', authenticateRRToken, requireAdmin, async (req: Request, res: Response) => {
+rrRouter.patch('/feedback/:id/status', authenticateRRToken, requireAdmin, async (req: IRRRequest, res: Response) => {
   try {
     const id = String(req.params['id']);
     const { status, adminNotes } = req.body;
-    const staffId = (req as any).userId;
+    const staffId = req.userId;
 
     const validStatuses: RRFeedbackStatus[] = [
       'open',
@@ -2754,7 +2767,7 @@ rrRouter.patch('/feedback/:id/status', authenticateRRToken, requireAdmin, async 
     }
 
     const now = new Date().toISOString();
-    const updateDoc: any = {
+    const updateDoc: Partial<IRRFeedback> = {
       status,
       updatedAt: now,
     };
@@ -2781,7 +2794,7 @@ rrRouter.patch('/feedback/:id/status', authenticateRRToken, requireAdmin, async 
     await RRService.logActivity(
       'UPDATE_FEEDBACK_STATUS',
       staffId,
-      (req as any).userRole || 'admin',
+      req.userRole || 'admin',
       `Updated feedback ${existing.id} status to "${status}"`
     );
 
@@ -2790,16 +2803,16 @@ rrRouter.patch('/feedback/:id/status', authenticateRRToken, requireAdmin, async 
       message: `Feedback ticket status updated to "${status}".`,
       data: updated,
     });
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
 // DELETE feedback (Admin only)
-rrRouter.delete('/feedback/:id', authenticateRRToken, requireAdmin, async (req: Request, res: Response) => {
+rrRouter.delete('/feedback/:id', authenticateRRToken, requireAdmin, async (req: IRRRequest, res: Response) => {
   try {
     const id = String(req.params['id']);
-    const staffId = (req as any).userId;
+    const staffId = req.userId;
 
     const feedbackCol = await RRService.getFeedbackCol();
     const isValidObjectId = ObjectId.isValid(id);
@@ -2823,7 +2836,7 @@ rrRouter.delete('/feedback/:id', authenticateRRToken, requireAdmin, async (req: 
     await RRService.logActivity(
       'DELETE_FEEDBACK',
       staffId,
-      (req as any).userRole || 'admin',
+      req.userRole || 'admin',
       `Deleted feedback ticket ${existing.id}`
     );
 
@@ -2831,8 +2844,8 @@ rrRouter.delete('/feedback/:id', authenticateRRToken, requireAdmin, async (req: 
       success: true,
       message: 'Feedback deleted successfully.',
     });
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
@@ -2845,13 +2858,13 @@ rrRouter.get('/whatsapp/config', authenticateRRToken, async (req: Request, res: 
   try {
     const config = await RRWhatsAppService.getConfig();
     res.json(config);
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
 // PUT /api/rr/whatsapp/config (Admin only)
-rrRouter.put('/whatsapp/config', authenticateRRToken, requireAdmin, async (req: any, res: Response) => {
+rrRouter.put('/whatsapp/config', authenticateRRToken, requireAdmin, async (req: IRRRequest, res: Response) => {
   try {
     const updated = await RRWhatsAppService.saveConfig(req.body, req.userId || 'admin');
     await RRService.logActivity(
@@ -2861,13 +2874,13 @@ rrRouter.put('/whatsapp/config', authenticateRRToken, requireAdmin, async (req: 
       `Updated WhatsApp configuration and message templates.`
     );
     res.json({ success: true, message: 'WhatsApp configuration updated successfully.', config: updated });
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
 // POST /api/rr/whatsapp/test (Admin only: test message dispatch)
-rrRouter.post('/whatsapp/test', authenticateRRToken, requireAdmin, async (req: any, res: Response): Promise<void> => {
+rrRouter.post('/whatsapp/test', authenticateRRToken, requireAdmin, async (req: IRRRequest, res: Response): Promise<void> => {
   try {
     const { phone, message } = req.body;
     if (!phone || !message) {
@@ -2891,17 +2904,17 @@ rrRouter.post('/whatsapp/test', authenticateRRToken, requireAdmin, async (req: a
       message: result.success ? 'Test WhatsApp message sent successfully.' : result.error,
       messageId: result.messageId,
     });
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
 // GET /api/rr/bookings/:id/whatsapp/preview (Authenticated staff)
-rrRouter.get('/bookings/:id/whatsapp/preview', authenticateRRToken, async (req: any, res: Response): Promise<void> => {
+rrRouter.get('/bookings/:id/whatsapp/preview', authenticateRRToken, async (req: IRRRequest, res: Response): Promise<void> => {
   try {
-    const bookingId = req.params.id;
-    const templateType = (req.query.templateType as IRRWhatsAppTemplateId) || 'active_reminder';
-    const customText = req.query.customText as string | undefined;
+    const bookingId = String(req.params['id'] || '');
+    const templateType = (req.query['templateType'] as IRRWhatsAppTemplateId) || 'active_reminder';
+    const customText = req.query['customText'] as string | undefined;
 
     const bookingsCol = await RRService.getBookingsCol();
     const booking = await bookingsCol.findOne({ id: bookingId, isDeleted: { $ne: true } });
@@ -2931,15 +2944,15 @@ rrRouter.get('/bookings/:id/whatsapp/preview', authenticateRRToken, async (req: 
       generalSettings: config.generalSettings,
       provider: config.provider,
     });
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
 // POST /api/rr/bookings/:id/whatsapp/send (Authenticated staff - manual or direct send)
-rrRouter.post('/bookings/:id/whatsapp/send', authenticateRRToken, async (req: any, res: Response): Promise<void> => {
+rrRouter.post('/bookings/:id/whatsapp/send', authenticateRRToken, async (req: IRRRequest, res: Response): Promise<void> => {
   try {
-    const bookingId = req.params.id;
+    const bookingId = String(req.params['id'] || '');
     const { templateType, customText } = req.body;
 
     if (!templateType) {
@@ -2950,7 +2963,9 @@ rrRouter.post('/bookings/:id/whatsapp/send', authenticateRRToken, async (req: an
     const empCol = await RRService.getEmployeesCol();
     const staff = await empCol.findOne({ id: req.userId });
     const staffName = staff ? `${staff.firstName} ${staff.lastName}`.trim() : (req.userId || 'Staff');
-    const clientBaseUrl = (req.headers.origin as string) || (req.headers.referer as string) || undefined;
+    const originHeader = Array.isArray(req.headers.origin) ? req.headers.origin[0] : req.headers.origin;
+    const refererHeader = Array.isArray(req.headers.referer) ? req.headers.referer[0] : req.headers.referer;
+    const clientBaseUrl = originHeader || refererHeader || undefined;
 
     const result = await RRWhatsAppService.sendBookingNotification(bookingId, templateType, {
       customText,
@@ -2962,13 +2977,13 @@ rrRouter.post('/bookings/:id/whatsapp/send', authenticateRRToken, async (req: an
     });
 
     res.json(result);
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 
 // POST /api/rr/whatsapp/run-scheduler-sweep (Admin only: manual sweep trigger)
-rrRouter.post('/whatsapp/run-scheduler-sweep', authenticateRRToken, requireAdmin, async (req: any, res: Response): Promise<void> => {
+rrRouter.post('/whatsapp/run-scheduler-sweep', authenticateRRToken, requireAdmin, async (req: IRRRequest, res: Response): Promise<void> => {
   try {
     const stats = await RRNotificationSchedulerService.runAutomatedNotificationSweep();
     res.json({
@@ -2976,8 +2991,8 @@ rrRouter.post('/whatsapp/run-scheduler-sweep', authenticateRRToken, requireAdmin
       message: 'Automated notification sweep completed successfully.',
       stats,
     });
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
   }
 });
 

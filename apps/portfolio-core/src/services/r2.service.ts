@@ -36,6 +36,12 @@ if (isR2Configured) {
 // Local mock storage base directory
 const MOCK_STORAGE_DIR = path.resolve(__dirname, '../../mock-storage');
 
+export interface IR2ObjectContent {
+  key: string;
+  size: number;
+  lastModified: Date;
+}
+
 export class R2Service {
   /**
    * Sanitizes key to prevent directory traversal in mock mode.
@@ -48,10 +54,11 @@ export class R2Service {
     return path.relative(MOCK_STORAGE_DIR, resolvedPath).replace(/\\/g, '/');
   }
 
+
   /**
    * Lists S3/R2 objects or mock files for the given prefix.
    */
-  static async listObjects(prefix: string) {
+  static async listObjects(prefix: string): Promise<{ commonPrefixes: string[]; contents: IR2ObjectContent[] }> {
     if (isR2Configured && s3Client) {
       const command = new ListObjectsV2Command({
         Bucket: bucketName,
@@ -190,15 +197,15 @@ export class R2Service {
         Key: key,
       });
       const response = await s3Client.send(command);
-      const streamToBuffer = async (stream: any): Promise<Buffer> => {
+      const streamToBuffer = async (stream: NodeJS.ReadableStream): Promise<Buffer> => {
         return new Promise((resolve, reject) => {
-          const chunks: any[] = [];
-          stream.on('data', (chunk: any) => chunks.push(chunk));
+          const chunks: Buffer[] = [];
+          stream.on('data', (chunk: Buffer) => chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)));
           stream.on('error', reject);
           stream.on('end', () => resolve(Buffer.concat(chunks)));
         });
       };
-      return streamToBuffer(response.Body);
+      return response.Body ? streamToBuffer(response.Body as unknown as NodeJS.ReadableStream) : Buffer.from([]);
     } else {
       return this.readMockFile(key);
     }
@@ -212,7 +219,7 @@ export class R2Service {
 
     const entries = fs.readdirSync(dirPath, { withFileTypes: true });
     const commonPrefixes: string[] = [];
-    const contents: any[] = [];
+    const contents: IR2ObjectContent[] = [];
 
     for (const entry of entries) {
       // Rebuild the key using prefix/name

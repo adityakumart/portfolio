@@ -110,13 +110,15 @@ app.get(['/', '/api'], (req, res) => {
 });
 
 // Centralized error handling middleware: prevents stack trace leaks and formats consistent JSON errors
-app.use((err: any, req: express.Request, res: express.Response, _next: express.NextFunction) => {
+app.use((err: unknown, req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error('Unhandled server error:', err);
-  const status = typeof err.status === 'number' ? err.status : (typeof err.statusCode === 'number' ? err.statusCode : 500);
+  const errObj = typeof err === 'object' && err !== null ? (err as Record<string, unknown>) : {};
+  const status = typeof errObj['status'] === 'number' ? (errObj['status'] as number) : (typeof errObj['statusCode'] === 'number' ? (errObj['statusCode'] as number) : 500);
   const isClientError = status >= 400 && status < 500;
+  const message = isClientError && typeof errObj['message'] === 'string' ? errObj['message'] : 'An unexpected error occurred. Please try again later.';
   res.status(status).json({
     error: isClientError ? 'Bad Request' : 'Internal Server Error',
-    message: isClientError ? err.message : 'An unexpected error occurred. Please try again later.',
+    message,
   });
 });
 

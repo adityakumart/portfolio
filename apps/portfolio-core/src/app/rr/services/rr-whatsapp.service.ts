@@ -1,6 +1,6 @@
 import * as jwt from 'jsonwebtoken';
-import { Collection } from 'mongodb';
-import { RRService } from '../rr.service';
+import { Collection, Document } from 'mongodb';
+import { RRService, IRRSettingRecord } from '../rr.service';
 import { getJwtSecret } from '../../../config/security';
 import {
   IBooking,
@@ -16,7 +16,7 @@ import {
 } from '../utils/template-interpolator';
 
 export class RRWhatsAppService {
-  private static async getSettingsCol(): Promise<Collection<any>> {
+  private static async getSettingsCol(): Promise<Collection<IRRSettingRecord>> {
     return await RRService.getSettingsCol();
   }
 
@@ -25,11 +25,11 @@ export class RRWhatsAppService {
    */
   static async getConfig(): Promise<IRRWhatsAppConfig> {
     const col = await this.getSettingsCol();
-    let doc = await col.findOne({ key: 'rr_whatsapp_config' });
+    let doc = (await col.findOne({ key: 'rr_whatsapp_config' })) as (IRRWhatsAppConfig & Document) | null;
 
     if (!doc) {
       const initialConfig = { ...DEFAULT_RR_WHATSAPP_CONFIG, updatedAt: new Date().toISOString() };
-      await col.insertOne(initialConfig);
+      await col.insertOne(initialConfig as IRRSettingRecord);
       return initialConfig;
     }
 
@@ -37,8 +37,9 @@ export class RRWhatsAppService {
     let hasMissingTemplates = false;
     const mergedTemplates = { ...doc.templates };
     for (const [key, tpl] of Object.entries(DEFAULT_RR_WHATSAPP_CONFIG.templates)) {
-      if (!mergedTemplates[key]) {
-        mergedTemplates[key] = tpl;
+      const tKey = key as IRRWhatsAppTemplateId;
+      if (!mergedTemplates[tKey]) {
+        mergedTemplates[tKey] = tpl;
         hasMissingTemplates = true;
       }
     }
@@ -82,7 +83,7 @@ export class RRWhatsAppService {
 
     await col.updateOne(
       { key: 'rr_whatsapp_config' },
-      { $set: merged },
+      { $set: merged as unknown as Record<string, unknown> },
       { upsert: true }
     );
 
@@ -130,13 +131,18 @@ export class RRWhatsAppService {
   } {
     try {
       const secret = getJwtSecret();
-      const decoded = jwt.verify(token, secret) as any;
+      const decoded = jwt.verify(token, secret) as jwt.JwtPayload & {
+        type?: string;
+        bookingId?: string;
+        phone?: string;
+      };
       if (decoded.type !== 'rr_invoice' || !decoded.bookingId) {
         return { valid: false, error: 'Invalid token structure' };
       }
       return { valid: true, bookingId: decoded.bookingId, phone: decoded.phone };
-    } catch (err: any) {
-      if (err.name === 'TokenExpiredError') {
+    } catch (err: unknown) {
+      const errorObj = err as { name?: string; message?: string };
+      if (errorObj?.name === 'TokenExpiredError') {
         return {
           valid: false,
           isExpired: true,
@@ -228,7 +234,7 @@ export class RRWhatsAppService {
           }),
         });
 
-        const data: any = await resp.json();
+        const data = (await resp.json()) as { error?: { message?: string }; messages?: Array<{ id?: string }> } | null;
         if (!resp.ok) {
           return {
             success: false,
@@ -241,8 +247,8 @@ export class RRWhatsAppService {
           provider: 'meta_cloud',
           messageId: data?.messages?.[0]?.id,
         };
-      } catch (err: any) {
-        return { success: false, provider: 'meta_cloud', error: err.message };
+      } catch (err: unknown) {
+        return { success: false, provider: 'meta_cloud', error: (err as Error).message };
       }
     }
 
@@ -267,13 +273,13 @@ export class RRWhatsAppService {
           body: formData.toString(),
         });
 
-        const data: any = await resp.json();
+        const data = (await resp.json()) as { message?: string; sid?: string } | null;
         if (!resp.ok) {
           return { success: false, provider: 'twilio', error: data?.message || 'Twilio send failed' };
         }
         return { success: true, provider: 'twilio', messageId: data?.sid };
-      } catch (err: any) {
-        return { success: false, provider: 'twilio', error: err.message };
+      } catch (err: unknown) {
+        return { success: false, provider: 'twilio', error: (err as Error).message };
       }
     }
 
@@ -288,8 +294,8 @@ export class RRWhatsAppService {
           return { success: false, provider: 'custom_webhook', error: `Webhook returned status ${resp.status}` };
         }
         return { success: true, provider: 'custom_webhook' };
-      } catch (err: any) {
-        return { success: false, provider: 'custom_webhook', error: err.message };
+      } catch (err: unknown) {
+        return { success: false, provider: 'custom_webhook', error: (err as Error).message };
       }
     }
 
@@ -366,7 +372,7 @@ export class RRWhatsAppService {
 
     // Update notification state in DB
     const nowIso = new Date().toISOString();
-    const updateField: any = {};
+    const updateField: Record<string, unknown> = {};
 
     if (templateId === 'new_booking') {
       updateField['notifications.newBookingSentAt'] = nowIso;
@@ -397,17 +403,17 @@ export class RRWhatsAppService {
       updateField['notifications.lastManualNotificationType'] = templateId;
     }
 
-    const incField: any = {};
+    const incField: Record<string, number> = {};
     if (templateId === 'pending_payment') {
       incField['notifications.pendingRemindersCount'] = 1;
     }
 
-    const updateQuery: any = { $set: updateField };
+    const updateQuery: { $set: Record<string, unknown>; $inc?: Record<string, number> } = { $set: updateField };
     if (Object.keys(incField).length > 0) {
       updateQuery.$inc = incField;
     }
 
-    await bookingsCol.updateOne({ id: bookingId }, updateQuery);
+    await bookingsCol.updateOne({ id: bookingId }, updateQuery as unknown as Parameters<typeof bookingsCol.updateOne>[1]);
 
     // Record audit log
     const sender = options?.isAutomated ? 'System Auto-Scheduler' : options?.sentByName || options?.sentBy || 'Staff';

@@ -12,7 +12,7 @@ export interface IPlannerNotificationDocument extends Document {
   type: PlannerNotificationType;
   title: string;
   message: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
   isRead: boolean;
   createdAt: Date;
   updatedAt: Date;

@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
-import { RRService } from './rr.service';
+import { Filter } from 'mongodb';
+import { RRService, IVehicle } from './rr.service';
 import { RRWhatsAppService } from './services/rr-whatsapp.service';
 import { safeRegex } from '../../utils/security/regex.util';
 import { DEFAULT_RR_HOMEPAGE_CONTENT, IRRHomePageContent } from '@portfolio/shared-types';
@@ -19,7 +20,7 @@ rrPublicRouter.get('/vehicles', async (req: Request, res: Response) => {
     const col = await RRService.getVehiclesCol();
     const { search, limit } = req.query;
 
-    const filter: any = {
+    const filter: Filter<IVehicle> = {
       isDeleted: { $ne: true },
       allowBooking: { $ne: false },
       status: { $nin: ['maintenance', 'contract', 'in_contract'] },
@@ -57,8 +58,9 @@ rrPublicRouter.get('/vehicles', async (req: Request, res: Response) => {
 
     const list = await cursor.toArray();
     res.json(list);
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Internal Server Error';
+    res.status(500).json({ error: 'Internal Server Error', message });
   }
 });
 
@@ -69,7 +71,7 @@ rrPublicRouter.get('/announcements', async (req: Request, res: Response) => {
     const announcementsCol = await RRService.getAnnouncementsCol();
 
     // 1. Fetch live ticker configuration
-    const tickerDoc = await settingsCol.findOne({ key: 'rr_ticker' });
+    const tickerDoc = await settingsCol.findOne<{ message?: string; badgeText?: string; isActive?: boolean; speed?: string; linkText?: string; linkUrl?: string; updatedAt?: string }>({ key: 'rr_ticker' });
     const ticker = tickerDoc
       ? {
           message: tickerDoc.message || '',
@@ -97,8 +99,9 @@ rrPublicRouter.get('/announcements', async (req: Request, res: Response) => {
       .toArray();
 
     res.json({ ticker, items });
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Internal Server Error';
+    res.status(500).json({ error: 'Internal Server Error', message });
   }
 });
 
@@ -106,7 +109,7 @@ rrPublicRouter.get('/announcements', async (req: Request, res: Response) => {
 rrPublicRouter.get('/home-content', async (req: Request, res: Response) => {
   try {
     const settingsCol = await RRService.getSettingsCol();
-    const doc = await settingsCol.findOne({ key: 'rr_home_content' });
+    const doc = await settingsCol.findOne<{ content?: IRRHomePageContent; updatedAt?: string; updatedBy?: string }>({ key: 'rr_home_content' });
 
     if (!doc || !doc.content) {
       res.json(DEFAULT_RR_HOMEPAGE_CONTENT);
@@ -160,8 +163,9 @@ rrPublicRouter.get('/home-content', async (req: Request, res: Response) => {
     };
 
     res.json(merged);
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Internal Server Error';
+    res.status(500).json({ error: 'Internal Server Error', message });
   }
 });
 
@@ -255,8 +259,9 @@ rrPublicRouter.get('/invoice/:token', async (req: Request, res: Response): Promi
       },
       verifiedAt: new Date().toISOString(),
     });
-  } catch (err: any) {
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Internal Server Error';
+    res.status(500).json({ error: 'Internal Server Error', message });
   }
 });
 

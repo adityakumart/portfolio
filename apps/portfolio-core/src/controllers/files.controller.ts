@@ -18,9 +18,9 @@ export async function handleGetScope(req: AuthenticatedRequest, res: Response): 
       return;
     }
     res.status(200).json(scope);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Get scope error:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -104,9 +104,9 @@ export async function handleListFiles(req: AuthenticatedRequest, res: Response):
     });
 
     res.status(200).json(nodes);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('List files error:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -133,9 +133,9 @@ export async function handleGetViewUrl(req: AuthenticatedRequest, res: Response)
     const url = await R2Service.getDownloadUrl(fullKey, hostUrl);
 
     res.status(200).json({ url });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Get view-url error:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -202,14 +202,14 @@ export async function handleUploadFile(req: AuthenticatedRequest, res: Response)
         });
 
         res.status(200).json({ success: true, message: 'Uploaded successfully', key: cleanKey });
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Direct file upload storage error:', err);
-        res.status(500).json({ error: 'Internal Server Error', message: err.message });
+        res.status(500).json({ error: 'Internal Server Error', message: (err as Error).message });
       }
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Direct file upload controller error:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -258,9 +258,9 @@ export async function handleCreateFolder(req: AuthenticatedRequest, res: Respons
     }
 
     res.status(200).json({ success: true, folder: sanitizedPath });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Create folder error:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -301,9 +301,9 @@ ${userPrompt}`;
 
     const reply = await GeminiAiService.generateResponse(enhancedPrompt);
     res.status(200).json({ reply, fileName: path.basename(cleanKey) });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('AI File context error:', error);
-    res.status(500).json({ error: 'Internal Server Error', message: error.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (error as Error).message });
   }
 }
 
@@ -329,12 +329,12 @@ export async function handleMockUpload(req: AuthenticatedRequest, res: Response)
       try {
         R2Service.writeMockFile(key, buffer);
         res.status(200).send('Uploaded successfully');
-      } catch (err: any) {
-        res.status(500).send(err.message);
+      } catch (err: unknown) {
+        res.status(500).send((err as Error).message);
       }
     });
-  } catch (error: any) {
-    res.status(500).send(error.message);
+  } catch (error: unknown) {
+    res.status(500).send((error as Error).message);
   }
 }
 

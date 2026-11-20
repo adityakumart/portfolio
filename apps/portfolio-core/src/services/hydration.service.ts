@@ -15,10 +15,10 @@ import {
 } from '../models/user-diet-config.model';
 
 export class HydrationService {
-  private static toHydrationEntry(doc: any): IHydrationEntry {
+  private static toHydrationEntry(doc: IHydrationLogDocument): IHydrationEntry {
     return {
-      id: doc._id.toString(),
-      userId: doc.userId.toString(),
+      id: doc._id ? doc._id.toString() : '',
+      userId: doc.userId ? doc.userId.toString() : '',
       date: doc.date,
       amountMl: doc.amountMl,
       time: doc.time,
@@ -60,8 +60,8 @@ export class HydrationService {
       );
 
       return doc.toClientJSON();
-    } catch (err: any) {
-      if (err.code === 11000) {
+    } catch (err: unknown) {
+      if (typeof err === 'object' && err !== null && 'code' in err && (err as { code: unknown }).code === 11000) {
         const existing = await UserDietConfig.findOne({ userId: userObjId });
         if (existing) {
           return existing.toClientJSON();
@@ -78,7 +78,7 @@ export class HydrationService {
     const UserDietConfig = await getUserDietConfigModel();
     const userObjId = new Types.ObjectId(userId);
 
-    const updateFields: Record<string, any> = {};
+    const updateFields: Record<string, unknown> = {};
     if (dto.hydration) {
       Object.entries(dto.hydration).forEach(([k, v]) => {
         if (v !== undefined) {

@@ -23,9 +23,9 @@ export async function handleLogHydration(
     }
     const entry = await HydrationService.logHydration(userId, dto);
     res.status(201).json(entry);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[HydrationController] Error logging hydration:', err);
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (err as Error).message });
   }
 }
 
@@ -48,9 +48,9 @@ export async function handleDeleteHydration(
       return;
     }
     res.json({ success: true, message: 'Hydration entry deleted successfully' });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[HydrationController] Error deleting hydration:', err);
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (err as Error).message });
   }
 }
 
@@ -66,9 +66,9 @@ export async function handleGetConfig(
     }
     const config = await HydrationService.getConfig(userId);
     res.json(config);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[HydrationController] Error getting config:', err);
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (err as Error).message });
   }
 }
 
@@ -85,8 +85,8 @@ export async function handleUpdateConfig(
     const dto: IUpdateDietConfigDto = req.body;
     const config = await HydrationService.updateConfig(userId, dto);
     res.json(config);
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[HydrationController] Error updating config:', err);
-    res.status(500).json({ error: 'Internal Server Error', message: err.message });
+    res.status(500).json({ error: 'Internal Server Error', message: (err as Error).message });
   }
 }
