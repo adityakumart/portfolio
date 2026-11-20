@@ -34,13 +34,13 @@ test.describe('RR Module - Staff Registry Employee List Component', () => {
     await expect(table.getByText('RRA001')).toBeVisible();
     await expect(table.getByText('Admin Operator')).toBeVisible();
     await expect(table.getByText('ADMIN', { exact: true })).toBeVisible();
-    await expect(table.getByText('9494873336')).toBeVisible();
+    await expect(table.getByText('9800000001')).toBeVisible();
 
     // Record 2: Desk Agent
     await expect(table.getByText('RRA002')).toBeVisible();
     await expect(table.getByText('Desk Agent')).toBeVisible();
     await expect(table.getByText('EMPLOYEE', { exact: true })).toBeVisible();
-    await expect(table.getByText('9494893336')).toBeVisible();
+    await expect(table.getByText('9800000002')).toBeVisible();
   });
 
   test('should open employee registration modal on clicking Register New Employee', async ({ page }) => {

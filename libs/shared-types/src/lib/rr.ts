@@ -527,7 +527,7 @@ export const DEFAULT_RR_HOMEPAGE_CONTENT: IRRHomePageContent = {
     badge: 'PREMIUM CAR RENTALS & FLEET COMMAND',
     title: 'Uncompromising Comfort for Every Journey',
     subtitle:
-      "Experience seamless travels with Kakinada's premier car rental fleet. Tailored corporate solutions, local sightseeing, and self-drive luxury with zero hidden charges.",
+      "Experience seamless travels with our premier car rental fleet. Tailored corporate solutions, local sightseeing, and self-drive luxury with zero hidden charges.",
     primaryCtaText: 'Explore Fleet',
     primaryCtaLink: '#browse',
     secondaryCtaText: 'Book Consultation',
@@ -615,7 +615,7 @@ export const DEFAULT_RR_HOMEPAGE_CONTENT: IRRHomePageContent = {
     tagline: 'Who We Are',
     title: 'Over a Decade of Travel Excellence',
     paragraphs: [
-      "RoadReady Rentals has been Suryanarayana Puram's most trusted travel facilitator for over ten years. We bridge the gap between premium passenger fleet availability and pocket-friendly consumer bookings.",
+      "RoadReady Rentals has been the region's most trusted travel facilitator for over ten years. We bridge the gap between premium passenger fleet availability and pocket-friendly consumer bookings.",
       'Our commitment remains absolute: well-maintained models, verified professional drivers, punctual pickups, and complete billing transparency. From quick commutes to outstation holidays, we make every trip an experience in comfort.',
     ],
     stats: [
@@ -630,11 +630,11 @@ export const DEFAULT_RR_HOMEPAGE_CONTENT: IRRHomePageContent = {
     title: 'Connect With Our Desk',
     description:
       'Our booking desk is open 24/7. Reach out to schedule a custom trip or lease a vehicle.',
-    primaryPhone: '+91 9494873336',
-    primaryPhoneRaw: '9494873336',
-    secondaryPhone: '+91 9494893336',
-    secondaryPhoneRaw: '9494893336',
-    whatsappNumberRaw: '9494873336',
+    primaryPhone: '+91 9800000001',
+    primaryPhoneRaw: '9800000001',
+    secondaryPhone: '+91 9800000002',
+    secondaryPhoneRaw: '9800000002',
+    whatsappNumberRaw: '9800000001',
     items: [
       {
         id: 'contact-1',
@@ -642,7 +642,7 @@ export const DEFAULT_RR_HOMEPAGE_CONTENT: IRRHomePageContent = {
         title: 'Office Address',
         values: [
           'RoadReady Rentals Automotives',
-          'Cinema road, Suryanarayana puram, Kakinada, AP 533001',
+          '100 Central Boulevard, Terminal Hub, City Center, 500001',
         ],
         icon: 'lucideMapPin',
         order: 1,
@@ -651,7 +651,7 @@ export const DEFAULT_RR_HOMEPAGE_CONTENT: IRRHomePageContent = {
         id: 'contact-2',
         type: 'phone',
         title: 'Phone Desk',
-        values: ['+91 9494873336', '+91 9494893336'],
+        values: ['+91 9800000001', '+91 9800000002'],
         icon: 'lucidePhone',
         order: 2,
       },
@@ -659,7 +659,7 @@ export const DEFAULT_RR_HOMEPAGE_CONTENT: IRRHomePageContent = {
         id: 'contact-3',
         type: 'email',
         title: 'Email Enquiries',
-        values: ['support@roadready.com', 'info@rams-cars.com'],
+        values: ['support@fleetops.local', 'info@fleetops.local'],
         icon: 'lucideMail',
         order: 3,
       },

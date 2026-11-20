@@ -119,7 +119,7 @@ test.describe('RoadReady (RR) Module - End-to-End Suite', () => {
       const adminTab = page.locator('button[hlmTabsTrigger="admin"]');
       await adminTab.click();
 
-      await page.locator('#adminUsername').fill('admin@rams-cars.com');
+      await page.locator('#adminUsername').fill('admin@fleetops.local');
       await page.locator('#adminPassword').fill('AdminPD');
 
       const submitBtn = page.locator('div[hlmTabsContent="admin"] button[type="submit"]');
