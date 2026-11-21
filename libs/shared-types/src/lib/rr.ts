@@ -1106,3 +1106,41 @@ export const DEFAULT_RR_WHATSAPP_CONFIG: IRRWhatsAppConfig = {
   },
 };
 
+export interface IRRStatusReportFilter {
+  periodType: 'monthly' | 'yearly' | 'custom';
+  month?: number; // 1 - 12
+  year?: number;  // e.g. 2026
+  from?: string;  // DD-MM-YYYY
+  to?: string;    // DD-MM-YYYY
+  vehicleRegNo?: string;
+  status?: BookingStatus | 'all';
+  paymentStatus?: 'all' | 'settled' | 'pending';
+  depositType?: DepositType | 'all';
+  search?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface IRRStatusReportSummary {
+  totalBookings: number;
+  activeBookings: number;
+  completedBookings: number;
+  cancelledBookings: number;
+  reservedBookings: number;
+  totalRevenue: number;
+  totalPaid: number;
+  totalPending: number;
+  totalKilometers: number;
+  totalDurationHours: number;
+  fleetUtilizationRate: number;
+}
+
+export interface IRRStatusReportResponse {
+  success: boolean;
+  summary: IRRStatusReportSummary;
+  bookings: IBooking[];
+  totalRecords: number;
+  currentPage: number;
+  totalPages: number;
+}
+

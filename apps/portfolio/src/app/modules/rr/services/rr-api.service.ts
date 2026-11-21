@@ -64,6 +64,9 @@ import {
   IRRWhatsAppTemplate,
   IRRWhatsAppTemplateId,
   DEFAULT_RR_WHATSAPP_CONFIG,
+  IRRStatusReportFilter,
+  IRRStatusReportSummary,
+  IRRStatusReportResponse,
 } from '@portfolio/shared-types';
 
 export {
@@ -1500,6 +1503,39 @@ export class RRApiService {
         company: { name: string; supportPhone: string; depotAddress: string };
         verifiedAt: string;
       }>(`${this.baseUrl}/public/invoice/${token}`)
+    );
+  }
+
+  async getStatusReport(filter: IRRStatusReportFilter): Promise<IRRStatusReportResponse> {
+    let params = new HttpParams();
+    if (filter.periodType) params = params.set('periodType', filter.periodType);
+    if (filter.month !== undefined && filter.month !== null) params = params.set('month', String(filter.month));
+    if (filter.year) params = params.set('year', String(filter.year));
+    if (filter.from) params = params.set('from', filter.from);
+    if (filter.to) params = params.set('to', filter.to);
+    if (filter.vehicleRegNo) params = params.set('vehicleRegNo', filter.vehicleRegNo);
+    if (filter.status) params = params.set('status', filter.status);
+    if (filter.paymentStatus) params = params.set('paymentStatus', filter.paymentStatus);
+    if (filter.depositType) params = params.set('depositType', filter.depositType);
+    if (filter.search) params = params.set('search', filter.search);
+    if (filter.page) params = params.set('page', String(filter.page));
+    if (filter.limit) params = params.set('limit', String(filter.limit));
+
+    return firstValueFrom(
+      this.http.get<IRRStatusReportResponse>(`${this.baseUrl}/reports/status`, {
+        headers: this.getHeaders(),
+        params,
+      })
+    );
+  }
+
+  async logReportDownload(format: string, filterSummary: string): Promise<{ success: boolean; message: string }> {
+    return firstValueFrom(
+      this.http.post<{ success: boolean; message: string }>(
+        `${this.baseUrl}/reports/log-download`,
+        { format, filterSummary },
+        { headers: this.getHeaders() }
+      )
     );
   }
 }
