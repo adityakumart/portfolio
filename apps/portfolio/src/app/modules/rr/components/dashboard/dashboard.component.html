@@ -63,6 +63,19 @@
             <ng-icon name="lucideUser" class="text-muted-foreground"></ng-icon>
             <span>View Profile</span>
           </button>
+          @if (isManagerOrAdmin()) {
+            <button
+              hlmDropdownMenuItem
+              class="flex items-center gap-2 px-3 py-2 text-xs font-semibold cursor-pointer rounded-lg hover:bg-muted w-full text-left"
+              [routerLink]="['/user/rr/reports']"
+            >
+              <ng-icon
+                name="lucideFileBarChart"
+                class="text-muted-foreground"
+              ></ng-icon>
+              <span>Status Reports</span>
+            </button>
+          }
           @if (isAdmin()) {
             <button
               hlmDropdownMenuItem
@@ -250,6 +263,25 @@
                 <span>Feedback Desk</span>
               </div>
             </li>
+
+            <!-- Section: Status Reports (Admin & Manager Only) -->
+            @if (isManagerOrAdmin()) {
+              <li
+                class="menu-item"
+                [routerLink]="['/user/rr/reports']"
+                routerLinkActive="active-menu"
+                [hlmTooltip]="'Status Reports'"
+                [tooltipDisabled]="!isSidebarCollapsed()"
+                tooltipPosition="right"
+                (click)="closeMobileSidebar()"
+              >
+                <div class="menu-item-pill"></div>
+                <div class="menu-item-content">
+                  <ng-icon name="lucideFileBarChart"></ng-icon>
+                  <span>Status Reports</span>
+                </div>
+              </li>
+            }
 
             <!-- Section: Administration (Admin Consolidated Submenu) -->
             @if (isAdmin()) {
