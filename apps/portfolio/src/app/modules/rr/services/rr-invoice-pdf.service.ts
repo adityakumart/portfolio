@@ -962,12 +962,32 @@ export class RRInvoicePdfService {
     doc.line(leftMargin + 5, sigY, leftMargin + 65, sigY);
     doc.line(rightMargin - 65, sigY, rightMargin - 5, sigY);
 
-    doc.setFont('Helvetica', 'normal');
+    // Customer Signature Area - Digital Receipt Note
+    doc.setFont('Helvetica', 'bold');
     doc.setFontSize(8);
-    doc.setTextColor(100, 116, 139);
-    doc.text('Customer Signature', leftMargin + 35, sigY + 4.5, {
+    doc.setTextColor(71, 85, 105);
+    doc.text('Not required', leftMargin + 35, sigY - 2, {
       align: 'center',
     });
+
+    doc.setFont('Helvetica', 'normal');
+    doc.setFontSize(7.5);
+    doc.setTextColor(100, 116, 139);
+    doc.text('Customer Signature', leftMargin + 35, sigY + 4, {
+      align: 'center',
+    });
+
+    doc.setFontSize(6.2);
+    doc.setTextColor(100, 116, 139);
+    doc.text(
+      '(this is an Digitally generated receipt, if required customer signed visit Branch)',
+      leftMargin + 35,
+      sigY + 7.5,
+      { align: 'center' },
+    );
+
+    doc.setFontSize(8);
+    doc.setTextColor(100, 116, 139);
     doc.text('Authorized Signatory & Stamp', rightMargin - 35, sigY + 4.5, {
       align: 'center',
     });
@@ -1017,6 +1037,7 @@ export class RRInvoicePdfService {
         title: `Tax Invoice - INV-${id}`,
         fileName: `Invoice_${id}.pdf`,
         blobUrl,
+        booking: b,
       },
       contentClass: 'w-[95vw] max-w-5xl p-0 border-0 bg-transparent shadow-none',
     });
