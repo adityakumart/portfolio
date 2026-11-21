@@ -101,3 +101,19 @@ export function requireAdmin(
   }
   next();
 }
+
+export function requireManagerOrAdmin(
+  req: IRRRequest,
+  res: Response,
+  next: NextFunction
+): void {
+  if (req.userRole !== 'admin' && req.userRole !== 'manager') {
+    res.status(403).json({
+      error: 'Forbidden',
+      message: 'Access denied. Manager or Administrator privileges required.',
+    });
+    return;
+  }
+  next();
+}
+
