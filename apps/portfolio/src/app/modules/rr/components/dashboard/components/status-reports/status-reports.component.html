@@ -1,0 +1,696 @@
+<div class="page-container p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+  <!-- PAGE HEADER -->
+  <div class="page-header flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+    <div>
+      <div class="text-[11px] sm:text-xs uppercase tracking-wider text-cyan-500 font-extrabold mb-1.5 inline-flex items-center gap-1.5">
+        <ng-icon class="size-3.5" name="lucideFileBarChart"></ng-icon>
+        <span>Analytics &bull; Fleet Performance Hub</span>
+      </div>
+      <div class="flex items-center gap-3 flex-wrap">
+        <h2 class="m-0 text-xl sm:text-2xl lg:text-3xl font-extrabold text-foreground tracking-tight">Status Reports</h2>
+        <span hlmBadge variant="outline" class="text-xs font-semibold px-2.5 py-0.5 rounded-full border-primary/30 text-primary bg-primary/10">
+          Admin & Manager Access
+        </span>
+      </div>
+      <p class="text-xs sm:text-sm text-muted-foreground mt-1">
+        Consolidated fleet operations, status telemetry, and financial analytics. All dates in <span class="font-semibold text-foreground">DD-MM-YYYY</span>.
+      </p>
+    </div>
+
+    <!-- Quick Download Action Buttons -->
+    <div class="flex items-center gap-2.5 flex-wrap">
+      <button
+        hlmBtn
+        variant="outline"
+        size="sm"
+        class="h-9 px-3.5 rounded-xl border border-border shadow-xs hover:bg-muted text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer"
+        (click)="downloadPdf()"
+        [disabled]="isExporting() || isLoading()"
+      >
+        @if (isExporting()) {
+          <ng-icon name="lucideLoader2" class="size-3.5 animate-spin text-primary"></ng-icon>
+        } @else {
+          <ng-icon name="lucideDownload" class="size-3.5 text-cyan-600 dark:text-cyan-400"></ng-icon>
+        }
+        <span>Download PDF</span>
+      </button>
+
+      <button
+        hlmBtn
+        size="sm"
+        class="h-9 px-3.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white shadow-xs text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer"
+        (click)="downloadCsv()"
+        [disabled]="isExporting() || isLoading()"
+      >
+        @if (isExporting()) {
+          <ng-icon name="lucideLoader2" class="size-3.5 animate-spin"></ng-icon>
+        } @else {
+          <ng-icon name="lucideFileSpreadsheet" class="size-3.5"></ng-icon>
+        }
+        <span>Export CSV / Excel</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- FILTERS TOOLBAR CARD -->
+  <div class="p-4 sm:p-5 rounded-2xl border border-border bg-card shadow-xs mb-6">
+    <div class="flex items-center justify-between gap-3 mb-4 flex-wrap">
+      <div class="flex items-center gap-2">
+        <ng-icon name="lucideFilter" class="text-primary text-base"></ng-icon>
+        <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Report Scope & Filter Suite</span>
+        @if (hasActiveFilters()) {
+          <span hlmBadge variant="secondary" class="text-[10px] font-bold text-primary bg-primary/10">Active Filters</span>
+        }
+      </div>
+
+      <div class="flex items-center gap-3">
+        @if (isLoading()) {
+          <span class="text-xs text-primary flex items-center gap-1.5 animate-pulse font-medium">
+            <ng-icon name="lucideLoader2" class="animate-spin text-sm"></ng-icon>
+            <span>Updating Telemetry...</span>
+          </span>
+        }
+        <button
+          type="button"
+          class="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 font-medium transition-colors cursor-pointer"
+          (click)="resetFilters()"
+        >
+          <ng-icon name="lucideRotateCcw" class="size-3"></ng-icon>
+          <span>Reset</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Segmented Horizon Bar -->
+    <div class="flex items-center gap-1.5 p-1 bg-muted/60 border border-border/60 rounded-xl mb-4 w-fit">
+      <button
+        type="button"
+        class="px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer"
+        [class.bg-card]="periodType() === 'monthly'"
+        [class.text-foreground]="periodType() === 'monthly'"
+        [class.shadow-xs]="periodType() === 'monthly'"
+        [class.text-muted-foreground]="periodType() !== 'monthly'"
+        (click)="setPeriodType('monthly')"
+      >
+        Monthly
+      </button>
+      <button
+        type="button"
+        class="px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer"
+        [class.bg-card]="periodType() === 'yearly'"
+        [class.text-foreground]="periodType() === 'yearly'"
+        [class.shadow-xs]="periodType() === 'yearly'"
+        [class.text-muted-foreground]="periodType() !== 'yearly'"
+        (click)="setPeriodType('yearly')"
+      >
+        Yearly
+      </button>
+      <button
+        type="button"
+        class="px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer"
+        [class.bg-card]="periodType() === 'custom'"
+        [class.text-foreground]="periodType() === 'custom'"
+        [class.shadow-xs]="periodType() === 'custom'"
+        [class.text-muted-foreground]="periodType() !== 'custom'"
+        (click)="setPeriodType('custom')"
+      >
+        Custom Date Range
+      </button>
+    </div>
+
+    <!-- Filter Inputs Row -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3.5 items-end">
+      <!-- Horizon Specific Controls -->
+      @if (periodType() === 'monthly') {
+        <!-- Month Selector -->
+        <div class="lg:col-span-2">
+          <label hlmLabel class="text-[11px] text-muted-foreground block mb-1">Select Month</label>
+          <select
+            class="w-full text-xs h-9 rounded-xl border border-border bg-background px-3 py-1 font-medium focus:outline-hidden focus:ring-1 focus:ring-primary"
+            [ngModel]="selectedMonth()"
+            (ngModelChange)="onMonthChange($event)"
+          >
+            @for (m of months; track m.value) {
+              <option [value]="m.value">{{ m.label }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Year Selector -->
+        <div class="lg:col-span-2">
+          <label hlmLabel class="text-[11px] text-muted-foreground block mb-1">Select Year</label>
+          <select
+            class="w-full text-xs h-9 rounded-xl border border-border bg-background px-3 py-1 font-medium focus:outline-hidden focus:ring-1 focus:ring-primary"
+            [ngModel]="selectedYear()"
+            (ngModelChange)="onYearChange($event)"
+          >
+            @for (y of years(); track y) {
+              <option [value]="y">{{ y }}</option>
+            }
+          </select>
+        </div>
+      } @else if (periodType() === 'yearly') {
+        <!-- Year Only Selector -->
+        <div class="lg:col-span-4">
+          <label hlmLabel class="text-[11px] text-muted-foreground block mb-1">Select Calendar Year</label>
+          <select
+            class="w-full text-xs h-9 rounded-xl border border-border bg-background px-3 py-1 font-medium focus:outline-hidden focus:ring-1 focus:ring-primary"
+            [ngModel]="selectedYear()"
+            (ngModelChange)="onYearChange($event)"
+          >
+            @for (y of years(); track y) {
+              <option [value]="y">{{ y }} (Jan - Dec)</option>
+            }
+          </select>
+        </div>
+      } @else {
+        <!-- From Date (DD-MM-YYYY) -->
+        <div class="lg:col-span-2">
+          <div class="flex items-center justify-between mb-1">
+            <label hlmLabel class="text-[11px] text-muted-foreground block">From (DD-MM-YYYY)</label>
+            @if (fromDateFilter()) {
+              <button type="button" class="text-[10px] text-muted-foreground hover:text-foreground cursor-pointer" (click)="clearFromDate()">
+                <ng-icon name="lucideX" class="size-3"></ng-icon>
+              </button>
+            }
+          </div>
+          <hlm-date-picker
+            [date]="fromDateFilter()"
+            (dateChange)="onFromDateChange($event)"
+            [maxDate]="toDateFilter() || today"
+            class="w-full"
+          >
+            <hlm-date-picker-input
+              placeholder="DD-MM-YYYY"
+              class="w-full text-xs h-9"
+              [class.border-destructive]="dateError()"
+            />
+          </hlm-date-picker>
+        </div>
+
+        <!-- To Date (DD-MM-YYYY) -->
+        <div class="lg:col-span-2">
+          <div class="flex items-center justify-between mb-1">
+            <label hlmLabel class="text-[11px] text-muted-foreground block">To (DD-MM-YYYY)</label>
+            @if (toDateFilter()) {
+              <button type="button" class="text-[10px] text-muted-foreground hover:text-foreground cursor-pointer" (click)="clearToDate()">
+                <ng-icon name="lucideX" class="size-3"></ng-icon>
+              </button>
+            }
+          </div>
+          <hlm-date-picker
+            [date]="toDateFilter()"
+            (dateChange)="onToDateChange($event)"
+            [minDate]="fromDateFilter() || null"
+            class="w-full"
+          >
+            <hlm-date-picker-input
+              placeholder="DD-MM-YYYY"
+              class="w-full text-xs h-9"
+              [class.border-destructive]="dateError()"
+            />
+          </hlm-date-picker>
+        </div>
+      }
+
+      <!-- Vehicle Autocomplete Dropdown -->
+      <div class="relative vehicle-autocomplete-box lg:col-span-4">
+        <div class="flex items-center justify-between mb-1">
+          <label hlmLabel class="text-[11px] text-muted-foreground block">Specific Vehicle</label>
+          @if (vehicleFilter() !== 'all') {
+            <button type="button" class="text-[10px] text-primary hover:underline cursor-pointer" (click)="clearVehicleFilter()">
+              All Fleet
+            </button>
+          }
+        </div>
+        <div class="relative">
+          <input
+            hlmInput
+            type="text"
+            placeholder="Search vehicle plate, model..."
+            [ngModel]="vehicleInputDisplay() || (vehicleFilter() === 'all' ? 'All Vehicles (Full Fleet)' : vehicleFilter())"
+            (focus)="openVehicleDropdown()"
+            (input)="vehicleInputDisplay.set($any($event.target).value)"
+            class="w-full text-xs pl-8 pr-7 h-9"
+            autocomplete="off"
+          />
+          <ng-icon name="lucideCar" class="absolute left-2.5 top-2.5 text-muted-foreground text-sm pointer-events-none"></ng-icon>
+          @if (vehicleFilter() !== 'all') {
+            <button type="button" class="absolute right-2 top-2 text-muted-foreground hover:text-foreground text-xs cursor-pointer" (click)="clearVehicleFilter()">
+              <ng-icon name="lucideX"></ng-icon>
+            </button>
+          }
+        </div>
+
+        @if (isVehicleDropdownOpen() && vehicleOptions().length > 0) {
+          <div class="absolute left-0 right-0 top-full mt-1 z-50 bg-popover text-popover-foreground border border-border rounded-xl shadow-xl max-h-56 overflow-y-auto py-1 text-xs divide-y divide-border/40">
+            <div
+              (mousedown)="clearVehicleFilter()"
+              class="px-3 py-2 cursor-pointer hover:bg-muted/80 transition-colors flex items-center justify-between font-bold text-primary"
+            >
+              <span>All Vehicles (Complete Fleet)</span>
+              @if (vehicleFilter() === 'all') {
+                <ng-icon name="lucideCheck" class="text-primary text-sm"></ng-icon>
+              }
+            </div>
+            @for (v of vehicleOptions(); track v.regNo) {
+              <div
+                (mousedown)="selectVehicle(v)"
+                class="px-3 py-2 cursor-pointer hover:bg-muted/80 transition-colors flex items-center justify-between gap-2"
+              >
+                <div class="min-w-0">
+                  <div class="font-semibold text-foreground truncate">
+                    {{ v.manufacturer }} {{ v.name }}
+                  </div>
+                  <div class="text-[11px] text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                    <span class="font-mono bg-muted px-1.5 py-0.5 rounded border border-border/60">{{ v.regNo }}</span>
+                    @if (v.type) {
+                      <span>&bull; {{ v.type }}</span>
+                    }
+                  </div>
+                </div>
+                @if (vehicleFilter() === v.regNo) {
+                  <ng-icon name="lucideCheck" class="text-primary text-sm shrink-0"></ng-icon>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Free Text Filter (Booking ID, Customer) -->
+      <div class="lg:col-span-4">
+        <label hlmLabel class="text-[11px] text-muted-foreground block mb-1">Search Keyword</label>
+        <div class="relative">
+          <input
+            hlmInput
+            type="text"
+            placeholder="Search by customer name, phone, booking ID..."
+            [ngModel]="searchQuery()"
+            (ngModelChange)="onSearchChange($event)"
+            class="w-full text-xs pl-8 pr-7 h-9"
+          />
+          <ng-icon name="lucideSearch" class="absolute left-2.5 top-2.5 text-muted-foreground text-sm pointer-events-none"></ng-icon>
+          @if (searchQuery()) {
+            <button type="button" class="absolute right-2 top-2 text-muted-foreground hover:text-foreground text-xs cursor-pointer" (click)="onSearchChange('')">
+              <ng-icon name="lucideX"></ng-icon>
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Status & Payment Pills Filter Row -->
+    <div class="flex items-center gap-4 mt-4 pt-4 border-t border-border/60 flex-wrap">
+      <!-- Status Filters -->
+      <div class="flex items-center gap-1.5 flex-wrap">
+        <span class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mr-1">Status:</span>
+        <button
+          type="button"
+          class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition-all cursor-pointer"
+          [class.bg-primary]="statusFilter() === 'all'"
+          [class.text-primary-foreground]="statusFilter() === 'all'"
+          [class.bg-muted]="statusFilter() !== 'all'"
+          [class.text-muted-foreground]="statusFilter() !== 'all'"
+          (click)="setStatusFilter('all')"
+        >
+          All
+        </button>
+        <button
+          type="button"
+          class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition-all cursor-pointer"
+          [class.bg-cyan-500]="statusFilter() === 'active'"
+          [class.text-white]="statusFilter() === 'active'"
+          [class.bg-muted]="statusFilter() !== 'active'"
+          [class.text-muted-foreground]="statusFilter() !== 'active'"
+          (click)="setStatusFilter('active')"
+        >
+          Active Rentals
+        </button>
+        <button
+          type="button"
+          class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition-all cursor-pointer"
+          [class.bg-emerald-500]="statusFilter() === 'completed'"
+          [class.text-white]="statusFilter() === 'completed'"
+          [class.bg-muted]="statusFilter() !== 'completed'"
+          [class.text-muted-foreground]="statusFilter() !== 'completed'"
+          (click)="setStatusFilter('completed')"
+        >
+          Completed
+        </button>
+        <button
+          type="button"
+          class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition-all cursor-pointer"
+          [class.bg-amber-500]="statusFilter() === 'reserved'"
+          [class.text-white]="statusFilter() === 'reserved'"
+          [class.bg-muted]="statusFilter() !== 'reserved'"
+          [class.text-muted-foreground]="statusFilter() !== 'reserved'"
+          (click)="setStatusFilter('reserved')"
+        >
+          Advance Reserved
+        </button>
+        <button
+          type="button"
+          class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition-all cursor-pointer"
+          [class.bg-rose-500]="statusFilter() === 'cancelled'"
+          [class.text-white]="statusFilter() === 'cancelled'"
+          [class.bg-muted]="statusFilter() !== 'cancelled'"
+          [class.text-muted-foreground]="statusFilter() !== 'cancelled'"
+          (click)="setStatusFilter('cancelled')"
+        >
+          Cancelled
+        </button>
+      </div>
+
+      <!-- Payment Settlement Filters -->
+      <div class="flex items-center gap-1.5 flex-wrap ml-auto">
+        <span class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mr-1">Payment:</span>
+        <button
+          type="button"
+          class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition-all cursor-pointer"
+          [class.bg-primary]="paymentStatusFilter() === 'all'"
+          [class.text-primary-foreground]="paymentStatusFilter() === 'all'"
+          [class.bg-muted]="paymentStatusFilter() !== 'all'"
+          [class.text-muted-foreground]="paymentStatusFilter() !== 'all'"
+          (click)="setPaymentStatusFilter('all')"
+        >
+          All
+        </button>
+        <button
+          type="button"
+          class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition-all cursor-pointer"
+          [class.bg-emerald-500]="paymentStatusFilter() === 'settled'"
+          [class.text-white]="paymentStatusFilter() === 'settled'"
+          [class.bg-muted]="paymentStatusFilter() !== 'settled'"
+          [class.text-muted-foreground]="paymentStatusFilter() !== 'settled'"
+          (click)="setPaymentStatusFilter('settled')"
+        >
+          Fully Settled
+        </button>
+        <button
+          type="button"
+          class="px-2.5 py-1 text-[11px] font-semibold rounded-lg transition-all cursor-pointer"
+          [class.bg-amber-500]="paymentStatusFilter() === 'pending'"
+          [class.text-white]="paymentStatusFilter() === 'pending'"
+          [class.bg-muted]="paymentStatusFilter() !== 'pending'"
+          [class.text-muted-foreground]="paymentStatusFilter() !== 'pending'"
+          (click)="setPaymentStatusFilter('pending')"
+        >
+          Pending Due
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI SUMMARY CARDS GRID -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
+    <!-- Card 1: Total Bookings -->
+    <div
+      hlmCard
+      class="p-4 sm:p-5 rounded-2xl border border-border bg-card shadow-xs hover:shadow-lg transition-all border-l-4 border-l-blue-500 flex flex-col justify-between"
+    >
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Total Bookings</span>
+          <div class="size-7 rounded-lg flex items-center justify-center bg-blue-500/10 text-blue-500">
+            <ng-icon name="lucideCalendarDays" class="text-sm"></ng-icon>
+          </div>
+        </div>
+        <div class="text-2xl font-black text-foreground">{{ summary().totalBookings }}</div>
+      </div>
+      <div class="text-[10px] text-muted-foreground mt-2 pt-1 border-t border-border/40 flex items-center justify-between">
+        <span>Active: {{ summary().activeBookings }}</span>
+        <span>Ended: {{ summary().completedBookings }}</span>
+      </div>
+    </div>
+
+    <!-- Card 2: Active Fleet -->
+    <div
+      hlmCard
+      class="p-4 sm:p-5 rounded-2xl border border-border bg-card shadow-xs hover:shadow-lg transition-all border-l-4 border-l-cyan-500 flex flex-col justify-between"
+    >
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Active Rentals</span>
+          <div class="size-7 rounded-lg flex items-center justify-center bg-cyan-500/10 text-cyan-500">
+            <ng-icon name="lucideKey" class="text-sm"></ng-icon>
+          </div>
+        </div>
+        <div class="text-2xl font-black text-foreground">{{ summary().activeBookings }}</div>
+      </div>
+      <div class="text-[10px] text-muted-foreground mt-2 pt-1 border-t border-border/40">
+        <span>Currently deployed vehicles</span>
+      </div>
+    </div>
+
+    <!-- Card 3: Gross Revenue -->
+    <div
+      hlmCard
+      class="p-4 sm:p-5 rounded-2xl border border-border bg-card shadow-xs hover:shadow-lg transition-all border-l-4 border-l-emerald-500 flex flex-col justify-between"
+    >
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Gross Revenue</span>
+          <div class="size-7 rounded-lg flex items-center justify-center bg-emerald-500/10 text-emerald-500">
+            <ng-icon name="lucideReceipt" class="text-sm"></ng-icon>
+          </div>
+        </div>
+        <div class="text-2xl font-black text-foreground">₹{{ summary().totalRevenue.toLocaleString('en-IN') }}</div>
+      </div>
+      <div class="text-[10px] text-muted-foreground mt-2 pt-1 border-t border-border/40">
+        <span>Across filtered bookings</span>
+      </div>
+    </div>
+
+    <!-- Card 4: Amount Collected -->
+    <div
+      hlmCard
+      class="p-4 sm:p-5 rounded-2xl border border-border bg-card shadow-xs hover:shadow-lg transition-all border-l-4 border-l-teal-500 flex flex-col justify-between"
+    >
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Collected</span>
+          <div class="size-7 rounded-lg flex items-center justify-center bg-teal-500/10 text-teal-500">
+            <ng-icon name="lucideBadgeCheck" class="text-sm"></ng-icon>
+          </div>
+        </div>
+        <div class="text-2xl font-black text-teal-600 dark:text-teal-400">₹{{ summary().totalPaid.toLocaleString('en-IN') }}</div>
+      </div>
+      <div class="text-[10px] text-muted-foreground mt-2 pt-1 border-t border-border/40">
+        <span>Verified received payments</span>
+      </div>
+    </div>
+
+    <!-- Card 5: Pending Balance -->
+    <div
+      hlmCard
+      class="p-4 sm:p-5 rounded-2xl border border-border bg-card shadow-xs hover:shadow-lg transition-all border-l-4 border-l-amber-500 flex flex-col justify-between"
+    >
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Pending Receivables</span>
+          <div class="size-7 rounded-lg flex items-center justify-center bg-amber-500/10 text-amber-500">
+            <ng-icon name="lucideClock" class="text-sm"></ng-icon>
+          </div>
+        </div>
+        <div class="text-2xl font-black" [class.text-amber-600]="summary().totalPending > 0" [class.dark:text-amber-400]="summary().totalPending > 0">
+          ₹{{ summary().totalPending.toLocaleString('en-IN') }}
+        </div>
+      </div>
+      <div class="text-[10px] text-muted-foreground mt-2 pt-1 border-t border-border/40">
+        <span>Customer balance dues</span>
+      </div>
+    </div>
+
+    <!-- Card 6: Distance Logged -->
+    <div
+      hlmCard
+      class="p-4 sm:p-5 rounded-2xl border border-border bg-card shadow-xs hover:shadow-lg transition-all border-l-4 border-l-purple-500 flex flex-col justify-between"
+    >
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Fleet Distance</span>
+          <div class="size-7 rounded-lg flex items-center justify-center bg-purple-500/10 text-purple-500">
+            <ng-icon name="lucideGauge" class="text-sm"></ng-icon>
+          </div>
+        </div>
+        <div class="text-2xl font-black text-foreground">{{ summary().totalKilometers.toLocaleString('en-IN') }} <span class="text-xs font-semibold text-muted-foreground">KM</span></div>
+      </div>
+      <div class="text-[10px] text-muted-foreground mt-2 pt-1 border-t border-border/40">
+        <span>Logged fleet mileage</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- DATA TABLE PREVIEW CONTAINER -->
+  <div class="border border-border rounded-2xl overflow-hidden shadow-sm bg-card mb-8">
+    <div class="px-5 py-4 border-b border-border flex items-center justify-between gap-3 flex-wrap">
+      <div>
+        <h3 class="font-bold text-sm text-foreground">Operational Status Ledger</h3>
+        <p class="text-xs text-muted-foreground">Showing {{ bookings().length }} of {{ totalRecords() }} filtered booking records</p>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <label class="text-xs text-muted-foreground">Rows per page:</label>
+        <select
+          class="text-xs h-8 rounded-lg border border-border bg-background px-2 py-0.5 font-medium focus:outline-hidden"
+          [ngModel]="pageSize()"
+          (ngModelChange)="onPageSizeChange($event)"
+        >
+          <option [value]="10">10</option>
+          <option [value]="15">15</option>
+          <option [value]="25">25</option>
+          <option [value]="50">50</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Spartan Table Component -->
+    <div hlmTableContainer class="max-h-[calc(100vh-320px)] overflow-auto">
+      <table hlmTable class="w-full text-xs">
+        <thead hlmTHead class="sticky top-0 z-10 bg-card backdrop-blur-md">
+          <tr hlmTr>
+            <th hlmTh class="w-24">ID</th>
+            <th hlmTh>Vehicle</th>
+            <th hlmTh>Customer Details</th>
+            <th hlmTh>Pickup Date (DD-MM-YYYY)</th>
+            <th hlmTh>Return Date (DD-MM-YYYY)</th>
+            <th hlmTh class="text-center">Status</th>
+            <th hlmTh class="text-right">Total (₹)</th>
+            <th hlmTh class="text-right">Paid (₹)</th>
+            <th hlmTh class="text-right">Balance Due (₹)</th>
+            <th hlmTh class="text-center">Distance</th>
+          </tr>
+        </thead>
+        <tbody hlmTBody>
+          @if (isLoading()) {
+            @for (i of [1, 2, 3, 4, 5]; track i) {
+              <tr hlmTr class="animate-pulse">
+                <td hlmTd class="py-3"><div class="h-4 bg-muted rounded w-16"></div></td>
+                <td hlmTd><div class="h-4 bg-muted rounded w-32"></div></td>
+                <td hlmTd><div class="h-4 bg-muted rounded w-28"></div></td>
+                <td hlmTd><div class="h-4 bg-muted rounded w-24"></div></td>
+                <td hlmTd><div class="h-4 bg-muted rounded w-24"></div></td>
+                <td hlmTd class="text-center"><div class="h-4 bg-muted rounded w-16 mx-auto"></div></td>
+                <td hlmTd class="text-right"><div class="h-4 bg-muted rounded w-16 ml-auto"></div></td>
+                <td hlmTd class="text-right"><div class="h-4 bg-muted rounded w-16 ml-auto"></div></td>
+                <td hlmTd class="text-right"><div class="h-4 bg-muted rounded w-16 ml-auto"></div></td>
+                <td hlmTd class="text-center"><div class="h-4 bg-muted rounded w-16 mx-auto"></div></td>
+              </tr>
+            }
+          } @else if (bookings().length === 0) {
+            <tr>
+              <td colspan="10" class="py-12 text-center text-muted-foreground">
+                <div class="flex flex-col items-center justify-center gap-2">
+                  <ng-icon name="lucideInfo" class="size-8 text-muted-foreground/60"></ng-icon>
+                  <p class="font-semibold text-sm text-foreground">No records matching the selected report filters</p>
+                  <p class="text-xs text-muted-foreground">Try adjusting your date horizon or vehicle scope to inspect records.</p>
+                </div>
+              </td>
+            </tr>
+          } @else {
+            @for (b of bookings(); track b.id) {
+              <tr hlmTr class="hover:bg-muted/40 transition-colors">
+                <td hlmTd class="font-mono font-bold text-foreground">{{ b.id }}</td>
+                <td hlmTd>
+                  <div class="font-semibold text-foreground">{{ b.vehicleManufacturer }} {{ b.vehicleName }}</div>
+                  <div class="font-mono text-[10px] text-muted-foreground">{{ b.vehicleRegNo }}</div>
+                </td>
+                <td hlmTd>
+                  <div class="font-semibold text-foreground">{{ b.renterFirstName }} {{ b.renterSecondName }}</div>
+                  <div class="text-[10px] text-muted-foreground">{{ b.renterPhone }}</div>
+                </td>
+                <td hlmTd class="font-mono text-[11px]">
+                  {{ b.pickupDateTime | indianDate: { includeTime: true } }}
+                </td>
+                <td hlmTd class="font-mono text-[11px]">
+                  {{ b.returnDateTime | indianDate: { includeTime: true } }}
+                </td>
+                <td hlmTd class="text-center">
+                  @switch (b.status) {
+                    @case ('active') {
+                      <span hlmBadge variant="outline" class="text-[10px] font-bold px-2 py-0.5 rounded-full border-cyan-500/30 text-cyan-600 bg-cyan-500/10">
+                        ACTIVE
+                      </span>
+                    }
+                    @case ('completed') {
+                      <span hlmBadge variant="outline" class="text-[10px] font-bold px-2 py-0.5 rounded-full border-emerald-500/30 text-emerald-600 bg-emerald-500/10">
+                        COMPLETED
+                      </span>
+                    }
+                    @case ('reserved') {
+                      <span hlmBadge variant="outline" class="text-[10px] font-bold px-2 py-0.5 rounded-full border-amber-500/30 text-amber-600 bg-amber-500/10">
+                        RESERVED
+                      </span>
+                    }
+                    @case ('cancelled') {
+                      <span hlmBadge variant="outline" class="text-[10px] font-bold px-2 py-0.5 rounded-full border-rose-500/30 text-rose-600 bg-rose-500/10">
+                        CANCELLED
+                      </span>
+                    }
+                    @default {
+                      <span hlmBadge variant="secondary" class="text-[10px] font-bold uppercase">
+                        {{ b.status }}
+                      </span>
+                    }
+                  }
+                </td>
+                <td hlmTd class="text-right font-semibold text-foreground">
+                  ₹{{ Number(b.finalRentalAmount || 0).toLocaleString('en-IN') }}
+                </td>
+                <td hlmTd class="text-right font-medium text-emerald-600 dark:text-emerald-400">
+                  ₹{{ Number(b.amountPaid || 0).toLocaleString('en-IN') }}
+                </td>
+                <td hlmTd class="text-right font-medium">
+                  @if (Number(b.pendingAmount || 0) > 0) {
+                    <span class="text-amber-600 dark:text-amber-400 font-bold">
+                      ₹{{ Number(b.pendingAmount || 0).toLocaleString('en-IN') }}
+                    </span>
+                  } @else {
+                    <span class="text-muted-foreground">₹0</span>
+                  }
+                </td>
+                <td hlmTd class="text-center font-mono text-[11px] text-muted-foreground">
+                  {{ getVehicleMileage(b) }}
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination Footer -->
+    <div class="px-5 py-3 border-t border-border flex items-center justify-between gap-3 flex-wrap">
+      <div class="text-xs text-muted-foreground">
+        Page <span class="font-bold text-foreground">{{ currentPage() }}</span> of <span class="font-bold text-foreground">{{ totalPages() }}</span>
+      </div>
+
+      <div class="flex items-center gap-1.5">
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          class="h-8 px-2.5 text-xs rounded-lg cursor-pointer"
+          [disabled]="currentPage() <= 1 || isLoading()"
+          (click)="goToPage(currentPage() - 1)"
+        >
+          <ng-icon name="lucideChevronLeft" class="size-3.5"></ng-icon>
+          <span class="hidden sm:inline ml-1">Previous</span>
+        </button>
+
+        <button
+          hlmBtn
+          variant="outline"
+          size="sm"
+          class="h-8 px-2.5 text-xs rounded-lg cursor-pointer"
+          [disabled]="currentPage() >= totalPages() || isLoading()"
+          (click)="goToPage(currentPage() + 1)"
+        >
+          <span class="hidden sm:inline mr-1">Next</span>
+          <ng-icon name="lucideChevronRight" class="size-3.5"></ng-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
