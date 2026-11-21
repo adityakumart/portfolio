@@ -119,6 +119,15 @@ export class RREndBookingDialogComponent implements OnInit {
   attachmentsVerified = signal<boolean>(false);
   previewImageUrl = signal<string | null>(null);
 
+  // Damage selection status: null (unselected), 'none' (no damages), 'damage' (has damages)
+  damageStatus = signal<'none' | 'damage' | null>(null);
+
+  // Case 4 fine selection: null (unselected), 'apply', 'waive'
+  case4FineSelection = signal<'apply' | 'waive' | null>(null);
+
+  // Collect Remaining Due Balance checkbox mandatory state
+  collectRemainingBalance = signal<boolean>(false);
+
   bookingAttachments = computed<IBookingAttachments>(() => {
     const b = this.booking();
     if (!b) return {};
@@ -183,8 +192,8 @@ export class RREndBookingDialogComponent implements OnInit {
     balancePending: 0,
 
     // Settlement
-    settleNow: true,
-    paymentMode: 'Cash' as 'Cash' | 'UPI' | 'Card' | 'Net Banking',
+    settleNow: false,
+    paymentMode: '' as string,
   };
 
   // Dynamic Damages list
@@ -226,32 +235,77 @@ export class RREndBookingDialogComponent implements OnInit {
 
   hasInvalidDamages(): boolean {
     if (this.damages.length === 0) return false;
-    return this.damages.some(
-      (d) =>
-        !d.description ||
-        d.description.trim() === '' ||
-        (d.amount as unknown as string) === '' ||
-        d.amount === null ||
-        d.amount === undefined ||
-        isNaN(Number(d.amount)) ||
-        Number(d.amount) < 0,
+    return this.damages.some((d) => this.isDamageItemInvalid(d));
+  }
+
+  isDamageItemInvalid(dmg: IDamageItem): boolean {
+    return (
+      !dmg.description ||
+      dmg.description.trim() === '' ||
+      (dmg.amount as unknown as string) === '' ||
+      dmg.amount === null ||
+      dmg.amount === undefined ||
+      isNaN(Number(dmg.amount)) ||
+      Number(dmg.amount) < 0
     );
   }
 
-  hasInvalidChallanaOrToll(): boolean {
-    if (
-      this.endBookingFields.challanaAmount !== '' &&
-      (isNaN(Number(this.endBookingFields.challanaAmount)) ||
-        Number(this.endBookingFields.challanaAmount) < 0)
-    ) {
+  isDamageAmountInvalid(dmg: IDamageItem): boolean {
+    return (
+      (dmg.amount as unknown as string) === '' ||
+      dmg.amount === null ||
+      dmg.amount === undefined ||
+      isNaN(Number(dmg.amount)) ||
+      Number(dmg.amount) < 0
+    );
+  }
+
+  hasDamageVerificationPassed(): boolean {
+    if (this.damageStatus() === 'none') {
       return true;
     }
-    if (
-      this.endBookingFields.tollAmount !== '' &&
-      (isNaN(Number(this.endBookingFields.tollAmount)) ||
-        Number(this.endBookingFields.tollAmount) < 0)
-    ) {
+    if (this.damageStatus() === 'damage') {
+      if (this.damages.length === 0) return false;
+      return !this.hasInvalidDamages();
+    }
+    return false;
+  }
+
+  isChallanInvalid(): boolean {
+    return (
+      this.endBookingFields.challanaAmount === '' ||
+      this.endBookingFields.challanaAmount === null ||
+      this.endBookingFields.challanaAmount === undefined ||
+      isNaN(Number(this.endBookingFields.challanaAmount)) ||
+      Number(this.endBookingFields.challanaAmount) < 0
+    );
+  }
+
+  isTollInvalid(): boolean {
+    return (
+      this.endBookingFields.tollAmount === '' ||
+      this.endBookingFields.tollAmount === null ||
+      this.endBookingFields.tollAmount === undefined ||
+      isNaN(Number(this.endBookingFields.tollAmount)) ||
+      Number(this.endBookingFields.tollAmount) < 0
+    );
+  }
+
+  isCase4FineInvalid(): boolean {
+    if (this.activeScenario() !== 'case4') {
+      return false;
+    }
+    if (!this.case4FineSelection()) {
       return true;
+    }
+    if (this.case4FineSelection() === 'apply') {
+      return (
+        this.endBookingFields.nonIntimationFine === '' ||
+        this.endBookingFields.nonIntimationFine === null ||
+        this.endBookingFields.nonIntimationFine === undefined ||
+        isNaN(Number(this.endBookingFields.nonIntimationFine)) ||
+        Number(this.endBookingFields.nonIntimationFine) < 0
+      );
     }
     return false;
   }
@@ -277,7 +331,12 @@ export class RREndBookingDialogComponent implements OnInit {
       return false;
     }
 
-    // 3. Cleanliness fee must be explicitly addressed (cannot be blank)
+    // 3. Return attachments must be verified after vehicle inspection
+    if (!this.attachmentsVerified()) {
+      return false;
+    }
+
+    // 4. Cleanliness fee must be explicitly addressed (cannot be blank)
     if (
       !this.endBookingFields.cleanlinessChoice ||
       this.endBookingFields.cleanlinessChoice.trim() === ''
@@ -297,28 +356,36 @@ export class RREndBookingDialogComponent implements OnInit {
       }
     }
 
-    // 4. Any added damage items must have both description and non-negative amount
-    if (this.hasInvalidDamages()) {
+    // 5. Damages mandatory (Must select None or Add Damage; if damage, all items complete)
+    if (!this.hasDamageVerificationPassed()) {
       return false;
     }
 
-    // 5. Challan / Toll amounts if entered must be non-negative
-    if (this.hasInvalidChallanaOrToll()) {
+    // 6. Challan mandatory (numeric >= 0, enter 0 if none)
+    if (this.isChallanInvalid()) {
       return false;
     }
 
-    // 6. Non-intimation fine if applied must be non-negative
+    // 7. Toll mandatory (numeric >= 0, enter 0 if none)
+    if (this.isTollInvalid()) {
+      return false;
+    }
+
+    // 8. Late / Non-Intimation Fine mandatory decision when Case 4 is active
+    if (this.isCase4FineInvalid()) {
+      return false;
+    }
+
+    // 9. Collect Remaining Due Balance checkbox is mandatory
+    if (!this.collectRemainingBalance()) {
+      return false;
+    }
+
+    // 10. Payment mode dropdown is mandatory (cannot be empty)
     if (
-      this.endBookingFields.applyNonIntimationFine &&
-      (this.endBookingFields.nonIntimationFine === '' ||
-        isNaN(Number(this.endBookingFields.nonIntimationFine)) ||
-        Number(this.endBookingFields.nonIntimationFine) < 0)
+      !this.endBookingFields.paymentMode ||
+      this.endBookingFields.paymentMode.trim() === ''
     ) {
-      return false;
-    }
-
-    // 6. Return attachments must be verified after vehicle inspection
-    if (!this.attachmentsVerified()) {
       return false;
     }
 
@@ -327,7 +394,7 @@ export class RREndBookingDialogComponent implements OnInit {
 
   getMissingFieldsHint(): string {
     if (!this.endBookingFields.odometerEnd) {
-      return 'Enter return odometer reading';
+      return 'Enter final return odometer reading';
     }
     if (this.isOdometerEndInvalid()) {
       return 'Return odometer cannot be less than pickup odometer';
@@ -338,8 +405,11 @@ export class RREndBookingDialogComponent implements OnInit {
     if (this.isReturnDateInvalid()) {
       return 'Return date/time cannot be earlier than pickup';
     }
+    if (!this.attachmentsVerified()) {
+      return 'Verify return attachments after inspecting the vehicle';
+    }
     if (!this.endBookingFields.cleanlinessChoice) {
-      return 'Select cleanliness fee status';
+      return 'Select cleanliness fee status (choose None if clean)';
     }
     if (
       this.endBookingFields.cleanlinessChoice === 'custom' &&
@@ -348,21 +418,38 @@ export class RREndBookingDialogComponent implements OnInit {
     ) {
       return 'Enter custom cleanliness amount';
     }
-    if (this.hasInvalidDamages()) {
+    if (!this.hasDamageVerificationPassed()) {
+      if (this.damageStatus() === null) {
+        return 'Select Damages option (Add Damage or None)';
+      }
       return 'Complete description and amount for all damages';
     }
-    if (this.hasInvalidChallanaOrToll()) {
-      return 'Enter valid challan / toll amounts';
+    if (this.isChallanInvalid()) {
+      return 'Enter Challan amount (enter 0 if none)';
+    }
+    if (this.isTollInvalid()) {
+      return 'Enter Toll amount (enter 0 if none)';
+    }
+    if (this.activeScenario() === 'case4') {
+      if (!this.case4FineSelection()) {
+        return 'Select Late / Non-Intimation Fine option for customer invoice';
+      }
+      if (
+        this.case4FineSelection() === 'apply' &&
+        (this.endBookingFields.nonIntimationFine === '' ||
+          Number(this.endBookingFields.nonIntimationFine) < 0)
+      ) {
+        return 'Enter valid non-intimation fine amount';
+      }
+    }
+    if (!this.collectRemainingBalance()) {
+      return 'Check "Collect Remaining Due Balance" to confirm settlement';
     }
     if (
-      this.endBookingFields.applyNonIntimationFine &&
-      (this.endBookingFields.nonIntimationFine === '' ||
-        Number(this.endBookingFields.nonIntimationFine) < 0)
+      !this.endBookingFields.paymentMode ||
+      this.endBookingFields.paymentMode.trim() === ''
     ) {
-      return 'Enter valid non-intimation fine amount';
-    }
-    if (!this.attachmentsVerified()) {
-      return 'Verify return attachments after inspecting the vehicle';
+      return 'Select payment mode';
     }
     return '';
   }
@@ -442,6 +529,11 @@ export class RREndBookingDialogComponent implements OnInit {
       this.endBookingFields.customCleanlinessAmount = '';
       this.endBookingFields.challanaAmount = '';
       this.endBookingFields.tollAmount = '';
+      this.endBookingFields.paymentMode = '';
+      this.collectRemainingBalance.set(false);
+      this.endBookingFields.settleNow = false;
+      this.damageStatus.set(null);
+      this.case4FineSelection.set(null);
 
       // Base rent values
       this.endBookingFields.totalRentAmount = Number(b.totalRentalAmount) || 0;
@@ -494,12 +586,29 @@ export class RREndBookingDialogComponent implements OnInit {
   }
 
   // --- Damages Handlers ---
+  selectDamageNone() {
+    this.damageStatus.set('none');
+    this.damages = [];
+    this.endBookingFields.damagesTotal = 0;
+    this.calculateEndBookingFees();
+  }
+
+  selectAddDamage() {
+    this.damageStatus.set('damage');
+    if (this.damages.length === 0) {
+      this.addDamage();
+    } else {
+      this.calculateEndBookingFees();
+    }
+  }
+
   addDamage() {
+    this.damageStatus.set('damage');
     const newDamage: IDamageItem = {
       id:
         'dmg_' + Date.now() + '_' + Math.random().toString(36).substring(2, 5),
       description: '',
-      amount: 0,
+      amount: '' as unknown as number,
       confirmed: true,
       imageUrl: '',
       isUploadingImage: false,
@@ -510,11 +619,35 @@ export class RREndBookingDialogComponent implements OnInit {
 
   removeDamage(id: string) {
     this.damages = this.damages.filter((d) => d.id !== id);
+    if (this.damages.length === 0) {
+      this.damageStatus.set(null);
+    }
     this.calculateEndBookingFees();
   }
 
   toggleDamageConfirm(damage: IDamageItem) {
     damage.confirmed = !damage.confirmed;
+  }
+
+  // --- Case 4 Late / Non-Intimation Fine Handlers ---
+  setCase4FineSelection(choice: 'apply' | 'waive') {
+    this.case4FineSelection.set(choice);
+    if (choice === 'apply') {
+      this.endBookingFields.applyNonIntimationFine = true;
+      if (!this.endBookingFields.nonIntimationFine) {
+        this.endBookingFields.nonIntimationFine = 1000;
+      }
+    } else {
+      this.endBookingFields.applyNonIntimationFine = false;
+      this.endBookingFields.nonIntimationFine = '';
+    }
+    this.calculateEndBookingFees();
+  }
+
+  // --- Settlement / Collect Balance Handler ---
+  onToggleCollectBalance(checked: boolean) {
+    this.collectRemainingBalance.set(checked);
+    this.endBookingFields.settleNow = checked;
   }
 
   async uploadDamagePhoto(event: Event, dmg: IDamageItem & { isUploadingImage?: boolean }) {
@@ -820,13 +953,21 @@ export class RREndBookingDialogComponent implements OnInit {
     // Late / Non-Intimation Fine: Only applicable when both KMs and hours are exceeded (Case 4)
     const isBothExceeded = isKmExceeded && isHrsExceeded;
     let nonIntimationFine = 0;
-    if (isBothExceeded && this.endBookingFields.applyNonIntimationFine) {
-      nonIntimationFine = Math.max(
-        0,
-        Number(this.endBookingFields.nonIntimationFine) || 0,
-      );
-    } else if (!isBothExceeded) {
+    if (isBothExceeded) {
+      if (this.case4FineSelection() === 'apply') {
+        nonIntimationFine = Math.max(
+          0,
+          Number(this.endBookingFields.nonIntimationFine) || 0,
+        );
+        this.endBookingFields.applyNonIntimationFine = true;
+      } else {
+        this.endBookingFields.applyNonIntimationFine = false;
+        nonIntimationFine = 0;
+      }
+    } else {
+      this.case4FineSelection.set(null);
       this.endBookingFields.applyNonIntimationFine = false;
+      nonIntimationFine = 0;
     }
 
     this.endBookingFields.extraKms = extraKms;
@@ -872,7 +1013,7 @@ export class RREndBookingDialogComponent implements OnInit {
     try {
       this.isSubmitting.set(true);
 
-      const isSettlingNow = this.endBookingFields.settleNow;
+      const isSettlingNow = this.collectRemainingBalance();
       const finalRentalAmountToSave = String(
         this.endBookingFields.finalTotalPayable,
       );
@@ -942,9 +1083,7 @@ export class RREndBookingDialogComponent implements OnInit {
         finalRentalAmount: finalRentalAmountToSave,
         pendingAmount: pendingAmountToSave,
         amountPaid: amountPaidToSave,
-        paymentMode: isSettlingNow
-          ? this.endBookingFields.paymentMode
-          : b.paymentMode || 'Cash',
+        paymentMode: this.endBookingFields.paymentMode || 'Cash',
       };
 
       await this.rrApi.updateBooking(b.id, patch);
@@ -960,20 +1099,23 @@ export class RREndBookingDialogComponent implements OnInit {
         console.warn('Vehicle odometer update note:', ve);
       }
 
-      // Automatically generate & download customer invoice
+      // Automatically generate & display customer invoice popup
       const completedBooking: IBooking = {
         ...b,
         ...patch,
       } as IBooking;
 
+      // Close this End Booking dialog first
+      this.dialogRef?.close(true);
+
+      // Display the completed customer invoice popup
       try {
-        await this.invoicePdf.printInvoicePdf(completedBooking);
+        await this.invoicePdf.viewInvoicePdf(completedBooking);
       } catch (pdfErr) {
-        console.error('Customer invoice generation note:', pdfErr);
+        console.error('Customer invoice popup generation note:', pdfErr);
       }
 
-      toast.success(`Booking ${b.id} ended, invoice printed & WhatsApp link dispatched (valid for 24h)!`);
-      this.dialogRef?.close(true);
+      toast.success(`Booking ${b.id} ended successfully! Invoice generated.`);
     } catch (e: unknown) {
       console.error(e);
       const errMsg = (e as { error?: { message?: string }; message?: string })?.error?.message || (e as { message?: string })?.message || 'Error finalizing booking.';

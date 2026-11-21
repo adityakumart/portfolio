@@ -174,7 +174,7 @@
             [(ngModel)]="endBookingFields.odometerEnd"
             (input)="calculateEndBookingFees()"
             class="w-full text-sm pr-12 font-mono font-semibold"
-            [class.border-destructive]="isOdometerEndInvalid()"
+            [class.border-destructive]="endBookingFields.odometerEnd === '' || isOdometerEndInvalid()"
             [class.text-destructive]="isOdometerEndInvalid()"
             [class.bg-destructive/5]="isOdometerEndInvalid()"
             [class.focus-visible:ring-destructive]="isOdometerEndInvalid()"
@@ -188,7 +188,12 @@
             >KM</span
           >
         </div>
-        @if (isOdometerEndInvalid()) {
+        @if (endBookingFields.odometerEnd === '') {
+          <p class="text-[11px] text-destructive flex items-center gap-1 font-medium mt-1">
+            <ng-icon name="lucideAlertCircle" class="text-xs shrink-0"></ng-icon>
+            Final odometer reading is mandatory
+          </p>
+        } @else if (isOdometerEndInvalid()) {
           <p class="text-[11px] text-destructive flex items-center gap-1 font-medium mt-1">
             <ng-icon name="lucideAlertCircle" class="text-xs shrink-0"></ng-icon>
             Final reading cannot be less than pickup reading ({{ booking()?.vehicleOdometerStart }} KM)
@@ -224,13 +229,18 @@
           (input)="calculateEndBookingFees()"
           (change)="calculateEndBookingFees()"
           class="w-full text-sm font-mono"
-          [class.border-destructive]="isReturnDateInvalid()"
+          [class.border-destructive]="!endBookingFields.returnDateTimeActual || isReturnDateInvalid()"
           [class.text-destructive]="isReturnDateInvalid()"
           [class.bg-destructive/5]="isReturnDateInvalid()"
           [class.focus-visible:ring-destructive]="isReturnDateInvalid()"
           required
         />
-        @if (isReturnDateInvalid()) {
+        @if (!endBookingFields.returnDateTimeActual) {
+          <p class="text-[11px] text-destructive flex items-center gap-1 font-medium mt-1">
+            <ng-icon name="lucideAlertCircle" class="text-xs shrink-0"></ng-icon>
+            Return date and time is mandatory
+          </p>
+        } @else if (isReturnDateInvalid()) {
           <p class="text-[11px] text-destructive flex items-center gap-1 font-medium mt-1">
             <ng-icon name="lucideAlertCircle" class="text-xs shrink-0"></ng-icon>
             Return date/time cannot be before pickup ({{ (booking()?.pickupDateTime || booking()?.createdAt) | indianDate:{ includeTime: true } }})
@@ -487,7 +497,13 @@
         </div>
 
         <!-- Verified Checkbox at the Bottom of Attachments Section -->
-        <div class="p-3 rounded-xl border border-primary/30 bg-primary/5 flex items-start gap-3 mt-2">
+        <div
+          class="p-3 rounded-xl border flex items-start gap-3 mt-2 transition-all"
+          [class.border-primary/40]="attachmentsVerified()"
+          [class.bg-primary/5]="attachmentsVerified()"
+          [class.border-destructive/40]="!attachmentsVerified()"
+          [class.bg-destructive/5]="!attachmentsVerified()"
+        >
           <input
             type="checkbox"
             id="attachmentsVerifiedCheck"
@@ -497,11 +513,17 @@
           />
           <label for="attachmentsVerifiedCheck" class="cursor-pointer select-none">
             <span class="text-xs font-bold text-foreground block">
-              Vehicle & Attachments Verified After Return
+              Vehicle & Attachments Verified After Return *
             </span>
             <span class="text-[11px] text-muted-foreground block mt-0.5">
               I have inspected the vehicle, cross-checked the instrument cluster odometer reading and pre-pickup images against the returned vehicle condition, and verified all attachments.
             </span>
+            @if (!attachmentsVerified()) {
+              <span class="text-[11px] text-destructive font-medium block mt-1 flex items-center gap-1">
+                <ng-icon name="lucideAlertCircle" class="text-xs shrink-0"></ng-icon>
+                Verification checkbox is mandatory before ending booking
+              </span>
+            }
           </label>
         </div>
       </div>
@@ -838,49 +860,123 @@
     </div>
 
     <!-- SECTION 3: Damages -->
-    <div class="rounded-xl border border-amber-500/30 overflow-hidden bg-card">
+    <div
+      class="rounded-xl border overflow-hidden bg-card transition-all"
+      [class.border-emerald-500/40]="damageStatus() === 'none'"
+      [class.border-amber-500/30]="damageStatus() === 'damage' && hasDamageVerificationPassed()"
+      [class.border-destructive/40]="damageStatus() === null || (damageStatus() === 'damage' && !hasDamageVerificationPassed())"
+    >
       <div
-        class="bg-amber-500/15 dark:bg-amber-500/20 border-b border-amber-500/30 px-3 py-2 flex items-center justify-between"
+        class="border-b px-3 py-2 flex items-center justify-between"
+        [class.bg-emerald-500/10]="damageStatus() === 'none'"
+        [class.border-emerald-500/30]="damageStatus() === 'none'"
+        [class.bg-amber-500/15]="damageStatus() !== 'none'"
+        [class.dark:bg-amber-500/20]="damageStatus() !== 'none'"
+        [class.border-amber-500/30]="damageStatus() !== 'none'"
       >
         <h4
-          class="font-bold text-xs text-amber-900 dark:text-amber-200 uppercase tracking-wide flex items-center gap-1.5"
+          class="font-bold text-xs uppercase tracking-wide flex items-center gap-1.5"
+          [class.text-emerald-800]="damageStatus() === 'none'"
+          [class.dark:text-emerald-200]="damageStatus() === 'none'"
+          [class.text-amber-900]="damageStatus() !== 'none'"
+          [class.dark:text-amber-200]="damageStatus() !== 'none'"
         >
           <ng-icon name="lucideShieldAlert" class="text-sm"></ng-icon>
-          <span>Damages</span>
+          <span>Damages *</span>
         </h4>
         <div class="flex items-center gap-2">
           <span
-            class="font-mono font-bold text-xs text-amber-900 dark:text-amber-200"
+            class="font-mono font-bold text-xs mr-1"
+            [class.text-amber-900]="damageStatus() !== 'none'"
+            [class.dark:text-amber-200]="damageStatus() !== 'none'"
+            [class.text-emerald-700]="damageStatus() === 'none'"
           >
-            Total Damages: ₹{{ endBookingFields.damagesTotal }}
+            Total: ₹{{ endBookingFields.damagesTotal }}
           </span>
+
+          <!-- Button 1: Add Damage -->
           <button
             type="button"
             hlmBtn
             size="sm"
-            variant="outline"
-            (click)="addDamage()"
-            class="h-7 text-xs flex items-center gap-1 bg-background hover:bg-muted font-semibold"
+            [variant]="damageStatus() === 'damage' ? 'default' : 'outline'"
+            (click)="selectAddDamage()"
+            class="h-7 text-xs flex items-center gap-1 font-semibold shadow-xs"
+            [class.bg-primary]="damageStatus() === 'damage'"
+            [class.text-primary-foreground]="damageStatus() === 'damage'"
           >
             <ng-icon name="lucidePlus" class="text-xs"></ng-icon>
             <span>Add Damage</span>
+          </button>
+
+          <!-- Button 2: None -->
+          <button
+            type="button"
+            hlmBtn
+            size="sm"
+            [variant]="damageStatus() === 'none' ? 'default' : 'outline'"
+            (click)="selectDamageNone()"
+            class="h-7 text-xs flex items-center gap-1 font-semibold shadow-xs"
+            [class.bg-emerald-600]="damageStatus() === 'none'"
+            [class.text-white]="damageStatus() === 'none'"
+            [class.border-emerald-600]="damageStatus() === 'none'"
+          >
+            <ng-icon name="lucideCheck" class="text-xs"></ng-icon>
+            <span>None</span>
           </button>
         </div>
       </div>
 
       <div class="p-3 space-y-2">
-        @if (damages.length === 0) {
+        @if (damageStatus() === null) {
           <div
-            class="p-3 rounded-lg border border-dashed border-border text-center text-muted-foreground text-xs flex items-center justify-center gap-2"
+            class="p-3 rounded-lg border border-dashed border-destructive/50 bg-destructive/5 text-destructive text-xs flex items-center justify-between gap-2 font-medium"
           >
-            <ng-icon
-              name="lucideCheckCircle"
-              class="text-emerald-500 text-sm"
-            ></ng-icon>
-            <span
-              >No damages reported. Click <strong>+ Add Damage</strong> if
-              vehicle has any damages.</span
+            <div class="flex items-center gap-2">
+              <ng-icon name="lucideAlertCircle" class="text-sm shrink-0"></ng-icon>
+              <span>Mandatory: Select whether the vehicle has damages (Click <strong>Add Damage</strong>) or was returned clean (Click <strong>None</strong>).</span>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button
+                type="button"
+                hlmBtn
+                size="sm"
+                variant="outline"
+                (click)="selectAddDamage()"
+                class="h-6 text-[11px] px-2"
+              >
+                + Add Damage
+              </button>
+              <button
+                type="button"
+                hlmBtn
+                size="sm"
+                variant="outline"
+                (click)="selectDamageNone()"
+                class="h-6 text-[11px] px-2 text-emerald-600 border-emerald-500/40"
+              >
+                None
+              </button>
+            </div>
+          </div>
+        } @else if (damageStatus() === 'none') {
+          <div
+            class="p-2.5 rounded-lg border border-emerald-500/40 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 text-xs flex items-center justify-between font-medium"
+          >
+            <div class="flex items-center gap-2">
+              <ng-icon
+                name="lucideCheckCircle"
+                class="text-emerald-600 dark:text-emerald-400 text-sm shrink-0"
+              ></ng-icon>
+              <span><strong>Damages Verified: None.</strong> No damages reported upon vehicle inspection (₹0 damages charge).</span>
+            </div>
+            <button
+              type="button"
+              (click)="selectAddDamage()"
+              class="text-[11px] text-emerald-700 dark:text-emerald-400 underline hover:opacity-80"
             >
+              Change to Add Damage
+            </button>
           </div>
         } @else {
           <div class="space-y-2">
@@ -898,7 +994,9 @@
                   type="text"
                   [(ngModel)]="dmg.description"
                   class="flex-1 text-xs"
-                  placeholder="Damage description (e.g. Dent on rear fender)"
+                  [class.border-destructive]="!dmg.description || !dmg.description.trim()"
+                  placeholder="Damage description * (e.g. Dent on rear fender)"
+                  required
                 />
                 <div class="relative w-32 shrink-0">
                   <span
@@ -911,8 +1009,10 @@
                     [(ngModel)]="dmg.amount"
                     (input)="calculateEndBookingFees()"
                     class="w-full text-xs pl-6 font-mono font-bold"
-                    placeholder="Amount"
+                    [class.border-destructive]="isDamageAmountInvalid(dmg)"
+                    placeholder="Amount *"
                     min="0"
+                    required
                   />
                 </div>
 
@@ -971,13 +1071,34 @@
               </div>
             }
 
-            <div
-              class="text-right pt-1 font-mono font-bold text-xs text-foreground"
-            >
-              Total Damages:
-              <span class="text-primary"
-                >₹{{ endBookingFields.damagesTotal }}</span
+            @if (hasInvalidDamages()) {
+              <p class="text-[11px] text-destructive font-medium flex items-center gap-1">
+                <ng-icon name="lucideAlertCircle" class="text-xs shrink-0"></ng-icon>
+                All damage section fields must be completed: enter description and amount for each item.
+              </p>
+            }
+
+            <div class="flex items-center justify-between pt-1">
+              <button
+                type="button"
+                hlmBtn
+                size="sm"
+                variant="outline"
+                (click)="addDamage()"
+                class="h-7 text-xs font-semibold gap-1"
               >
+                <ng-icon name="lucidePlus" class="text-xs"></ng-icon>
+                <span>Add Another Damage</span>
+              </button>
+
+              <div
+                class="font-mono font-bold text-xs text-foreground"
+              >
+                Total Damages:
+                <span class="text-primary"
+                  >₹{{ endBookingFields.damagesTotal }}</span
+                >
+              </div>
             </div>
           </div>
         }
@@ -985,7 +1106,11 @@
     </div>
 
     <!-- SECTION 4: Challan / Toll -->
-    <div class="rounded-xl border border-amber-500/30 overflow-hidden bg-card">
+    <div
+      class="rounded-xl border overflow-hidden bg-card transition-all"
+      [class.border-amber-500/30]="!isChallanInvalid() && !isTollInvalid()"
+      [class.border-destructive/40]="isChallanInvalid() || isTollInvalid()"
+    >
       <div
         class="bg-amber-500/15 dark:bg-amber-500/20 border-b border-amber-500/30 px-3 py-2 flex items-center justify-between"
       >
@@ -993,7 +1118,7 @@
           class="font-bold text-xs text-amber-900 dark:text-amber-200 uppercase tracking-wide flex items-center gap-1.5"
         >
           <ng-icon name="lucideReceipt" class="text-sm"></ng-icon>
-          <span>Challan / Toll</span>
+          <span>Challan / Toll *</span>
         </h4>
         <span
           class="font-mono font-bold text-xs text-amber-900 dark:text-amber-200"
@@ -1007,9 +1132,11 @@
           <div>
             <label
               hlmLabel
-              class="text-xs font-medium text-foreground block mb-1"
-              >Challan</label
+              class="text-xs font-semibold text-foreground flex items-center justify-between mb-1"
             >
+              <span>Challan *</span>
+              <span class="text-[10px] text-muted-foreground font-normal">(Enter 0 if none)</span>
+            </label>
             <div class="relative">
               <span
                 class="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-bold"
@@ -1021,18 +1148,28 @@
                 [(ngModel)]="endBookingFields.challanaAmount"
                 (input)="calculateEndBookingFees()"
                 class="w-full text-xs pl-6 font-mono font-semibold"
+                [class.border-destructive]="isChallanInvalid()"
                 placeholder="0"
                 min="0"
+                required
               />
             </div>
+            @if (isChallanInvalid()) {
+              <p class="text-[11px] text-destructive font-medium mt-1 flex items-center gap-1">
+                <ng-icon name="lucideAlertCircle" class="text-xs shrink-0"></ng-icon>
+                Challan is mandatory: enter amount or 0 if none
+              </p>
+            }
           </div>
 
           <div>
             <label
               hlmLabel
-              class="text-xs font-medium text-foreground block mb-1"
-              >Toll</label
+              class="text-xs font-semibold text-foreground flex items-center justify-between mb-1"
             >
+              <span>Toll *</span>
+              <span class="text-[10px] text-muted-foreground font-normal">(Enter 0 if none)</span>
+            </label>
             <div class="relative">
               <span
                 class="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-bold"
@@ -1044,18 +1181,50 @@
                 [(ngModel)]="endBookingFields.tollAmount"
                 (input)="calculateEndBookingFees()"
                 class="w-full text-xs pl-6 font-mono font-semibold"
+                [class.border-destructive]="isTollInvalid()"
                 placeholder="0"
                 min="0"
+                required
               />
             </div>
+            @if (isTollInvalid()) {
+              <p class="text-[11px] text-destructive font-medium mt-1 flex items-center gap-1">
+                <ng-icon name="lucideAlertCircle" class="text-xs shrink-0"></ng-icon>
+                Toll is mandatory: enter amount or 0 if none
+              </p>
+            }
           </div>
         </div>
       </div>
     </div>
 
-    <!-- SECTION 5: Late / Non-Intimation Fine (Only when both KMs & Hours are exceeded) -->
+    <!-- SECTION 5: Late / Non-Intimation Fine (Displayed strictly only for Case 4 - Mandatory Selection) -->
     @if (activeScenario() === 'case4') {
-      <div class="p-3 rounded-xl border border-border bg-muted/10 space-y-2.5">
+      <div
+        class="p-3 rounded-xl border space-y-2.5 transition-all"
+        [class.border-amber-500/40]="case4FineSelection() !== null"
+        [class.bg-amber-500/5]="case4FineSelection() !== null"
+        [class.border-destructive/40]="case4FineSelection() === null"
+        [class.bg-destructive/5]="case4FineSelection() === null"
+      >
+        <div class="flex items-center justify-between pb-1.5 border-b border-border/50">
+          <div class="flex items-center gap-1.5">
+            <ng-icon name="lucideAlertCircle" class="text-sm text-amber-600 dark:text-amber-400"></ng-icon>
+            <h4 class="font-bold text-xs uppercase tracking-wide text-foreground">
+              Case 4: Late / Non-Intimation Fine (Customer Invoice Selection) *
+            </h4>
+          </div>
+          <span
+            class="text-[10px] font-bold px-2 py-0.5 rounded uppercase font-mono"
+            [class.bg-destructive/15]="case4FineSelection() === null"
+            [class.text-destructive]="case4FineSelection() === null"
+            [class.bg-emerald-500/15]="case4FineSelection() !== null"
+            [class.text-emerald-600]="case4FineSelection() !== null"
+          >
+            {{ case4FineSelection() === null ? 'Mandatory Selection' : 'Selection Completed' }}
+          </span>
+        </div>
+
         @if (booking()?.lastIntimation) {
           <div class="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-xs text-amber-700 dark:text-amber-400 flex items-start gap-2">
             <ng-icon name="lucidePhoneCall" class="text-sm shrink-0 mt-0.5"></ng-icon>
@@ -1066,25 +1235,57 @@
           </div>
         }
 
-        <div class="flex items-center justify-between">
-          <label class="flex items-center gap-2 cursor-pointer text-xs">
-            <input
-              type="checkbox"
-              [(ngModel)]="endBookingFields.applyNonIntimationFine"
-              (change)="onToggleNonIntimationFine()"
-              class="rounded accent-primary h-4 w-4"
-            />
-            <span class="font-semibold text-foreground"
-              >Apply Late / Non-Intimation Fine (Optional)</span
-            >
-          </label>
+        <p class="text-[11px] text-muted-foreground">
+          Both KMs and Hours were exceeded (Case 4). Selection for customer invoice is mandatory:
+        </p>
+
+        <!-- Two Action Choices -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+          <button
+            type="button"
+            (click)="setCase4FineSelection('apply')"
+            class="p-2.5 rounded-lg border text-left text-xs transition-all flex items-center justify-between cursor-pointer"
+            [class.border-primary]="case4FineSelection() === 'apply'"
+            [class.bg-primary/10]="case4FineSelection() === 'apply'"
+            [class.border-border]="case4FineSelection() !== 'apply'"
+          >
+            <div>
+              <span class="font-bold block text-foreground">Apply Fine to Invoice</span>
+              <span class="text-[10px] text-muted-foreground">Charge delay fine to customer invoice</span>
+            </div>
+            @if (case4FineSelection() === 'apply') {
+              <ng-icon name="lucideCheck" class="text-primary font-bold"></ng-icon>
+            }
+          </button>
+
+          <button
+            type="button"
+            (click)="setCase4FineSelection('waive')"
+            class="p-2.5 rounded-lg border text-left text-xs transition-all flex items-center justify-between cursor-pointer"
+            [class.border-emerald-500]="case4FineSelection() === 'waive'"
+            [class.bg-emerald-500/10]="case4FineSelection() === 'waive'"
+            [class.border-border]="case4FineSelection() !== 'waive'"
+          >
+            <div>
+              <span class="font-bold block text-foreground">Waive Fine (₹0)</span>
+              <span class="text-[10px] text-muted-foreground">Do not charge fine (branch discretion)</span>
+            </div>
+            @if (case4FineSelection() === 'waive') {
+              <ng-icon name="lucideCheck" class="text-emerald-600 font-bold"></ng-icon>
+            }
+          </button>
         </div>
 
-        @if (endBookingFields.applyNonIntimationFine) {
+        @if (case4FineSelection() === null) {
+          <p class="text-[11px] text-destructive font-medium flex items-center gap-1">
+            <ng-icon name="lucideAlertCircle" class="text-xs shrink-0"></ng-icon>
+            Selection is mandatory: Choose Apply or Waive for the customer invoice.
+          </p>
+        }
+
+        @if (case4FineSelection() === 'apply') {
           <div class="pt-2 border-t border-border flex items-center gap-3">
-            <label class="text-xs text-muted-foreground whitespace-nowrap"
-              >Fine Amount:</label
-            >
+            <label class="text-xs text-muted-foreground whitespace-nowrap">Fine Amount (₹):</label>
             <div class="relative w-44">
               <span
                 class="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-bold"
@@ -1315,49 +1516,77 @@
     </div>
 
     <!-- Settlement Options -->
-    <div class="p-3 rounded-xl border border-primary/20 bg-primary/5 space-y-2">
-      <div class="flex items-center justify-between">
+    <div
+      class="p-3.5 rounded-xl border space-y-3 transition-all"
+      [class.border-primary/40]="collectRemainingBalance() && !!endBookingFields.paymentMode"
+      [class.bg-primary/5]="collectRemainingBalance() && !!endBookingFields.paymentMode"
+      [class.border-destructive/40]="!collectRemainingBalance() || !endBookingFields.paymentMode"
+      [class.bg-destructive/5]="!collectRemainingBalance() || !endBookingFields.paymentMode"
+    >
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <label
-          class="flex items-center gap-2 cursor-pointer text-xs font-semibold text-foreground"
+          class="flex items-start gap-2.5 cursor-pointer text-xs font-semibold text-foreground select-none"
         >
           <input
             type="checkbox"
-            [(ngModel)]="endBookingFields.settleNow"
-            class="rounded accent-primary h-4 w-4"
+            id="collectRemainingDueBalanceCheck"
+            [checked]="collectRemainingBalance()"
+            (change)="onToggleCollectBalance($any($event.target).checked)"
+            class="rounded accent-primary h-4 w-4 mt-0.5 shrink-0 cursor-pointer"
           />
-          <span
-            >Collect Remaining Due Balance (₹{{
-              endBookingFields.balancePending
-            }}) Now & Settle Account</span
-          >
-        </label>
-
-        @if (endBookingFields.settleNow) {
-          <div class="flex items-center gap-2">
-            <label class="text-[11px] text-muted-foreground whitespace-nowrap"
-              >Payment Mode:</label
-            >
-            <select
-              [(ngModel)]="endBookingFields.paymentMode"
-              class="h-7 px-2 text-xs rounded border border-border bg-background text-foreground font-medium"
-            >
-              <option value="Cash">Cash</option>
-              <option value="UPI">UPI</option>
-              <option value="Card">Card</option>
-              <option value="Net Banking">Net Banking</option>
-            </select>
+          <div>
+            <span class="font-bold block text-sm">
+              @if (endBookingFields.balancePending > 0) {
+                Collect Remaining Due Balance (₹{{ endBookingFields.balancePending }}) Now & Settle Account *
+              } @else if (endBookingFields.balancePending === 0) {
+                Confirm Verification of Zero Due Balance (₹0) - Account Fully Settled *
+              } @else {
+                Confirm Verification of Excess Refund (₹{{ -endBookingFields.balancePending }}) Due to Customer *
+              }
+            </span>
+            <span class="text-[11px] text-muted-foreground font-normal block mt-0.5">
+              @if (endBookingFields.balancePending > 0) {
+                Mandatory: Verify the calculated amounts above and check this box to confirm collecting the pending balance.
+              } @else {
+                Mandatory: Zero pending dues to collect, but checkbox verification is required before closing booking.
+              }
+            </span>
           </div>
-        }
+        </label>
       </div>
-      <p class="text-[11px] text-muted-foreground">
-        {{
-          endBookingFields.settleNow
-            ? 'Account will be fully settled with pending balance set to ₹0 and booking marked completed.'
-            : 'Unpaid balance of ₹' +
-              endBookingFields.balancePending +
-              ' will remain pending under customer booking account.'
-        }}
-      </p>
+
+      @if (!collectRemainingBalance()) {
+        <p class="text-[11px] text-destructive font-medium flex items-center gap-1">
+          <ng-icon name="lucideAlertCircle" class="text-xs shrink-0"></ng-icon>
+          Mandatory: Please verify amounts and check this box to proceed with booking closure
+        </p>
+      }
+
+      <!-- Payment Mode Dropdown (Mandatory, empty initially) -->
+      <div class="pt-2 border-t border-border/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <label class="text-xs font-bold text-foreground block">Payment Mode *</label>
+          <span class="text-[10px] text-muted-foreground">Select payment mode used for this booking</span>
+        </div>
+        <div class="w-full sm:w-56">
+          <select
+            [(ngModel)]="endBookingFields.paymentMode"
+            (change)="calculateEndBookingFees()"
+            class="w-full h-8 px-2.5 text-xs rounded-lg border bg-background text-foreground font-semibold"
+            [class.border-destructive]="!endBookingFields.paymentMode"
+            [class.border-border]="!!endBookingFields.paymentMode"
+          >
+            <option value="" disabled selected>-- Select Payment Mode * --</option>
+            <option value="Cash">Cash</option>
+            <option value="UPI">UPI</option>
+            <option value="Card">Card</option>
+            <option value="Net Banking">Net Banking</option>
+          </select>
+          @if (!endBookingFields.paymentMode) {
+            <p class="text-[10px] text-destructive font-medium mt-0.5">Payment mode selection is mandatory</p>
+          }
+        </div>
+      </div>
     </div>
   </div>
 
