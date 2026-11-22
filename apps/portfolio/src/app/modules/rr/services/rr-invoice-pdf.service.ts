@@ -958,37 +958,27 @@ export class RRInvoicePdfService {
 
     // Signatures Section
     const sigY = y + 14;
-    doc.setDrawColor(203, 213, 225); // slate-300
-    doc.line(leftMargin + 5, sigY, leftMargin + 65, sigY);
-    doc.line(rightMargin - 65, sigY, rightMargin - 5, sigY);
 
-    // Customer Signature Area - Digital Receipt Note
-    doc.setFont('Helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.setTextColor(71, 85, 105);
-    doc.text('Not required', leftMargin + 35, sigY - 2, {
-      align: 'center',
-    });
-
+    // Notice on top of Authorized Signature & Stamp
     doc.setFont('Helvetica', 'normal');
-    doc.setFontSize(7.5);
-    doc.setTextColor(100, 116, 139);
-    doc.text('Customer Signature', leftMargin + 35, sigY + 4, {
-      align: 'center',
-    });
-
-    doc.setFontSize(6.2);
+    doc.setFontSize(6.5);
     doc.setTextColor(100, 116, 139);
     doc.text(
-      '(this is an Digitally generated receipt, if required customer signed visit Branch)',
-      leftMargin + 35,
-      sigY + 7.5,
+      '(if Authorized required, contact branch)',
+      rightMargin - 35,
+      sigY - 2,
       { align: 'center' },
     );
 
+    // Authorized Signature Separator Line
+    doc.setDrawColor(203, 213, 225); // slate-300
+    doc.line(rightMargin - 65, sigY + 1.5, rightMargin - 5, sigY + 1.5);
+
+    // Authorized Signature & Stamp Label
+    doc.setFont('Helvetica', 'bold');
     doc.setFontSize(8);
     doc.setTextColor(100, 116, 139);
-    doc.text('Authorized Signatory & Stamp', rightMargin - 35, sigY + 4.5, {
+    doc.text('Authorized Signature & Stamp', rightMargin - 35, sigY + 5.5, {
       align: 'center',
     });
 

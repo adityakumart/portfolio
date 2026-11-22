@@ -246,21 +246,6 @@
 
         <!-- Touch-Screen Fallback Actions (Hidden on Desktop hover via .touch-action-trigger) -->
         <div class="flex items-center gap-1.5 ml-auto touch-action-trigger">
-          <!-- Update Date button for Manager/Admin in Service/Contract -->
-          @if (showUpdateAvailability) {
-            <button
-              hlmBtn
-              size="sm"
-              variant="outline"
-              class="border-amber-500/40 text-amber-600 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 font-bold rounded-lg shadow-sm text-xs px-2.5 h-7.5 shrink-0 flex items-center gap-1 active:scale-95 transition-transform cursor-pointer"
-              (click)="onUpdateAvailabilityClick($event)"
-              hlmTooltip="Update Next Available Date"
-            >
-              <ng-icon name="lucideCalendar" class="text-xs"></ng-icon>
-              <span>Update Date</span>
-            </button>
-          }
-
           <!-- Reserve Button for Total Fleet and other lists -->
           @if (showReserveBtn) {
             <button

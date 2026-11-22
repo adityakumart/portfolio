@@ -852,6 +852,15 @@ export type IRRWhatsAppTemplateId =
   | 'pending_payment'
   | 'end_booking_invoice';
 
+export type IRRDashboardCardKey =
+  | 'fleet'
+  | 'available'
+  | 'bookings'
+  | 'reserved'
+  | 'maintenance'
+  | 'contract'
+  | 'payments';
+
 export interface IRRWhatsAppTemplate {
   id: IRRWhatsAppTemplateId;
   name: string;
@@ -860,6 +869,7 @@ export interface IRRWhatsAppTemplate {
   enabled: boolean;
   templateText: string;
   availablePlaceholders: string[];
+  dashboardCards?: IRRDashboardCardKey[];
 }
 
 export type IRRWhatsAppProvider = 'meta_cloud' | 'twilio' | 'custom_webhook' | 'manual_only';
@@ -917,6 +927,7 @@ export const DEFAULT_RR_WHATSAPP_CONFIG: IRRWhatsAppConfig = {
       title: 'Booking Confirmed',
       description: 'Dispatched immediately to customer mobile number when a new rental booking is initiated.',
       enabled: true,
+      dashboardCards: [],
       availablePlaceholders: [
         'customerName',
         'customerPhone',
@@ -957,6 +968,7 @@ export const DEFAULT_RR_WHATSAPP_CONFIG: IRRWhatsAppConfig = {
       title: 'Return Schedule Reminder',
       description: 'Sent manually from Active Rentals card actions or automatically 4 hours prior to return time.',
       enabled: true,
+      dashboardCards: [],
       availablePlaceholders: [
         'customerName',
         'bookingId',
@@ -985,6 +997,7 @@ export const DEFAULT_RR_WHATSAPP_CONFIG: IRRWhatsAppConfig = {
       title: 'Advance Reservation Confirmed',
       description: 'Dispatched immediately when an advance vehicle reservation is recorded.',
       enabled: true,
+      dashboardCards: [],
       availablePlaceholders: [
         'customerName',
         'customerPhone',
@@ -1024,6 +1037,7 @@ export const DEFAULT_RR_WHATSAPP_CONFIG: IRRWhatsAppConfig = {
       title: 'Upcoming Pickup Readiness Notice',
       description: 'Sent manually from Reserved Fleet card actions or automatically 12 hours & 4 hours before pickup.',
       enabled: true,
+      dashboardCards: [],
       availablePlaceholders: [
         'customerName',
         'bookingId',
@@ -1055,6 +1069,7 @@ export const DEFAULT_RR_WHATSAPP_CONFIG: IRRWhatsAppConfig = {
       title: 'Outstanding Payment Notice',
       description: 'Sent manually from Pending Payments card actions or automatically every 4 hours until return.',
       enabled: true,
+      dashboardCards: [],
       availablePlaceholders: [
         'customerName',
         'bookingId',
@@ -1083,6 +1098,7 @@ export const DEFAULT_RR_WHATSAPP_CONFIG: IRRWhatsAppConfig = {
       title: 'Trip Completed & Invoice',
       description: 'Sent to customer mobile upon trip completion with a secure 24-hour time-limited invoice link.',
       enabled: true,
+      dashboardCards: [],
       availablePlaceholders: [
         'customerName',
         'bookingId',

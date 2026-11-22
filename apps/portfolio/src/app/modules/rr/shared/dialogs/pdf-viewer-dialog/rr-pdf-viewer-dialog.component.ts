@@ -56,37 +56,38 @@ export interface RRPdfViewerDialogContext {
     }),
   ],
   template: `
-    <div class="p-4 sm:p-5 bg-card text-card-foreground rounded-2xl border border-border shadow-2xl flex flex-col w-full h-[90vh] max-w-5xl overflow-hidden relative">
+    <div class="p-3 sm:p-5 bg-card text-card-foreground rounded-2xl border border-border shadow-2xl flex flex-col w-full h-[92dvh] sm:h-[90vh] max-h-[96dvh] overflow-hidden relative">
       <!-- Header -->
-      <div class="flex items-center justify-between pb-3 border-b border-border/70 shrink-0">
-        <div class="flex items-center gap-2.5 overflow-hidden">
-          <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <ng-icon class="text-lg" name="lucideFileText"></ng-icon>
+      <div class="flex items-center justify-between pb-3 border-b border-border/70 shrink-0 gap-2">
+        <div class="flex items-center gap-2 overflow-hidden min-w-0">
+          <div class="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <ng-icon class="text-base sm:text-lg" name="lucideFileText"></ng-icon>
           </div>
-          <div class="truncate">
-            <div class="flex items-center gap-2">
-              <h2 class="text-sm sm:text-base font-bold text-foreground truncate">{{ data.title }}</h2>
-              <span hlmBadge variant="secondary" class="text-[10px] font-semibold uppercase tracking-wider py-0.5 px-2 bg-muted text-muted-foreground border border-border/50">
+          <div class="truncate min-w-0">
+            <div class="flex items-center gap-1.5 sm:gap-2">
+              <h2 class="text-xs sm:text-base font-bold text-foreground truncate">{{ data.title }}</h2>
+              <span hlmBadge variant="secondary" class="text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider py-0.5 px-1.5 sm:px-2 bg-muted text-muted-foreground border border-border/50 shrink-0">
                 Tax Invoice
               </span>
             </div>
-            <p class="text-xs text-muted-foreground truncate">{{ data.fileName }}</p>
+            <p class="text-[11px] sm:text-xs text-muted-foreground truncate hidden xs:block">{{ data.fileName }}</p>
           </div>
         </div>
 
         <!-- Header Actions -->
-        <div class="flex items-center gap-2 shrink-0">
+        <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <!-- Send Invoice Options Dropdown -->
           @if (data.booking) {
             <div class="relative">
               <button
                 hlmBtn
                 size="sm"
-                class="h-8 px-2.5 sm:px-3 text-xs font-semibold gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm cursor-pointer"
+                class="h-8 px-2 sm:px-3 text-xs font-semibold gap-1 sm:gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm cursor-pointer"
                 (click)="toggleSendInvoiceDropdown()"
               >
                 <ng-icon name="lucideSend" class="text-xs"></ng-icon>
-                <span>Send Invoice Options</span>
+                <span class="hidden sm:inline">Send Invoice Options</span>
+                <span class="sm:hidden text-xs">Send</span>
                 <ng-icon name="lucideChevronDown" class="text-xs"></ng-icon>
               </button>
 
@@ -162,19 +163,19 @@ export interface RRPdfViewerDialogContext {
           <button
             hlmBtn
             size="sm"
-            class="h-8 px-3 text-xs font-semibold gap-1.5 bg-muted hover:bg-muted/80 text-foreground shadow-sm cursor-pointer"
+            class="h-8 px-2 sm:px-3 text-xs font-semibold gap-1 sm:gap-1.5 bg-muted hover:bg-muted/80 text-foreground shadow-sm cursor-pointer"
             (click)="download()"
             title="Download PDF"
           >
             <ng-icon name="lucideDownload" class="text-xs"></ng-icon>
-            <span>Download</span>
+            <span class="hidden sm:inline">Download</span>
           </button>
 
           <button
             hlmBtn
             size="icon"
             variant="ghost"
-            class="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground cursor-pointer"
+            class="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
             (click)="dialogRef?.close()"
             aria-label="Close dialog"
           >
@@ -183,8 +184,46 @@ export interface RRPdfViewerDialogContext {
         </div>
       </div>
 
+      <!-- Mobile Info & Action Banner (Visible on mobile where inline PDF iframes do not render) -->
+      <div class="sm:hidden mt-2 p-3 rounded-xl bg-muted/40 border border-border space-y-2.5 shrink-0">
+        <div class="flex items-center justify-between text-xs">
+          <div class="flex items-center gap-1.5">
+            <ng-icon name="lucideFileText" class="text-base text-primary"></ng-icon>
+            <span class="font-bold text-foreground">Invoice Ready</span>
+          </div>
+          <span class="font-mono text-[11px] text-muted-foreground">INV-{{ data.booking?.id }}</span>
+        </div>
+        <p class="text-[11px] text-muted-foreground">
+          Mobile browsers do not display PDF previews inside pages. Tap below to download or view the tax invoice.
+        </p>
+        <div class="flex gap-2">
+          <button
+            type="button"
+            hlmBtn
+            size="sm"
+            class="flex-1 h-8 text-xs font-bold gap-1.5 bg-primary text-primary-foreground flex items-center justify-center cursor-pointer shadow-xs"
+            (click)="download()"
+          >
+            <ng-icon name="lucideDownload" class="text-xs"></ng-icon>
+            <span>Download Invoice PDF</span>
+          </button>
+          <button
+            type="button"
+            hlmBtn
+            size="sm"
+            variant="outline"
+            class="h-8 px-2.5 text-xs font-semibold gap-1 flex items-center justify-center cursor-pointer"
+            (click)="openInNewTab()"
+            title="Open in new window"
+          >
+            <ng-icon name="lucideExternalLink" class="text-xs"></ng-icon>
+            <span>Open</span>
+          </button>
+        </div>
+      </div>
+
       <!-- PDF Viewer Frame -->
-      <div class="flex-1 w-full mt-3 overflow-hidden rounded-xl border border-border/60 bg-muted/20 relative">
+      <div class="flex-1 w-full mt-2 sm:mt-3 overflow-hidden rounded-xl border border-border/60 bg-muted/20 relative min-h-[220px]">
         <iframe
           [src]="safeUrl"
           class="w-full h-full border-0 rounded-xl"
@@ -266,8 +305,8 @@ export interface RRPdfViewerDialogContext {
             <div class="p-2.5 rounded-lg bg-primary/5 border border-primary/20 text-[11px] text-muted-foreground flex items-start gap-2">
               <ng-icon name="lucideShieldCheck" class="text-sm text-primary shrink-0 mt-0.5"></ng-icon>
               <div>
-                <span class="font-semibold text-foreground">Signature Note Added:</span>
-                <span> "(this is an Digitally generated receipt, if required customer signed visit Branch)". Customer signature marked as "Not required".</span>
+                <span class="font-semibold text-foreground">Signature Note:</span>
+                <span> "(if Authorized required, contact branch)" positioned above Authorized Signature & Stamp.</span>
               </div>
             </div>
 
