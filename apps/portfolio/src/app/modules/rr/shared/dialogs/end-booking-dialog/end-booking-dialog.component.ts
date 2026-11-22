@@ -1130,12 +1130,14 @@ export class RREndBookingDialogComponent implements OnInit {
       // Close this End Booking dialog first
       this.dialogRef?.close(true);
 
-      // Display the completed customer invoice popup
-      try {
-        await this.invoicePdf.viewInvoicePdf(completedBooking);
-      } catch (pdfErr) {
-        console.error('Customer invoice popup generation note:', pdfErr);
-      }
+      // Display the completed customer invoice popup with safe timing delay for mobile CDK overlay teardown
+      setTimeout(async () => {
+        try {
+          await this.invoicePdf.viewInvoicePdf(completedBooking);
+        } catch (pdfErr) {
+          console.error('Customer invoice popup generation note:', pdfErr);
+        }
+      }, 150);
 
       toast.success(`Booking ${b.id} ended successfully! Invoice generated.`);
     } catch (e: unknown) {
