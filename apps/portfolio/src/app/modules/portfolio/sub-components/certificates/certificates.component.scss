@@ -5,5 +5,5 @@
   top: 0;
   width: 6px;
   height: 100%;
-  background: linear-gradient(180deg, var(--color-sky-500), var(--primary));
+  background: linear-gradient(180deg, var(--glow-accent-1, var(--color-sky-500)), var(--glow-accent-2, var(--primary)));
 }
