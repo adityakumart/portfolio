@@ -931,53 +931,20 @@
       <div class="p-3 space-y-2">
         @if (damageStatus() === null) {
           <div
-            class="p-3 rounded-lg border border-dashed border-destructive/50 bg-destructive/5 text-destructive text-xs flex items-center justify-between gap-2 font-medium"
+            class="p-2.5 rounded-lg border border-dashed border-destructive/50 bg-destructive/5 text-destructive text-xs flex items-center gap-2 font-medium"
           >
-            <div class="flex items-center gap-2">
-              <ng-icon name="lucideAlertCircle" class="text-sm shrink-0"></ng-icon>
-              <span>Mandatory: Select whether the vehicle has damages (Click <strong>Add Damage</strong>) or was returned clean (Click <strong>None</strong>).</span>
-            </div>
-            <div class="flex items-center gap-1.5 shrink-0">
-              <button
-                type="button"
-                hlmBtn
-                size="sm"
-                variant="outline"
-                (click)="selectAddDamage()"
-                class="h-6 text-[11px] px-2"
-              >
-                + Add Damage
-              </button>
-              <button
-                type="button"
-                hlmBtn
-                size="sm"
-                variant="outline"
-                (click)="selectDamageNone()"
-                class="h-6 text-[11px] px-2 text-emerald-600 border-emerald-500/40"
-              >
-                None
-              </button>
-            </div>
+            <ng-icon name="lucideAlertCircle" class="text-sm shrink-0"></ng-icon>
+            <span>Mandatory: Select whether the vehicle has damages (Click <strong>Add Damage</strong>) or was returned clean (Click <strong>None</strong>).</span>
           </div>
         } @else if (damageStatus() === 'none') {
           <div
-            class="p-2.5 rounded-lg border border-emerald-500/40 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 text-xs flex items-center justify-between font-medium"
+            class="p-2.5 rounded-lg border border-emerald-500/40 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 text-xs flex items-center gap-2 font-medium"
           >
-            <div class="flex items-center gap-2">
-              <ng-icon
-                name="lucideCheckCircle"
-                class="text-emerald-600 dark:text-emerald-400 text-sm shrink-0"
-              ></ng-icon>
-              <span><strong>Damages Verified: None.</strong> No damages reported upon vehicle inspection (₹0 damages charge).</span>
-            </div>
-            <button
-              type="button"
-              (click)="selectAddDamage()"
-              class="text-[11px] text-emerald-700 dark:text-emerald-400 underline hover:opacity-80"
-            >
-              Change to Add Damage
-            </button>
+            <ng-icon
+              name="lucideCheckCircle"
+              class="text-emerald-600 dark:text-emerald-400 text-sm shrink-0"
+            ></ng-icon>
+            <span><strong>Damages Verified: None.</strong> No damages reported upon vehicle inspection (₹0 damages charge).</span>
           </div>
         } @else {
           <div class="space-y-2">
@@ -1038,21 +1005,24 @@
                   </div>
                 } @else {
                   <label
-                    class="h-8 px-2.5 rounded-md border border-dashed border-border bg-background hover:bg-muted/80 text-muted-foreground hover:text-foreground text-xs flex items-center gap-1.5 cursor-pointer shrink-0 transition-colors"
-                    title="Upload damage photo (optional)"
+                    class="h-8 px-2.5 rounded-md border border-dashed text-xs flex items-center gap-1.5 cursor-pointer shrink-0 transition-colors"
+                    [class.border-destructive]="!dmg.imageUrl"
+                    [class.bg-destructive/5]="!dmg.imageUrl"
+                    [class.text-destructive]="!dmg.imageUrl"
+                    title="Upload damage photo (Mandatory)"
                   >
-                    @if (dmg.isUploadingImage) {
+                    @if (isDamageUploading(dmg.id)) {
                       <ng-icon name="lucideRefreshCw" class="text-xs animate-spin text-primary"></ng-icon>
-                      <span class="text-[11px]">Uploading...</span>
+                      <span class="text-[11px] font-medium text-foreground">Uploading...</span>
                     } @else {
-                      <ng-icon name="lucideCamera" class="text-xs text-primary"></ng-icon>
-                      <span class="text-[11px]">Add Photo</span>
+                      <ng-icon name="lucideCamera" class="text-xs text-destructive"></ng-icon>
+                      <span class="text-[11px] font-semibold">Add Photo *</span>
                     }
                     <input
                       type="file"
                       accept="image/png,image/jpeg,image/webp"
                       class="hidden"
-                      [disabled]="dmg.isUploadingImage"
+                      [disabled]="isDamageUploading(dmg.id)"
                       (change)="uploadDamagePhoto($event, dmg)"
                     />
                   </label>
@@ -1075,7 +1045,7 @@
             @if (hasInvalidDamages()) {
               <p class="text-[11px] text-destructive font-medium flex items-center gap-1">
                 <ng-icon name="lucideAlertCircle" class="text-xs shrink-0"></ng-icon>
-                All damage section fields must be completed: enter description and amount for each item.
+                All damage section fields are mandatory: enter description, amount, and upload photo for each item.
               </p>
             }
 

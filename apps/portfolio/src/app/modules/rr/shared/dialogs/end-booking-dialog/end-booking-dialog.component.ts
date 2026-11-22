@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BrnDialogRef, injectBrnDialogContext } from '@spartan-ng/brain/dialog';
@@ -107,7 +107,15 @@ export class RREndBookingDialogComponent implements OnInit {
 
   private rrApi = inject(RRApiService);
   private invoicePdf = inject(RRInvoicePdfService);
+  private cdr = inject(ChangeDetectorRef);
   isSubmitting = signal(false);
+
+  // Dedicated reactive tracking for damage image uploads
+  uploadingDamageMap = signal<Record<string, boolean>>({});
+
+  isDamageUploading(dmgId: string): boolean {
+    return !!this.uploadingDamageMap()[dmgId];
+  }
 
   booking = signal<IBooking | null>(null);
   vehicle = signal<IVehicle | null>(null);
@@ -246,7 +254,9 @@ export class RREndBookingDialogComponent implements OnInit {
       dmg.amount === null ||
       dmg.amount === undefined ||
       isNaN(Number(dmg.amount)) ||
-      Number(dmg.amount) < 0
+      Number(dmg.amount) < 0 ||
+      !dmg.imageUrl ||
+      dmg.imageUrl.trim() === ''
     );
   }
 
@@ -422,7 +432,11 @@ export class RREndBookingDialogComponent implements OnInit {
       if (this.damageStatus() === null) {
         return 'Select Damages option (Add Damage or None)';
       }
-      return 'Complete description and amount for all damages';
+      const hasMissingPhoto = this.damages.some((d) => !d.imageUrl || !d.imageUrl.trim());
+      if (hasMissingPhoto) {
+        return 'Upload damage photo for all reported damages (photo is mandatory)';
+      }
+      return 'Complete description, amount, and photo for all damages';
     }
     if (this.isChallanInvalid()) {
       return 'Enter Challan amount (enter 0 if none)';
@@ -655,8 +669,11 @@ export class RREndBookingDialogComponent implements OnInit {
     const file = target.files?.[0];
     if (!file) return;
 
+    this.uploadingDamageMap.update((m) => ({ ...m, [dmg.id]: true }));
+    dmg.isUploadingImage = true;
+    this.cdr.markForCheck();
+
     try {
-      dmg.isUploadingImage = true;
       const res = await this.rrApi.uploadVehicleImage(file);
       if (res && res.url) {
         dmg.imageUrl = res.url;
@@ -669,12 +686,17 @@ export class RREndBookingDialogComponent implements OnInit {
       toast.error('Error uploading damage photo: ' + ((err as { message?: string })?.message || 'unknown error'));
     } finally {
       dmg.isUploadingImage = false;
+      this.uploadingDamageMap.update((m) => ({ ...m, [dmg.id]: false }));
       target.value = '';
+      this.calculateEndBookingFees();
+      this.cdr.markForCheck();
     }
   }
 
   removeDamagePhoto(dmg: IDamageItem) {
     dmg.imageUrl = undefined;
+    this.calculateEndBookingFees();
+    this.cdr.markForCheck();
   }
 
   openImagePreview(url: string) {
