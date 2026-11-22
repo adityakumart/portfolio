@@ -1,3 +1,5 @@
+import { Filter } from 'mongodb';
+import { IBooking } from '@portfolio/shared-types';
 import { RRDb } from '../common/rr-db.util';
 import { ILog } from './rr-log.model';
 
@@ -42,5 +44,56 @@ export class RRLogService {
       .sort({ timestamp: -1, _id: -1 })
       .limit(limit)
       .toArray();
+  }
+
+  /**
+   * Fetches dashboard fleet and booking metrics.
+   */
+  static async getDashboardStats(): Promise<{
+    totalFleet: number;
+    maintenance: number;
+    available: number;
+    contract: number;
+    activeBookings: number;
+    pendingPayments: number;
+    reserved: number;
+  }> {
+    const vehCol = await RRDb.getVehiclesCol();
+    const bookingCol = await RRDb.getBookingsCol();
+
+    const [
+      totalFleet,
+      maintenance,
+      available,
+      contract,
+      activeBookings,
+      pendingPayments,
+      reserved,
+    ] = await Promise.all([
+      vehCol.countDocuments({ isDeleted: { $ne: true } }),
+      vehCol.countDocuments({ status: 'maintenance', isDeleted: { $ne: true } }),
+      vehCol.countDocuments({ status: 'available', isDeleted: { $ne: true } }),
+      vehCol.countDocuments({
+        status: { $in: ['contract', 'in_contract'] },
+        isDeleted: { $ne: true },
+      }),
+      bookingCol.countDocuments({ status: 'active', isDeleted: { $ne: true } }),
+      bookingCol.countDocuments({
+        status: 'active',
+        isDeleted: { $ne: true },
+        pendingAmount: { $nin: ['0', '', null] },
+      } as Filter<IBooking>),
+      bookingCol.countDocuments({ status: 'reserved', isDeleted: { $ne: true } }),
+    ]);
+
+    return {
+      totalFleet,
+      maintenance,
+      available,
+      contract,
+      activeBookings,
+      pendingPayments,
+      reserved,
+    };
   }
 }
