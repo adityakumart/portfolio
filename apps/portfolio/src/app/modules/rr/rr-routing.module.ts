@@ -254,6 +254,20 @@ export const RR_ROUTES: Routes = [
           },
         },
       },
+      {
+        path: 'reports',
+        loadComponent: () =>
+          import(
+            './components/dashboard/components/status-reports/status-reports.component'
+          ).then((m) => m.RRStatusReportsComponent),
+        data: {
+          seo: {
+            title: 'Status Reports & Analytics | Fleet Management',
+            description: 'Download operational status, fleet performance, and financial reports.',
+            robots: 'noindex, nofollow',
+          },
+        },
+      },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },

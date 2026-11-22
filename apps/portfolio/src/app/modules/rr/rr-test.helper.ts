@@ -30,6 +30,14 @@ export const MOCK_EMPLOYEE_USER: IRRUser = {
   role: 'employee',
 };
 
+export const MOCK_MANAGER_USER: IRRUser = {
+  id: 'RRA003',
+  firstName: 'Fleet',
+  lastName: 'Manager',
+  email: 'manager@fleetops.local',
+  role: 'manager',
+};
+
 export const MOCK_PUBLIC_VEHICLES: IPublicVehicle[] = [
   {
     _id: 'veh-pub-1',
@@ -530,7 +538,13 @@ export async function injectRRSession(
   }
 ) {
   const user = options?.user || MOCK_EMPLOYEE_USER;
-  const token = options?.token || (user.role === 'admin' ? 'mock-admin-token-xyz' : 'mock-rr-jwt-token-xyz');
+  const token =
+    options?.token ||
+    (user.role === 'admin'
+      ? 'mock-admin-token-xyz'
+      : user.role === 'manager'
+      ? 'mock-manager-token-xyz'
+      : 'mock-rr-jwt-token-xyz');
   const isLocked = !!options?.isLocked;
 
   // Primary user hub session (enables seamless /user/rr routing)
@@ -973,6 +987,49 @@ export async function setupRRRouteMocks(
     }
   });
 
+  // Status Reports
+  await page.route('**/api/rr/reports/status*', async (route) => {
+    const summary = {
+      totalBookings: bookings.length,
+      activeBookings: bookings.filter((b) => b.status === 'active').length,
+      completedBookings: bookings.filter((b) => b.status === 'completed').length,
+      cancelledBookings: bookings.filter((b) => b.status === 'cancelled').length,
+      reservedBookings: bookings.filter((b) => b.status === 'reserved').length,
+      totalRevenue: bookings
+        .filter((b) => b.status !== 'cancelled')
+        .reduce((sum, b) => sum + (parseFloat(String(b.finalRentalAmount || '0')) || 0), 0),
+      totalPaid: bookings
+        .filter((b) => b.status !== 'cancelled')
+        .reduce((sum, b) => sum + (parseFloat(String(b.amountPaid || '0')) || 0), 0),
+      totalPending: bookings
+        .filter((b) => b.status !== 'cancelled')
+        .reduce((sum, b) => sum + (parseFloat(String(b.pendingAmount || '0')) || 0), 0),
+      totalKilometers: 1420,
+      totalDurationHours: 168,
+      fleetUtilizationRate: 64.5,
+    };
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        success: true,
+        summary,
+        bookings,
+        totalRecords: bookings.length,
+        currentPage: 1,
+        totalPages: 1,
+      }),
+    });
+  });
+
+  await page.route('**/api/rr/reports/log-download*', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ success: true, message: 'Logged' }),
+    });
+  });
+
   // Auth Login endpoint
   await page.route('**/api/rr/auth/login*', async (route) => {
     const postData = route.request().postDataJSON() || {};
@@ -993,13 +1050,18 @@ export async function setupRRRouteMocks(
   // Auth Permissions endpoint (RR module)
   await page.route('**/api/rr/auth/permissions*', async (route) => {
     const authHeader = (route.request().headers()['authorization'] || '').toLowerCase();
-    const isAdmin = authHeader.includes('admin');
+    let resolvedUser: IRRUser = MOCK_EMPLOYEE_USER;
+    if (authHeader.includes('admin')) {
+      resolvedUser = MOCK_ADMIN_USER;
+    } else if (authHeader.includes('manager')) {
+      resolvedUser = MOCK_MANAGER_USER;
+    }
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({
         success: true,
-        user: isAdmin ? MOCK_ADMIN_USER : MOCK_EMPLOYEE_USER,
+        user: resolvedUser,
       }),
     });
   });

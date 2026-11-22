@@ -34,6 +34,7 @@ import {
   lucideMessageSquarePlus,
   lucideMessageSquareCheck,
   lucideMessageSquare,
+  lucideFileBarChart,
 } from '@ng-icons/lucide';
 import { HlmDialogService } from '@spartan-ng/hel/dialog';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
@@ -96,6 +97,7 @@ import { RRLockScreenComponent } from '../lock-screen/rr-lock-screen.component';
       lucideMessageSquarePlus,
       lucideMessageSquareCheck,
       lucideMessageSquare,
+      lucideFileBarChart,
     }),
   ],
   templateUrl: './dashboard.component.html',
@@ -115,6 +117,7 @@ export class RRDashboardComponent implements OnInit {
   // User details & checks
   currentUser = computed(() => this.rrApi.currentUser());
   isAdmin = computed(() => this.currentUser()?.role === 'admin');
+  isManagerOrAdmin = this.rrApi.isManagerOrAdmin;
   policyState = computed(() => this.rrApi.passwordPolicyState());
   isMandatoryPasswordChange = computed(() => {
     const policy = this.policyState();
@@ -145,7 +148,8 @@ export class RRDashboardComponent implements OnInit {
       url.includes('/user/rr/home-content') ||
       url.includes('/user/rr/history') ||
       url.includes('/user/rr/feedback/manage') ||
-      url.includes('/user/rr/whatsapp-templates')
+      url.includes('/user/rr/whatsapp-templates') ||
+      url.includes('/user/rr/reports')
     );
   });
 
