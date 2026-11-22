@@ -243,3 +243,5 @@ export class R2Service {
     return { commonPrefixes, contents };
   }
 }
+
+export { R2Service as R2StorageService };
