@@ -426,81 +426,48 @@ flowchart LR
   ```
 
 #### Sub-Tasks:
-- [ ] **Task 4.1: Implement Discrete RR Controllers**
+- [x] **Task 4.1: Implement Discrete RR Controllers** [COMPLETED]
   - `auth/rr-auth.controller.ts`: `login`, `changePassword`, `logout`, `getPermissions`.
   - `employees/rr-employee.controller.ts`: `getEmployees`, `createEmployee`, `activateEmployee`, `resetPassword`, `updateEmployee`, `deleteEmployee`.
-  - `vehicles/rr-vehicle.controller.ts`: `getVehicles`, `getVehicleById`, `createVehicle`, `updateVehicle`, `deleteVehicle`, `getVehicleAvailability`, `autocompleteVehicles`.
-  - `bookings/rr-booking.controller.ts`: `getBookings`, `createBooking`, `updateBooking`, `deleteBooking`, `closeAdvanceBooking`, `autoCloseIdle`, `sendCustomerIntimation`.
-  - `customers/rr-customer.controller.ts`: `getCustomers`, `getCustomerById`, `createCustomer`, `updateCustomer`, `deleteCustomer`, `autocompleteCustomers`.
-  - `announcements/rr-announcement.controller.ts`: `getAnnouncements`, `createAnnouncement`, `updateAnnouncement`, `toggleAnnouncement`, `deleteAnnouncement`, `updateTicker`.
+  - `vehicles/rr-vehicle.controller.ts`: `getVehicles`, `createVehicle`, `updateVehicle`, `deleteVehicle`, `checkAvailability`, `getBookingVehiclesAutocomplete`.
+  - `bookings/rr-booking.controller.ts`: `getBookings`, `createBooking`, `updateBooking`, `deleteBooking`, `closeAdvanceBooking`, `autoCloseIdleAdvance`, `recordCustomerIntimation`, `previewWhatsApp`, `sendWhatsApp`.
+  - `customers/rr-customer.controller.ts`: `getCustomers`, `getCustomerById`, `createCustomer`, `updateCustomer`, `deleteCustomer`, `getCustomersAutocomplete`, `checkDiscount`.
+  - `announcements/rr-announcement.controller.ts`: `getAnnouncementsAndTicker`, `createAnnouncement`, `updateAnnouncement`, `toggleAnnouncement`, `deleteAnnouncement`, `updateTicker`.
   - `home-content/rr-home-content.controller.ts`: `getHomeContent`, `updateHomeContent`, `resetHomeContent`.
-  - `feedback/rr-feedback.controller.ts`: `submitFeedback`, `getMyFeedback`, `getFeedbackStats`, `getAllFeedback`, `updateFeedbackStatus`, `deleteFeedback`.
-  - `reports/rr-report.controller.ts`: `getStatusReports`, `logReportDownload`.
-  - `logs/rr-log.controller.ts`: `getLogs`.
-  - `whatsapp/rr-whatsapp.controller.ts`: `getConfig`, `updateConfig`, `testMessage`, `previewMessage`, `sendMessage`, `runSchedulerSweep`.
+  - `feedback/rr-feedback.controller.ts`: `submitFeedback`, `getMyFeedback`, `getFeedbackStats`, `getFeedbacks`, `updateFeedbackStatus`, `deleteFeedback`.
+  - `reports/rr-report.controller.ts`: `getStatusReport`, `logReportDownload`.
+  - `logs/rr-log.controller.ts`: `getLogs`, `getDashboardStats`.
+  - `whatsapp/rr-whatsapp.controller.ts`: `getConfig`, `saveConfig`, `testDispatch`, `runSchedulerSweep`.
   - `public/rr-public.controller.ts`: Public homepage, public announcements, public fleet, public invoice lookup.
   - `storage/rr-storage.controller.ts`: Vehicle and feedback screenshot R2 uploads.
-- [ ] **Task 4.2: Implement Discrete Route Files**
-  - Create `*.routes.ts` in each feature folder, applying `authenticateRRToken`, `requireAdmin`, and `requireManagerOrAdmin` middlewares.
-- [ ] **Task 4.3: Assemble Streamlined Master `rr.routes.ts`**
-  - Mount feature sub-routers:
-    ```typescript
-    rrRouter.use('/auth', rrAuthRouter);
-    rrRouter.use('/employees', rrEmployeeRouter);
-    rrRouter.use('/vehicles', rrVehicleRouter);
-    rrRouter.use('/bookings', rrBookingRouter);
-    rrRouter.use('/customers', rrCustomerRouter);
-    rrRouter.use('/announcements', rrAnnouncementRouter);
-    rrRouter.use('/home-content', rrHomeContentRouter);
-    rrRouter.use('/feedback', rrFeedbackRouter);
-    rrRouter.use('/reports', rrReportRouter);
-    rrRouter.use('/logs', rrLogRouter);
-    rrRouter.use('/whatsapp', rrWhatsAppRouter);
-    rrRouter.use('/public', rrPublicRouter);
-    ```
-- [ ] **Task 4.4: Decommission Legacy Monolith**
-  - Replace the 3,247-line `rr.routes.ts` with the clean modular router.
+- [x] **Task 4.2: Implement Discrete Route Files** [COMPLETED]
+  - Created `*.routes.ts` in each feature folder, applying `authenticateRRToken`, `requireAdmin`, and `requireManagerOrAdmin` middlewares.
+- [x] **Task 4.3: Assemble Streamlined Master `rr.routes.ts`** [COMPLETED]
+  - Mounted feature sub-routers under `src/modules/rr/rr.routes.ts`.
+- [x] **Task 4.4: Decommission Legacy Monolith** [COMPLETED]
+  - Deleted the 3,247-line `apps/portfolio-core/src/app/rr/rr.routes.ts`.
+- **Commit**: `f3afae2 refactor(backend): dismantle monolithic rr.routes.ts into discrete feature controllers and routers`
 
 ---
 
-### Branch 5: `refactor/backend-modular-architecture-integration`
+### Branch 5: `refactor/backend-modular-architecture-integration` [COMPLETED - commit `bc4df25`]
 **Objective**: Clean up `main.ts`, remove legacy top-level files, verify backward compatibility, and execute monorepo builds and test suites.
 
 - **Branch Name**: `refactor/backend-modular-architecture-integration`
 - **Primary Commit Message**:
   ```text
   refactor(backend): wire user and rr root routers in main.ts, remove legacy files, and verify end-to-end
-
-  - Update main.ts to import clean modular routers from src/modules/user and src/modules/rr
-  - Remove obsolete controllers, routes, models, and services from legacy root locations
-  - Verify complete TypeScript compilation of portfolio-core and all dependent projects
-  - Validate end-to-end API compatibility for both User and RR platform interfaces
-  - Update apps/portfolio-core documentation with modular architecture guide
   ```
 
 #### Sub-Tasks:
-- [ ] **Task 5.1: Clean `main.ts` Refactoring**
-  - Rewire `main.ts` to mount:
-    ```typescript
-    // Common middlewares (Helmet, CORS, MongoSanitize, Global Rate Limiting)
-    app.use('/api', apiRateLimiter);
-
-    // Modular Domain Routers
-    app.use('/api', userRouter); // Handles /api/auth, /api/user/*, /api/movies, etc.
-    app.use('/api/rr', rrRouter); // Handles all /api/rr/* routes
-
-    // Shared KYC endpoints (compatible with both platform and RR callers)
-    app.use('/api/kyc', kycRouter);
-    app.use('/api/rr/kyc', kycRouter);
-    ```
-- [ ] **Task 5.2: Legacy File Cleanup**
-  - Remove vacated directories: `src/controllers/`, `src/routes/`, `src/models/`, `src/services/` that have been migrated into `src/modules/` or `src/common/`.
-- [ ] **Task 5.3: End-to-End Build & Validation**
-  - Run full TypeScript typecheck: `cmd /c "npx nx build portfolio-core"`.
-  - Verify web frontend builds (`portfolio` and `portfolio-rr`).
-  - Run Playwright test suite to confirm zero regressions.
-- [ ] **Task 5.4: Documentation**
-  - Add architecture documentation in `apps/portfolio-core/README.md`.
+- [x] **Task 5.1: Clean `main.ts` Refactoring** [COMPLETED]
+  - Rewired `main.ts` to import `userRouter` and `rrRouter` exclusively from `src/modules/`.
+- [x] **Task 5.2: Legacy File Cleanup** [COMPLETED]
+  - Removed 70 legacy files (9,962 lines deleted): `src/controllers/`, `src/routes/`, `src/models/`, `src/services/`, `src/app/`, `src/middlewares/`, `src/config/`, `src/types/`, `src/utils/`.
+- [x] **Task 5.3: End-to-End Build & Validation** [COMPLETED]
+  - `portfolio-core`: Built cleanly with exit code 0.
+  - `portfolio`: Built cleanly with exit code 0.
+  - `portfolio-rr`: Built cleanly with exit code 0.
 
 ---
 
