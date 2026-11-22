@@ -674,6 +674,7 @@
         >
           <ng-icon name="lucideGauge" class="text-sm"></ng-icon>
           <span>Extra KM & Hours Charges</span>
+          <span class="text-[10px] font-normal normal-case text-amber-800/80 dark:text-amber-200/80 ml-1.5">(auto calculated)</span>
         </h4>
         <div
           class="flex items-center gap-3 font-mono font-bold text-xs text-amber-900 dark:text-amber-200"
@@ -1149,7 +1150,7 @@
                 (input)="calculateEndBookingFees()"
                 class="w-full text-xs pl-6 font-mono font-semibold"
                 [class.border-destructive]="isChallanInvalid()"
-                placeholder="0"
+                placeholder="Enter Amount"
                 min="0"
                 required
               />
@@ -1182,7 +1183,7 @@
                 (input)="calculateEndBookingFees()"
                 class="w-full text-xs pl-6 font-mono font-semibold"
                 [class.border-destructive]="isTollInvalid()"
-                placeholder="0"
+                placeholder="Enter Amount"
                 min="0"
                 required
               />
