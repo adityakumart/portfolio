@@ -34,7 +34,10 @@ import {
   lucideCalendar,
   lucideChevronLeft,
   lucideChevronRight,
+  lucideSun,
+  lucideMoon,
 } from '@ng-icons/lucide';
+import { ThemeService } from '../../../../theme.service';
 import { HlmButtonImports } from '@spartan-ng/hel/button';
 import { HlmBadgeImports } from '@spartan-ng/hel/badge';
 import { HlmCardImports } from '@spartan-ng/hel/card';
@@ -102,6 +105,8 @@ import { RRVehicleCardComponent, RRCarLoaderComponent, RRVehicleImageCarouselCom
       lucideCalendar,
       lucideChevronLeft,
       lucideChevronRight,
+      lucideSun,
+      lucideMoon,
     }),
   ],
   templateUrl: './homepage.component.html',
@@ -111,6 +116,10 @@ export class RRHomepageComponent implements OnInit, OnDestroy {
   private rrApi = inject(RRApiService);
   private rrPublicApi = inject(RRPublicApiService);
   private router = inject(Router);
+  private themeService = inject(ThemeService);
+
+  isDarkMode = computed(() => this.themeService.darkMode());
+  darkPalette = computed(() => this.themeService.darkPalette());
 
   // Dynamic Homepage Content Signal with Defaults
   homeContent = signal<IRRHomePageContent>(DEFAULT_RR_HOMEPAGE_CONTENT);
@@ -121,6 +130,14 @@ export class RRHomepageComponent implements OnInit, OnDestroy {
   secondaryPhone = computed(() => this.homeContent().contact.secondaryPhone || '+91 9800000002');
   secondaryPhoneRaw = computed(() => this.homeContent().contact.secondaryPhoneRaw || '9800000002');
   whatsappNumberRaw = computed(() => this.homeContent().contact.whatsappNumberRaw || '9800000001');
+
+  toggleTheme(): void {
+    this.themeService.toggleTheme();
+  }
+
+  toggleDarkPalette(): void {
+    this.themeService.toggleDarkPalette();
+  }
 
   // Hero Banners Carousel State
   activeHeroBannerIndex = signal<number>(0);
