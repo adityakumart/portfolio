@@ -13,6 +13,26 @@
     >
       <ng-icon class="size-4 sm:size-4.5 transition-transform duration-500 group-hover:rotate-[360deg]" [name]="isDarkMode() ? 'lucideSun' : 'lucideMoon'"></ng-icon>
     </button>
+    @if (isDarkMode()) {
+      <div class="h-4 w-px bg-border/60"></div>
+      <button
+        hlmBtn
+        variant="ghost"
+        size="icon"
+        class="group size-8 sm:size-9 rounded-full text-foreground/80 hover:text-foreground hover:bg-muted transition-all duration-200"
+        (click)="toggleDarkPalette()"
+        [hlmTooltip]="darkPalette() === 'aurora' ? 'Current: Electric Aurora (Click for Solar Eclipse)' : 'Current: Solar Eclipse (Click for Electric Aurora)'"
+        position="left"
+        aria-label="Switch Dark Theme Color Palette"
+      >
+        <ng-icon
+          class="size-4 sm:size-4.5 transition-transform duration-300 group-hover:scale-110"
+          [name]="darkPalette() === 'aurora' ? 'lucideSparkles' : 'lucidePalette'"
+          [class.text-cyan-400]="darkPalette() === 'aurora'"
+          [class.text-amber-400]="darkPalette() === 'eclipse'"
+        ></ng-icon>
+      </button>
+    }
     <div class="h-4 w-px bg-border/60"></div>
     <button
       hlmBtn
