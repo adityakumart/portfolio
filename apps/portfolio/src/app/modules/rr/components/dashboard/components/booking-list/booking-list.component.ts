@@ -190,7 +190,7 @@ export class RRBookingListComponent implements OnInit, OnDestroy {
   async loadBookings() {
     try {
       const data = await this.rrApi.getBookings();
-      this.bookings.set(data);
+      this.bookings.set(Array.isArray(data) ? data : ((data as any)?.bookings || []));
     } catch (e) {
       console.error('Error loading bookings:', e);
     }

@@ -27,15 +27,41 @@ export class RRBookingController {
 
   static async getBookings(req: IRRRequest, res: Response): Promise<void> {
     try {
-      const { status, search, vehicleRegNo, vehicle, phone, customer, page, limit } = req.query;
-      const result = await RRBookingService.getBookings({
-        status: typeof status === 'string' ? status : undefined,
-        search: typeof search === 'string' ? search : undefined,
-        vehicle: typeof (vehicle || vehicleRegNo) === 'string' ? (vehicle || vehicleRegNo) as string : undefined,
-        customer: typeof (customer || phone) === 'string' ? (customer || phone) as string : undefined,
-        page: page !== undefined ? Number(page) : undefined,
-        limit: limit !== undefined ? Number(limit) : undefined,
-      });
+      const {
+        status,
+        search,
+        vehicleRegNo,
+        vehicle,
+        phone,
+        customer,
+        page,
+        limit,
+        from,
+        to,
+        paginate,
+        all,
+        includeDeleted,
+        history,
+      } = req.query;
+
+      const result = await RRBookingService.getBookings(
+        {
+          status: typeof status === 'string' ? status : undefined,
+          search: typeof search === 'string' ? search : undefined,
+          vehicle: typeof (vehicle || vehicleRegNo) === 'string' ? ((vehicle || vehicleRegNo) as string) : undefined,
+          customer: typeof (customer || phone) === 'string' ? ((customer || phone) as string) : undefined,
+          page: page !== undefined ? Number(page) : undefined,
+          limit: limit !== undefined ? Number(limit) : undefined,
+          from: typeof from === 'string' ? from : undefined,
+          to: typeof to === 'string' ? to : undefined,
+          paginate: paginate !== undefined ? String(paginate) : undefined,
+          all: all !== undefined ? String(all) : undefined,
+          includeDeleted: includeDeleted !== undefined ? String(includeDeleted) : undefined,
+          history: history !== undefined ? String(history) : undefined,
+        },
+        req.userId,
+        req.userRole,
+      );
       res.json(result);
     } catch (err: unknown) {
       res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
@@ -87,7 +113,32 @@ export class RRBookingController {
   static async deleteBooking(req: IRRRequest, res: Response): Promise<void> {
     try {
       const id = String(req.params['id'] || '');
-      const result = await RRBookingService.deleteBooking(id, req.body, req.userId, req.userRole);
+      const deletionPayload = {
+        deletionReason:
+          req.body?.deletionReason ||
+          (typeof req.query['deletionReason'] === 'string'
+            ? req.query['deletionReason']
+            : typeof req.query['reasonForDeletion'] === 'string'
+            ? req.query['reasonForDeletion']
+            : undefined),
+        reasonForDeletion:
+          req.body?.reasonForDeletion ||
+          (typeof req.query['reasonForDeletion'] === 'string'
+            ? req.query['reasonForDeletion']
+            : undefined),
+        returnAmount: req.body?.returnAmount ?? req.query['returnAmount'],
+        returnAmountMode:
+          req.body?.returnAmountMode ??
+          (typeof req.query['returnAmountMode'] === 'string'
+            ? req.query['returnAmountMode']
+            : undefined),
+      };
+      const result = await RRBookingService.deleteBooking(
+        id,
+        deletionPayload,
+        req.userId,
+        req.userRole,
+      );
       res.json(result);
     } catch (err: unknown) {
       const msg = getErrorMessage(err);

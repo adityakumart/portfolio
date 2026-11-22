@@ -10,9 +10,16 @@ function getErrorMessage(err: unknown): string {
 export class RRLogController {
   static async getLogs(req: IRRRequest, res: Response): Promise<void> {
     try {
-      const limit = Math.min(500, Math.max(1, Number(req.query['limit']) || 100));
-      const logs = await RRLogService.getLogs(limit);
-      res.json(logs);
+      const { from, to, page, limit, search, all } = req.query;
+      const result = await RRLogService.getLogs({
+        from: typeof from === 'string' ? from : undefined,
+        to: typeof to === 'string' ? to : undefined,
+        page: page !== undefined ? Number(page) : undefined,
+        limit: limit !== undefined ? Number(limit) : undefined,
+        search: typeof search === 'string' ? search : undefined,
+        all: all === 'true' ? 'true' : undefined,
+      });
+      res.json(result);
     } catch (err: unknown) {
       res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
     }

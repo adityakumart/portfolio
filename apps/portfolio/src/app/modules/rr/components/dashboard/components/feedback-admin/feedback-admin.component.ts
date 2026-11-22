@@ -189,7 +189,8 @@ export class RRFeedbackAdminComponent implements OnInit {
         this.rrApi.getAllFeedbacks(),
         this.rrApi.getFeedbackStats(),
       ]);
-      this.feedbacks.set(feedbacksRes.data);
+      const list = Array.isArray(feedbacksRes) ? feedbacksRes : (feedbacksRes?.data || []);
+      this.feedbacks.set(list);
       this.stats.set(statsRes);
     } catch (err: unknown) {
       console.error('Failed to load feedback admin data:', err);
