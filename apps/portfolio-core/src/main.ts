@@ -2,17 +2,9 @@ import express from 'express';
 import helmet from 'helmet';
 import mongoSanitize from 'express-mongo-sanitize';
 import cors from 'cors';
-import { authRouter } from './routes/auth.routes';
-import { chatRouter } from './routes/chat.routes';
-import { filesRouter } from './routes/files.routes';
+import { userRouter, kycRouter } from './modules/user/user.routes';
 import { rrRouter } from './app/rr/rr.routes';
-import { dietHydrationRouter } from './routes/diet-hydration.routes';
-import { plannerRouter } from './routes/planner.routes';
-import { movieRouter } from './routes/movie.routes';
-import { gameRouter } from './routes/game.routes';
-import { adminRouter } from './routes/admin.routes';
-import { kycRouter } from './routes/kyc.routes';
-import { apiRateLimiter } from './middlewares/rate-limit.middleware';
+import { apiRateLimiter } from './common/middlewares/rate-limit.middleware';
 
 const host = process.env['HOST'] ?? 'localhost';
 const port = process.env['PORT'] ? Number(process.env['PORT']) : 3000;
@@ -87,18 +79,11 @@ app.use((req, _res, next) => {
 // Global rate limiter on all /api routes (skips /api/ping and OPTIONS)
 app.use('/api', apiRateLimiter);
 
-app.use('/api/auth', authRouter);
-app.use('/api/chat', chatRouter);
-app.use('/api/files', filesRouter);
+// User domain routes (mounts /api/auth, /api/admin, /api/user/*, /api/chat, /api/movies, etc.)
+app.use('/api', userRouter);
+
+// RR domain routes
 app.use('/api/rr', rrRouter);
-app.use('/api/user/diet-hydration', dietHydrationRouter);
-app.use('/api/user/planner', plannerRouter);
-app.use('/api/planner', plannerRouter);
-app.use('/api/movies', movieRouter);
-app.use('/api/user/game', gameRouter);
-app.use('/api/game', gameRouter);
-app.use('/api/admin', adminRouter);
-app.use('/api/kyc', kycRouter);
 app.use('/api/rr/kyc', kycRouter);
 
 app.get('/api/ping', (req, res) => {
