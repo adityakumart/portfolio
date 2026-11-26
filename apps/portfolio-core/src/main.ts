@@ -3,7 +3,7 @@ import helmet from 'helmet';
 import mongoSanitize from 'express-mongo-sanitize';
 import cors from 'cors';
 import { userRouter, kycRouter } from './modules/user/user.routes';
-import { rrRouter } from './app/rr/rr.routes';
+import { rrRouter } from './modules/rr/rr.routes';
 import { apiRateLimiter } from './common/middlewares/rate-limit.middleware';
 
 const host = process.env['HOST'] ?? 'localhost';
