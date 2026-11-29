@@ -31,6 +31,10 @@ export class ThemeService {
       }
       if (isPlatformBrowser(this.platformId)) {
         localStorage.setItem('darkMode', JSON.stringify(isDark));
+        const metaThemeColor = this.document.querySelector('meta[name="theme-color"]');
+        if (metaThemeColor) {
+          metaThemeColor.setAttribute('content', isDark ? '#060814' : '#ffffff');
+        }
       }
     });
   }

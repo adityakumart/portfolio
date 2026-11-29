@@ -17,3 +17,19 @@
       var(--background) 100%
     );
 }
+
+:host-context(.dark) .portfolio-page-wrapper,
+:host-context([data-theme='dark']) .portfolio-page-wrapper {
+  background-color: var(--background);
+  background-image:
+    /* Subtle dot matrix grid */
+    radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+    /* Ambient Aurora Light Orbs */
+    radial-gradient(ellipse 80% 50% at 50% -20%, color-mix(in srgb, var(--glow-accent-1, #00f2fe) 16%, transparent), transparent),
+    radial-gradient(circle at 12% 22%, color-mix(in srgb, var(--glow-accent-2, #8b5cf6) 18%, transparent), transparent 32%),
+    radial-gradient(circle at 88% 42%, color-mix(in srgb, var(--glow-accent-1, #00f2fe) 14%, transparent), transparent 28%),
+    radial-gradient(circle at 50% 85%, color-mix(in srgb, var(--glow-accent-2, #8b5cf6) 10%, transparent), transparent 45%);
+  background-size: 28px 28px, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+  background-position: 0 0, 0 0, 0 0, 0 0, 0 0;
+  transition: background-color 0.4s ease;
+}

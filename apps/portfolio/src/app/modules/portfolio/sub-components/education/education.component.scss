@@ -6,6 +6,6 @@
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--color-sky-500), var(--primary));
-  box-shadow: 0 0 16px color-mix(in srgb, var(--color-sky-500) 45%, transparent);
+  background: linear-gradient(135deg, var(--glow-accent-1, var(--color-sky-500)), var(--glow-accent-2, var(--primary)));
+  box-shadow: 0 0 16px color-mix(in srgb, var(--glow-accent-1, var(--color-sky-500)) 45%, transparent);
 }
