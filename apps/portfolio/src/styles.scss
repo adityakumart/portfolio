@@ -172,6 +172,39 @@ body {
   --brand-gradient: linear-gradient(135deg, #ffffff 15%, #38bdf8 65%, #c084fc 100%);
 }
 
+:root.dark[data-dark-palette="eclipse"],
+.dark[data-dark-palette="eclipse"] {
+  --background: #08090d;
+  --card: rgba(26, 20, 16, 0.78);
+  --card-solid: #15110d;
+  --primary: #f59e0b;
+  --primary-foreground: #1c1000;
+  --accent: rgba(245, 158, 11, 0.14);
+  --accent-foreground: #fef3c7;
+  --ring: #f59e0b;
+  --color-sky-500: #0ea5e9;
+  --glow-accent-1: #f59e0b;
+  --glow-accent-2: #0ea5e9;
+  --card-glow: rgba(245, 158, 11, 0.14);
+  --brand-gradient: linear-gradient(135deg, #ffffff 15%, #fbbf24 60%, #38bdf8 100%);
+}
+
+:root.dark[data-dark-palette="aurora"],
+.dark[data-dark-palette="aurora"] {
+  --background: #060814;
+  --card: rgba(14, 20, 36, 0.78);
+  --card-solid: #0d1326;
+  --primary: #38bdf8;
+  --primary-foreground: #04101e;
+  --accent: rgba(56, 189, 248, 0.12);
+  --accent-foreground: #e0f2fe;
+  --ring: #38bdf8;
+  --glow-accent-1: #00f2fe;
+  --glow-accent-2: #8b5cf6;
+  --card-glow: rgba(0, 242, 254, 0.12);
+  --brand-gradient: linear-gradient(135deg, #ffffff 15%, #38bdf8 65%, #c084fc 100%);
+}
+
 .dark [hlmCard],
 .dark .bg-card {
   backdrop-filter: blur(16px) saturate(180%);

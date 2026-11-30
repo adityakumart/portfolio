@@ -8,7 +8,7 @@ import {
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { NgIconComponent, provideIcons } from '@ng-icons/core';
-import { lucideSun, lucideMoon, lucideZap } from '@ng-icons/lucide';
+import { lucideSun, lucideMoon, lucideZap, lucidePalette, lucideSparkles } from '@ng-icons/lucide';
 import { HlmButton } from '@spartan-ng/hel/button';
 import { HlmTooltip } from '@spartan-ng/hel/tooltip';
 import { HlmSkeleton } from '@spartan-ng/hel/skeleton';
@@ -50,7 +50,13 @@ import { AwardsComponent } from './sub-components/awards/awards.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     GlobalData,
-    provideIcons({ lucideSun, lucideMoon, lucideZap }),
+    provideIcons({
+      lucideSun,
+      lucideMoon,
+      lucideZap,
+      lucidePalette,
+      lucideSparkles,
+    }),
   ],
 })
 export class PortfolioComponent implements OnInit, OnDestroy {
@@ -60,6 +66,7 @@ export class PortfolioComponent implements OnInit, OnDestroy {
   private seoService = inject(SeoService);
 
   isDarkMode = computed(() => this.themeService.darkMode());
+  darkPalette = computed(() => this.themeService.darkPalette());
   resume = signal(this.globalData.resume);
   gridColumns = signal(1);
 
@@ -96,6 +103,10 @@ export class PortfolioComponent implements OnInit, OnDestroy {
 
   toggleTheme(): void {
     this.themeService.toggleTheme();
+  }
+
+  toggleDarkPalette(): void {
+    this.themeService.toggleDarkPalette();
   }
 
   ngOnDestroy(): void {
