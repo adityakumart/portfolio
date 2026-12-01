@@ -38,6 +38,42 @@
           <ng-icon name="lucideArrowRight"></ng-icon>
         </a>
       }
+
+      <!-- Theme & Dual-Palette Controls -->
+      <div class="theme-controls-pill">
+        <button
+          hlmBtn
+          variant="ghost"
+          size="icon"
+          class="theme-btn"
+          (click)="toggleTheme()"
+          [hlmTooltip]="isDarkMode() ? 'Switch to Light Theme' : 'Switch to Dark Theme'"
+          position="bottom"
+          aria-label="Toggle color theme"
+        >
+          <ng-icon class="size-4 transition-transform duration-500" [name]="isDarkMode() ? 'lucideSun' : 'lucideMoon'"></ng-icon>
+        </button>
+        @if (isDarkMode()) {
+          <div class="pill-divider"></div>
+          <button
+            hlmBtn
+            variant="ghost"
+            size="icon"
+            class="theme-btn"
+            (click)="toggleDarkPalette()"
+            [hlmTooltip]="darkPalette() === 'aurora' ? 'Current: Electric Aurora (Click for Solar Eclipse)' : 'Current: Solar Eclipse (Click for Electric Aurora)'"
+            position="bottom"
+            aria-label="Switch Dark Theme Color Palette"
+          >
+            <ng-icon
+              class="size-4 transition-transform duration-300"
+              [name]="darkPalette() === 'aurora' ? 'lucideSparkles' : 'lucidePalette'"
+              [class.text-cyan-400]="darkPalette() === 'aurora'"
+              [class.text-amber-400]="darkPalette() === 'eclipse'"
+            ></ng-icon>
+          </button>
+        }
+      </div>
     </nav>
     <div class="hamburger" (click)="toggleMobileMenu()">
       <span></span><span></span><span></span>
@@ -68,6 +104,39 @@
         >Staff Login</a
       >
     }
+    <div class="mobile-theme-row">
+      <span>Theme & Palette</span>
+      <div class="theme-controls-pill">
+        <button
+          hlmBtn
+          variant="ghost"
+          size="icon"
+          class="theme-btn"
+          (click)="toggleTheme()"
+          aria-label="Toggle color theme"
+        >
+          <ng-icon class="size-4" [name]="isDarkMode() ? 'lucideSun' : 'lucideMoon'"></ng-icon>
+        </button>
+        @if (isDarkMode()) {
+          <div class="pill-divider"></div>
+          <button
+            hlmBtn
+            variant="ghost"
+            size="icon"
+            class="theme-btn"
+            (click)="toggleDarkPalette()"
+            aria-label="Switch Dark Theme Color Palette"
+          >
+            <ng-icon
+              class="size-4"
+              [name]="darkPalette() === 'aurora' ? 'lucideSparkles' : 'lucidePalette'"
+              [class.text-cyan-400]="darkPalette() === 'aurora'"
+              [class.text-amber-400]="darkPalette() === 'eclipse'"
+            ></ng-icon>
+          </button>
+        }
+      </div>
+    </div>
   </div>
 
   <!-- Scrolling Marquee Ticker (Customizable by Admin) -->
