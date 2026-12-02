@@ -960,12 +960,25 @@ export class RRApiService {
     if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
     if (params?.includeDeleted) httpParams = httpParams.set('includeDeleted', 'true');
 
-    return firstValueFrom(
-      this.http.get<IBookingsResponse>(`${this.baseUrl}/bookings`, {
+    const res = await firstValueFrom(
+      this.http.get<IBookingsResponse | IBooking[]>(`${this.baseUrl}/bookings`, {
         headers: this.getHeaders(),
         params: httpParams,
       })
     );
+
+    if (Array.isArray(res)) {
+      const page = params?.page || 1;
+      const limit = params?.limit || 10;
+      return {
+        bookings: res,
+        total: res.length,
+        page,
+        limit,
+        totalPages: Math.ceil(res.length / limit) || 1,
+      };
+    }
+    return res;
   }
 
   async createBooking(data: Partial<IBooking>): Promise<IBooking> {
@@ -1066,13 +1079,18 @@ export class RRApiService {
   }
 
   async resetEmployeePassword(id: string, temporaryPassword?: string): Promise<{ success: boolean; message: string; temporaryPassword: string }> {
-    return firstValueFrom(
-      this.http.post<{ success: boolean; message: string; temporaryPassword: string }>(
+    const res = await firstValueFrom(
+      this.http.post<{ success?: boolean; message: string; temporaryPassword: string }>(
         `${this.baseUrl}/employees/${id}/reset-password`,
         { temporaryPassword },
         { headers: this.getHeaders() }
       )
     );
+    return {
+      success: res.success !== undefined ? res.success : true,
+      message: res.message,
+      temporaryPassword: res.temporaryPassword,
+    };
   }
 
   async changePassword(data: { currentPassword?: string; newPassword: string }): Promise<{ success: boolean; message: string }> {
@@ -1100,12 +1118,25 @@ export class RRApiService {
     if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
     if (params?.search) httpParams = httpParams.set('search', params.search);
 
-    return firstValueFrom(
-      this.http.get<ILogsResponse>(`${this.baseUrl}/logs`, {
+    const res = await firstValueFrom(
+      this.http.get<ILogsResponse | ILog[]>(`${this.baseUrl}/logs`, {
         headers: this.getHeaders(),
         params: httpParams,
       })
     );
+
+    if (Array.isArray(res)) {
+      const page = params?.page || 1;
+      const limit = params?.limit || 15;
+      return {
+        logs: res,
+        total: res.length,
+        page,
+        limit,
+        totalPages: Math.ceil(res.length / limit) || 1,
+      };
+    }
+    return res;
   }
 
   async getDashboardStats(): Promise<IRRDashboardStats> {
@@ -1308,11 +1339,14 @@ export class RRApiService {
 
   async getMyFeedbacks(): Promise<IRRFeedback[]> {
     const res = await firstValueFrom(
-      this.http.get<{ success: boolean; data: IRRFeedback[] }>(
+      this.http.get<{ success?: boolean; data?: IRRFeedback[] } | IRRFeedback[]>(
         `${this.baseUrl}/feedback/my`,
         { headers: this.getHeaders() }
       )
     );
+    if (Array.isArray(res)) {
+      return res;
+    }
     return res?.data || [];
   }
 
@@ -1333,11 +1367,14 @@ export class RRApiService {
     if (params?.skip) httpParams = httpParams.set('skip', params.skip.toString());
 
     const res = await firstValueFrom(
-      this.http.get<{ success: boolean; total: number; data: IRRFeedback[] }>(
+      this.http.get<{ success?: boolean; total?: number; data?: IRRFeedback[] } | IRRFeedback[]>(
         `${this.baseUrl}/feedback`,
         { headers: this.getHeaders(), params: httpParams }
       )
     );
+    if (Array.isArray(res)) {
+      return { total: res.length, data: res };
+    }
     return { total: res?.total || 0, data: res?.data || [] };
   }
 
