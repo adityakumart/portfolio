@@ -27,7 +27,7 @@ test.describe('RR Module - Activity Audit Logs Component', () => {
 
     // Verify logged actions from mock
     await expect(page.getByText('Started rental booking for Swift Dzire')).toBeVisible();
-    await expect(page.getByText('Desk Agent (RRA002)')).toBeVisible();
-    await expect(page.getByText('Admin Operator (RRA001)')).toBeVisible();
+    await expect(page.getByText('Desk Agent (RRA002)').first()).toBeVisible();
+    await expect(page.getByText('Admin Operator (RRA001)').first()).toBeVisible();
   });
 });

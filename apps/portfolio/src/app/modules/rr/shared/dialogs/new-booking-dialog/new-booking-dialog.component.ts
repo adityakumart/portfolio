@@ -376,7 +376,8 @@ export class RRNewBookingDialogComponent implements OnInit {
         // Fetch customer profile to autofill if fields are empty
         try {
           const list = await this.customerApi.getCustomers({ search: phone });
-          const matched = list.customers.find((c) => c.phone === phone);
+          const customerList = Array.isArray(list) ? list : (list?.customers || []);
+          const matched = customerList.find((c) => c.phone === phone);
           if (matched) {
             this.bookingFormGroup.patchValue({
               renterFirstName: this.bookingFormGroup.get('renterFirstName')?.value || matched.firstName,

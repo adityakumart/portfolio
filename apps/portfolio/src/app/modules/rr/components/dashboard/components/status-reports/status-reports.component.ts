@@ -303,11 +303,12 @@ export class RRStatusReportsComponent implements OnInit {
 
       const res = await this.rrApi.getStatusReport(filter);
       if (res && res.success) {
-        this.bookings.set(res.bookings || []);
+        const bookingList = Array.isArray(res.bookings) ? res.bookings : [];
+        this.bookings.set(bookingList);
         this.summary.set(res.summary);
-        this.totalRecords.set(res.totalRecords);
-        this.totalPages.set(res.totalPages);
-        this.currentPage.set(res.currentPage);
+        this.totalRecords.set(res.totalRecords !== undefined ? res.totalRecords : bookingList.length);
+        this.totalPages.set(res.totalPages !== undefined ? res.totalPages : 1);
+        this.currentPage.set(res.currentPage || 1);
       }
     } catch (err: unknown) {
       toast.error('Failed to load status report', {

@@ -212,7 +212,8 @@ export class RRStatsViewComponent implements OnInit, OnDestroy {
     try {
       if (this.isAdmin()) {
         const res = await this.rrApi.getLogs({ page: 1, limit: 5 });
-        this.recentLogs.set(res?.logs || []);
+        const list = Array.isArray(res) ? res : (res?.logs || []);
+        this.recentLogs.set(list);
       }
     } catch (e) {
       console.warn('Could not load recent activity logs:', e);

@@ -234,9 +234,15 @@ export class RRHistoryComponent implements OnInit {
         limit: this.pageSize(),
         includeDeleted: true,
       });
-      this.bookings.set(res.bookings || []);
-      this.totalRecords.set(res.total || 0);
-      this.totalPages.set(res.totalPages || 1);
+      const list = Array.isArray(res) ? res : (res?.bookings || []);
+      const total = Array.isArray(res) ? res.length : (res?.total ?? list.length);
+      const totalPages = Array.isArray(res)
+        ? Math.ceil(res.length / this.pageSize()) || 1
+        : (res?.totalPages ?? 1);
+
+      this.bookings.set(list);
+      this.totalRecords.set(total);
+      this.totalPages.set(totalPages);
     } catch (e) {
       console.error('Error fetching history bookings from API:', e);
     } finally {

@@ -134,7 +134,7 @@ export class RRAdvanceBookingListComponent implements OnInit {
   async loadBookings() {
     try {
       const data = await this.rrApi.getBookings({ status: 'reserved' });
-      this.bookings.set(data);
+      this.bookings.set(Array.isArray(data) ? data : ((data as any)?.bookings || []));
     } catch (e) {
       console.error('Error loading advance bookings:', e);
     }

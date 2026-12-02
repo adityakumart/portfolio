@@ -233,9 +233,15 @@ export class RRActivityLogsComponent implements OnInit {
         search: combinedSearch || undefined,
       });
 
-      this.logs.set(res?.logs || []);
-      this.totalLogs.set(res?.total || 0);
-      this.totalPages.set(res?.totalPages || 1);
+      const list = Array.isArray(res) ? res : (res?.logs || []);
+      const total = Array.isArray(res) ? res.length : (res?.total ?? list.length);
+      const totalPages = Array.isArray(res)
+        ? Math.ceil(res.length / this.pageSize()) || 1
+        : (res?.totalPages ?? 1);
+
+      this.logs.set(list);
+      this.totalLogs.set(total);
+      this.totalPages.set(totalPages);
     } catch (e) {
       console.error('Error loading activity logs:', e);
       this.logs.set([]);
