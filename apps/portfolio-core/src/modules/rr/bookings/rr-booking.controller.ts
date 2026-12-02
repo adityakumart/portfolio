@@ -113,7 +113,32 @@ export class RRBookingController {
   static async deleteBooking(req: IRRRequest, res: Response): Promise<void> {
     try {
       const id = String(req.params['id'] || '');
-      const result = await RRBookingService.deleteBooking(id, req.body, req.userId, req.userRole);
+      const deletionPayload = {
+        deletionReason:
+          req.body?.deletionReason ||
+          (typeof req.query['deletionReason'] === 'string'
+            ? req.query['deletionReason']
+            : typeof req.query['reasonForDeletion'] === 'string'
+            ? req.query['reasonForDeletion']
+            : undefined),
+        reasonForDeletion:
+          req.body?.reasonForDeletion ||
+          (typeof req.query['reasonForDeletion'] === 'string'
+            ? req.query['reasonForDeletion']
+            : undefined),
+        returnAmount: req.body?.returnAmount ?? req.query['returnAmount'],
+        returnAmountMode:
+          req.body?.returnAmountMode ??
+          (typeof req.query['returnAmountMode'] === 'string'
+            ? req.query['returnAmountMode']
+            : undefined),
+      };
+      const result = await RRBookingService.deleteBooking(
+        id,
+        deletionPayload,
+        req.userId,
+        req.userRole,
+      );
       res.json(result);
     } catch (err: unknown) {
       const msg = getErrorMessage(err);

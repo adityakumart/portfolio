@@ -10,7 +10,8 @@ function getErrorMessage(err: unknown): string {
 export class RREmployeeController {
   static async getEmployees(req: IRRRequest, res: Response): Promise<void> {
     try {
-      const list = await RREmployeeService.getEmployees(false);
+      const includeDeleted = req.query['includeDeleted'] === 'true';
+      const list = await RREmployeeService.getEmployees(includeDeleted);
       res.json(list);
     } catch (err: unknown) {
       res.status(500).json({ error: 'Internal Server Error', message: getErrorMessage(err) });
@@ -63,7 +64,11 @@ export class RREmployeeController {
         req.userId || 'admin',
         req.userRole || 'admin',
       );
-      res.json(updated);
+      res.json({
+        success: true,
+        message: updated.message,
+        temporaryPassword: updated.temporaryPassword,
+      });
     } catch (err: unknown) {
       const msg = getErrorMessage(err);
       if (msg.includes('not found')) {
